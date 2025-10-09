@@ -18,6 +18,9 @@ export const authOptions: AuthOptions = {
           where: { email: credentials.email },
         });
         if (!user) return null;
+
+        // Allow login for unverified users - they'll be redirected to verify page
+
         const valid = await bcrypt.compare(
           credentials.password,
           user.passwordHash
@@ -28,6 +31,7 @@ export const authOptions: AuthOptions = {
           email: user.email,
           name: `${user.firstName} ${user.lastName}`,
           role: user.role,
+          emailVerified: user.emailVerified,
         };
       },
     }),
@@ -37,6 +41,7 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user }: { token: any; user: any }) {
       if (user) {
         token.role = user.role;
+        token.emailVerified = user.emailVerified;
       }
       return token;
     },
@@ -44,6 +49,7 @@ export const authOptions: AuthOptions = {
     async session({ session, token }: { session: any; token: any }) {
       if (session.user) {
         session.user.role = token.role;
+        session.user.emailVerified = token.emailVerified;
       }
       return session;
     },

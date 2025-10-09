@@ -18,8 +18,14 @@ sequenceDiagram
 
 ### Account types
 
-- Client: Default role for personal projects and estimates.
-- Admin: Manually promoted by system administrators for professional use and management.
+- **Client**: Default role for personal projects and estimates.
+- **Admin**: Manually promoted by system administrators for professional use and management.
+
+### Role-based access
+
+- **Client users** can access: Roof Calculator, Manual Calculator, Contractor Calculator, AI Recommendations, Archive, Project Management, Cost Customization
+- **Admin users** have access to all client features plus: Account Management (user administration, billing, subscriptions)
+- Account Management section is protected and only accessible to admin users
 
 ## Verify code
 
@@ -51,19 +57,33 @@ sequenceDiagram
 ## Login
 
 - Use your email and password.
-- Verified accounts can sign in.
+- You can sign in even if your email is not verified.
+- **Unverified users** will be redirected to the verification page.
+- **Verified users** will go directly to the dashboard.
 
 ```mermaid
 sequenceDiagram
   participant You as You
   participant App as App
+  participant Verify as Verify Page
+  participant Dashboard as Dashboard
   You->>App: Login (email + password)
-  App-->>You: Signed in
+  App->>App: Authenticate user
+  App->>App: Check email verification
+  alt Email verified
+    App-->>Dashboard: Redirect to dashboard
+  else Email not verified
+    App-->>Verify: Redirect to verification page
+    You->>Verify: Enter 6-digit code
+    Verify->>App: Verify code
+    App-->>Dashboard: Redirect to dashboard
+  end
 ```
 
 ## Password reset
 
 - Forgot your password? Get a 6-digit code, then set a new password.
+- **Security**: The reset code must be entered to change your password.
 
 ```mermaid
 sequenceDiagram
@@ -74,5 +94,10 @@ sequenceDiagram
   App-->>Mail: Send reset code
   Mail-->>You: Reset code arrives
   You->>App: Enter code + new password
-  App-->>You: Password updated
+  App->>App: Verify reset code
+  alt Code valid
+    App-->>You: Password updated
+  else Code invalid/expired
+    App-->>You: "Invalid or expired reset code"
+  end
 ```

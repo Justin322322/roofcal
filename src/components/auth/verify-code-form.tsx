@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -42,7 +43,10 @@ export default function VerifyCodeForm() {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get("email");
+  const { data: session } = useSession();
+
+  // Get email from session (if user is logged in) or from URL params (if coming from signup)
+  const email = session?.user?.email || searchParams.get("email");
 
   const form = useForm<VerifyFormData>({
     resolver: zodResolver(verifySchema),
@@ -106,7 +110,7 @@ export default function VerifyCodeForm() {
 
   const onSubmit = async (data: VerifyFormData) => {
     if (!email) {
-      setErrorMessage("Email not found. Please go back to signup.");
+      setErrorMessage("Email not found. Please log in again.");
       return;
     }
 
@@ -129,7 +133,7 @@ export default function VerifyCodeForm() {
 
       setSuccessMessage("Email verified successfully!");
       setTimeout(() => {
-        router.push("/login");
+        router.push("/dashboard");
       }, 1500);
     } catch {
       setErrorMessage("Something went wrong. Please try again.");

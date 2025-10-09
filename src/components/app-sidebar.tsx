@@ -17,6 +17,7 @@ import {
   SettingsIcon,
   UsersIcon,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import { NavDocuments } from "@/components/nav-documents";
 import { NavMain } from "@/components/nav-main";
@@ -164,6 +165,83 @@ export function AppSidebar({
   onSectionChange,
   ...props
 }: AppSidebarProps) {
+  const { data: session } = useSession();
+
+  const getNavigationData = (userRole: string) => ({
+    navMain: [
+      {
+        title: "Roof Calculator",
+        url: "roof-calculator",
+        icon: CalculatorIcon,
+      },
+      {
+        title: "Manual Calculator",
+        url: "#",
+        icon: ClipboardListIcon,
+      },
+      {
+        title: "Contractor Calculator",
+        url: "#",
+        icon: HardHatIcon,
+      },
+      {
+        title: "AI Recommendations",
+        url: "#",
+        icon: SparklesIcon,
+      },
+      {
+        title: "Archive",
+        url: "#",
+        icon: ArchiveIcon,
+      },
+      {
+        title: "Project Management",
+        url: "#",
+        icon: KanbanSquareIcon,
+      },
+      {
+        title: "Cost Customization",
+        url: "#",
+        icon: CreditCardIcon,
+      },
+      // Only show Account Management for admin users
+      ...(userRole === "admin"
+        ? [
+            {
+              title: "Account Management",
+              url: "account-management",
+              icon: UsersIcon,
+            },
+          ]
+        : []),
+    ],
+    navSecondary: [
+      {
+        title: "Support",
+        url: "#",
+        icon: HelpCircleIcon,
+      },
+      {
+        title: "Settings",
+        url: "#",
+        icon: SettingsIcon,
+      },
+      {
+        title: "Reports",
+        url: "#",
+        icon: ClipboardListIcon,
+      },
+    ],
+  });
+
+  const navigationData = getNavigationData(session?.user?.role || "client");
+
+  const userData = {
+    name: session?.user?.name || "User",
+    email: session?.user?.email || "",
+    avatar: "/avatars/user.jpg",
+  };
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -178,15 +256,15 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain
-          items={data.navMain}
+          items={navigationData.navMain}
           activeSection={activeSection}
           onSectionChange={onSectionChange}
         />
         <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavSecondary items={navigationData.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={userData} />
       </SidebarFooter>
     </Sidebar>
   );

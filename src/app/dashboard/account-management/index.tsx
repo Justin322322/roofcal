@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { AccountManagementTable } from "./components/account-management-table";
 import { AccountStatsCards } from "./components/stats-cards";
 import { AccountFilters } from "./components/account-filters";
@@ -8,12 +10,38 @@ import { Button } from "@/components/ui/button";
 import { PlusIcon, DownloadIcon, UploadIcon } from "lucide-react";
 
 export function AccountManagementContent() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [accounts] = useState([]);
   const [filters, setFilters] = useState({
     status: "all",
     plan: "all",
     search: "",
   });
+
+  useEffect(() => {
+    if (status === "loading") return;
+
+    if (!session) {
+      router.push("/login");
+      return;
+    }
+
+    if (session.user.role !== "admin") {
+      router.push("/dashboard");
+      return;
+    }
+  }, [session, status, router]);
+
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center h-64">Loading...</div>
+    );
+  }
+
+  if (!session || session.user.role !== "admin") {
+    return null;
+  }
 
   const handleAddAccount = () => {
     // TODO: Implement add account functionality
