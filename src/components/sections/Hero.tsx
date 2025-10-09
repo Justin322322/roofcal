@@ -4,7 +4,7 @@ import ScrollingCalculators from "./ScrollingCalculators";
 
 export default function Hero() {
   return (
-    <main className="relative min-h-screen flex items-center justify-center px-6 py-16 overflow-x-hidden">
+    <main id="home" className="relative min-h-screen flex items-center justify-center px-6 py-16 overflow-x-hidden scroll-mt-20">
       <div className="container mx-auto max-w-7xl relative z-10">
         <div className="text-center max-w-6xl mx-auto">
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-8 leading-[1.1] tracking-tight">
