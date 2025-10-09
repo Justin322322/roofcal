@@ -32,18 +32,19 @@ export default function FeaturesSectionDemo() {
     },
     {
       title: "Industry Standard",
-      description: "Built with roofing industry standards and best practices in mind.",
+      description:
+        "Built with roofing industry standards and best practices in mind.",
       icon: <IconShieldCheck />,
     },
     {
       title: "Cloud Sync",
-      description: "Access your calculations anywhere, anytime with cloud synchronization.",
+      description:
+        "Access your calculations anywhere, anytime with cloud synchronization.",
       icon: <IconCloud />,
     },
     {
       title: "Expert Support",
-      description:
-        "Get help from roofing professionals when you need it most.",
+      description: "Get help from roofing professionals when you need it most.",
       icon: <IconHeadset />,
     },
     {
@@ -54,7 +55,8 @@ export default function FeaturesSectionDemo() {
     },
     {
       title: "Trusted by Professionals",
-      description: "Used by contractors and homeowners nationwide for reliable results.",
+      description:
+        "Used by contractors and homeowners nationwide for reliable results.",
       icon: <IconHeart />,
     },
   ];

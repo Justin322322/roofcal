@@ -12,14 +12,14 @@ export default function ScrollingCalculators() {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       const scrollDelta = currentScrollY - lastScrollY.current;
-      
+
       // Move left when scrolling down (positive delta), right when scrolling up (negative delta)
       translateX.current -= scrollDelta * 0.5;
-      
+
       if (rowRef.current) {
         rowRef.current.style.transform = `translateX(${translateX.current}px)`;
       }
-      
+
       lastScrollY.current = currentScrollY;
     };
 
@@ -57,4 +57,3 @@ export default function ScrollingCalculators() {
     </div>
   );
 }
-

@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { type LucideIcon } from "lucide-react"
-import { TutorialGuideDialog } from "@/components/tutorial-guide-dialog"
+import { type LucideIcon } from "lucide-react";
+import { TutorialGuideDialog } from "@/components/tutorial-guide-dialog";
 
 import {
   SidebarGroup,
@@ -9,7 +9,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 export function NavMain({
   items,
@@ -17,12 +17,12 @@ export function NavMain({
   onSectionChange,
 }: {
   items: {
-    title: string
-    url: string
-    icon?: LucideIcon
-  }[]
-  activeSection?: string
-  onSectionChange?: (section: string) => void
+    title: string;
+    url: string;
+    icon?: LucideIcon;
+  }[];
+  activeSection?: string;
+  onSectionChange?: (section: string) => void;
 }) {
   return (
     <SidebarGroup>
@@ -35,14 +35,22 @@ export function NavMain({
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton 
+              <SidebarMenuButton
                 tooltip={item.title}
                 onClick={() => {
-                  if ((item.url === "account-management" || item.url === "roof-calculator") && onSectionChange) {
-                    onSectionChange(item.url)
-                  } else if (item.url !== "#" && item.url !== "account-management" && item.url !== "roof-calculator") {
+                  if (
+                    (item.url === "account-management" ||
+                      item.url === "roof-calculator") &&
+                    onSectionChange
+                  ) {
+                    onSectionChange(item.url);
+                  } else if (
+                    item.url !== "#" &&
+                    item.url !== "account-management" &&
+                    item.url !== "roof-calculator"
+                  ) {
                     // Handle other navigation
-                    console.log("Navigate to:", item.url)
+                    console.log("Navigate to:", item.url);
                   }
                 }}
                 isActive={activeSection === item.url}
@@ -55,5 +63,5 @@ export function NavMain({
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
-  )
+  );
 }

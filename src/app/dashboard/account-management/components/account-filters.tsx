@@ -1,28 +1,37 @@
-"use client"
+"use client";
 
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
-import { SearchIcon, FilterIcon } from "lucide-react"
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { SearchIcon, FilterIcon } from "lucide-react";
 
 interface Filters {
-  status: string
-  plan: string
-  search: string
+  status: string;
+  plan: string;
+  search: string;
 }
 
 interface AccountFiltersProps {
-  filters: Filters
-  onFiltersChange: (filters: Filters) => void
+  filters: Filters;
+  onFiltersChange: (filters: Filters) => void;
 }
 
-export function AccountFilters({ filters, onFiltersChange }: AccountFiltersProps) {
+export function AccountFilters({
+  filters,
+  onFiltersChange,
+}: AccountFiltersProps) {
   const handleFilterChange = (key: keyof Filters, value: string) => {
     onFiltersChange({
       ...filters,
-      [key]: value
-    })
-  }
+      [key]: value,
+    });
+  };
 
   return (
     <div className="flex flex-col gap-4 rounded-lg border p-4">
@@ -30,7 +39,7 @@ export function AccountFilters({ filters, onFiltersChange }: AccountFiltersProps
         <FilterIcon className="h-4 w-4 text-muted-foreground" />
         <h3 className="text-sm font-medium">Filters</h3>
       </div>
-      
+
       <div className="grid gap-4 md:grid-cols-3">
         {/* Search */}
         <div className="space-y-2">
@@ -50,7 +59,10 @@ export function AccountFilters({ filters, onFiltersChange }: AccountFiltersProps
         {/* Status Filter */}
         <div className="space-y-2">
           <Label htmlFor="status">Status</Label>
-          <Select value={filters.status} onValueChange={(value) => handleFilterChange("status", value)}>
+          <Select
+            value={filters.status}
+            onValueChange={(value) => handleFilterChange("status", value)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="All statuses" />
             </SelectTrigger>
@@ -66,7 +78,10 @@ export function AccountFilters({ filters, onFiltersChange }: AccountFiltersProps
         {/* Plan Filter */}
         <div className="space-y-2">
           <Label htmlFor="plan">Plan</Label>
-          <Select value={filters.plan} onValueChange={(value) => handleFilterChange("plan", value)}>
+          <Select
+            value={filters.plan}
+            onValueChange={(value) => handleFilterChange("plan", value)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="All plans" />
             </SelectTrigger>
@@ -81,5 +96,5 @@ export function AccountFilters({ filters, onFiltersChange }: AccountFiltersProps
         </div>
       </div>
     </div>
-  )
+  );
 }

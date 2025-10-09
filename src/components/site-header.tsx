@@ -1,22 +1,22 @@
-import { Separator } from "@/components/ui/separator"
-import { SidebarTrigger } from "@/components/ui/sidebar"
+import { Separator } from "@/components/ui/separator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 interface SiteHeaderProps {
-  currentSection?: string
+  currentSection?: string;
 }
 
 export function SiteHeader({ currentSection }: SiteHeaderProps) {
   const getSectionTitle = (section?: string) => {
     switch (section) {
       case "roof-calculator":
-        return "Roof Calculator"
+        return "Roof Calculator";
       case "account-management":
-        return "Account Management"
+        return "Account Management";
       case "overview":
       default:
-        return "Documents"
+        return "Documents";
     }
-  }
+  };
 
   return (
     <header className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-12 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear">
@@ -26,8 +26,10 @@ export function SiteHeader({ currentSection }: SiteHeaderProps) {
           orientation="vertical"
           className="mx-2 data-[orientation=vertical]:h-4"
         />
-        <h1 className="text-base font-medium">{getSectionTitle(currentSection)}</h1>
+        <h1 className="text-base font-medium">
+          {getSectionTitle(currentSection)}
+        </h1>
       </div>
     </header>
-  )
+  );
 }

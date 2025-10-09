@@ -1,34 +1,34 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { AccountManagementTable } from "./components/account-management-table"
-import { AccountStatsCards } from "./components/stats-cards"
-import { AccountFilters } from "./components/account-filters"
-import { Button } from "@/components/ui/button"
-import { PlusIcon, DownloadIcon, UploadIcon } from "lucide-react"
+import { useState } from "react";
+import { AccountManagementTable } from "./components/account-management-table";
+import { AccountStatsCards } from "./components/stats-cards";
+import { AccountFilters } from "./components/account-filters";
+import { Button } from "@/components/ui/button";
+import { PlusIcon, DownloadIcon, UploadIcon } from "lucide-react";
 
 export function AccountManagementContent() {
-  const [accounts] = useState([])
+  const [accounts] = useState([]);
   const [filters, setFilters] = useState({
     status: "all",
     plan: "all",
-    search: ""
-  })
+    search: "",
+  });
 
   const handleAddAccount = () => {
     // TODO: Implement add account functionality
-    console.log("Add new account")
-  }
+    console.log("Add new account");
+  };
 
   const handleExportAccounts = () => {
     // TODO: Implement export functionality
-    console.log("Export accounts")
-  }
+    console.log("Export accounts");
+  };
 
   const handleImportAccounts = () => {
     // TODO: Implement import functionality
-    console.log("Import accounts")
-  }
+    console.log("Import accounts");
+  };
 
   return (
     <>
@@ -65,11 +65,8 @@ export function AccountManagementContent() {
 
       {/* Accounts Table */}
       <div className="px-4 lg:px-6">
-        <AccountManagementTable 
-          accounts={accounts} 
-          filters={filters}
-        />
+        <AccountManagementTable accounts={accounts} filters={filters} />
       </div>
     </>
-  )
+  );
 }

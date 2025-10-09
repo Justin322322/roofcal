@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   CameraIcon,
   ClipboardListIcon,
@@ -16,12 +16,12 @@ import {
   SearchIcon,
   SettingsIcon,
   UsersIcon,
-} from "lucide-react"
+} from "lucide-react";
 
-import { NavDocuments } from "@/components/nav-documents"
-import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
-import { NavUser } from "@/components/nav-user"
+import { NavDocuments } from "@/components/nav-documents";
+import { NavMain } from "@/components/nav-main";
+import { NavSecondary } from "@/components/nav-secondary";
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -29,8 +29,8 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import RoofCalcLogo from "@/components/RoofCalcLogo"
+} from "@/components/ui/sidebar";
+import RoofCalcLogo from "@/components/RoofCalcLogo";
 
 const data = {
   user: {
@@ -152,14 +152,18 @@ const data = {
       icon: ClipboardListIcon,
     },
   ],
-}
+};
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  activeSection?: string
-  onSectionChange?: (section: string) => void
+  activeSection?: string;
+  onSectionChange?: (section: string) => void;
 }
 
-export function AppSidebar({ activeSection, onSectionChange, ...props }: AppSidebarProps) {
+export function AppSidebar({
+  activeSection,
+  onSectionChange,
+  ...props
+}: AppSidebarProps) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -173,8 +177,8 @@ export function AppSidebar({ activeSection, onSectionChange, ...props }: AppSide
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain 
-          items={data.navMain} 
+        <NavMain
+          items={data.navMain}
           activeSection={activeSection}
           onSectionChange={onSectionChange}
         />
@@ -185,5 +189,5 @@ export function AppSidebar({ activeSection, onSectionChange, ...props }: AppSide
         <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

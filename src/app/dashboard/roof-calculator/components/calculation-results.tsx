@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
 interface CalculationResultsProps {
-  area: number
-  materialCost: number
-  laborCost: number
-  totalCost: number
-  material: string
+  area: number;
+  materialCost: number;
+  laborCost: number;
+  totalCost: number;
+  material: string;
 }
 
-export function CalculationResults({ 
-  area, 
-  materialCost, 
-  laborCost, 
+export function CalculationResults({
+  area,
+  materialCost,
+  laborCost,
   totalCost,
-  material 
+  material,
 }: CalculationResultsProps) {
   if (area === 0) {
     return (
@@ -31,7 +31,7 @@ export function CalculationResults({
           </p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -46,7 +46,9 @@ export function CalculationResults({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">Roof Area</span>
-            <span className="text-base font-medium">{area.toFixed(2)} sq.m</span>
+            <span className="text-base font-medium">
+              {area.toFixed(2)} sq.m
+            </span>
           </div>
           <Separator />
         </div>
@@ -54,30 +56,41 @@ export function CalculationResults({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">Material Cost</span>
-            <span className="text-base font-medium">₱{materialCost.toLocaleString()}</span>
+            <span className="text-base font-medium">
+              ₱{materialCost.toLocaleString()}
+            </span>
           </div>
           <Separator />
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Labor Cost (30%)</span>
-            <span className="text-base font-medium">₱{laborCost.toLocaleString()}</span>
+            <span className="text-sm text-muted-foreground">
+              Labor Cost (30%)
+            </span>
+            <span className="text-base font-medium">
+              ₱{laborCost.toLocaleString()}
+            </span>
           </div>
           <Separator />
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between pt-2">
-            <span className="text-base font-semibold">Total Estimated Cost</span>
-            <span className="text-2xl font-bold text-primary">₱{totalCost.toLocaleString()}</span>
+            <span className="text-base font-semibold">
+              Total Estimated Cost
+            </span>
+            <span className="text-2xl font-bold text-primary">
+              ₱{totalCost.toLocaleString()}
+            </span>
           </div>
         </div>
 
         <div className="pt-4 text-xs text-muted-foreground">
-          * Estimates include material and labor costs. Additional fees may apply for permits, waste removal, and complex installations.
+          * Estimates include material and labor costs. Additional fees may
+          apply for permits, waste removal, and complex installations.
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
