@@ -26,7 +26,7 @@ export default function Hero() {
           </div>
         </div>
         {/* Demo calculation preview */}
-        <div className="mt-16 relative overflow-visible">
+        <div id="calculator" className="mt-16 relative overflow-visible scroll-mt-20">
           {/* Scrolling calculator icons behind card */}
           <ScrollingCalculators />
           
