@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import ScrollingCalculators from "./ScrollingCalculators";
 
 export default function Hero() {
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 py-16">
-      <div className="container mx-auto max-w-7xl">
+    <main className="relative min-h-screen flex items-center justify-center px-6 py-16 overflow-x-hidden">
+      <div className="container mx-auto max-w-7xl relative z-10">
         <div className="text-center max-w-6xl mx-auto">
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-8 leading-[1.1] tracking-tight">
             Professional{" "}
@@ -21,6 +23,27 @@ export default function Hero() {
             <Button variant="accent" size="lg" className="min-w-[200px] h-14 text-lg font-semibold cursor-pointer">
               Learn More
             </Button>
+          </div>
+        </div>
+        {/* Demo calculation preview */}
+        <div className="mt-16 relative overflow-visible">
+          {/* Scrolling calculator icons behind card */}
+          <ScrollingCalculators />
+          
+          <div className="flex justify-center relative z-10">
+            <div className="rounded-2xl border-2 border-border bg-card shadow-md overflow-hidden max-w-6xl w-full">
+            <div className="bg-muted/40 px-4 py-2 text-xs font-medium text-muted-foreground">Demo Calculation Preview</div>
+            <div className="relative w-full">
+              <Image
+                src="/dashboard.png"
+                alt="Roof calculator demo screenshot"
+                width={1920}
+                height={1080}
+                priority
+                className="w-full h-auto"
+              />
+            </div>
+          </div>
           </div>
         </div>
       </div>

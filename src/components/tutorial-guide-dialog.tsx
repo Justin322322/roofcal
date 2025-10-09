@@ -13,7 +13,7 @@ import {
   SparklesIcon,
   KanbanSquareIcon,
   ArchiveIcon,
-  DollarSignIcon,
+  CreditCardIcon,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -26,10 +26,10 @@ export function TutorialGuideDialog() {
       <DialogPrimitive.Trigger asChild>
         <button
           className={cn(
-            "min-w-8 bg-primary text-primary-foreground duration-200 ease-linear",
+            "w-full bg-primary text-primary-foreground duration-200 ease-linear",
             "hover:bg-primary/90 hover:text-primary-foreground",
             "active:bg-primary/90 active:text-primary-foreground",
-            "inline-flex items-center gap-2 h-9 px-3 rounded-md text-sm font-medium"
+            "inline-flex items-center gap-2 h-9 px-3 rounded-md text-sm font-medium justify-start"
           )}
           type="button"
         >
@@ -128,7 +128,7 @@ export function TutorialGuideDialog() {
                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md" 
                     value="costs"
                   >
-                    <DollarSignIcon className="h-4 w-4" />
+                    <CreditCardIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Costs</span>
                   </TabsTrigger>
                 </TabsList>

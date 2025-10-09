@@ -9,12 +9,13 @@ import {
   SparklesIcon,
   ArchiveIcon,
   KanbanSquareIcon,
-  DollarSignIcon,
+  CreditCardIcon,
   FileCodeIcon,
   FileTextIcon,
   HelpCircleIcon,
   SearchIcon,
   SettingsIcon,
+  UsersIcon,
 } from "lucide-react"
 
 import { NavDocuments } from "@/components/nav-documents"
@@ -27,7 +28,6 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import RoofCalcLogo from "@/components/RoofCalcLogo"
@@ -41,7 +41,7 @@ const data = {
   navMain: [
     {
       title: "Roof Calculator",
-      url: "#",
+      url: "roof-calculator",
       icon: CalculatorIcon,
     },
     {
@@ -72,7 +72,12 @@ const data = {
     {
       title: "Cost Customization",
       url: "#",
-      icon: DollarSignIcon,
+      icon: CreditCardIcon,
+    },
+    {
+      title: "Account Management",
+      url: "account-management",
+      icon: UsersIcon,
     },
   ],
   navClouds: [
@@ -149,26 +154,30 @@ const data = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  activeSection?: string
+  onSectionChange?: (section: string) => void
+}
+
+export function AppSidebar({ activeSection, onSectionChange, ...props }: AppSidebarProps) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
-              <a href="#">
-                <RoofCalcLogo className="h-5 w-5 text-primary" size={20} />
-                <span className="text-base font-semibold">RoofCal</span>
-              </a>
-            </SidebarMenuButton>
+            <div className="flex items-center gap-2 px-3 py-2">
+              <RoofCalcLogo className="h-5 w-5 text-primary" size={20} />
+              <span className="text-base font-semibold">RoofCal</span>
+            </div>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain 
+          items={data.navMain} 
+          activeSection={activeSection}
+          onSectionChange={onSectionChange}
+        />
         <NavDocuments items={data.documents} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
