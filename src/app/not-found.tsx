@@ -57,8 +57,8 @@ export default function NotFound() {
             </h2>
             
             <p className="text-lg sm:text-xl text-muted-foreground mb-12 leading-relaxed max-w-2xl mx-auto">
-              The page you're looking for seems to have disappeared like a shingle in a storm. 
-              Don't worry, we'll help you find your way back to solid ground.
+              The page you&#39;re looking for seems to have disappeared like a shingle in a storm. 
+              Don&#39;t worry, we&#39;ll help you find your way back to solid ground.
             </p>
             
             {/* Action Buttons */}
