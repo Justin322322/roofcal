@@ -8,7 +8,7 @@ import { AccountStatsCards } from "./components/stats-cards";
 import { AccountFilters } from "./components/account-filters";
 import { AccountViewModal } from "./components/account-view-modal";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, DownloadIcon, UploadIcon } from "lucide-react";
+import { DownloadIcon } from "lucide-react";
 import { useAccountManagement } from "./hooks";
 import { toast } from "sonner";
 
@@ -55,11 +55,6 @@ export function AccountManagementContent() {
   if (!session) {
     return null;
   }
-
-  const handleAddAccount = async () => {
-    // TODO: Implement add account functionality
-    console.log("Add new account");
-  };
 
   const handleExportAccounts = async () => {
     let objectUrl: string | null = null;
@@ -108,11 +103,6 @@ export function AccountManagementContent() {
         window.URL.revokeObjectURL(objectUrl);
       }
     }
-  };
-
-  const handleImportAccounts = async () => {
-    // TODO: Implement import functionality
-    console.log("Import accounts");
   };
 
   const handleDeleteAccount = async (accountId: string): Promise<void> => {
@@ -180,17 +170,9 @@ export function AccountManagementContent() {
           Manage your account information and project details
         </p>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handleImportAccounts}>
-            <UploadIcon className="h-4 w-4 mr-2" />
-            Import
-          </Button>
           <Button variant="outline" onClick={handleExportAccounts}>
             <DownloadIcon className="h-4 w-4 mr-2" />
             Export
-          </Button>
-          <Button onClick={handleAddAccount}>
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Add Account
           </Button>
         </div>
       </div>

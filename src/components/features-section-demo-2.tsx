@@ -5,7 +5,7 @@ import {
   IconCurrencyDollar,
   IconShieldCheck,
   IconCloud,
-  IconHeadset,
+  IconBook,
   IconBolt,
   IconHeart,
 } from "@tabler/icons-react";
@@ -43,9 +43,10 @@ export default function FeaturesSectionDemo() {
       icon: <IconCloud />,
     },
     {
-      title: "Expert Support",
-      description: "Get help from roofing professionals when you need it most.",
-      icon: <IconHeadset />,
+      title: "Guided Tutorials",
+      description:
+        "Step-by-step tips and in-app guidance to help you get results fast.",
+      icon: <IconBook />,
     },
     {
       title: "Fast Processing",

@@ -1,18 +1,13 @@
 "use client";
 
-import { Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useQueryState } from "nuqs";
 import { AppSidebar } from "@/components/app-sidebar";
-import { ChartAreaInteractive } from "@/components/chart-area-interactive";
-import { DataTable } from "@/components/data-table";
-import { SectionCards } from "@/components/section-cards";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { AccountManagementContent } from "./account-management";
-import { RoofCalculatorContent } from "./roof-calculator";
-
-import data from "./data.json";
+import AccountManagementContent from "./(sections)/account-management";
+import RoofCalculatorContent from "./(sections)/roof-calculator";
+import { Overview } from "./(sections)/overview/Overview";
 
 type DashboardSection = "overview" | "account-management" | "roof-calculator";
 
@@ -57,22 +52,7 @@ export default function DashboardClient() {
       case "overview":
       case null:
       default:
-        return (
-          <>
-            <div className="px-4 lg:px-6 mb-4">
-              <p className="text-muted-foreground">
-                Professional roof calculator for accurate measurements, material
-                estimates, and cost calculations
-              </p>
-            </div>
-
-            <SectionCards />
-            <div className="px-4 lg:px-6">
-              <ChartAreaInteractive />
-            </div>
-            <DataTable data={data} />
-          </>
-        );
+        return <Overview />;
     }
   };
 
