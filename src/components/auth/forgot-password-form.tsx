@@ -59,7 +59,9 @@ export default function ForgotPasswordForm() {
         return;
       }
 
-      setSuccessMessage("Reset code sent to your email!");
+      setSuccessMessage(
+        "Instructions have been sent to your email address. Please check your inbox and follow the steps to reset your password."
+      );
       setTimeout(() => {
         router.push(`/reset-password?email=${encodeURIComponent(data.email)}`);
       }, 2000);
@@ -82,46 +84,66 @@ export default function ForgotPasswordForm() {
               Forgot Password?
             </CardTitle>
             <CardDescription className="text-center">
-              Enter your email address and we&apos;ll send you a reset code
+              {successMessage
+                ? "Check your email for reset instructions"
+                : "Enter your email address and we'll send you a reset code"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email address"
-                  {...form.register("email")}
-                  disabled={isLoading}
-                />
-                {form.formState.errors.email && (
-                  <p className="text-sm text-red-600">
-                    {form.formState.errors.email.message}
-                  </p>
-                )}
-              </div>
-              <FormError message={errorMessage} />
-              <FormSuccess message={successMessage} />
-              <LoadingButton
-                type="submit"
-                className="w-full"
-                loading={isLoading}
-                loadingText="Sending..."
+            {!successMessage ? (
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
               >
-                Send Reset Code
-              </LoadingButton>
-            </form>
-            <div className="mt-6">
-              <Separator className="my-4" />
-              <p className="text-center text-sm text-muted-foreground">
-                Remember your password?{" "}
-                <Link href="/login" className="text-primary hover:underline">
-                  Sign in
-                </Link>
-              </p>
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email address"
+                    {...form.register("email")}
+                    disabled={isLoading}
+                  />
+                  {form.formState.errors.email && (
+                    <p className="text-sm text-red-600">
+                      {form.formState.errors.email.message}
+                    </p>
+                  )}
+                </div>
+                <FormError message={errorMessage} />
+                <LoadingButton
+                  type="submit"
+                  className="w-full"
+                  loading={isLoading}
+                  loadingText="Sending..."
+                >
+                  Send Reset Code
+                </LoadingButton>
+              </form>
+            ) : (
+              <div className="space-y-4">
+                <FormSuccess message={successMessage} />
+                <div className="text-center">
+                  <Link
+                    href="/login"
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Back to Sign In
+                  </Link>
+                </div>
+              </div>
+            )}
+            {!successMessage && (
+              <div className="mt-6">
+                <Separator className="my-4" />
+                <p className="text-center text-sm text-muted-foreground">
+                  Remember your password?{" "}
+                  <Link href="/login" className="text-primary hover:underline">
+                    Sign in
+                  </Link>
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

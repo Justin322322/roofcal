@@ -37,53 +37,57 @@ export async function POST(req: Request) {
     );
 
   const passwordHash = await bcrypt.hash(data.password, 12);
-  const result = await prisma.$transaction(async (tx) => {
-    const user = await tx.user.create({
-      data: {
-        id: crypto.randomUUID(),
-        email: data.email,
-        passwordHash,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        updated_at: new Date(),
-      },
-      select: { id: true, email: true },
-    });
 
-    await tx.activity.create({
-      data: {
-        id: crypto.randomUUID(),
-        userId: user.id,
-        type: "ACCOUNT_CREATED",
-        description: "Account created successfully",
-        metadata: JSON.stringify({
-          email: user.email,
+  // Create user and activity log in a transaction with increased timeout
+  const userResult = await prisma.$transaction(
+    async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          id: crypto.randomUUID(),
+          email: data.email,
+          passwordHash,
           firstName: data.firstName,
           lastName: data.lastName,
-        }),
-      },
-    });
+          updated_at: new Date(),
+        },
+        select: { id: true, email: true },
+      });
 
-    const { code, expiresAt } = await createVerificationCode(
-      user.email,
-      "email_verification",
-      tx
-    );
+      await tx.activity.create({
+        data: {
+          id: crypto.randomUUID(),
+          userId: user.id,
+          type: "ACCOUNT_CREATED",
+          description: "Account created successfully",
+          metadata: JSON.stringify({
+            email: user.email,
+            firstName: data.firstName,
+            lastName: data.lastName,
+          }),
+        },
+      });
 
-    return { user, code, expiresAt };
-  });
+      return user;
+    },
+    {
+      timeout: 10000, // Increase timeout to 10 seconds
+    }
+  );
+
+  // Generate verification code outside the main transaction to avoid timeout
+  const { code, expiresAt } = await createVerificationCode(
+    userResult.email,
+    "email_verification"
+  );
 
   // Send verification email after the transaction has committed.
   // Do not throw if email fails; log and continue.
   try {
-    const emailResult = await sendVerificationEmail(
-      result.user.email,
-      result.code
-    );
+    const emailResult = await sendVerificationEmail(userResult.email, code);
     if (!emailResult.success) {
       console.error(
         "Failed to send verification email for user:",
-        result.user.email
+        userResult.email
       );
     }
   } catch (err) {
@@ -92,9 +96,9 @@ export async function POST(req: Request) {
 
   return NextResponse.json(
     {
-      id: result.user.id,
-      email: result.user.email,
-      expiresAt: result.expiresAt,
+      id: userResult.id,
+      email: userResult.email,
+      expiresAt: expiresAt,
     },
     { status: 201 }
   );

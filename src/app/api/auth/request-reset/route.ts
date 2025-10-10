@@ -12,10 +12,10 @@ export async function POST(req: Request) {
   // Check if user exists
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
-    // Don't reveal if email exists or not for security
+    // Return error for non-existing emails
     return NextResponse.json(
-      { message: "If the email exists, a reset code has been sent" },
-      { status: 200 }
+      { error: "No account found with this email address" },
+      { status: 404 }
     );
   }
 

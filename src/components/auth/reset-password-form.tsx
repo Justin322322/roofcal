@@ -8,7 +8,6 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { validatePassword } from "@/lib/password-validator";
 
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Card,
@@ -28,7 +27,6 @@ import AuthLayout from "@/components/auth/auth-layout";
 
 const resetPasswordSchema = z
   .object({
-    code: z.string().length(6, "Code must be 6 digits"),
     newPassword: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string(),
   })
@@ -53,7 +51,6 @@ export default function ResetPasswordForm() {
   const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
-      code: "",
       newPassword: "",
       confirmPassword: "",
     },
@@ -75,14 +72,13 @@ export default function ResetPasswordForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
-          code: data.code,
           newPassword: data.newPassword,
         }),
       });
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        setErrorMessage(body?.error ?? "Invalid or expired code");
+        setErrorMessage(body?.error ?? "Failed to reset password");
         return;
       }
 
@@ -114,21 +110,6 @@ export default function ResetPasswordForm() {
           </CardHeader>
           <CardContent>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="code">Verification Code</Label>
-                <Input
-                  id="code"
-                  placeholder="Enter 6-digit code"
-                  {...form.register("code")}
-                  disabled={isLoading}
-                  maxLength={6}
-                />
-                {form.formState.errors.code && (
-                  <p className="text-sm text-red-600">
-                    {form.formState.errors.code.message}
-                  </p>
-                )}
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="newPassword">New Password</Label>
                 <PasswordInput

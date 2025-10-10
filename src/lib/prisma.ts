@@ -5,6 +5,11 @@ const globalForPrisma = global as unknown as {
 };
 
 export const prisma: PrismaClient =
-  globalForPrisma.prisma ?? new PrismaClient();
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    transactionOptions: {
+      timeout: 10000, // 10 seconds timeout for transactions
+    },
+  });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
