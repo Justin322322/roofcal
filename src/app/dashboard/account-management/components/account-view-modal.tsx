@@ -138,7 +138,7 @@ export function AccountViewModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col gap-0 p-0">
+      <DialogContent className="max-w-2xl h-[80vh] flex flex-col gap-0 p-0 overflow-hidden">
         {/* Fixed Header */}
         <div className="sticky top-0 z-10 bg-background border-b">
           <DialogHeader className="px-6 pt-6 pb-4">
@@ -186,7 +186,7 @@ export function AccountViewModal({
           onValueChange={setActiveTab}
           className="flex-1 flex flex-col"
         >
-          <ScrollArea className="flex-1 px-6">
+          <ScrollArea className="flex-1 px-6 overflow-auto">
             {/* Details Tab */}
             <TabsContent value="details" className="mt-0 py-4 space-y-5">
               {/* Project & Revenue */}
@@ -393,7 +393,7 @@ export function AccountViewModal({
 
         <Separator />
 
-        <DialogFooter className="px-6 py-4">
+        <DialogFooter className="px-6 py-4 flex-shrink-0 bg-background">
           {onDelete && (
             <DeleteAccountDialog
               trigger={
