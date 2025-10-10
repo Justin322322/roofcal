@@ -188,25 +188,30 @@ export default function VerifyCodeForm() {
         return;
       }
 
-      // Update session to reflect email verification status
-      try {
-        await update();
-        setSuccessMessage("Email verified successfully!");
-        toast.success("Email verified successfully!");
-
-        // Use window.location.href for a full page reload to ensure fresh session
+      // If user is authenticated, update session then redirect to dashboard
+      if (session?.user) {
+        try {
+          await update();
+          setSuccessMessage("Email verified successfully!");
+          toast.success("Email verified successfully!");
+          setTimeout(() => {
+            window.location.href = "/dashboard";
+          }, 1000);
+        } catch (error) {
+          console.error("Failed to update session:", error);
+          setSuccessMessage("Email verified successfully!");
+          toast.success("Email verified successfully!");
+          setTimeout(() => {
+            window.location.href = "/dashboard";
+          }, 1000);
+        }
+      } else {
+        // If user is not authenticated (e.g., coming from signup), send to login first
+        setSuccessMessage("Email verified successfully! Please sign in.");
+        toast.success("Email verified successfully! Please sign in.");
         setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 1000);
-      } catch (error) {
-        console.error("Failed to update session:", error);
-        // Even if session update fails, still redirect as verification was successful
-        setSuccessMessage("Email verified successfully!");
-        toast.success("Email verified successfully!");
-
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 1000);
+          window.location.href = "/login?verified=1";
+        }, 800);
       }
     } catch {
       setSuccessMessage("");

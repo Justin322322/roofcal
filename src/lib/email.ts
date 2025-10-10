@@ -123,13 +123,13 @@ export async function sendVerificationEmail(email: string, code: string) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Verify Your Email - RoofCal</title>
     </head>
-    <body style="margin: 0; padding: 0; background-color: oklch(0.9491 0.0085 197.0126); font-family: Inter, ui-sans-serif, sans-serif, system-ui;">
+    <body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
       <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
         <!-- Header -->
         <div style="text-align: center; margin-bottom: 32px; padding-top: 20px;">
           <div style="display: inline-block; text-align: center;">
-            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, oklch(0.5624 0.0947 203.2755), oklch(0.6389 0.1029 201.5918)); border-radius: calc(0.125rem + 4px); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; padding: 8px;">
-              <svg fill="oklch(1 0 0)" height="40" width="40" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="-51.2 -51.2 614.40 614.40" style="display: block;">
+            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #0ea5e9, #0284c7); border-radius: 8px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; padding: 8px;">
+              <svg fill="#ffffff" height="40" width="40" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="-51.2 -51.2 614.40 614.40" style="display: block;">
                 <g stroke-width="0"></g>
                 <g stroke-linecap="round" stroke-linejoin="round"></g>
                 <g>
@@ -146,34 +146,34 @@ export async function sendVerificationEmail(email: string, code: string) {
                 </g>
               </svg>
             </div>
-            <h1 style="color: oklch(0.3772 0.0619 212.664); margin: 0 0 4px 0; font-size: 28px; font-weight: 700; letter-spacing: -0.025em;">RoofCal</h1>
-            <p style="color: oklch(0.5428 0.0594 201.5662); margin: 0; font-size: 14px; font-weight: 400;">Professional Roof Calculator</p>
+            <h1 style="color: #1e293b; margin: 0 0 4px 0; font-size: 28px; font-weight: 700; letter-spacing: -0.025em;">RoofCal</h1>
+            <p style="color: #64748b; margin: 0; font-size: 14px; font-weight: 400;">Professional Roof Calculator</p>
           </div>
         </div>
         
         <!-- Main Content -->
-        <div style="background: oklch(0.9724 0.0053 197.0692); padding: 32px; border-radius: calc(0.125rem + 4px); box-shadow: 1px 1px 2px 0px hsl(185 70% 30% / 0.15), 1px 2px 4px -1px hsl(185 70% 30% / 0.15); margin-bottom: 24px; border: 1px solid oklch(0.8931 0.0205 204.4136);">
-          <h2 style="color: oklch(0.3772 0.0619 212.664); margin: 0 0 16px 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em;">Verify Your Email Address</h2>
-          <p style="color: oklch(0.3772 0.0619 212.664); line-height: 1.625; margin: 0 0 24px 0; font-size: 15px; opacity: 0.9;">
+        <div style="background: #ffffff; padding: 32px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06); margin-bottom: 24px; border: 1px solid #e2e8f0;">
+          <h2 style="color: #1e293b; margin: 0 0 16px 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em;">Verify Your Email Address</h2>
+          <p style="color: #334155; line-height: 1.625; margin: 0 0 24px 0; font-size: 15px;">
             Thank you for signing up for RoofCal! To complete your account setup and start using our professional roof calculation tools, please verify your email address.
           </p>
           
           <!-- Verification Code Box -->
-          <div style="background: oklch(0.9295 0.0107 196.9723); padding: 24px; border-radius: calc(0.125rem - 2px); text-align: center; margin: 24px 0; border: 1px solid oklch(0.8931 0.0205 204.4136);">
-            <p style="margin: 0 0 12px 0; color: oklch(0.5428 0.0594 201.5662); font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Your verification code</p>
-            <div style="font-size: 32px; font-weight: 700; color: oklch(0.5624 0.0947 203.2755); letter-spacing: 8px; font-family: 'Courier New', monospace; margin: 12px 0; background: oklch(0.9724 0.0053 197.0692); padding: 16px 24px; border-radius: calc(0.125rem - 4px); border: 2px solid oklch(0.5624 0.0947 203.2755); display: inline-block;">
+          <div style="background: #f8fafc; padding: 24px; border-radius: 6px; text-align: center; margin: 24px 0; border: 1px solid #e2e8f0;">
+            <p style="margin: 0 0 12px 0; color: #64748b; font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Your verification code</p>
+            <div style="font-size: 32px; font-weight: 700; color: #0ea5e9; letter-spacing: 8px; font-family: 'Courier New', monospace; margin: 12px 0; background: #ffffff; padding: 16px 24px; border-radius: 6px; border: 2px solid #0ea5e9; display: inline-block;">
               ${escapeHtml(code)}
             </div>
-            <p style="margin: 12px 0 0 0; color: oklch(0.5428 0.0594 201.5662); font-size: 13px; font-weight: 400;">This code expires in 10 minutes</p>
+            <p style="margin: 12px 0 0 0; color: #64748b; font-size: 13px; font-weight: 400;">This code expires in 10 minutes</p>
           </div>
           
-          <p style="color: oklch(0.3772 0.0619 212.664); line-height: 1.625; margin: 0; font-size: 14px; opacity: 0.85;">
+          <p style="color: #475569; line-height: 1.625; margin: 0; font-size: 14px;">
             Enter this code in the verification page to activate your account. If you didn't create an account with RoofCal, you can safely ignore this email.
           </p>
         </div>
         
         <!-- Footer -->
-        <div style="text-align: center; color: oklch(0.5428 0.0594 201.5662); font-size: 12px; padding-bottom: 20px;">
+        <div style="text-align: center; color: #64748b; font-size: 12px; padding-bottom: 20px;">
           <p style="margin: 0 0 4px 0; font-weight: 400;">© ${new Date().getFullYear()} RoofCal. All rights reserved.</p>
           <p style="margin: 0; opacity: 0.8;">This is an automated message, please do not reply to this email.</p>
         </div>
@@ -199,13 +199,13 @@ export async function sendPasswordResetEmail(email: string, code: string) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Reset Your Password - RoofCal</title>
     </head>
-    <body style="margin: 0; padding: 0; background-color: oklch(0.9491 0.0085 197.0126); font-family: Inter, ui-sans-serif, sans-serif, system-ui;">
+    <body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
       <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
         <!-- Header -->
         <div style="text-align: center; margin-bottom: 32px; padding-top: 20px;">
           <div style="display: inline-block; text-align: center;">
-            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, oklch(0.5732 0.1901 25.5409), oklch(0.6168 0.2086 25.8088)); border-radius: calc(0.125rem + 4px); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; padding: 8px;">
-              <svg fill="oklch(1 0 0)" height="40" width="40" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="-51.2 -51.2 614.40 614.40" style="display: block;">
+            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 8px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; padding: 8px;">
+              <svg fill="#ffffff" height="40" width="40" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="-51.2 -51.2 614.40 614.40" style="display: block;">
                 <g stroke-width="0"></g>
                 <g stroke-linecap="round" stroke-linejoin="round"></g>
                 <g>
@@ -222,29 +222,29 @@ export async function sendPasswordResetEmail(email: string, code: string) {
                 </g>
               </svg>
             </div>
-            <h1 style="color: oklch(0.3772 0.0619 212.664); margin: 0 0 4px 0; font-size: 28px; font-weight: 700; letter-spacing: -0.025em;">RoofCal</h1>
-            <p style="color: oklch(0.5428 0.0594 201.5662); margin: 0; font-size: 14px; font-weight: 400;">Professional Roof Calculator</p>
+            <h1 style="color: #1e293b; margin: 0 0 4px 0; font-size: 28px; font-weight: 700; letter-spacing: -0.025em;">RoofCal</h1>
+            <p style="color: #64748b; margin: 0; font-size: 14px; font-weight: 400;">Professional Roof Calculator</p>
           </div>
         </div>
         
         <!-- Main Content -->
-        <div style="background: oklch(0.9724 0.0053 197.0692); padding: 32px; border-radius: calc(0.125rem + 4px); box-shadow: 1px 1px 2px 0px hsl(185 70% 30% / 0.15), 1px 2px 4px -1px hsl(185 70% 30% / 0.15); margin-bottom: 24px; border: 1px solid oklch(0.8931 0.0205 204.4136);">
-          <h2 style="color: oklch(0.3772 0.0619 212.664); margin: 0 0 16px 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em;">Password Reset Request</h2>
-          <p style="color: oklch(0.3772 0.0619 212.664); line-height: 1.625; margin: 0 0 24px 0; font-size: 15px; opacity: 0.9;">
+        <div style="background: #ffffff; padding: 32px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06); margin-bottom: 24px; border: 1px solid #e2e8f0;">
+          <h2 style="color: #1e293b; margin: 0 0 16px 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em;">Password Reset Request</h2>
+          <p style="color: #334155; line-height: 1.625; margin: 0 0 24px 0; font-size: 15px;">
             You requested to reset your password for your RoofCal account. Use the code below to complete the password reset process.
           </p>
           
           <!-- Reset Code Box -->
-          <div style="background: oklch(0.9295 0.0107 196.9723); padding: 24px; border-radius: calc(0.125rem - 2px); text-align: center; margin: 24px 0; border: 1px solid oklch(0.5732 0.1901 25.5409); border-width: 1px; background: linear-gradient(180deg, oklch(0.9724 0.0053 197.0692) 0%, oklch(0.9295 0.0107 196.9723) 100%);">
-            <p style="margin: 0 0 12px 0; color: oklch(0.5428 0.0594 201.5662); font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Password reset code</p>
-            <div style="font-size: 32px; font-weight: 700; color: oklch(0.5732 0.1901 25.5409); letter-spacing: 8px; font-family: 'Courier New', monospace; margin: 12px 0; background: oklch(0.9724 0.0053 197.0692); padding: 16px 24px; border-radius: calc(0.125rem - 4px); border: 2px solid oklch(0.5732 0.1901 25.5409); display: inline-block;">
+          <div style="background: #fef2f2; padding: 24px; border-radius: 6px; text-align: center; margin: 24px 0; border: 1px solid #fecaca;">
+            <p style="margin: 0 0 12px 0; color: #64748b; font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Password reset code</p>
+            <div style="font-size: 32px; font-weight: 700; color: #ef4444; letter-spacing: 8px; font-family: 'Courier New', monospace; margin: 12px 0; background: #ffffff; padding: 16px 24px; border-radius: 6px; border: 2px solid #ef4444; display: inline-block;">
               ${escapeHtml(code)}
             </div>
-            <p style="margin: 12px 0 0 0; color: oklch(0.5428 0.0594 201.5662); font-size: 13px; font-weight: 400;">This code expires in 10 minutes</p>
+            <p style="margin: 12px 0 0 0; color: #64748b; font-size: 13px; font-weight: 400;">This code expires in 10 minutes</p>
           </div>
           
-          <div style="background: oklch(0.9295 0.0107 196.9723); padding: 16px; border-radius: calc(0.125rem - 2px); border-left: 3px solid oklch(0.5732 0.1901 25.5409); margin: 24px 0 0 0;">
-            <p style="color: oklch(0.3772 0.0619 212.664); line-height: 1.625; margin: 0; font-size: 14px; opacity: 0.85;">
+          <div style="background: #fef2f2; padding: 16px; border-radius: 6px; border-left: 3px solid #ef4444; margin: 24px 0 0 0;">
+            <p style="color: #475569; line-height: 1.625; margin: 0; font-size: 14px;">
               <strong style="font-weight: 600; display: block; margin-bottom: 4px;">Security Notice:</strong>
               If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.
             </p>
@@ -252,7 +252,7 @@ export async function sendPasswordResetEmail(email: string, code: string) {
         </div>
         
         <!-- Footer -->
-        <div style="text-align: center; color: oklch(0.5428 0.0594 201.5662); font-size: 12px; padding-bottom: 20px;">
+        <div style="text-align: center; color: #64748b; font-size: 12px; padding-bottom: 20px;">
           <p style="margin: 0 0 4px 0; font-weight: 400;">© ${new Date().getFullYear()} RoofCal. All rights reserved.</p>
           <p style="margin: 0; opacity: 0.8;">This is an automated message, please do not reply to this email.</p>
         </div>
