@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -115,13 +116,29 @@ export default function SignupForm() {
         return;
       }
 
-      // Show success message and redirect with delay for better UX
+      // Show success message
       toast.success(
         "Account created successfully! Please check your email for verification."
       );
+
+      // Stash password transiently for fallback sign-in from /verify (same-tab only)
+      try {
+        sessionStorage.setItem("signup:pwd", data.password);
+      } catch {}
+
+      // Auto-login with credentials so the user reaches /verify authenticated
+      try {
+        await signIn("credentials", {
+          email: data.email,
+          password: data.password,
+          redirect: false,
+        });
+      } catch {}
+
+      // Navigate to verify page
       timeoutRef.current = window.setTimeout(() => {
         router.push(`/verify?email=${encodeURIComponent(data.email)}`);
-      }, 1000);
+      }, 600);
     } catch {
       setErrorMessage("Something went wrong. Please try again.");
     } finally {

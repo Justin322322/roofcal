@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -41,6 +42,7 @@ export default function VerifyCodeForm() {
   const [isOnCooldown, setIsOnCooldown] = useState(false);
   const cooldownTimerRef = useRef<NodeJS.Timeout | null>(null);
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { data: session, update } = useSession();
 
   // Get email from session (if user is logged in) or from URL params (if coming from signup)
@@ -195,23 +197,42 @@ export default function VerifyCodeForm() {
           setSuccessMessage("Email verified successfully!");
           toast.success("Email verified successfully!");
           setTimeout(() => {
-            window.location.href = "/dashboard";
-          }, 1000);
+            router.replace("/dashboard");
+          }, 800);
         } catch (error) {
           console.error("Failed to update session:", error);
           setSuccessMessage("Email verified successfully!");
           toast.success("Email verified successfully!");
           setTimeout(() => {
-            window.location.href = "/dashboard";
-          }, 1000);
+            router.replace("/dashboard");
+          }, 800);
         }
       } else {
-        // If user is not authenticated (e.g., coming from signup), send to login first
-        setSuccessMessage("Email verified successfully! Please sign in.");
-        toast.success("Email verified successfully! Please sign in.");
+        // If user is not authenticated (e.g., deep link from email), attempt a background sign-in
+        try {
+          const pwd =
+            typeof window !== "undefined"
+              ? sessionStorage.getItem("signup:pwd")
+              : null;
+          if (pwd && email) {
+            await signIn("credentials", {
+              email,
+              password: pwd,
+              redirect: false,
+            });
+          }
+          if (typeof window !== "undefined") {
+            sessionStorage.removeItem("signup:pwd");
+          }
+        } catch {
+          // ignore background sign-in errors; we'll still navigate forward
+        }
+
+        setSuccessMessage("Email verified successfully!");
+        toast.success("Email verified successfully!");
         setTimeout(() => {
-          window.location.href = "/login?verified=1";
-        }, 800);
+          router.replace("/dashboard");
+        }, 600);
       }
     } catch {
       setSuccessMessage("");
