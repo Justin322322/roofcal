@@ -1,28 +1,37 @@
-"use client"
+"use client";
 
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Measurements {
-  length: string
-  width: string
-  pitch: string
-  roofType: string
+  length: string;
+  width: string;
+  pitch: string;
+  roofType: string;
 }
 
 interface MeasurementFormProps {
-  measurements: Measurements
-  onMeasurementsChange: (measurements: Measurements) => void
+  measurements: Measurements;
+  onMeasurementsChange: (measurements: Measurements) => void;
 }
 
-export function MeasurementForm({ measurements, onMeasurementsChange }: MeasurementFormProps) {
+export function MeasurementForm({
+  measurements,
+  onMeasurementsChange,
+}: MeasurementFormProps) {
   const handleChange = (field: string, value: string) => {
     onMeasurementsChange({
       ...measurements,
-      [field]: value
-    })
-  }
+      [field]: value,
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -71,7 +80,10 @@ export function MeasurementForm({ measurements, onMeasurementsChange }: Measurem
 
         <div className="space-y-2">
           <Label htmlFor="roofType">Roof Type</Label>
-          <Select value={measurements.roofType} onValueChange={(value) => handleChange("roofType", value)}>
+          <Select
+            value={measurements.roofType}
+            onValueChange={(value) => handleChange("roofType", value)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select roof type" />
             </SelectTrigger>
@@ -86,5 +98,5 @@ export function MeasurementForm({ measurements, onMeasurementsChange }: Measurem
         </div>
       </div>
     </div>
-  )
+  );
 }

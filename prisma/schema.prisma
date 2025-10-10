@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model activity {
+  id          String        @id @default(uuid())
+  userId      String
+  type        activity_type
+  description String
+  metadata    String?       @db.LongText
+  created_at  DateTime      @default(now())
+  user        user          @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Activity_userId_fkey")
+
+  @@index([created_at], map: "Activity_created_at_idx")
+  @@index([type], map: "Activity_type_idx")
+  @@index([userId], map: "Activity_userId_idx")
+}
+
+model user {
+  id               String             @id @default(uuid())
+  email            String             @unique(map: "User_email_key")
+  passwordHash     String
+  firstName        String
+  lastName         String
+  role             user_role          @default(CLIENT)
+  email_verified   DateTime?
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @updatedAt
+  activity         activity[]
+  verificationcode verificationcode[]
+
+  @@index([email], map: "User_email_idx")
+}
+
+model verificationcode {
+  id         String   @id @default(uuid())
+  code       String   @db.VarChar(6)
+  email      String
+  type       String   @default("email_verification")
+  expiresAt  DateTime
+  used       Boolean  @default(false)
+  created_at DateTime @default(now())
+  user       user     @relation(fields: [email], references: [email], onDelete: Cascade, map: "VerificationCode_email_fkey")
+
+  @@index([code], map: "VerificationCode_code_idx")
+  @@index([email], map: "VerificationCode_email_idx")
+  @@index([expiresAt], map: "VerificationCode_expiresAt_idx")
+}
+
+model ratelimit {
+  id          String    @id @default(uuid())
+  email       String
+  action      String    @default("otp_generation")
+  attempts    Int       @default(0)
+  lastAttempt DateTime
+  blockedUntil DateTime?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  @@unique([email, action], map: "RateLimit_email_action_key")
+  @@index([created_at], map: "RateLimit_created_at_idx")
+  @@index([blockedUntil], map: "RateLimit_blockedUntil_idx")
+}
+
+enum activity_type {
+  LOGIN
+  LOGOUT
+  PROFILE_UPDATE
+  PASSWORD_CHANGE
+  ACCOUNT_CREATED
+  PROJECT_CREATED
+  PROJECT_UPDATED
+  PAYMENT_RECEIVED
+  EMAIL_VERIFIED
+}
+
+enum user_role {
+  CLIENT
+  ADMIN
+}

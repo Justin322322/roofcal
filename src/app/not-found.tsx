@@ -13,9 +13,7 @@ export default function NotFound() {
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3">
               <RoofCalcLogo className="w-8 h-8 text-primary" />
-              <h1 className="text-2xl font-bold text-foreground">
-                RoofCal
-              </h1>
+              <h1 className="text-2xl font-bold text-foreground">RoofCal</h1>
             </Link>
             <div className="hidden md:flex gap-3">
               <Link href="/">
@@ -41,51 +39,70 @@ export default function NotFound() {
             <div className="mb-8">
               <Error404Icon className="w-64 h-64 text-primary/60 mx-auto" />
             </div>
-            
+
             {/* Error Badge */}
             <Badge variant="outline" className="mb-6">
               Page Not Found
             </Badge>
-            
+
             {/* Error Message */}
             <h1 className="text-6xl sm:text-7xl lg:text-8xl font-bold text-foreground mb-6 tracking-tight">
               404
             </h1>
-            
+
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
               Oops! This page is missing
             </h2>
-            
+
             <p className="text-lg sm:text-xl text-muted-foreground mb-12 leading-relaxed max-w-2xl mx-auto">
-              The page you&#39;re looking for seems to have disappeared like a shingle in a storm. 
-              Don&#39;t worry, we&#39;ll help you find your way back to solid ground.
+              The page you&#39;re looking for seems to have disappeared like a
+              shingle in a storm. Don&#39;t worry, we&#39;ll help you find your
+              way back to solid ground.
             </p>
-            
+
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/">
-                <Button size="lg" className="min-w-[200px] h-14 text-lg font-semibold cursor-pointer">
+                <Button
+                  size="lg"
+                  className="min-w-[200px] h-14 text-lg font-semibold cursor-pointer"
+                >
                   Go Home
                 </Button>
               </Link>
               <Link href="/#features">
-                <Button variant="outline" size="lg" className="min-w-[200px] h-14 text-lg font-semibold cursor-pointer">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="min-w-[200px] h-14 text-lg font-semibold cursor-pointer"
+                >
                   View Features
                 </Button>
               </Link>
             </div>
-            
+
             {/* Helpful Links */}
             <div className="mt-16 pt-8 border-t border-border">
-              <p className="text-sm text-muted-foreground mb-4">Popular pages:</p>
+              <p className="text-sm text-muted-foreground mb-4">
+                Popular pages:
+              </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <Link href="/#features" className="text-sm text-primary hover:underline">
+                <Link
+                  href="/#features"
+                  className="text-sm text-primary hover:underline"
+                >
                   Features
                 </Link>
-                <Link href="/#about" className="text-sm text-primary hover:underline">
+                <Link
+                  href="/#about"
+                  className="text-sm text-primary hover:underline"
+                >
                   About
                 </Link>
-                <Link href="/#calculator" className="text-sm text-primary hover:underline">
+                <Link
+                  href="/#calculator"
+                  className="text-sm text-primary hover:underline"
+                >
                   Calculator
                 </Link>
               </div>

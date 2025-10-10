@@ -1,100 +1,106 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { MeasurementForm } from "./components/measurement-form"
-import { MaterialSelection, materials } from "./components/material-selection"
-import { CalculationResults } from "./components/calculation-results"
-import { CalculatorIcon, RotateCcwIcon } from "lucide-react"
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { MeasurementForm } from "./components/measurement-form";
+import { MaterialSelection, materials } from "./components/material-selection";
+import { CalculationResults } from "./components/calculation-results";
+import { CalculatorIcon, RotateCcwIcon } from "lucide-react";
 
 export function RoofCalculatorContent() {
   const [measurements, setMeasurements] = useState({
     length: "",
     width: "",
     pitch: "",
-    roofType: "gable"
-  })
-  
-  const [material, setMaterial] = useState("asphalt")
+    roofType: "gable",
+  });
+
+  const [material, setMaterial] = useState("asphalt");
   const [results, setResults] = useState({
     area: 0,
     materialCost: 0,
     laborCost: 0,
-    totalCost: 0
-  })
+    totalCost: 0,
+  });
 
   useEffect(() => {
-    calculateRoof()
+    calculateRoof();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [measurements, material])
+  }, [measurements, material]);
 
   const calculateRoof = () => {
-    const length = parseFloat(measurements.length) || 0
-    const width = parseFloat(measurements.width) || 0
-    const pitch = parseFloat(measurements.pitch) || 0
+    const length = parseFloat(measurements.length) || 0;
+    const width = parseFloat(measurements.width) || 0;
+    const pitch = parseFloat(measurements.pitch) || 0;
 
     if (length === 0 || width === 0) {
       setResults({
         area: 0,
         materialCost: 0,
         laborCost: 0,
-        totalCost: 0
-      })
-      return
+        totalCost: 0,
+      });
+      return;
     }
 
     // Calculate base area
-    const baseArea = length * width
+    const baseArea = length * width;
 
     // Apply pitch multiplier
-    const pitchRadians = (pitch * Math.PI) / 180
-    const pitchMultiplier = 1 / Math.cos(pitchRadians)
-    
+    const pitchRadians = (pitch * Math.PI) / 180;
+    const pitchMultiplier = 1 / Math.cos(pitchRadians);
+
     // Apply roof type multiplier
     const roofTypeMultipliers: { [key: string]: number } = {
       gable: 2, // Two sides
       hip: 2.2, // Four sides with slightly more surface
       flat: 1, // Single surface
       mansard: 2.5, // Complex four-sided
-      gambrel: 2.3 // Barn-style two-sided
-    }
+      gambrel: 2.3, // Barn-style two-sided
+    };
 
-    const roofMultiplier = roofTypeMultipliers[measurements.roofType] || 2
-    const totalArea = baseArea * pitchMultiplier * roofMultiplier
+    const roofMultiplier = roofTypeMultipliers[measurements.roofType] || 2;
+    const totalArea = baseArea * pitchMultiplier * roofMultiplier;
 
     // Get material price
-    const selectedMaterial = materials.find(m => m.value === material)
-    const pricePerSqm = selectedMaterial?.price || 450
+    const selectedMaterial = materials.find((m) => m.value === material);
+    const pricePerSqm = selectedMaterial?.price || 450;
 
     // Calculate costs
-    const materialCost = Math.round(totalArea * pricePerSqm)
-    const laborCost = Math.round(materialCost * 0.3) // 30% of material cost
-    const totalCost = materialCost + laborCost
+    const materialCost = Math.round(totalArea * pricePerSqm);
+    const laborCost = Math.round(materialCost * 0.3); // 30% of material cost
+    const totalCost = materialCost + laborCost;
 
     setResults({
       area: totalArea,
       materialCost,
       laborCost,
-      totalCost
-    })
-  }
+      totalCost,
+    });
+  };
 
   const handleReset = () => {
     setMeasurements({
       length: "",
       width: "",
       pitch: "",
-      roofType: "gable"
-    })
-    setMaterial("asphalt")
+      roofType: "gable",
+    });
+    setMaterial("asphalt");
     setResults({
       area: 0,
       materialCost: 0,
       laborCost: 0,
-      totalCost: 0
-    })
-  }
+      totalCost: 0,
+    });
+  };
 
   return (
     <>
@@ -124,7 +130,7 @@ export function RoofCalculatorContent() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <MeasurementForm 
+                <MeasurementForm
                   measurements={measurements}
                   onMeasurementsChange={setMeasurements}
                 />
@@ -139,7 +145,7 @@ export function RoofCalculatorContent() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <MaterialSelection 
+                <MaterialSelection
                   material={material}
                   onMaterialChange={setMaterial}
                 />
@@ -149,12 +155,12 @@ export function RoofCalculatorContent() {
 
           {/* Right Column - Results */}
           <div className="space-y-6">
-            <CalculationResults 
+            <CalculationResults
               area={results.area}
               materialCost={results.materialCost}
               laborCost={results.laborCost}
               totalCost={results.totalCost}
-              material={materials.find(m => m.value === material)?.name || ""}
+              material={materials.find((m) => m.value === material)?.name || ""}
             />
 
             {results.totalCost > 0 && (
@@ -164,9 +170,13 @@ export function RoofCalculatorContent() {
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                   <p>• Add 10% extra material for waste and cuts</p>
-                  <p>• Consider additional costs for underlayment and flashing</p>
+                  <p>
+                    • Consider additional costs for underlayment and flashing
+                  </p>
                   <p>• Labor costs may vary by region and complexity</p>
-                  <p>• Steep roofs (over 6:12 pitch) may incur additional charges</p>
+                  <p>
+                    • Steep roofs (over 6:12 pitch) may incur additional charges
+                  </p>
                 </CardContent>
               </Card>
             )}
@@ -174,5 +184,5 @@ export function RoofCalculatorContent() {
         </div>
       </div>
     </>
-  )
+  );
 }

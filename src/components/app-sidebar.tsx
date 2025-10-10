@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   CameraIcon,
   ClipboardListIcon,
@@ -16,12 +16,14 @@ import {
   SearchIcon,
   SettingsIcon,
   UsersIcon,
-} from "lucide-react"
+} from "lucide-react";
+import { useSession } from "next-auth/react";
+import { UserRole } from "@/types/user-role";
 
-import { NavDocuments } from "@/components/nav-documents"
-import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
-import { NavUser } from "@/components/nav-user"
+import { NavDocuments } from "@/components/nav-documents";
+import { NavMain } from "@/components/nav-main";
+import { NavSecondary } from "@/components/nav-secondary";
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -29,8 +31,8 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import RoofCalcLogo from "@/components/RoofCalcLogo"
+} from "@/components/ui/sidebar";
+import RoofCalcLogo from "@/components/RoofCalcLogo";
 
 const data = {
   user: {
@@ -152,14 +154,97 @@ const data = {
       icon: ClipboardListIcon,
     },
   ],
-}
+};
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  activeSection?: string
-  onSectionChange?: (section: string) => void
+  activeSection?: string;
+  onSectionChange?: (section: string) => void;
 }
 
-export function AppSidebar({ activeSection, onSectionChange, ...props }: AppSidebarProps) {
+export function AppSidebar({
+  activeSection,
+  onSectionChange,
+  ...props
+}: AppSidebarProps) {
+  const { data: session } = useSession();
+
+  const getNavigationData = (userRole: UserRole) => ({
+    navMain: [
+      {
+        title: "Roof Calculator",
+        url: "roof-calculator",
+        icon: CalculatorIcon,
+      },
+      {
+        title: "Manual Calculator",
+        url: "#",
+        icon: ClipboardListIcon,
+      },
+      {
+        title: "Contractor Calculator",
+        url: "#",
+        icon: HardHatIcon,
+      },
+      {
+        title: "AI Recommendations",
+        url: "#",
+        icon: SparklesIcon,
+      },
+      {
+        title: "Archive",
+        url: "#",
+        icon: ArchiveIcon,
+      },
+      {
+        title: "Project Management",
+        url: "#",
+        icon: KanbanSquareIcon,
+      },
+      {
+        title: "Cost Customization",
+        url: "#",
+        icon: CreditCardIcon,
+      },
+      // Only show Account Management for admin users
+      ...(userRole === UserRole.ADMIN
+        ? [
+            {
+              title: "Account Management",
+              url: "account-management",
+              icon: UsersIcon,
+            },
+          ]
+        : []),
+    ],
+    navSecondary: [
+      {
+        title: "Support",
+        url: "#",
+        icon: HelpCircleIcon,
+      },
+      {
+        title: "Settings",
+        url: "#",
+        icon: SettingsIcon,
+      },
+      {
+        title: "Reports",
+        url: "#",
+        icon: ClipboardListIcon,
+      },
+    ],
+  });
+
+  const navigationData = getNavigationData(
+    session?.user?.role || UserRole.CLIENT
+  );
+
+  const userData = {
+    name: session?.user?.name || "User",
+    email: session?.user?.email || "",
+    avatar: "/avatars/user.jpg",
+  };
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -173,17 +258,17 @@ export function AppSidebar({ activeSection, onSectionChange, ...props }: AppSide
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain 
-          items={data.navMain} 
+        <NavMain
+          items={navigationData.navMain}
           activeSection={activeSection}
           onSectionChange={onSectionChange}
         />
         <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavSecondary items={navigationData.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={userData} />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

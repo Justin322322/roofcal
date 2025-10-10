@@ -1,161 +1,164 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu"
-import { 
-  MoreHorizontalIcon, 
-  EditIcon, 
-  TrashIcon, 
-  MailIcon, 
+import { useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  MoreHorizontalIcon,
+  EditIcon,
+  TrashIcon,
+  MailIcon,
   PhoneIcon,
-  EyeIcon
-} from "lucide-react"
+  EyeIcon,
+} from "lucide-react";
 
 interface Account {
-  id: number
-  clientName: string
-  email: string
-  phone: string
-  company: string
-  status: "Active" | "Inactive" | "Pending"
-  joinDate: string
-  lastActivity: string
-  totalProjects: number
-  totalSpend: number
-  plan: "Starter" | "Professional" | "Enterprise" | "Trial"
+  id: string;
+  clientName: string;
+  email: string;
+  phone: string;
+  company: string;
+  status: "Active" | "Inactive" | "Pending";
+  joinDate: string;
+  lastActivity: string;
+  totalProjects: number;
+  totalSpend: number;
+  plan: "Starter" | "Professional" | "Enterprise" | "Trial";
 }
 
 interface Filters {
-  status: string
-  plan: string
-  search: string
+  status: string;
+  plan: string;
+  search: string;
 }
 
 interface AccountManagementTableProps {
-  accounts: Account[]
-  filters: Filters
+  accounts: Account[];
+  filters: Filters;
 }
 
-export function AccountManagementTable({ 
-  accounts, 
-  filters 
+export function AccountManagementTable({
+  accounts,
+  filters,
 }: AccountManagementTableProps) {
-  const [sortField, setSortField] = useState<keyof Account | null>(null)
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
+  const [sortField, setSortField] = useState<keyof Account | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   // Filter accounts based on current filters
-  const filteredAccounts = accounts.filter(account => {
-    const matchesSearch = filters.search === "" || 
+  const filteredAccounts = accounts.filter((account) => {
+    const matchesSearch =
+      filters.search === "" ||
       account.clientName.toLowerCase().includes(filters.search.toLowerCase()) ||
       account.email.toLowerCase().includes(filters.search.toLowerCase()) ||
-      account.company.toLowerCase().includes(filters.search.toLowerCase())
-    
-    const matchesStatus = filters.status === "all" || 
-      account.status.toLowerCase() === filters.status.toLowerCase()
-    
-    const matchesPlan = filters.plan === "all" || 
-      account.plan.toLowerCase() === filters.plan.toLowerCase()
-    
-    return matchesSearch && matchesStatus && matchesPlan
-  })
+      account.company.toLowerCase().includes(filters.search.toLowerCase());
+
+    const matchesStatus =
+      filters.status === "all" ||
+      account.status.toLowerCase() === filters.status.toLowerCase();
+
+    const matchesPlan =
+      filters.plan === "all" ||
+      account.plan.toLowerCase() === filters.plan.toLowerCase();
+
+    return matchesSearch && matchesStatus && matchesPlan;
+  });
 
   // Sort accounts
   const sortedAccounts = [...filteredAccounts].sort((a, b) => {
-    if (!sortField) return 0
-    
-    const aValue = a[sortField]
-    const bValue = b[sortField]
-    
+    if (!sortField) return 0;
+
+    const aValue = a[sortField];
+    const bValue = b[sortField];
+
     if (typeof aValue === "string" && typeof bValue === "string") {
-      return sortDirection === "asc" 
+      return sortDirection === "asc"
         ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue)
+        : bValue.localeCompare(aValue);
     }
-    
+
     if (typeof aValue === "number" && typeof bValue === "number") {
-      return sortDirection === "asc" ? aValue - bValue : bValue - aValue
+      return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
     }
-    
-    return 0
-  })
+
+    return 0;
+  });
 
   const handleSort = (field: keyof Account) => {
     if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
-      setSortField(field)
-      setSortDirection("asc")
+      setSortField(field);
+      setSortDirection("asc");
     }
-  }
+  };
 
   const getStatusBadgeVariant = (status: Account["status"]) => {
     switch (status) {
       case "Active":
-        return "default"
+        return "default";
       case "Inactive":
-        return "secondary"
+        return "secondary";
       case "Pending":
-        return "outline"
+        return "outline";
       default:
-        return "secondary"
+        return "secondary";
     }
-  }
+  };
 
   const getPlanBadgeVariant = (plan: Account["plan"]) => {
     switch (plan) {
       case "Enterprise":
-        return "default"
+        return "default";
       case "Professional":
-        return "secondary"
+        return "secondary";
       case "Starter":
-        return "outline"
+        return "outline";
       case "Trial":
-        return "secondary"
+        return "secondary";
       default:
-        return "secondary"
+        return "secondary";
     }
-  }
+  };
 
-  const handleEditAccount = (accountId: number) => {
-    console.log("Edit account:", accountId)
+  const handleEditAccount = (accountId: string) => {
+    console.log("Edit account:", accountId);
     // TODO: Implement edit functionality
-  }
+  };
 
-  const handleDeleteAccount = (accountId: number) => {
-    console.log("Delete account:", accountId)
+  const handleDeleteAccount = (accountId: string) => {
+    console.log("Delete account:", accountId);
     // TODO: Implement delete functionality
-  }
+  };
 
-  const handleViewAccount = (accountId: number) => {
-    console.log("View account:", accountId)
+  const handleViewAccount = (accountId: string) => {
+    console.log("View account:", accountId);
     // TODO: Implement view functionality
-  }
+  };
 
   const handleSendEmail = (email: string) => {
-    console.log("Send email to:", email)
+    console.log("Send email to:", email);
     // TODO: Implement email functionality
-  }
+  };
 
   const handleCallPhone = (phone: string) => {
-    console.log("Call phone:", phone)
+    console.log("Call phone:", phone);
     // TODO: Implement phone functionality
-  }
+  };
 
   return (
     <Card>
@@ -167,44 +170,44 @@ export function AccountManagementTable({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-muted/50"
                   onClick={() => handleSort("clientName")}
                 >
                   Client Name
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-muted/50"
                   onClick={() => handleSort("company")}
                 >
                   Company
                 </TableHead>
                 <TableHead>Contact</TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-muted/50"
                   onClick={() => handleSort("status")}
                 >
                   Status
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-muted/50"
                   onClick={() => handleSort("plan")}
                 >
                   Plan
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-muted/50"
                   onClick={() => handleSort("totalProjects")}
                 >
                   Projects
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-muted/50"
                   onClick={() => handleSort("totalSpend")}
                 >
                   Total Spend
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-muted/50"
                   onClick={() => handleSort("lastActivity")}
                 >
@@ -244,7 +247,9 @@ export function AccountManagementTable({
                   </TableCell>
                   <TableCell>{account.totalProjects}</TableCell>
                   <TableCell>
-                    {account.totalSpend > 0 ? `₱${account.totalSpend.toLocaleString()}` : "-"}
+                    {account.totalSpend > 0
+                      ? `₱${account.totalSpend.toLocaleString()}`
+                      : "-"}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {new Date(account.lastActivity).toLocaleDateString()}
@@ -257,23 +262,31 @@ export function AccountManagementTable({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleViewAccount(account.id)}>
+                        <DropdownMenuItem
+                          onClick={() => handleViewAccount(account.id)}
+                        >
                           <EyeIcon className="h-4 w-4 mr-2" />
                           View Details
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleEditAccount(account.id)}>
+                        <DropdownMenuItem
+                          onClick={() => handleEditAccount(account.id)}
+                        >
                           <EditIcon className="h-4 w-4 mr-2" />
                           Edit Account
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleSendEmail(account.email)}>
+                        <DropdownMenuItem
+                          onClick={() => handleSendEmail(account.email)}
+                        >
                           <MailIcon className="h-4 w-4 mr-2" />
                           Send Email
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleCallPhone(account.phone)}>
+                        <DropdownMenuItem
+                          onClick={() => handleCallPhone(account.phone)}
+                        >
                           <PhoneIcon className="h-4 w-4 mr-2" />
                           Call Client
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => handleDeleteAccount(account.id)}
                           className="text-destructive"
                         >
@@ -288,7 +301,7 @@ export function AccountManagementTable({
             </TableBody>
           </Table>
         </div>
-        
+
         {sortedAccounts.length === 0 && (
           <div className="text-center py-8 text-muted-foreground">
             No accounts found matching your filters.
@@ -296,5 +309,5 @@ export function AccountManagementTable({
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

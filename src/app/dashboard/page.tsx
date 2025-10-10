@@ -1,28 +1,29 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { AppSidebar } from "@/components/app-sidebar"
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { DataTable } from "@/components/data-table"
-import { SectionCards } from "@/components/section-cards"
-import { SiteHeader } from "@/components/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { AccountManagementContent } from "./account-management"
-import { RoofCalculatorContent } from "./roof-calculator"
+import { useState } from "react";
+import { AppSidebar } from "@/components/app-sidebar";
+import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import { DataTable } from "@/components/data-table";
+import { SectionCards } from "@/components/section-cards";
+import { SiteHeader } from "@/components/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { AccountManagementContent } from "./account-management";
+import { RoofCalculatorContent } from "./roof-calculator";
 
-import data from "./data.json"
+import data from "./data.json";
 
-type DashboardSection = "overview" | "account-management" | "roof-calculator"
+type DashboardSection = "overview" | "account-management" | "roof-calculator";
 
 export default function Page() {
-  const [activeSection, setActiveSection] = useState<DashboardSection>("overview")
+  const [activeSection, setActiveSection] =
+    useState<DashboardSection>("overview");
 
   const renderContent = () => {
     switch (activeSection) {
       case "roof-calculator":
-        return <RoofCalculatorContent />
+        return <RoofCalculatorContent />;
       case "account-management":
-        return <AccountManagementContent />
+        return <AccountManagementContent />;
       case "overview":
       default:
         return (
@@ -30,26 +31,29 @@ export default function Page() {
             {/* Overview Description */}
             <div className="px-4 lg:px-6 mb-4">
               <p className="text-muted-foreground">
-                Professional roof calculator for accurate measurements, material estimates, and cost calculations
+                Professional roof calculator for accurate measurements, material
+                estimates, and cost calculations
               </p>
             </div>
-            
+
             <SectionCards />
             <div className="px-4 lg:px-6">
               <ChartAreaInteractive />
             </div>
             <DataTable data={data} />
           </>
-        )
+        );
     }
-  }
+  };
 
   return (
     <SidebarProvider>
-      <AppSidebar 
-        variant="inset" 
+      <AppSidebar
+        variant="inset"
         activeSection={activeSection}
-        onSectionChange={(section) => setActiveSection(section as DashboardSection)}
+        onSectionChange={(section) =>
+          setActiveSection(section as DashboardSection)
+        }
       />
       <SidebarInset>
         <SiteHeader currentSection={activeSection} />
@@ -62,5 +66,5 @@ export default function Page() {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

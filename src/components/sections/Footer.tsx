@@ -11,11 +11,14 @@ export default function Footer() {
             <span className="text-2xl font-bold text-foreground">RoofCal</span>
           </div>
           <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-6">
-            Professional roof calculator for accurate measurements and cost estimates. 
-            Built for contractors and homeowners who demand precision.
+            Professional roof calculator for accurate measurements and cost
+            estimates. Built for contractors and homeowners who demand
+            precision.
           </p>
           <div className="flex items-center justify-center gap-2">
-            <span className="text-sm text-muted-foreground">© 2025 RoofCal</span>
+            <span className="text-sm text-muted-foreground">
+              © 2025 RoofCal
+            </span>
           </div>
         </div>
       </footer>
