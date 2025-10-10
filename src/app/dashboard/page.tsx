@@ -8,7 +8,6 @@ import { DataTable } from "@/components/data-table";
 import { SectionCards } from "@/components/section-cards";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Skeleton } from "@/components/ui/skeleton";
 import { AccountManagementContent } from "./account-management";
 import { RoofCalculatorContent } from "./roof-calculator";
 
@@ -25,25 +24,27 @@ export default function Page() {
   if (status === "loading") {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen">
-          <div className="w-64 border-r bg-background p-4">
-            <div className="space-y-4">
-              <Skeleton className="h-8 w-32" />
-              <div className="space-y-2">
-                <Skeleton className="h-6 w-full" />
-                <Skeleton className="h-6 w-full" />
-                <Skeleton className="h-6 w-full" />
+        <AppSidebar
+          variant="inset"
+          activeSection="overview"
+          onSectionChange={(section) =>
+            setActiveSection(section as DashboardSection)
+          }
+        />
+        <SidebarInset>
+          <SiteHeader currentSection="overview" />
+          <div className="flex flex-1 flex-col">
+            <div className="@container/main flex flex-1 flex-col gap-2">
+              <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+                <div className="px-4 lg:px-6 mb-4">
+                  <p className="text-muted-foreground">
+                    Loading your dashboard...
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-          <div className="flex-1 p-6">
-            <Skeleton className="h-8 w-48 mb-6" />
-            <div className="space-y-4">
-              <Skeleton className="h-32 w-full" />
-              <Skeleton className="h-64 w-full" />
-            </div>
-          </div>
-        </div>
+        </SidebarInset>
       </SidebarProvider>
     );
   }
