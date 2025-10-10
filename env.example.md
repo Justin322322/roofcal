@@ -26,6 +26,9 @@ NEXTAUTH_SECRET="your-super-secret-nextauth-key-here"
 
 # Base URL for your application (used for redirects and callbacks)
 NEXTAUTH_URL="http://localhost:3000"
+
+# Secret key for password reset JWT tokens
+JWT_SECRET="your-jwt-secret-key-for-password-reset"
 ```
 
 ### SMTP Email Configuration
@@ -66,6 +69,11 @@ DATABASE_URL="mysql://username:password@localhost:3306/roofcalc_db"
 # =============================================================================
 NEXTAUTH_SECRET="your-super-secret-nextauth-key-here"
 NEXTAUTH_URL="http://localhost:3000"
+
+# =============================================================================
+# JWT CONFIGURATION
+# =============================================================================
+JWT_SECRET="your-jwt-secret-key-for-password-reset"
 
 # =============================================================================
 # SMTP EMAIL CONFIGURATION

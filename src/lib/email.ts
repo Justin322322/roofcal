@@ -190,7 +190,7 @@ export async function sendVerificationEmail(email: string, code: string) {
   );
 }
 
-export async function sendPasswordResetEmail(email: string, code: string) {
+export async function sendPasswordResetEmail(email: string, resetUrl: string) {
   const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
@@ -231,16 +231,15 @@ export async function sendPasswordResetEmail(email: string, code: string) {
         <div style="background: #ffffff; padding: 32px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06); margin-bottom: 24px; border: 1px solid #e2e8f0;">
           <h2 style="color: #1e293b; margin: 0 0 16px 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em;">Password Reset Request</h2>
           <p style="color: #334155; line-height: 1.625; margin: 0 0 24px 0; font-size: 15px;">
-            You requested to reset your password for your RoofCal account. Use the code below to complete the password reset process.
+            You requested to reset your password for your RoofCal account. Click the button below to securely reset your password.
           </p>
           
-          <!-- Reset Code Box -->
-          <div style="background: #fef2f2; padding: 24px; border-radius: 6px; text-align: center; margin: 24px 0; border: 1px solid #fecaca;">
-            <p style="margin: 0 0 12px 0; color: #64748b; font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Password reset code</p>
-            <div style="font-size: 32px; font-weight: 700; color: #ef4444; letter-spacing: 8px; font-family: 'Courier New', monospace; margin: 12px 0; background: #ffffff; padding: 16px 24px; border-radius: 6px; border: 2px solid #ef4444; display: inline-block;">
-              ${escapeHtml(code)}
-            </div>
-            <p style="margin: 12px 0 0 0; color: #64748b; font-size: 13px; font-weight: 400;">This code expires in 10 minutes</p>
+          <!-- Reset Button -->
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${escapeHtml(resetUrl)}" style="display: inline-block; background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3); transition: all 0.2s ease;">
+              Reset Your Password
+            </a>
+            <p style="margin: 16px 0 0 0; color: #64748b; font-size: 13px; font-weight: 400;">This link expires in 1 hour</p>
           </div>
           
           <div style="background: #fef2f2; padding: 16px; border-radius: 6px; border-left: 3px solid #ef4444; margin: 24px 0 0 0;">
@@ -263,7 +262,7 @@ export async function sendPasswordResetEmail(email: string, code: string) {
 
   return await sendEmailWithCode(
     email,
-    code,
+    resetUrl, // Pass resetUrl as the "code" parameter for validation
     "Reset Your Password - RoofCal",
     htmlContent
   );

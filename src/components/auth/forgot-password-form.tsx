@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -32,7 +31,6 @@ export default function ForgotPasswordForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const router = useRouter();
 
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -60,11 +58,8 @@ export default function ForgotPasswordForm() {
       }
 
       setSuccessMessage(
-        "Instructions have been sent to your email address. Please check your inbox and follow the steps to reset your password."
+        "Password reset link has been sent to your email address. Please check your inbox and click the link to reset your password."
       );
-      setTimeout(() => {
-        router.push(`/reset-password?email=${encodeURIComponent(data.email)}`);
-      }, 2000);
     } catch {
       setErrorMessage("Something went wrong. Please try again.");
     } finally {
@@ -85,8 +80,8 @@ export default function ForgotPasswordForm() {
             </CardTitle>
             <CardDescription className="text-center">
               {successMessage
-                ? "Check your email for reset instructions"
-                : "Enter your email address and we'll send you a reset code"}
+                ? "Check your email for the reset link"
+                : "Enter your email address and we'll send you a reset link"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -117,7 +112,7 @@ export default function ForgotPasswordForm() {
                   loading={isLoading}
                   loadingText="Sending..."
                 >
-                  Send Reset Code
+                  Send Reset Link
                 </LoadingButton>
               </form>
             ) : (

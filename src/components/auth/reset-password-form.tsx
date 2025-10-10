@@ -46,7 +46,7 @@ export default function ResetPasswordForm() {
   );
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get("email");
+  const token = searchParams.get("token");
 
   const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
@@ -57,8 +57,10 @@ export default function ResetPasswordForm() {
   });
 
   const onSubmit = async (data: ResetPasswordFormData) => {
-    if (!email) {
-      setErrorMessage("Email not found. Please go back to forgot password.");
+    if (!token) {
+      setErrorMessage(
+        "Reset token not found. Please use the link from your email."
+      );
       return;
     }
 
@@ -71,7 +73,7 @@ export default function ResetPasswordForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email,
+          token,
           newPassword: data.newPassword,
         }),
       });
@@ -83,6 +85,7 @@ export default function ResetPasswordForm() {
       }
 
       setSuccessMessage("Password updated successfully!");
+      setIsLoading(false); // Clear loading state immediately
       setTimeout(() => {
         router.push("/login");
       }, 2000);
@@ -96,7 +99,7 @@ export default function ResetPasswordForm() {
   return (
     <AuthLayout
       brandingTitle="Create New Password"
-      brandingDescription="Enter the reset code from your email and create a strong new password for your account."
+      brandingDescription="Create a strong new password for your account using the secure reset link."
     >
       <div className="w-full max-w-md space-y-8">
         <Card>

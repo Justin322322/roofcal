@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createVerificationCode } from "@/lib/verification-code";
+import { generateResetToken } from "@/lib/reset-token";
+import { sendPasswordResetEmail } from "@/lib/email";
 import { z } from "zod";
 
 const schema = z.object({ email: z.string().email() });
@@ -19,12 +20,25 @@ export async function POST(req: Request) {
     );
   }
 
-  // Create password reset code
-  const { expiresAt } = await createVerificationCode(email, "password_reset");
-  // TODO: send email with reset code
+  // Generate JWT reset token
+  const resetToken = generateResetToken(email);
+
+  // Create reset URL
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
+
+  // Send email with reset link
+  const emailResult = await sendPasswordResetEmail(email, resetUrl);
+
+  if (!emailResult.success) {
+    return NextResponse.json(
+      { error: "Failed to send reset email" },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json(
-    { message: "Reset code sent to your email", expiresAt },
+    { message: "Password reset link sent to your email" },
     { status: 200 }
   );
 }
