@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ChartAreaInteractive } from "@/components/chart-area-interactive";
 import { DataTable } from "@/components/data-table";
 import { SectionCards } from "@/components/section-cards";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { AccountManagementContent } from "./account-management";
 import { RoofCalculatorContent } from "./roof-calculator";
 
@@ -17,6 +19,34 @@ type DashboardSection = "overview" | "account-management" | "roof-calculator";
 export default function Page() {
   const [activeSection, setActiveSection] =
     useState<DashboardSection>("overview");
+  const { status } = useSession();
+
+  // Show loading state while session is loading
+  if (status === "loading") {
+    return (
+      <SidebarProvider>
+        <div className="flex min-h-screen">
+          <div className="w-64 border-r bg-background p-4">
+            <div className="space-y-4">
+              <Skeleton className="h-8 w-32" />
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+              </div>
+            </div>
+          </div>
+          <div className="flex-1 p-6">
+            <Skeleton className="h-8 w-48 mb-6" />
+            <div className="space-y-4">
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-64 w-full" />
+            </div>
+          </div>
+        </div>
+      </SidebarProvider>
+    );
+  }
 
   const renderContent = () => {
     switch (activeSection) {
