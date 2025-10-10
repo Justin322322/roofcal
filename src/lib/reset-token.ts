@@ -25,7 +25,7 @@ export function generateResetToken(email: string): string {
   };
 
   // Token expires in 1 hour
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
+  return jwt.sign(payload, JWT_SECRET!, { expiresIn: "1h" });
 }
 
 /**
@@ -35,7 +35,7 @@ export function generateResetToken(email: string): string {
  */
 export function verifyResetToken(token: string): ResetTokenPayload | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as ResetTokenPayload;
+    const decoded = jwt.verify(token, JWT_SECRET!) as ResetTokenPayload;
 
     // Validate token type
     if (decoded.type !== "password_reset") {
@@ -43,7 +43,7 @@ export function verifyResetToken(token: string): ResetTokenPayload | null {
     }
 
     return decoded;
-  } catch (error) {
+  } catch {
     // Token is invalid, expired, or malformed
     return null;
   }
