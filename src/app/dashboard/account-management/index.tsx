@@ -1,23 +1,36 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { AccountManagementTable } from "./components/account-management-table";
 import { AccountStatsCards } from "./components/stats-cards";
 import { AccountFilters } from "./components/account-filters";
+import { AccountViewModal } from "./components/account-view-modal";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, DownloadIcon, UploadIcon } from "lucide-react";
+import { useAccountManagement } from "./hooks";
+import { toast } from "sonner";
 
 export function AccountManagementContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [accounts] = useState([]);
-  const [filters, setFilters] = useState({
-    status: "all",
-    plan: "all",
-    search: "",
-  });
+
+  const {
+    accounts,
+    processedAccounts,
+    loading,
+    filters,
+    updateFilters,
+    handleSort,
+    deleteAccount,
+    exportAccounts,
+    refreshAccounts,
+    selectedAccount,
+    isViewModalOpen,
+    openViewModal,
+    closeModals,
+  } = useAccountManagement();
 
   useEffect(() => {
     if (status === "loading") return;
@@ -26,36 +39,137 @@ export function AccountManagementContent() {
       router.push("/login");
       return;
     }
-
-    if (session.user.role !== "admin") {
-      router.push("/dashboard");
-      return;
-    }
   }, [session, status, router]);
 
   if (status === "loading") {
     return (
-      <div className="flex items-center justify-center h-64">Loading...</div>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
     );
   }
 
-  if (!session || session.user.role !== "admin") {
+  if (!session) {
     return null;
   }
 
-  const handleAddAccount = () => {
+  const handleAddAccount = async () => {
     // TODO: Implement add account functionality
     console.log("Add new account");
   };
 
-  const handleExportAccounts = () => {
-    // TODO: Implement export functionality
-    console.log("Export accounts");
+  const handleExportAccounts = async () => {
+    let objectUrl: string | null = null;
+
+    try {
+      const result = await exportAccounts("csv");
+
+      if (result.success && result.data && result.filename) {
+        // Create and download file
+        const blob = new Blob([result.data], { type: "text/csv" });
+        objectUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = objectUrl;
+        a.download = result.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        // Show success toast
+        toast.success("Export completed", {
+          description: `Accounts exported to ${result.filename}`,
+          duration: 3000,
+        });
+      } else {
+        // Handle export failure
+        const errorMessage = result.errors?.[0] || "Failed to export accounts";
+        toast.error("Export failed", {
+          description: errorMessage,
+          duration: 5000,
+        });
+      }
+    } catch (error) {
+      // Handle unexpected errors
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred during export";
+      console.error("Export failed:", error);
+      toast.error("Export failed", {
+        description: errorMessage,
+        duration: 5000,
+      });
+    } finally {
+      // Always clean up the object URL if it was created
+      if (objectUrl) {
+        window.URL.revokeObjectURL(objectUrl);
+      }
+    }
   };
 
-  const handleImportAccounts = () => {
+  const handleImportAccounts = async () => {
     // TODO: Implement import functionality
     console.log("Import accounts");
+  };
+
+  const handleDeleteAccount = async (accountId: string): Promise<void> => {
+    try {
+      const result = await deleteAccount(accountId);
+
+      if (result.success) {
+        // Show success message and refresh accounts
+        toast.success("Account deleted successfully", {
+          description: "The account has been permanently removed.",
+          duration: 3000,
+        });
+        refreshAccounts();
+      } else {
+        // Handle deletion failure without throwing
+        const errorMessage = result.errors?.[0] || "Failed to delete account";
+        console.error("Delete account failed:", errorMessage);
+        toast.error("Failed to delete account", {
+          description: errorMessage,
+          duration: 5000,
+        });
+      }
+    } catch (error) {
+      // Handle unexpected errors without throwing
+      const errorMessage =
+        error instanceof Error ? error.message : "An unexpected error occurred";
+      console.error("Delete account error:", error);
+      toast.error("Failed to delete account", {
+        description: errorMessage,
+        duration: 5000,
+      });
+    }
+  };
+
+  const handleViewAccount = (accountId: string) => {
+    const account = accounts.find((acc) => acc.id === accountId);
+    if (!account) {
+      // Log the missing account ID for debugging
+      console.warn(`Account not found with ID: ${accountId}`);
+
+      // Show user-friendly error message
+      toast.error("Account not found", {
+        description:
+          "The requested account could not be found. It may have been deleted or the ID is invalid.",
+        duration: 5000,
+      });
+
+      // Return early to prevent further actions
+      return;
+    }
+
+    // Proceed to open the view modal for the found account
+    openViewModal(account);
+  };
+
+  const handleCallPhone = (phone: string) => {
+    console.log("Call phone:", phone);
   };
 
   return (
@@ -63,7 +177,7 @@ export function AccountManagementContent() {
       {/* Action Buttons */}
       <div className="px-4 lg:px-6 flex items-center justify-between mb-4">
         <p className="text-muted-foreground">
-          Manage client accounts, subscriptions, and billing information
+          Manage your account information and project details
         </p>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={handleImportAccounts}>
@@ -83,18 +197,33 @@ export function AccountManagementContent() {
 
       {/* Stats Cards */}
       <div className="px-4 lg:px-6">
-        <AccountStatsCards accounts={accounts} />
+        <AccountStatsCards accounts={accounts} loading={loading} />
       </div>
 
       {/* Filters */}
       <div className="px-4 lg:px-6">
-        <AccountFilters filters={filters} onFiltersChange={setFilters} />
+        <AccountFilters filters={filters} onFiltersChange={updateFilters} />
       </div>
 
       {/* Accounts Table */}
       <div className="px-4 lg:px-6">
-        <AccountManagementTable accounts={accounts} filters={filters} />
+        <AccountManagementTable
+          accounts={processedAccounts}
+          loading={loading}
+          onSort={handleSort}
+          onDelete={handleDeleteAccount}
+          onView={handleViewAccount}
+          onCallPhone={handleCallPhone}
+        />
       </div>
+
+      {/* Account View Modal */}
+      <AccountViewModal
+        account={selectedAccount}
+        isOpen={isViewModalOpen}
+        onClose={closeModals}
+        onDelete={handleDeleteAccount}
+      />
     </>
   );
 }

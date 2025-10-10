@@ -18,6 +18,7 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { UserRole } from "@/types/user-role";
 
 import { NavDocuments } from "@/components/nav-documents";
 import { NavMain } from "@/components/nav-main";
@@ -167,7 +168,7 @@ export function AppSidebar({
 }: AppSidebarProps) {
   const { data: session } = useSession();
 
-  const getNavigationData = (userRole: string) => ({
+  const getNavigationData = (userRole: UserRole) => ({
     navMain: [
       {
         title: "Roof Calculator",
@@ -205,7 +206,7 @@ export function AppSidebar({
         icon: CreditCardIcon,
       },
       // Only show Account Management for admin users
-      ...(userRole === "admin"
+      ...(userRole === UserRole.ADMIN
         ? [
             {
               title: "Account Management",
@@ -234,7 +235,9 @@ export function AppSidebar({
     ],
   });
 
-  const navigationData = getNavigationData(session?.user?.role || "client");
+  const navigationData = getNavigationData(
+    session?.user?.role || UserRole.CLIENT
+  );
 
   const userData = {
     name: session?.user?.name || "User",

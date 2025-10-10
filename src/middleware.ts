@@ -1,21 +1,35 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
+import { UserRole } from "@/types/user-role";
 
 export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token;
     const { pathname } = req.nextUrl;
 
+    // Debug logging
+    console.log("Middleware - Path:", pathname);
+    console.log("Middleware - Token:", token ? "exists" : "null");
+    console.log("Middleware - EmailVerified:", token?.emailVerified);
+
     // Admin-only routes
     if (pathname.startsWith("/dashboard/account-management")) {
-      if (token?.role !== "admin") {
+      if (token?.role !== UserRole.ADMIN) {
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
     }
 
     // Redirect to verification page if email not verified
     if (pathname.startsWith("/dashboard") && !token?.emailVerified) {
-      return NextResponse.redirect(new URL("/verify", req.url));
+      // Redirect to verification page if user has email but not verified
+      if (token?.email) {
+        const verifyUrl = new URL("/verify", req.url);
+        verifyUrl.searchParams.set("email", token.email);
+        return NextResponse.redirect(verifyUrl);
+      }
+
+      // If no email in token, redirect to login
+      return NextResponse.redirect(new URL("/login", req.url));
     }
   },
   {

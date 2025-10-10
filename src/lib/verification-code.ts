@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
+import type { Prisma } from "@prisma/client";
+import { isRateLimited, recordOTPAttempt } from "@/lib/rate-limiter";
 
 const OTP_EXPIRY_MINUTES = 10;
 
@@ -10,10 +12,31 @@ export async function generateCode(): Promise<string> {
 
 export async function createVerificationCode(
   email: string,
-  type: "email_verification" | "password_reset" = "email_verification"
+  type: "email_verification" | "password_reset" = "email_verification",
+  tx?: Prisma.TransactionClient
 ) {
+  // Check rate limiting before generating OTP
+  const rateLimitCheck = await isRateLimited(email, "otp_generation");
+
+  if (rateLimitCheck.isLimited) {
+    const error = new Error(
+      "Rate limit exceeded. Please wait before requesting another code."
+    ) as Error & {
+      code: string;
+      remainingTime?: number;
+    };
+    error.code = "RATE_LIMIT_EXCEEDED";
+    error.remainingTime = rateLimitCheck.remainingTime;
+    throw error;
+  }
+
+  const client = tx ?? prisma;
+
+  // Record the OTP generation attempt
+  await recordOTPAttempt(email, "otp_generation", client);
+
   // invalidate previous unused codes for this email+type
-  await prisma.verificationCode.updateMany({
+  await client.verificationcode.updateMany({
     where: { email, type, used: false },
     data: { used: true },
   });
@@ -21,8 +44,8 @@ export async function createVerificationCode(
   const code = await generateCode();
   const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
-  await prisma.verificationCode.create({
-    data: { email, code, type, expiresAt },
+  await client.verificationcode.create({
+    data: { id: crypto.randomUUID(), email, code, type, expiresAt },
   });
 
   return { code, expiresAt };
@@ -33,7 +56,7 @@ export async function verifyCode(
   code: string,
   type: "email_verification" | "password_reset" = "email_verification"
 ) {
-  const record = await prisma.verificationCode.findFirst({
+  const record = await prisma.verificationcode.findFirst({
     where: {
       email,
       code,
@@ -45,7 +68,7 @@ export async function verifyCode(
 
   if (!record) return false;
 
-  await prisma.verificationCode.update({
+  await prisma.verificationcode.update({
     where: { id: record.id },
     data: { used: true },
   });
@@ -53,7 +76,7 @@ export async function verifyCode(
 }
 
 export async function cleanupExpiredCodes() {
-  const result = await prisma.verificationCode.deleteMany({
+  const result = await prisma.verificationcode.deleteMany({
     where: { expiresAt: { lt: new Date() } },
   });
   return result.count;

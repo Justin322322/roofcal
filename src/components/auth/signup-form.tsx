@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { toast } from "sonner";
 import { validatePassword } from "@/lib/password-validator";
-import { Eye, EyeOff } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -19,7 +18,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import RoofCalcLogo from "@/components/RoofCalcLogo";
+import { PasswordInput } from "@/components/ui/password-input";
+import { LoadingButton } from "@/components/ui/loading-button";
+import FormError from "@/components/ui/form-error";
+import PasswordStrengthIndicator from "@/components/auth/password-strength-indicator";
+import PasswordMatchIndicator from "@/components/auth/password-match-indicator";
+import AuthLayout from "@/components/auth/auth-layout";
 
 const signupSchema = z
   .object({
@@ -32,7 +36,17 @@ const signupSchema = z
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
-  });
+  })
+  .refine(
+    (data) => {
+      const validation = validatePassword(data.password);
+      return validation.isValid;
+    },
+    {
+      message: "Password does not meet security requirements",
+      path: ["password"],
+    }
+  );
 
 type SignupFormData = z.infer<typeof signupSchema>;
 
@@ -42,9 +56,8 @@ export default function SignupForm() {
   const [passwordValidation, setPasswordValidation] = useState(
     validatePassword("")
   );
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
+  const timeoutRef = useRef<number | null>(null);
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -73,10 +86,42 @@ export default function SignupForm() {
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        setErrorMessage(body?.error ?? "Failed to create account");
+
+        // Handle specific error messages from the API
+        let errorMsg = "Failed to create account";
+
+        if (body?.error) {
+          switch (body.error) {
+            case "Email already in use":
+              errorMsg = "An account with this email address already exists";
+              break;
+            case "Invalid email format":
+              errorMsg = "Please enter a valid email address";
+              break;
+            case "Password too weak":
+              errorMsg = "Password does not meet security requirements";
+              break;
+            case "Failed to send verification email. Please try again.":
+              errorMsg =
+                "We couldn't send you a verification email. Please check your email address and try again.";
+              break;
+            default:
+              errorMsg = body.error;
+          }
+        }
+
+        setErrorMessage(errorMsg);
+        toast.error("Account creation failed");
         return;
       }
-      router.push(`/verify?email=${encodeURIComponent(data.email)}`);
+
+      // Show success message and redirect with delay for better UX
+      toast.success(
+        "Account created successfully! Please check your email for verification."
+      );
+      timeoutRef.current = window.setTimeout(() => {
+        router.push(`/verify?email=${encodeURIComponent(data.email)}`);
+      }, 1000);
     } catch {
       setErrorMessage("Something went wrong. Please try again.");
     } finally {
@@ -84,254 +129,142 @@ export default function SignupForm() {
     }
   };
 
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen flex">
-      {/* Left side - Signup Form */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md space-y-8">
-          <Card>
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold text-center">
-                Create Account
-              </CardTitle>
-              <CardDescription className="text-center">
-                Enter your details to create your RoofCal account
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4"
-              >
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input
-                      id="firstName"
-                      placeholder="First Name"
-                      {...form.register("firstName")}
-                      disabled={isLoading}
-                    />
-                    {form.formState.errors.firstName && (
-                      <p className="text-sm text-red-600">
-                        {form.formState.errors.firstName.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input
-                      id="lastName"
-                      placeholder="Last Name"
-                      {...form.register("lastName")}
-                      disabled={isLoading}
-                    />
-                    {form.formState.errors.lastName && (
-                      <p className="text-sm text-red-600">
-                        {form.formState.errors.lastName.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
+    <AuthLayout
+      brandingTitle="Join Thousands of Professionals"
+      brandingDescription="Get access to our professional-grade roof calculation tools. Save time, reduce errors, and deliver accurate estimates to your clients."
+    >
+      <div className="w-full max-w-md space-y-8">
+        <Card>
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">
+              Create Account
+            </CardTitle>
+            <CardDescription className="text-center">
+              Enter your details to create your RoofCal account
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="firstName">First Name</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    placeholder="firstname.lastname@bpsu.edu.ph"
-                    {...form.register("email")}
+                    id="firstName"
+                    placeholder="First Name"
+                    {...form.register("firstName")}
                     disabled={isLoading}
                   />
-                  {form.formState.errors.email && (
+                  {form.formState.errors.firstName && (
                     <p className="text-sm text-red-600">
-                      {form.formState.errors.email.message}
+                      {form.formState.errors.firstName.message}
                     </p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Create a strong password"
-                      {...form.register("password", {
-                        onChange: (e) => {
-                          setPasswordValidation(
-                            validatePassword(e.target.value)
-                          );
-                        },
-                      })}
-                      disabled={isLoading}
-                      className="pr-10"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => setShowPassword(!showPassword)}
-                      disabled={isLoading}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </Button>
-                  </div>
-                  {form.formState.errors.password && (
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    placeholder="Last Name"
+                    {...form.register("lastName")}
+                    disabled={isLoading}
+                  />
+                  {form.formState.errors.lastName && (
                     <p className="text-sm text-red-600">
-                      {form.formState.errors.password.message}
+                      {form.formState.errors.lastName.message}
                     </p>
                   )}
-
-                  {/* Password Requirements */}
-                  {form.watch("password") && (
-                    <div className="space-y-1 text-xs">
-                      <div
-                        className={`flex items-center gap-2 ${passwordValidation.feedback.length ? "text-green-600" : "text-muted-foreground"}`}
-                      >
-                        <span>
-                          {passwordValidation.feedback.length ? "✓" : "○"}
-                        </span>
-                        <span>At least 8 characters</span>
-                      </div>
-                      <div
-                        className={`flex items-center gap-2 ${passwordValidation.feedback.uppercase ? "text-green-600" : "text-muted-foreground"}`}
-                      >
-                        <span>
-                          {passwordValidation.feedback.uppercase ? "✓" : "○"}
-                        </span>
-                        <span>One uppercase letter</span>
-                      </div>
-                      <div
-                        className={`flex items-center gap-2 ${passwordValidation.feedback.lowercase ? "text-green-600" : "text-muted-foreground"}`}
-                      >
-                        <span>
-                          {passwordValidation.feedback.lowercase ? "✓" : "○"}
-                        </span>
-                        <span>One lowercase letter</span>
-                      </div>
-                      <div
-                        className={`flex items-center gap-2 ${passwordValidation.feedback.number ? "text-green-600" : "text-muted-foreground"}`}
-                      >
-                        <span>
-                          {passwordValidation.feedback.number ? "✓" : "○"}
-                        </span>
-                        <span>One number</span>
-                      </div>
-                      <div
-                        className={`flex items-center gap-2 ${passwordValidation.feedback.specialChar ? "text-green-600" : "text-muted-foreground"}`}
-                      >
-                        <span>
-                          {passwordValidation.feedback.specialChar ? "✓" : "○"}
-                        </span>
-                        <span>One special character</span>
-                      </div>
-                    </div>
-                  )}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="confirmPassword"
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm your password"
-                      {...form.register("confirmPassword")}
-                      disabled={isLoading}
-                      className="pr-10"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                      disabled={isLoading}
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </Button>
-                  </div>
-                  {form.formState.errors.confirmPassword && (
-                    <p className="text-sm text-red-600">
-                      {form.formState.errors.confirmPassword.message}
-                    </p>
-                  )}
-
-                  {/* Password Match Validation */}
-                  {form.watch("password") && form.watch("confirmPassword") && (
-                    <div className="text-xs">
-                      {form.watch("password") ===
-                      form.watch("confirmPassword") ? (
-                        <div className="flex items-center gap-2 text-green-600">
-                          <span>✓</span>
-                          <span>Passwords match</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-red-600">
-                          <span>○</span>
-                          <span>Passwords don&apos;t match</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-                {errorMessage && (
-                  <p className="text-sm text-red-600">{errorMessage}</p>
-                )}
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Creating Account..." : "Create Account"}
-                </Button>
-              </form>
-              <div className="mt-6">
-                <Separator className="my-4" />
-                <p className="text-center text-sm text-muted-foreground">
-                  Already have an account?{" "}
-                  <Link href="/login" className="text-primary hover:underline">
-                    Sign in
-                  </Link>
-                </p>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Right side - Branding */}
-      <div className="hidden lg:flex lg:flex-1 lg:flex-col lg:justify-center lg:px-8 bg-muted/50">
-        <div className="flex flex-col items-center space-y-8 text-center">
-          <Link
-            href="/"
-            className="flex items-center space-x-4 hover:opacity-80 transition-opacity"
-          >
-            <RoofCalcLogo className="w-16 h-16 text-primary" />
-            <div className="text-left">
-              <h1 className="text-4xl font-bold text-foreground">RoofCal</h1>
-              <p className="text-lg text-muted-foreground">
-                Professional Roof Calculator
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="firstname.lastname@bpsu.edu.ph"
+                  autoComplete="email"
+                  {...form.register("email")}
+                  disabled={isLoading}
+                />
+                {form.formState.errors.email && (
+                  <p className="text-sm text-red-600">
+                    {form.formState.errors.email.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <PasswordInput
+                  id="password"
+                  placeholder="Create a strong password"
+                  autoComplete="new-password"
+                  {...form.register("password", {
+                    onChange: (e) => {
+                      setPasswordValidation(validatePassword(e.target.value));
+                    },
+                  })}
+                  disabled={isLoading}
+                />
+                {form.formState.errors.password && (
+                  <p className="text-sm text-red-600">
+                    {form.formState.errors.password.message}
+                  </p>
+                )}
+                <PasswordStrengthIndicator
+                  password={form.watch("password")}
+                  validation={passwordValidation}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <PasswordInput
+                  id="confirmPassword"
+                  placeholder="Confirm your password"
+                  autoComplete="new-password"
+                  {...form.register("confirmPassword")}
+                  disabled={isLoading}
+                />
+                {form.formState.errors.confirmPassword && (
+                  <p className="text-sm text-red-600">
+                    {form.formState.errors.confirmPassword.message}
+                  </p>
+                )}
+                <PasswordMatchIndicator
+                  password={form.watch("password")}
+                  confirmPassword={form.watch("confirmPassword")}
+                />
+              </div>
+              <FormError message={errorMessage} />
+              <LoadingButton
+                type="submit"
+                className="w-full"
+                loading={isLoading}
+                loadingText="Creating Account..."
+              >
+                Create Account
+              </LoadingButton>
+            </form>
+            <div className="mt-6">
+              <Separator className="my-4" />
+              <p className="text-center text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <Link href="/login" className="text-primary hover:underline">
+                  Sign in
+                </Link>
               </p>
             </div>
-          </Link>
-          <div className="max-w-md space-y-4">
-            <h2 className="text-2xl font-semibold text-foreground">
-              Join Thousands of Professionals
-            </h2>
-            <p className="text-muted-foreground">
-              Get access to our professional-grade roof calculation tools. Save
-              time, reduce errors, and deliver accurate estimates to your
-              clients.
-            </p>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

@@ -10,23 +10,19 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { SearchIcon, FilterIcon } from "lucide-react";
-
-interface Filters {
-  status: string;
-  plan: string;
-  search: string;
-}
+import type { AccountFilters } from "../types";
+import { ACCOUNT_STATUSES } from "../constants";
 
 interface AccountFiltersProps {
-  filters: Filters;
-  onFiltersChange: (filters: Filters) => void;
+  filters: AccountFilters;
+  onFiltersChange: (filters: AccountFilters) => void;
 }
 
 export function AccountFilters({
   filters,
   onFiltersChange,
 }: AccountFiltersProps) {
-  const handleFilterChange = (key: keyof Filters, value: string) => {
+  const handleFilterChange = (key: keyof AccountFilters, value: string) => {
     onFiltersChange({
       ...filters,
       [key]: value,
@@ -40,7 +36,7 @@ export function AccountFilters({
         <h3 className="text-sm font-medium">Filters</h3>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         {/* Search */}
         <div className="space-y-2">
           <Label htmlFor="search">Search accounts</Label>
@@ -68,29 +64,11 @@ export function AccountFilters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Plan Filter */}
-        <div className="space-y-2">
-          <Label htmlFor="plan">Plan</Label>
-          <Select
-            value={filters.plan}
-            onValueChange={(value) => handleFilterChange("plan", value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="All plans" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Plans</SelectItem>
-              <SelectItem value="starter">Starter</SelectItem>
-              <SelectItem value="professional">Professional</SelectItem>
-              <SelectItem value="enterprise">Enterprise</SelectItem>
-              <SelectItem value="trial">Trial</SelectItem>
+              {ACCOUNT_STATUSES.map((status) => (
+                <SelectItem key={status} value={status.toLowerCase()}>
+                  {status}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

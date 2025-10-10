@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 
 interface Account {
-  id: number;
+  id: string;
   clientName: string;
   email: string;
   phone: string;
@@ -135,17 +135,17 @@ export function AccountManagementTable({
     }
   };
 
-  const handleEditAccount = (accountId: number) => {
+  const handleEditAccount = (accountId: string) => {
     console.log("Edit account:", accountId);
     // TODO: Implement edit functionality
   };
 
-  const handleDeleteAccount = (accountId: number) => {
+  const handleDeleteAccount = (accountId: string) => {
     console.log("Delete account:", accountId);
     // TODO: Implement delete functionality
   };
 
-  const handleViewAccount = (accountId: number) => {
+  const handleViewAccount = (accountId: string) => {
     console.log("View account:", accountId);
     // TODO: Implement view functionality
   };

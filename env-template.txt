@@ -1,0 +1,84 @@
+# =============================================================================
+# RoofCal - Professional Roof Calculator
+# Environment Variables Configuration Template
+# =============================================================================
+# Copy this to .env.local and fill in your actual values
+
+# =============================================================================
+# YOUR CURRENT VARIABLES (KEEP THESE)
+# =============================================================================
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=vy1VeB8JJJK8Z0YpItUd7ndcEsuEF+k/fy7m3nYOVXE=
+DATABASE_URL="mysql://root:@localhost:3306/roofcalc"
+
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_USER=justinmarlosibonga@gmail.com
+SMTP_PASSWORD=vyhuebhgfrynmshc
+
+# =============================================================================
+# ADDITIONAL VARIABLES NEEDED FOR PRODUCTION DEPLOYMENT
+# =============================================================================
+
+# For Railway MySQL Production Database
+# In Railway, use the DATABASE_URL from your MySQL service variables
+# This is typically: ${{MySQL.DATABASE_URL}} or ${{MySQL.MYSQL_PRIVATE_URL}}
+# Format: mysql://root:PASSWORD@containers-us-west-XXX.railway.app:PORT/railway
+# DATABASE_URL="mysql://root:your_password@containers-us-west-xxx.railway.app:xxxx/railway"
+
+# For Vercel Production URL
+# Replace with your actual Vercel deployment URL
+# NEXTAUTH_URL="https://your-app-name.vercel.app"
+
+# Application Environment
+NODE_ENV="development"
+
+# =============================================================================
+# VERIFICATION CODE CONFIGURATION (Optional - has defaults)
+# =============================================================================
+# VERIFICATION_CODE_EXPIRY_MINUTES=15
+# VERIFICATION_CODE_LENGTH=6
+
+# =============================================================================
+# RATE LIMITING CONFIGURATION (Optional - has defaults)
+# =============================================================================
+# RATE_LIMIT_MAX_ATTEMPTS=5
+# RATE_LIMIT_WINDOW_MINUTES=15
+# RATE_LIMIT_BLOCK_DURATION_MINUTES=30
+
+# =============================================================================
+# CSRF PROTECTION (Optional - has defaults)
+# =============================================================================
+# CSRF_SECRET="your-csrf-secret-key"
+
+# =============================================================================
+# DEPLOYMENT INSTRUCTIONS
+# =============================================================================
+# 
+# FOR LOCAL DEVELOPMENT:
+# 1. Copy this file to .env.local
+# 2. Keep your current DATABASE_URL for local MySQL
+# 3. Keep NEXTAUTH_URL as http://localhost:3000
+# 4. Run: npm run dev
+#
+# FOR RAILWAY + VERCEL DEPLOYMENT:
+# 1. In Railway: Get your MySQL URL from Variables tab
+# 2. In Vercel: Set these environment variables:
+#    - DATABASE_URL: Your Railway MySQL URL
+#    - NEXTAUTH_URL: Your Vercel app URL (https://your-app.vercel.app)
+#    - NEXTAUTH_SECRET: Generate new secure secret
+#    - SMTP_* variables: Your email configuration
+#    - NODE_ENV: production
+#
+# RAILWAY MYSQL URL FORMAT:
+# Use ${{MySQL.DATABASE_URL}} from Railway MySQL service variables
+# Actual format: mysql://root:PASSWORD@containers-us-west-XXX.railway.app:PORT/railway
+#
+# VERCEL ENVIRONMENT VARIABLES TO SET:
+# - DATABASE_URL (copy from Railway's MySQL service variables)
+# - NEXTAUTH_SECRET (generate with: openssl rand -base64 32)
+# - NEXTAUTH_URL (your Vercel app URL)
+# - SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM
+# - NODE_ENV=production
+#
+# =============================================================================

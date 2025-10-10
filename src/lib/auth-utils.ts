@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
 import { redirect } from "next/navigation";
+import { UserRole, hasRolePermission } from "@/types/user-role";
 
 export async function requireAuth() {
   const session = await getServerSession(authOptions);
@@ -12,7 +13,7 @@ export async function requireAuth() {
 
 export async function requireAdmin() {
   const session = await requireAuth();
-  if (session.user.role !== "admin") {
+  if (session.user.role !== UserRole.ADMIN) {
     redirect("/dashboard");
   }
   return session;
@@ -26,14 +27,6 @@ export async function requireEmailVerified() {
   return session;
 }
 
-export function hasRole(userRole: string, requiredRole: string): boolean {
-  const roleHierarchy = {
-    client: 0,
-    admin: 1,
-  };
-
-  return (
-    roleHierarchy[userRole as keyof typeof roleHierarchy] >=
-    roleHierarchy[requiredRole as keyof typeof roleHierarchy]
-  );
+export function hasRole(userRole: UserRole, requiredRole: UserRole): boolean {
+  return hasRolePermission(userRole, requiredRole);
 }
