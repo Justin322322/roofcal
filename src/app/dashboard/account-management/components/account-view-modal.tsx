@@ -26,6 +26,7 @@ import {
   UserIcon,
   BarChart3Icon,
   RefreshCwIcon,
+  XIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Account } from "../types";
@@ -55,10 +56,12 @@ export function AccountViewModal({
   const [loadingActivities, setLoadingActivities] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [activityPage, setActivityPage] = useState(1);
+  const [hasMoreActivities, setHasMoreActivities] = useState(false);
 
   // Function to fetch activities
   const fetchActivities = useCallback(
-    async (isRefresh = false) => {
+    async (isRefresh = false, page = 1) => {
       if (!account?.email) return;
 
       if (isRefresh) {
@@ -70,12 +73,19 @@ export function AccountViewModal({
       try {
         const user = await getUserByEmail(account.email);
         if (user) {
-          const activities = await getUserActivities(user.id);
-          setActivityLog(activities);
+          const activities = await getUserActivities(user.id, page);
+          if (page === 1 || isRefresh) {
+            setActivityLog(activities);
+          } else {
+            setActivityLog((prev) => [...prev, ...activities]);
+          }
+          setHasMoreActivities(activities.length === 10); // If we get 10, there might be more
         }
       } catch (error) {
         console.error("Error fetching activities:", error);
-        setActivityLog([]);
+        if (page === 1 || isRefresh) {
+          setActivityLog([]);
+        }
       } finally {
         setLoadingActivities(false);
         setRefreshing(false);
@@ -142,16 +152,27 @@ export function AccountViewModal({
         {/* Fixed Header */}
         <div className="sticky top-0 z-10 bg-background border-b">
           <DialogHeader className="px-6 pt-6 pb-4">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <DialogTitle className="text-xl font-semibold">
-                {account.clientName}
-              </DialogTitle>
-              <Badge
-                variant={getStatusBadgeVariant(account.status)}
-                className="shrink-0"
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <DialogTitle className="text-xl font-semibold">
+                  {account.clientName}
+                </DialogTitle>
+                <Badge
+                  variant={getStatusBadgeVariant(account.status)}
+                  className="shrink-0"
+                >
+                  {account.status}
+                </Badge>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="h-8 w-8 p-0 hover:bg-accent"
               >
-                {account.status}
-              </Badge>
+                <XIcon className="h-4 w-4" />
+                <span className="sr-only">Close</span>
+              </Button>
             </div>
             <DialogDescription className="text-sm">
               {account.email}
@@ -365,19 +386,38 @@ export function AccountViewModal({
                       </div>
                     </div>
                   ) : activityLog.length > 0 ? (
-                    activityLog.map((activity) => (
-                      <div
-                        key={activity.id}
-                        className="p-3 rounded-lg border hover:bg-accent/50 transition-colors"
-                      >
-                        <p className="text-sm font-medium">
-                          {activity.description}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {formatDateTime(activity.date)}
-                        </p>
-                      </div>
-                    ))
+                    <>
+                      {activityLog.map((activity) => (
+                        <div
+                          key={activity.id}
+                          className="p-3 rounded-lg border hover:bg-accent/50 transition-colors"
+                        >
+                          <p className="text-sm font-medium">
+                            {activity.description}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {formatDateTime(activity.date)}
+                          </p>
+                        </div>
+                      ))}
+                      {hasMoreActivities && (
+                        <div className="flex justify-center pt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const nextPage = activityPage + 1;
+                              setActivityPage(nextPage);
+                              fetchActivities(false, nextPage);
+                            }}
+                            disabled={loadingActivities}
+                            className="text-xs"
+                          >
+                            {loadingActivities ? "Loading..." : "Load More"}
+                          </Button>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <div className="flex items-center justify-center py-8">
                       <div className="text-sm text-muted-foreground">

@@ -54,6 +54,7 @@ export default function LogoutDialog({
         const csrfResponse = await fetch("/api/csrf-token", {
           method: "GET",
           credentials: "include",
+          cache: "no-store",
         });
 
         if (csrfResponse.ok) {
@@ -94,10 +95,9 @@ export default function LogoutDialog({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-CSRF-Token": csrfToken,
+            "x-csrf-token": csrfToken,
           },
           credentials: "include",
-          body: JSON.stringify({ csrfToken }),
         });
 
         console.log("Logout API response status:", response.status);

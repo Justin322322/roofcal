@@ -120,17 +120,22 @@ export async function getAccounts(): Promise<Account[]> {
 }
 
 /**
- * Get user activities by user ID
+ * Get user activities by user ID with pagination
  */
 export async function getUserActivities(
-  userId: string
+  userId: string,
+  page: number = 1
 ): Promise<ActivityLog[]> {
   try {
+    const pageSize = 10;
+    const skip = (page - 1) * pageSize;
+
     const activities = await prisma.activity.findMany({
       where: { userId },
       select: { id: true, type: true, description: true, created_at: true },
       orderBy: { created_at: "desc" },
-      take: 10,
+      take: pageSize,
+      skip,
     });
 
     return activities.map(
@@ -455,9 +460,7 @@ export async function deleteAccount(
 /**
  * Export accounts to file
  */
-export async function exportAccounts(
-  options: ExportOptions
-): Promise<{
+export async function exportAccounts(options: ExportOptions): Promise<{
   success: boolean;
   data?: string;
   filename?: string;

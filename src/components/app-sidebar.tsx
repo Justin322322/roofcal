@@ -250,10 +250,13 @@ export function AppSidebar({
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <div className="flex items-center gap-2 px-3 py-2">
+            <button
+              onClick={() => onSectionChange?.("overview")}
+              className="flex w-full items-center gap-2 px-3 py-2 hover:bg-accent rounded-md transition-colors cursor-pointer"
+            >
               <RoofCalcLogo className="h-5 w-5 text-primary" size={20} />
               <span className="text-base font-semibold">RoofCal</span>
-            </div>
+            </button>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>

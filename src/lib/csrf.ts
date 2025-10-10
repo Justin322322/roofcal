@@ -5,7 +5,10 @@ import { cookies } from "next/headers";
  * CSRF token configuration
  */
 const CSRF_TOKEN_LENGTH = 32;
-const CSRF_TOKEN_COOKIE_NAME = "__Host-csrf-token";
+// Use __Host- prefix only in production (requires Secure + HTTPS). In development,
+// fall back to a standard name so the cookie can be set over http://localhost.
+const CSRF_TOKEN_COOKIE_NAME =
+  process.env.NODE_ENV === "production" ? "__Host-csrf-token" : "csrf-token";
 const CSRF_TOKEN_HEADER_NAME = "x-csrf-token";
 const CSRF_TOKEN_BODY_FIELD = "csrfToken";
 
