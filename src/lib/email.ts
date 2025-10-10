@@ -55,45 +55,36 @@ const emailConfig = validateEmailConfig();
 const transporter = nodemailer.createTransport(emailConfig);
 
 /**
- * Validates email address and verification code
+ * Validates email address and content (code or URL)
  */
-function validateEmailAndCode(
+function validateEmailAndContent(
   email: string,
-  code: string
+  content: string
 ): { isValid: boolean; error?: string } {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const codeMinLength = 4;
-  const codeMaxLength = 10;
-  const codeRegex = /^[A-Za-z0-9]+$/; // allow only alphanumeric
 
   if (!email || !emailRegex.test(email)) {
     return { isValid: false, error: "Invalid email address" };
   }
 
-  if (
-    !code ||
-    typeof code !== "string" ||
-    code.length < codeMinLength ||
-    code.length > codeMaxLength ||
-    !codeRegex.test(code)
-  ) {
-    return { isValid: false, error: "Invalid verification code" };
+  if (!content || typeof content !== "string") {
+    return { isValid: false, error: "Invalid content" };
   }
 
   return { isValid: true };
 }
 
 /**
- * Helper function to send emails with verification codes
+ * Helper function to send emails with verification codes or URLs
  */
 async function sendEmailWithCode(
   email: string,
-  code: string,
+  content: string,
   subject: string,
   htmlContent: string
 ): Promise<{ success: boolean; error?: string }> {
   // Validate inputs
-  const validation = validateEmailAndCode(email, code);
+  const validation = validateEmailAndContent(email, content);
   if (!validation.isValid) {
     return { success: false, error: validation.error };
   }
