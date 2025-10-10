@@ -1,9 +1,11 @@
-import { AuthOptions } from "next-auth";
+import { AuthOptions, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import type { UserRole } from "@/types/user-role";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import type { JWT } from "next-auth/jwt";
+import type { Session } from "next-auth";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 const safeLog = (...args: unknown[]) => {
@@ -74,7 +76,7 @@ export const authOptions: AuthOptions = {
           email: user.email,
           name: safeFullName,
           role: user.role as UserRole,
-          emailVerified: user.email_verified,
+          emailVerified: user.email_verified ? new Date() : null,
         };
 
         safeLog("Auth - user authentication successful:", {
@@ -88,14 +90,13 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async jwt({
       token,
       user,
       trigger,
     }: {
-      token: any;
-      user: any;
+      token: JWT;
+      user?: User;
       trigger?: string;
     }) {
       safeLog("JWT callback triggered:", {
@@ -127,8 +128,8 @@ export const authOptions: AuthOptions = {
           select: { email_verified: true, role: true },
         });
         if (dbUser) {
-          token.emailVerified = dbUser.email_verified;
-          token.role = dbUser.role;
+          token.emailVerified = dbUser.email_verified ? new Date() : null;
+          token.role = dbUser.role as UserRole;
           safeLog("JWT callback - token updated:", {
             emailVerified: dbUser.email_verified,
             role: dbUser.role,
@@ -143,12 +144,29 @@ export const authOptions: AuthOptions = {
       });
       return token;
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async session({ session, token }: { session: any; token: any }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       if (session.user) {
-        session.user.id = token.id;
-        session.user.role = token.role;
-        session.user.emailVerified = token.emailVerified;
+        (
+          session.user as User & {
+            id: string;
+            role: UserRole;
+            emailVerified: Date | null;
+          }
+        ).id = token.id as string;
+        (
+          session.user as User & {
+            id: string;
+            role: UserRole;
+            emailVerified: Date | null;
+          }
+        ).role = token.role as UserRole;
+        (
+          session.user as User & {
+            id: string;
+            role: UserRole;
+            emailVerified: Date | null;
+          }
+        ).emailVerified = token.emailVerified as Date | null;
       }
       return session;
     },
