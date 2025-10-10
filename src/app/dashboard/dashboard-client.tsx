@@ -6,10 +6,13 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import AccountManagementContent from "./(sections)/account-management";
-import RoofCalculatorContent from "./(sections)/roof-calculator";
+import SystemMaintenanceContent from "./(sections)/system-maintenance";
 import { Overview } from "./(sections)/overview/Overview";
 
-type DashboardSection = "overview" | "account-management" | "roof-calculator";
+type DashboardSection =
+  | "overview"
+  | "account-management"
+  | "system-maintenance";
 
 export default function DashboardClient() {
   const [activeSection, setActiveSection] = useQueryState("tab");
@@ -45,10 +48,10 @@ export default function DashboardClient() {
 
   const renderContent = () => {
     switch (activeSection) {
-      case "roof-calculator":
-        return <RoofCalculatorContent />;
       case "account-management":
         return <AccountManagementContent />;
+      case "system-maintenance":
+        return <SystemMaintenanceContent />;
       case "overview":
       case null:
       default:

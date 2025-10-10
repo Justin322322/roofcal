@@ -3,26 +3,19 @@
 import * as React from "react";
 import {
   CameraIcon,
-  ClipboardListIcon,
-  CalculatorIcon,
-  HardHatIcon,
-  SparklesIcon,
-  ArchiveIcon,
   KanbanSquareIcon,
-  CreditCardIcon,
   FileCodeIcon,
   FileTextIcon,
-  HelpCircleIcon,
-  SearchIcon,
-  SettingsIcon,
   UsersIcon,
+  CalculatorIcon,
+  ClipboardCheckIcon,
+  WrenchIcon,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { UserRole } from "@/types/user-role";
 
 import { NavDocuments } from "@/components/nav-documents";
 import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
@@ -42,44 +35,19 @@ const data = {
   },
   navMain: [
     {
-      title: "Roof Calculator",
-      url: "roof-calculator",
+      title: "Roof Estimator",
+      url: "#",
       icon: CalculatorIcon,
     },
     {
-      title: "Manual Calculator",
+      title: "Assigned Projects",
       url: "#",
-      icon: ClipboardListIcon,
-    },
-    {
-      title: "Contractor Calculator",
-      url: "#",
-      icon: HardHatIcon,
-    },
-    {
-      title: "AI Recommendations",
-      url: "#",
-      icon: SparklesIcon,
-    },
-    {
-      title: "Archive",
-      url: "#",
-      icon: ArchiveIcon,
+      icon: ClipboardCheckIcon,
     },
     {
       title: "Project Management",
       url: "#",
       icon: KanbanSquareIcon,
-    },
-    {
-      title: "Cost Customization",
-      url: "#",
-      icon: CreditCardIcon,
-    },
-    {
-      title: "Account Management",
-      url: "account-management",
-      icon: UsersIcon,
     },
   ],
   navClouds: [
@@ -130,28 +98,17 @@ const data = {
       ],
     },
   ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: SettingsIcon,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: HelpCircleIcon,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: SearchIcon,
-    },
-  ],
+  navSecondary: [],
   documents: [
     {
-      name: "Reports",
-      url: "#",
-      icon: ClipboardListIcon,
+      name: "Account Management",
+      url: "account-management",
+      icon: UsersIcon,
+    },
+    {
+      name: "System Maintenance",
+      url: "system-maintenance",
+      icon: WrenchIcon,
     },
   ],
 };
@@ -168,76 +125,28 @@ export function AppSidebar({
 }: AppSidebarProps) {
   const { data: session } = useSession();
 
-  const getNavigationData = (userRole: UserRole) => ({
+  const getNavigationData = () => ({
     navMain: [
       {
-        title: "Roof Calculator",
-        url: "roof-calculator",
+        title: "Roof Estimator",
+        url: "#",
         icon: CalculatorIcon,
       },
       {
-        title: "Manual Calculator",
+        title: "Assigned Projects",
         url: "#",
-        icon: ClipboardListIcon,
-      },
-      {
-        title: "Contractor Calculator",
-        url: "#",
-        icon: HardHatIcon,
-      },
-      {
-        title: "AI Recommendations",
-        url: "#",
-        icon: SparklesIcon,
-      },
-      {
-        title: "Archive",
-        url: "#",
-        icon: ArchiveIcon,
+        icon: ClipboardCheckIcon,
       },
       {
         title: "Project Management",
         url: "#",
         icon: KanbanSquareIcon,
       },
-      {
-        title: "Cost Customization",
-        url: "#",
-        icon: CreditCardIcon,
-      },
-      // Only show Account Management for admin users
-      ...(userRole === UserRole.ADMIN
-        ? [
-            {
-              title: "Account Management",
-              url: "account-management",
-              icon: UsersIcon,
-            },
-          ]
-        : []),
     ],
-    navSecondary: [
-      {
-        title: "Support",
-        url: "#",
-        icon: HelpCircleIcon,
-      },
-      {
-        title: "Settings",
-        url: "#",
-        icon: SettingsIcon,
-      },
-      {
-        title: "Reports",
-        url: "#",
-        icon: ClipboardListIcon,
-      },
-    ],
+    navSecondary: [],
   });
 
-  const navigationData = getNavigationData(
-    session?.user?.role || UserRole.CLIENT
-  );
+  const navigationData = getNavigationData();
 
   const userData = {
     name: session?.user?.name || "User",
@@ -266,8 +175,14 @@ export function AppSidebar({
           activeSection={activeSection}
           onSectionChange={onSectionChange}
         />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={navigationData.navSecondary} className="mt-auto" />
+        {/* Only show Professional Tools for ADMIN users */}
+        {session?.user?.role === UserRole.ADMIN && (
+          <NavDocuments
+            items={data.documents}
+            activeSection={activeSection}
+            onSectionChange={onSectionChange}
+          />
+        )}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userData} />

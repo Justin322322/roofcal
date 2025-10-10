@@ -38,16 +38,11 @@ export function NavMain({
               <SidebarMenuButton
                 tooltip={item.title}
                 onClick={() => {
-                  if (
-                    (item.url === "account-management" ||
-                      item.url === "roof-calculator") &&
-                    onSectionChange
-                  ) {
+                  if (item.url === "account-management" && onSectionChange) {
                     onSectionChange(item.url);
                   } else if (
                     item.url !== "#" &&
-                    item.url !== "account-management" &&
-                    item.url !== "roof-calculator"
+                    item.url !== "account-management"
                   ) {
                     // Handle other navigation
                     console.log("Navigate to:", item.url);
