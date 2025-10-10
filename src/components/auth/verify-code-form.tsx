@@ -124,9 +124,8 @@ export default function VerifyCodeForm() {
           }
         }
 
-        // Only auto-generate OTP if coming from signup (has session) and not rate limited
+        // Check rate limit status and restore cooldown state
         if (session?.user && !session.user.emailVerified) {
-          // First check rate limit status
           try {
             const rateLimitRes = await fetch("/api/auth/rate-limit-status", {
               method: "POST",
@@ -147,39 +146,11 @@ export default function VerifyCodeForm() {
             console.error("Failed to check rate limit status:", error);
           }
 
-          // If not rate limited, try to auto-generate OTP
-          try {
-            const res = await fetch("/api/auth/resend-code", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email }),
-            });
-
-            if (res.ok) {
-              toast.success("Verification code sent to your email!");
-              // Start cooldown timer after successful generation
-              setCooldownTime(30);
-              setIsOnCooldown(true);
-              startCooldownTimer(30);
-            } else {
-              const errorData = await res.json().catch(() => ({}));
-              if (errorData.code === "RATE_LIMIT_EXCEEDED") {
-                setCooldownTime(errorData.remainingTime || 30);
-                setIsOnCooldown(true);
-                startCooldownTimer(errorData.remainingTime || 30);
-              } else {
-                console.error("Failed to auto-generate OTP");
-                toast.error(
-                  "We couldn't send the verification code automatically. Please use Resend."
-                );
-              }
-            }
-          } catch (error) {
-            console.error("Failed to auto-generate OTP:", error);
-            toast.error(
-              "We couldn't send the verification code automatically. Please use Resend."
-            );
-          }
+          // Don't auto-generate OTP here since signup already sent one
+          // Just set up a cooldown timer to prevent immediate resend
+          setCooldownTime(30);
+          setIsOnCooldown(true);
+          startCooldownTimer(30);
         }
       }
     };

@@ -139,43 +139,53 @@ export function AccountViewModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col gap-0 p-0">
-        <DialogHeader className="px-6 pt-6 pb-4">
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <DialogTitle className="text-xl font-semibold">
-              {account.clientName}
-            </DialogTitle>
-            <Badge
-              variant={getStatusBadgeVariant(account.status)}
-              className="shrink-0"
-            >
-              {account.status}
-            </Badge>
-          </div>
-          <DialogDescription className="text-sm">
-            {account.email}
-          </DialogDescription>
-        </DialogHeader>
+        {/* Fixed Header */}
+        <div className="sticky top-0 z-10 bg-background border-b">
+          <DialogHeader className="px-6 pt-6 pb-4">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <DialogTitle className="text-xl font-semibold">
+                {account.clientName}
+              </DialogTitle>
+              <Badge
+                variant={getStatusBadgeVariant(account.status)}
+                className="shrink-0"
+              >
+                {account.status}
+              </Badge>
+            </div>
+            <DialogDescription className="text-sm">
+              {account.email}
+            </DialogDescription>
+          </DialogHeader>
 
-        <Separator />
+          <Separator />
+
+          {/* Fixed Tabs */}
+          <div className="px-6 pt-2 pb-2">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="details">
+                  <UserIcon className="h-4 w-4 mr-2" />
+                  Details
+                </TabsTrigger>
+                <TabsTrigger value="activity">
+                  <ActivityIcon className="h-4 w-4 mr-2" />
+                  Activity
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </div>
 
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
           className="flex-1 flex flex-col"
         >
-          <div className="px-6 pt-2">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="details">
-                <UserIcon className="h-4 w-4 mr-2" />
-                Details
-              </TabsTrigger>
-              <TabsTrigger value="activity">
-                <ActivityIcon className="h-4 w-4 mr-2" />
-                Activity
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
           <ScrollArea className="flex-1 px-6">
             {/* Details Tab */}
             <TabsContent value="details" className="mt-0 py-4 space-y-5">
