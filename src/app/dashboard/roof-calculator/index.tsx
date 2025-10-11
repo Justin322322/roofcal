@@ -292,31 +292,28 @@ export function RoofCalculatorContent() {
               onAutoOptimize={handleAutoOptimize}
             />
 
-            {results.totalCost > 0 && (
-              <>
-                <DecisionInsights
-                  decisionTree={decisionTree}
-                  currentMaterial={material}
-                  area={results.area}
-                />
+            <DecisionInsights
+              decisionTree={decisionTree}
+              currentMaterial={material}
+              area={results.area}
+            />
 
-                <Card className="bg-primary/5 border-primary/20">
-                  <CardHeader>
-                    <CardTitle className="text-base">Quick Tips</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2 text-sm">
-                    <p>• Add 10% extra material for waste and cuts</p>
-                    <p>
-                      • Consider additional costs for underlayment and flashing
-                    </p>
-                    <p>• Labor costs may vary by region and complexity</p>
-                    <p>
-                      • Steep roofs (over 6:12 pitch) may incur additional
-                      charges
-                    </p>
-                  </CardContent>
-                </Card>
-              </>
+            {results.totalCost > 0 && (
+              <Card className="bg-primary/5 border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-base">Quick Tips</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  <p>• Add 10% extra material for waste and cuts</p>
+                  <p>
+                    • Consider additional costs for underlayment and flashing
+                  </p>
+                  <p>• Labor costs may vary by region and complexity</p>
+                  <p>
+                    • Steep roofs (over 6:12 pitch) may incur additional charges
+                  </p>
+                </CardContent>
+              </Card>
             )}
           </div>
         </div>

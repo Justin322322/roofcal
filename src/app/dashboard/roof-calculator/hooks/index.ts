@@ -20,7 +20,7 @@ export function useRoofCalculator() {
     materialThickness: "standard",
     ridgeType: "standard",
     gutterSize: "standard",
-    budgetLevel: "medium",
+    budgetLevel: "low",
     budgetAmount: "",
     constructionMode: "new",
     gutterLengthA: "",
@@ -48,19 +48,58 @@ export function useRoofCalculator() {
     ridgeLength: 0,
   });
 
-  const [decisionTree, setDecisionTree] = useState<DecisionTreeResult>({
-    materialRecommendation: {
-      recommendedMaterial: "asphalt",
-      reason: "Enter measurements to get recommendations",
-      isOptimal: true,
-    },
-    complexity: {
-      score: 1,
-      factors: [],
-      level: "low",
-    },
-    optimizationTips: [],
+  // Initialize decision tree with current state
+  const initialDecisionTree = analyzeProject({
+    roofType: measurements.roofType,
+    pitch: parseFloat(measurements.pitch) || 30,
+    area: 0, // Will be updated when measurements are entered
+    material: "asphalt", // Current material
+    floors: parseFloat(measurements.floors) || 1,
+    materialThickness: measurements.materialThickness,
+    ridgeType: measurements.ridgeType,
+    gutterSize: measurements.gutterSize,
+    budgetLevel: measurements.budgetLevel,
   });
+
+  const [decisionTree, setDecisionTree] =
+    useState<DecisionTreeResult>(initialDecisionTree);
+
+  // Update decision tree when material or relevant measurements change
+  useEffect(() => {
+    const length = parseFloat(measurements.length) || 0;
+    const width = parseFloat(measurements.width) || 0;
+    const area = length * width;
+    const floors = parseFloat(measurements.floors) || 1;
+
+    const analysis = analyzeProject({
+      roofType: measurements.roofType,
+      pitch: parseFloat(measurements.pitch) || 30,
+      area,
+      material,
+      floors,
+      materialThickness: measurements.materialThickness,
+      ridgeType: measurements.ridgeType,
+      gutterSize: measurements.gutterSize,
+      budgetLevel: measurements.budgetLevel,
+    });
+
+    setDecisionTree({
+      materialRecommendation: analysis.materialRecommendation,
+      complexity: analysis.complexity,
+      optimizationTips: analysis.optimizationTips,
+    });
+  }, [
+    material,
+    measurements.roofType,
+    measurements.pitch,
+    measurements.floors,
+    measurements.materialThickness,
+    measurements.ridgeType,
+    measurements.gutterSize,
+    measurements.budgetLevel,
+    measurements.length,
+    measurements.width,
+  ]);
 
   const calculateRoof = useCallback(() => {
     const length = parseFloat(measurements.length) || 0;

@@ -59,20 +59,16 @@ export function DecisionInsights({
             <SparklesIcon className="h-5 w-5 text-primary" />
             Project Analysis
           </div>
-          {!materialRecommendation.isOptimal && potentialSavings > 0 && (
+          {currentMaterial !== materialRecommendation.recommendedMaterial && (
             <Badge
               variant="secondary"
               className="bg-green-100 text-green-800 hover:bg-green-200"
             >
-              Save ₱{potentialSavings.toLocaleString()}
-            </Badge>
-          )}
-          {!materialRecommendation.isOptimal && potentialSavings < 0 && (
-            <Badge
-              variant="secondary"
-              className="bg-red-100 text-red-800 hover:bg-red-200"
-            >
-              +₱{Math.abs(potentialSavings).toLocaleString()} more
+              {area > 0
+                ? potentialSavings > 0
+                  ? `Save ₱${potentialSavings.toLocaleString()}`
+                  : `+₱${Math.abs(potentialSavings).toLocaleString()} more`
+                : "Enter measurements to see savings"}
             </Badge>
           )}
         </CardTitle>
@@ -113,24 +109,75 @@ export function DecisionInsights({
               <AlertDescription>
                 <div className="space-y-2">
                   <p>{materialRecommendation.reason}</p>
-                  {potentialSavings > 0 && (
-                    <p className="text-sm font-medium text-green-700">
-                      💰 You could save ₱{potentialSavings.toLocaleString()} on
-                      materials alone
-                    </p>
-                  )}
-                  {potentialSavings < 0 && (
-                    <p className="text-sm font-medium text-red-700">
-                      💰 This option would cost ₱
-                      {Math.abs(potentialSavings).toLocaleString()} more for
-                      materials
-                    </p>
-                  )}
+                  {area === 0 &&
+                    currentMaterial !==
+                      materialRecommendation.recommendedMaterial && (
+                      <p className="text-sm font-medium text-blue-700">
+                        Enter your roof measurements to see potential cost
+                        savings
+                      </p>
+                    )}
                 </div>
               </AlertDescription>
             </Alert>
           )}
         </div>
+
+        <Separator />
+
+        {/* Cost Savings Analysis */}
+        {currentMaterialPrice !== recommendedMaterialPrice && (
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold">Cost Savings Analysis</h4>
+            <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  {currentMaterialName} Cost
+                </span>
+                <span className="text-sm font-medium">
+                  ₱{currentMaterialPrice.toLocaleString()}/sq.m
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  {currentMaterial ===
+                  materialRecommendation.recommendedMaterial
+                    ? `${recommendedMaterialName} Alternative Cost`
+                    : `${recommendedMaterialName} Recommended Cost`}
+                </span>
+                <span className="text-sm font-medium">
+                  ₱{recommendedMaterialPrice.toLocaleString()}/sq.m
+                </span>
+              </div>
+              <div className="border-t pt-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold">
+                    {currentMaterial ===
+                    materialRecommendation.recommendedMaterial
+                      ? "Alternative Cost Impact"
+                      : "Potential Savings"}
+                  </span>
+                  <span
+                    className={`text-sm font-bold ${
+                      potentialSavings > 0 ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {area > 0
+                      ? potentialSavings > 0
+                        ? `₱${potentialSavings.toLocaleString()} saved`
+                        : `₱${Math.abs(potentialSavings).toLocaleString()} additional cost`
+                      : "Enter measurements to calculate"}
+                  </span>
+                </div>
+                {area > 0 && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Based on {area.toFixed(2)} sq.m roof area
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         <Separator />
 
