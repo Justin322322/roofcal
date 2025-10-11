@@ -11,7 +11,6 @@ import { materials } from "../components/material-selection";
 import * as CONSTANTS from "../constants";
 
 export function useRoofCalculator() {
-  const [loading, setLoading] = useState(true);
   const [measurements, setMeasurements] = useState<Measurements>({
     length: "",
     width: "",
@@ -62,15 +61,6 @@ export function useRoofCalculator() {
     },
     optimizationTips: [],
   });
-
-  // Simulate initial loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 800); // 800ms loading time
-
-    return () => clearTimeout(timer);
-  }, []);
 
   const calculateRoof = useCallback(() => {
     const length = parseFloat(measurements.length) || 0;
@@ -377,7 +367,6 @@ export function useRoofCalculator() {
   };
 
   return {
-    loading,
     measurements,
     setMeasurements,
     material,

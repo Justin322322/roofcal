@@ -24,7 +24,6 @@ import { ConstructionModeSelector } from "./components/construction-mode-selecto
 import { GutterCalculator } from "./components/gutter-calculator";
 import { InsulationVentilation } from "./components/insulation-ventilation";
 import { BudgetValidator } from "./components/budget-validator";
-import { RoofCalculatorSkeleton } from "./components/roof-calculator-skeleton";
 import {
   CalculatorIcon,
   RotateCcwIcon,
@@ -37,7 +36,6 @@ import { useState, useRef, useEffect } from "react";
 
 export function RoofCalculatorContent() {
   const {
-    loading,
     measurements,
     setMeasurements,
     material,
@@ -97,10 +95,6 @@ export function RoofCalculatorContent() {
     }
   }, [isAdditionalSpecsOpen]);
 
-  if (loading) {
-    return <RoofCalculatorSkeleton />;
-  }
-
   return (
     <>
       {/* Header with description and reset button */}
@@ -121,7 +115,6 @@ export function RoofCalculatorContent() {
           complexity={decisionTree.complexity}
           totalCost={results.totalCost}
           material={material}
-          loading={loading}
         />
       </div>
 
@@ -304,6 +297,7 @@ export function RoofCalculatorContent() {
                 <DecisionInsights
                   decisionTree={decisionTree}
                   currentMaterial={material}
+                  area={results.area}
                 />
 
                 <Card className="bg-primary/5 border-primary/20">

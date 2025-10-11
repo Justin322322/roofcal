@@ -23,28 +23,58 @@ import { materials } from "./material-selection";
 interface DecisionInsightsProps {
   decisionTree: DecisionTreeResult;
   currentMaterial: string;
+  area: number;
 }
 
 export function DecisionInsights({
   decisionTree,
   currentMaterial,
+  area,
 }: DecisionInsightsProps) {
   const { materialRecommendation, complexity, optimizationTips } = decisionTree;
 
-  // Get material names for display
-  const currentMaterialName =
-    materials.find((m) => m.value === currentMaterial)?.name || currentMaterial;
+  // Get material names and prices for display
+  const currentMaterialData = materials.find(
+    (m) => m.value === currentMaterial
+  );
+  const recommendedMaterialData = materials.find(
+    (m) => m.value === materialRecommendation.recommendedMaterial
+  );
+
+  const currentMaterialName = currentMaterialData?.name || currentMaterial;
   const recommendedMaterialName =
-    materials.find(
-      (m) => m.value === materialRecommendation.recommendedMaterial
-    )?.name || materialRecommendation.recommendedMaterial;
+    recommendedMaterialData?.name || materialRecommendation.recommendedMaterial;
+
+  // Calculate potential savings
+  const currentMaterialPrice = currentMaterialData?.price || 0;
+  const recommendedMaterialPrice = recommendedMaterialData?.price || 0;
+  const priceDifference = currentMaterialPrice - recommendedMaterialPrice;
+  const potentialSavings = priceDifference * area;
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <SparklesIcon className="h-5 w-5 text-primary" />
-          Project Analysis
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <SparklesIcon className="h-5 w-5 text-primary" />
+            Project Analysis
+          </div>
+          {!materialRecommendation.isOptimal && potentialSavings > 0 && (
+            <Badge
+              variant="secondary"
+              className="bg-green-100 text-green-800 hover:bg-green-200"
+            >
+              Save ₱{potentialSavings.toLocaleString()}
+            </Badge>
+          )}
+          {!materialRecommendation.isOptimal && potentialSavings < 0 && (
+            <Badge
+              variant="secondary"
+              className="bg-red-100 text-red-800 hover:bg-red-200"
+            >
+              +₱{Math.abs(potentialSavings).toLocaleString()} more
+            </Badge>
+          )}
         </CardTitle>
         <CardDescription>
           Intelligent recommendations based on decision tree algorithm
@@ -81,7 +111,22 @@ export function DecisionInsights({
               <AlertTriangleIcon className="h-4 w-4" />
               <AlertTitle>Consider: {recommendedMaterialName}</AlertTitle>
               <AlertDescription>
-                {materialRecommendation.reason}
+                <div className="space-y-2">
+                  <p>{materialRecommendation.reason}</p>
+                  {potentialSavings > 0 && (
+                    <p className="text-sm font-medium text-green-700">
+                      💰 You could save ₱{potentialSavings.toLocaleString()} on
+                      materials alone
+                    </p>
+                  )}
+                  {potentialSavings < 0 && (
+                    <p className="text-sm font-medium text-red-700">
+                      💰 This option would cost ₱
+                      {Math.abs(potentialSavings).toLocaleString()} more for
+                      materials
+                    </p>
+                  )}
+                </div>
               </AlertDescription>
             </Alert>
           )}
