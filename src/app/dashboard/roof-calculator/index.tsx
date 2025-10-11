@@ -241,6 +241,7 @@ export function RoofCalculatorContent() {
                 <MeasurementForm
                   measurements={measurements}
                   onMeasurementsChange={setMeasurements}
+                  currentMaterial={material}
                 />
               </CardContent>
             </Card>
@@ -255,7 +256,22 @@ export function RoofCalculatorContent() {
               <CardContent>
                 <MaterialSelection
                   material={material}
-                  onMaterialChange={setMaterial}
+                  onMaterialChange={(newMaterial) => {
+                    setMaterial(newMaterial);
+                    
+                    // Auto-correct roof type when switching to Long Span (corrugated)
+                    if (newMaterial === "corrugated" && 
+                        measurements.roofType !== "gable" && 
+                        measurements.roofType !== "shed") {
+                      setMeasurements({ 
+                        ...measurements, 
+                        roofType: "gable" 
+                      });
+                    }
+                  }}
+                  onRidgeTypeChange={(ridgeType: string) =>
+                    setMeasurements({ ...measurements, ridgeType })
+                  }
                 />
               </CardContent>
             </Card>
@@ -291,6 +307,7 @@ export function RoofCalculatorContent() {
                         onMeasurementsChange={(updates) =>
                           setMeasurements({ ...measurements, ...updates })
                         }
+                        currentMaterial={material}
                       />
 
                       <Separator />

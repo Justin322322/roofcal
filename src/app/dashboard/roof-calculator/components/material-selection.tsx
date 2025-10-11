@@ -19,6 +19,7 @@ import {
 interface MaterialSelectionProps {
   material: string;
   onMaterialChange: (material: string) => void;
+  onRidgeTypeChange?: (ridgeType: string) => void;
 }
 
 const materials = [
@@ -33,6 +34,12 @@ const materials = [
     name: "Metal Roofing",
     price: 1200,
     description: "Long-lasting, energy efficient, 40-70 year lifespan",
+  },
+  {
+    value: "corrugated",
+    name: "Long Span",
+    price: 800,
+    description: "Lightweight, weather-resistant, 30-50 year lifespan",
   },
   {
     value: "tile",
@@ -57,14 +64,24 @@ const materials = [
 export function MaterialSelection({
   material,
   onMaterialChange,
+  onRidgeTypeChange,
 }: MaterialSelectionProps) {
   const selectedMaterial = materials.find((m) => m.value === material);
+
+  const handleMaterialChange = (newMaterial: string) => {
+    onMaterialChange(newMaterial);
+    
+    // Auto-sync ridge material when corrugated is selected
+    if (newMaterial === "corrugated" && onRidgeTypeChange) {
+      onRidgeTypeChange("corrugated");
+    }
+  };
 
   return (
     <div className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="material">Roofing Material</Label>
-        <Select value={material} onValueChange={onMaterialChange}>
+        <Select value={material} onValueChange={handleMaterialChange}>
           <SelectTrigger>
             <SelectValue placeholder="Select material" />
           </SelectTrigger>

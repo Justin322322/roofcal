@@ -19,11 +19,13 @@ interface Measurements {
 interface AdditionalSpecsProps {
   measurements: Measurements;
   onMeasurementsChange: (measurements: Partial<Measurements>) => void;
+  currentMaterial?: string;
 }
 
 export function AdditionalSpecs({
   measurements,
   onMeasurementsChange,
+  currentMaterial = "asphalt",
 }: AdditionalSpecsProps) {
   const handleChange = (field: string, value: string) => {
     onMeasurementsChange({
@@ -89,8 +91,18 @@ export function AdditionalSpecs({
               <SelectValue placeholder="Select ridge type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="standard">Standard Ridge Cap</SelectItem>
-              <SelectItem value="ventilated">Ventilated Ridge Cap</SelectItem>
+              {currentMaterial === "corrugated" ? (
+                <>
+                  <SelectItem value="corrugated">Long Span Ridge Cap</SelectItem>
+                  <SelectItem value="standard">Standard Ridge Cap</SelectItem>
+                  <SelectItem value="ventilated">Ventilated Ridge Cap</SelectItem>
+                </>
+              ) : (
+                <>
+                  <SelectItem value="standard">Standard Ridge Cap</SelectItem>
+                  <SelectItem value="ventilated">Ventilated Ridge Cap</SelectItem>
+                </>
+              )}
             </SelectContent>
           </Select>
         </div>

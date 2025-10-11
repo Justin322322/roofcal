@@ -32,11 +32,13 @@ interface Measurements {
 interface MeasurementFormProps {
   measurements: Measurements;
   onMeasurementsChange: (measurements: Measurements) => void;
+  currentMaterial?: string;
 }
 
 export function MeasurementForm({
   measurements,
   onMeasurementsChange,
+  currentMaterial = "asphalt",
 }: MeasurementFormProps) {
   const handleChange = (field: string, value: string) => {
     // Special handling for floors field to limit to 99
@@ -157,11 +159,21 @@ export function MeasurementForm({
               <SelectValue placeholder="Select roof type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="gable">Gable</SelectItem>
-              <SelectItem value="hip">Hip</SelectItem>
-              <SelectItem value="flat">Flat</SelectItem>
-              <SelectItem value="mansard">Mansard</SelectItem>
-              <SelectItem value="gambrel">Gambrel</SelectItem>
+              {currentMaterial === "corrugated" ? (
+                <>
+                  <SelectItem value="gable">Gable</SelectItem>
+                  <SelectItem value="shed">Shed</SelectItem>
+                </>
+              ) : (
+                <>
+                  <SelectItem value="gable">Gable</SelectItem>
+                  <SelectItem value="shed">Shed</SelectItem>
+                  <SelectItem value="hip">Hip</SelectItem>
+                  <SelectItem value="flat">Flat</SelectItem>
+                  <SelectItem value="mansard">Mansard</SelectItem>
+                  <SelectItem value="gambrel">Gambrel</SelectItem>
+                </>
+              )}
             </SelectContent>
           </Select>
         </div>
