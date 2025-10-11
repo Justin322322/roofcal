@@ -202,26 +202,47 @@ export function ProjectManagementContent({}: ProjectManagementContentProps) {
     }
 
     setActionLoading(projectToDelete.id);
+    
+    // Optimistic UI update - immediately update the project status in the local state
+    const optimisticUpdate = (newStatus: ProjectStatus) => {
+      setProjects(prevProjects => 
+        prevProjects.map(project => 
+          project.id === projectToDelete.id 
+            ? { ...project, status: newStatus }
+            : project
+        )
+      );
+    };
+
+    // Optimistically update to ARCHIVED
+    optimisticUpdate("ARCHIVED");
+
     try {
       const response = await fetch(`/api/projects/${projectToDelete.id}`, {
         method: "DELETE",
       });
 
       if (response.ok) {
-        // Clear cache to force refresh
-        clearProjectCache();
-        // Refresh the projects list
-        await fetchProjects(false, true);
+        // Update cache with the new status instead of clearing it
+        projectCache.data = projectCache.data.map(project => 
+          project.id === projectToDelete.id 
+            ? { ...project, status: "ARCHIVED" }
+            : project
+        );
         toast.success("Project archived successfully", {
           description: `"${projectToDelete.name}" has been moved to archived status`,
         });
       } else {
+        // Revert optimistic update on error
+        optimisticUpdate("ACTIVE");
         const errorData = await response.json();
         toast.error("Failed to archive project", {
           description: errorData.error || "An error occurred",
         });
       }
     } catch {
+      // Revert optimistic update on error
+      optimisticUpdate("ACTIVE");
       toast.error("Failed to archive project", {
         description: "Network error occurred",
       });
@@ -246,26 +267,47 @@ export function ProjectManagementContent({}: ProjectManagementContentProps) {
     if (!projectToDelete) return;
 
     setActionLoading(projectToDelete.id);
+    
+    // Optimistic UI update - immediately update the project status in the local state
+    const optimisticUpdate = (newStatus: ProjectStatus) => {
+      setProjects(prevProjects => 
+        prevProjects.map(project => 
+          project.id === projectToDelete.id 
+            ? { ...project, status: newStatus }
+            : project
+        )
+      );
+    };
+
+    // Optimistically update to ACTIVE
+    optimisticUpdate("ACTIVE");
+
     try {
       const response = await fetch(`/api/projects/${projectToDelete.id}`, {
         method: "PATCH",
       });
 
       if (response.ok) {
-        // Clear cache to force refresh
-        clearProjectCache();
-        // Refresh the projects list
-        await fetchProjects(false, true);
+        // Update cache with the new status instead of clearing it
+        projectCache.data = projectCache.data.map(project => 
+          project.id === projectToDelete.id 
+            ? { ...project, status: "ACTIVE" }
+            : project
+        );
         toast.success("Project unarchived successfully", {
           description: `"${projectToDelete.name}" has been restored to active status`,
         });
       } else {
+        // Revert optimistic update on error
+        optimisticUpdate("ARCHIVED");
         const errorData = await response.json();
         toast.error("Failed to unarchive project", {
           description: errorData.error || "An error occurred",
         });
       }
     } catch {
+      // Revert optimistic update on error
+      optimisticUpdate("ARCHIVED");
       toast.error("Failed to unarchive project", {
         description: "Network error occurred",
       });
