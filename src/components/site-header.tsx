@@ -8,13 +8,14 @@ interface SiteHeaderProps {
 export function SiteHeader({ currentSection }: SiteHeaderProps) {
   const getSectionTitle = (section?: string) => {
     switch (section) {
+      case "roof-calculator":
+        return "Roof Estimator";
       case "account-management":
         return "Account Management";
       case "system-maintenance":
         return "System Maintenance";
-      case "overview":
       default:
-        return "Documents";
+        return "Roof Estimator";
     }
   };
 

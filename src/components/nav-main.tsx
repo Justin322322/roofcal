@@ -38,14 +38,8 @@ export function NavMain({
               <SidebarMenuButton
                 tooltip={item.title}
                 onClick={() => {
-                  if (item.url === "account-management" && onSectionChange) {
+                  if (onSectionChange && item.url !== "#") {
                     onSectionChange(item.url);
-                  } else if (
-                    item.url !== "#" &&
-                    item.url !== "account-management"
-                  ) {
-                    // Handle other navigation
-                    console.log("Navigate to:", item.url);
                   }
                 }}
                 isActive={activeSection === item.url}

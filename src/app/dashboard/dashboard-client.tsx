@@ -7,10 +7,10 @@ import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import AccountManagementContent from "./(sections)/account-management";
 import SystemMaintenanceContent from "./(sections)/system-maintenance";
-import { Overview } from "./(sections)/overview/Overview";
+import { RoofCalculatorContent } from "./roof-calculator";
 
 type DashboardSection =
-  | "overview"
+  | "roof-calculator"
   | "account-management"
   | "system-maintenance";
 
@@ -23,13 +23,13 @@ export default function DashboardClient() {
       <SidebarProvider>
         <AppSidebar
           variant="inset"
-          activeSection="overview"
+          activeSection="roof-calculator"
           onSectionChange={(section) =>
             setActiveSection(section as DashboardSection)
           }
         />
         <SidebarInset>
-          <SiteHeader currentSection="overview" />
+          <SiteHeader currentSection="roof-calculator" />
           <div className="flex flex-1 flex-col">
             <div className="@container/main flex flex-1 flex-col gap-2">
               <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
@@ -48,35 +48,32 @@ export default function DashboardClient() {
 
   const renderContent = () => {
     switch (activeSection) {
+      case "roof-calculator":
+      case null: // Default to roof calculator when no tab is specified
+        return <RoofCalculatorContent />;
       case "account-management":
         return <AccountManagementContent />;
       case "system-maintenance":
         return <SystemMaintenanceContent />;
-      case "overview":
-      case null:
       default:
-        return <Overview />;
+        return <RoofCalculatorContent />;
     }
   };
 
   const handleSectionChange = (section: string) => {
     const dashboardSection = section as DashboardSection;
-    if (dashboardSection === "overview") {
-      setActiveSection(null);
-    } else {
-      setActiveSection(dashboardSection);
-    }
+    setActiveSection(dashboardSection);
   };
 
   return (
     <SidebarProvider>
       <AppSidebar
         variant="inset"
-        activeSection={activeSection || "overview"}
+        activeSection={activeSection || "roof-calculator"}
         onSectionChange={handleSectionChange}
       />
       <SidebarInset>
-        <SiteHeader currentSection={activeSection || "overview"} />
+        <SiteHeader currentSection={activeSection || "roof-calculator"} />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">

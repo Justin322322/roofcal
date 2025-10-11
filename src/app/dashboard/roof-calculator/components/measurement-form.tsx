@@ -15,6 +15,11 @@ interface Measurements {
   width: string;
   pitch: string;
   roofType: string;
+  floors: string;
+  materialThickness: string;
+  ridgeType: string;
+  gutterSize: string;
+  budgetLevel: string;
 }
 
 interface MeasurementFormProps {
@@ -27,6 +32,21 @@ export function MeasurementForm({
   onMeasurementsChange,
 }: MeasurementFormProps) {
   const handleChange = (field: string, value: string) => {
+    // Special handling for floors field to limit to 99
+    if (field === "floors") {
+      const numericValue = parseInt(value, 10);
+      if (
+        value === "" ||
+        (!isNaN(numericValue) && numericValue >= 1 && numericValue <= 99)
+      ) {
+        onMeasurementsChange({
+          ...measurements,
+          [field]: value,
+        });
+      }
+      return;
+    }
+
     onMeasurementsChange({
       ...measurements,
       [field]: value,
@@ -63,18 +83,60 @@ export function MeasurementForm({
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-[2fr_1fr_2fr]">
         <div className="space-y-2">
-          <Label htmlFor="pitch">Roof Pitch (degrees)</Label>
-          <Input
-            id="pitch"
-            type="number"
-            placeholder="Enter pitch"
+          <Label htmlFor="pitch">Roof Pitch</Label>
+          <Select
             value={measurements.pitch}
-            onChange={(e) => handleChange("pitch", e.target.value)}
-            min="0"
-            max="90"
+            onValueChange={(value) => handleChange("pitch", value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select roof pitch" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="5">
+                5° - Flat roof (requires excellent drainage)
+              </SelectItem>
+              <SelectItem value="10">
+                10° - Low slope (good drainage needed)
+              </SelectItem>
+              <SelectItem value="15">
+                15° - Good for heavy rain areas
+              </SelectItem>
+              <SelectItem value="20">20° - Excellent for heavy rain</SelectItem>
+              <SelectItem value="25">25° - Ideal for heavy rainfall</SelectItem>
+              <SelectItem value="30">
+                30° - Perfect for heavy rain areas
+              </SelectItem>
+              <SelectItem value="35">
+                35° - Great for heavy rain & snow
+              </SelectItem>
+              <SelectItem value="40">40° - Excellent water runoff</SelectItem>
+              <SelectItem value="45">
+                45° - Very steep (high installation cost)
+              </SelectItem>
+              <SelectItem value="50">
+                50° - Extremely steep (specialized labor)
+              </SelectItem>
+              <SelectItem value="60">
+                60° - Maximum steepness (complex installation)
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="floors">Number of Floors</Label>
+          <Input
+            id="floors"
+            type="number"
+            placeholder="Enter floors"
+            value={measurements.floors}
+            onChange={(e) => handleChange("floors", e.target.value)}
+            min="1"
+            max="99"
             step="1"
+            className="text-center"
           />
         </div>
 

@@ -129,7 +129,7 @@ export function AppSidebar({
     navMain: [
       {
         title: "Roof Estimator",
-        url: "#",
+        url: "roof-calculator",
         icon: CalculatorIcon,
       },
       {

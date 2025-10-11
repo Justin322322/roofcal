@@ -3,6 +3,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { SparklesIcon, Loader2Icon } from "lucide-react";
+import { useState } from "react";
 
 interface CalculationResultsProps {
   area: number;
@@ -10,6 +13,7 @@ interface CalculationResultsProps {
   laborCost: number;
   totalCost: number;
   material: string;
+  onAutoOptimize?: () => void;
 }
 
 export function CalculationResults({
@@ -18,7 +22,26 @@ export function CalculationResults({
   laborCost,
   totalCost,
   material,
+  onAutoOptimize,
 }: CalculationResultsProps) {
+  const [isOptimizing, setIsOptimizing] = useState(false);
+
+  const handleOptimizeClick = async () => {
+    if (!onAutoOptimize) return;
+
+    setIsOptimizing(true);
+
+    // Small delay to show the animation
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    onAutoOptimize();
+
+    // Keep button in loading state briefly after optimization
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    setIsOptimizing(false);
+  };
+
   if (area === 0) {
     return (
       <Card>
@@ -39,7 +62,31 @@ export function CalculationResults({
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>Calculation Results</span>
-          <Badge variant="secondary">{material || "No material"}</Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary">{material || "No material"}</Badge>
+            {onAutoOptimize && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleOptimizeClick}
+                disabled={isOptimizing}
+                className="h-7 px-3 text-xs"
+                title="Optimize settings to reduce complexity while maintaining quality"
+              >
+                {isOptimizing ? (
+                  <>
+                    <Loader2Icon className="h-3 w-3 mr-1 animate-spin" />
+                    Optimizing...
+                  </>
+                ) : (
+                  <>
+                    <SparklesIcon className="h-3 w-3 mr-1" />
+                    Optimize
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
