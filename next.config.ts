@@ -2,7 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    unoptimized: true, // Disable image optimization for Vercel compatibility
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'unex0yvstmuqs1jv.public.blob.vercel-storage.com',
+        port: '',
+        pathname: '/roof/**',
+      },
+    ],
   },
 };
 
