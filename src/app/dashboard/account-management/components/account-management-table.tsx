@@ -88,12 +88,6 @@ export function AccountManagementTable({
                 >
                   Client Name
                 </TableHead>
-                <TableHead
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => onSort("company")}
-                >
-                  Company
-                </TableHead>
                 <TableHead>Contact</TableHead>
                 <TableHead
                   className="cursor-pointer hover:bg-muted/50"
@@ -131,9 +125,6 @@ export function AccountManagementTable({
                         <Skeleton className="h-4 w-32" />
                       </TableCell>
                       <TableCell>
-                        <Skeleton className="h-4 w-24" />
-                      </TableCell>
-                      <TableCell>
                         <div className="space-y-1">
                           <Skeleton className="h-4 w-40" />
                           <Skeleton className="h-3 w-28" />
@@ -161,7 +152,6 @@ export function AccountManagementTable({
                       <TableCell className="font-medium">
                         {account.clientName}
                       </TableCell>
-                      <TableCell>{account.company || "-"}</TableCell>
                       <TableCell>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 text-sm">

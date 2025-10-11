@@ -76,15 +76,14 @@ export async function getAccounts(): Promise<Account[]> {
       },
     });
 
-    // Get project-related activity counts for all users (avoid N+1)
+    // Get actual project counts for all users (avoid N+1)
     const userIds = users.map((u) => u.id);
-    const groupedActivityCounts =
+    const groupedProjectCounts =
       userIds.length > 0
-        ? await prisma.activity.groupBy({
+        ? await prisma.project.groupBy({
             by: ["userId"],
             where: {
               userId: { in: userIds },
-              type: "PROJECT_CREATED",
             },
             _count: { _all: true },
           })
@@ -92,7 +91,7 @@ export async function getAccounts(): Promise<Account[]> {
 
     // Map userId -> count
     const projectCountByUserId = new Map<string, number>(
-      groupedActivityCounts.map((g) => [g.userId as string, g._count._all])
+      groupedProjectCounts.map((g) => [g.userId as string, g._count._all])
     );
 
     // Transform User data to Account format
