@@ -294,11 +294,13 @@ export function RoofCalculatorContent() {
               onAutoOptimize={handleAutoOptimize}
             />
 
-            <DecisionInsights
-              decisionTree={decisionTree}
-              currentMaterial={material}
-              area={results.area}
-            />
+            {results.totalCost > 0 && (
+              <DecisionInsights
+                decisionTree={decisionTree}
+                currentMaterial={material}
+                area={results.area}
+              />
+            )}
 
             {results.totalCost > 0 && (
               <Card className="bg-primary/5 border-primary/20">
