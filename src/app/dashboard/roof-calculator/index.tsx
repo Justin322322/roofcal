@@ -49,7 +49,7 @@ export function RoofCalculatorContent() {
   const [isAdditionalSpecsOpen, setIsAdditionalSpecsOpen] = useState(false);
   const additionalSpecsRef = useRef<HTMLDivElement>(null);
 
-  // Auto-expand Additional Specifications when user changes budget, thickness, ridge, or gutter
+  // Auto-expand Additional Specifications when user first changes budget, thickness, ridge, or gutter
   useEffect(() => {
     // Check if user has made any non-default selections
     const hasCustomSpecs =
@@ -58,15 +58,17 @@ export function RoofCalculatorContent() {
       measurements.ridgeType !== "standard" ||
       measurements.gutterSize !== "standard";
 
+    // Only auto-expand if user has custom specs and section is not already open
+    // This prevents forcing it open after user manually closes it
     if (hasCustomSpecs && !isAdditionalSpecsOpen) {
       setIsAdditionalSpecsOpen(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     measurements.budgetLevel,
     measurements.materialThickness,
     measurements.ridgeType,
     measurements.gutterSize,
-    isAdditionalSpecsOpen,
   ]);
 
   // Scroll to the end of Additional Specifications when expanded
