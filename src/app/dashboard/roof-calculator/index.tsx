@@ -29,10 +29,12 @@ import {
   RotateCcwIcon,
   SettingsIcon,
   ChevronDownIcon,
+  Loader2Icon,
 } from "lucide-react";
 import { useRoofCalculator } from "./hooks";
 import { materials } from "./components/material-selection";
 import { useState, useRef, useEffect } from "react";
+import { toast } from "sonner";
 
 export function RoofCalculatorContent() {
   const {
@@ -46,30 +48,9 @@ export function RoofCalculatorContent() {
     handleAutoOptimize,
   } = useRoofCalculator();
 
-  const [isAdditionalSpecsOpen, setIsAdditionalSpecsOpen] = useState(false);
+  const [isAdditionalSpecsOpen, setIsAdditionalSpecsOpen] = useState(true);
+  const [isResetting, setIsResetting] = useState(false);
   const additionalSpecsRef = useRef<HTMLDivElement>(null);
-
-  // Auto-expand Additional Specifications when user first changes budget, thickness, ridge, or gutter
-  useEffect(() => {
-    // Check if user has made any non-default selections
-    const hasCustomSpecs =
-      measurements.budgetLevel !== "medium" ||
-      measurements.materialThickness !== "standard" ||
-      measurements.ridgeType !== "standard" ||
-      measurements.gutterSize !== "standard";
-
-    // Only auto-expand if user has custom specs and section is not already open
-    // This prevents forcing it open after user manually closes it
-    if (hasCustomSpecs && !isAdditionalSpecsOpen) {
-      setIsAdditionalSpecsOpen(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    measurements.budgetLevel,
-    measurements.materialThickness,
-    measurements.ridgeType,
-    measurements.gutterSize,
-  ]);
 
   // Scroll to the end of Additional Specifications when expanded
   useEffect(() => {
@@ -104,9 +85,31 @@ export function RoofCalculatorContent() {
         <p className="text-muted-foreground">
           Calculate roofing materials and costs with intelligent recommendations
         </p>
-        <Button variant="outline" onClick={handleReset}>
-          <RotateCcwIcon className="h-4 w-4 mr-2" />
-          Reset
+        <Button
+          variant="outline"
+          disabled={isResetting}
+          onClick={async () => {
+            setIsResetting(true);
+            try {
+              // Add a small delay to show the loading state
+              await new Promise((resolve) => setTimeout(resolve, 500));
+              handleReset();
+              toast.success("Calculator reset successfully", {
+                description:
+                  "All measurements and selections have been cleared",
+                duration: 3000,
+              });
+            } finally {
+              setIsResetting(false);
+            }
+          }}
+        >
+          {isResetting ? (
+            <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <RotateCcwIcon className="h-4 w-4 mr-2" />
+          )}
+          {isResetting ? "Resetting..." : "Reset"}
         </Button>
       </div>
 
