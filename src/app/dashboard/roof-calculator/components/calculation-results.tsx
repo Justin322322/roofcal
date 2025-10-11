@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { SparklesIcon, Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import { formatNumberWithCommas } from "../utils/format";
+import { toast } from "sonner";
 
 interface CalculationResultsProps {
   area: number;
@@ -25,7 +26,7 @@ interface CalculationResultsProps {
   material: string;
   constructionMode: "new" | "repair";
   budgetAmount?: number;
-  onAutoOptimize?: () => void;
+  onAutoOptimize?: () => { hasChanges: boolean; changesCount: number };
 }
 
 export function CalculationResults({
@@ -57,12 +58,26 @@ export function CalculationResults({
     // Small delay to show the animation
     await new Promise((resolve) => setTimeout(resolve, 600));
 
-    onAutoOptimize();
+    const optimizationResult = onAutoOptimize();
 
     // Keep button in loading state briefly after optimization
     await new Promise((resolve) => setTimeout(resolve, 400));
 
     setIsOptimizing(false);
+
+    // Show appropriate toast based on optimization results
+    if (optimizationResult.hasChanges) {
+      toast.success("Optimization completed", {
+        description: `${optimizationResult.changesCount} setting${optimizationResult.changesCount > 1 ? "s" : ""} optimized for better performance and cost efficiency`,
+        duration: 4000,
+      });
+    } else {
+      toast.info("Already optimized", {
+        description:
+          "Your current settings are already optimized for the best performance and cost efficiency",
+        duration: 4000,
+      });
+    }
   };
 
   if (area === 0) {

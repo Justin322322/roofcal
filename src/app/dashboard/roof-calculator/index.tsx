@@ -48,7 +48,7 @@ export function RoofCalculatorContent() {
     handleAutoOptimize,
   } = useRoofCalculator();
 
-  const [isAdditionalSpecsOpen, setIsAdditionalSpecsOpen] = useState(true);
+  const [isAdditionalSpecsOpen, setIsAdditionalSpecsOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const additionalSpecsRef = useRef<HTMLDivElement>(null);
 

@@ -310,13 +310,16 @@ export function useRoofCalculator() {
   const handleAutoOptimize = () => {
     // Only optimize if we have valid measurements
     if (!measurements.length || !measurements.width) {
-      return;
+      return { hasChanges: false, changesCount: 0 };
     }
 
     const length = parseFloat(measurements.length);
     const width = parseFloat(measurements.width);
     const pitch = parseFloat(measurements.pitch) || 30;
     const totalArea = length * width; // Simple area calculation
+
+    // Track changes for optimization feedback
+    let changesCount = 0;
 
     // Determine optimal settings to REDUCE complexity while maintaining quality
     const optimizations: Partial<Measurements> = {};
@@ -325,8 +328,10 @@ export function useRoofCalculator() {
     // 1. OPTIMIZE PITCH - Reduce complexity by avoiding extremes
     if (pitch < 10) {
       optimizations.pitch = "20"; // Better drainage, moderate complexity
+      changesCount++;
     } else if (pitch > 45) {
       optimizations.pitch = "30"; // Reduce steepness, lower complexity
+      changesCount++;
     }
     // Keep 15-45° as they're already optimal
 
@@ -346,11 +351,13 @@ export function useRoofCalculator() {
       // Low budget: Use lowest complexity material
       if (currentComplexity > 0) {
         optimalMaterial = "asphalt"; // Lowest complexity
+        changesCount++;
       }
     } else if (measurements.budgetLevel === "medium") {
       // Medium budget: Use metal (good balance)
       if (currentComplexity > 2) {
         optimalMaterial = "metal"; // Reduce from tile/slate to metal
+        changesCount++;
       }
     } else if (measurements.budgetLevel === "high") {
       // High budget: Can use premium materials, but optimize for large areas
@@ -358,6 +365,7 @@ export function useRoofCalculator() {
         // Large area: Metal is more cost-effective than tile/slate
         if (currentComplexity > 2) {
           optimalMaterial = "metal";
+          changesCount++;
         }
       }
       // Small/medium areas: Keep current material if it's tile/slate
@@ -373,6 +381,7 @@ export function useRoofCalculator() {
         // Keep premium for small, high-budget projects
       } else {
         optimizations.materialThickness = "standard"; // Reduce complexity
+        changesCount++;
       }
     }
 
@@ -382,14 +391,17 @@ export function useRoofCalculator() {
     );
     if (optimizedPitch <= 30) {
       optimizations.ridgeType = "standard"; // Simpler installation for moderate pitches
+      changesCount++;
     }
     // Only keep ventilated for steep roofs that stayed steep after optimization
 
     // 5. OPTIMIZE GUTTER SIZE - Only use large when necessary
     if (totalArea > 200) {
       optimizations.gutterSize = "large"; // Necessary for very large roofs
+      changesCount++;
     } else if (totalArea <= 150) {
       optimizations.gutterSize = "standard"; // Reduce complexity for smaller roofs
+      changesCount++;
     }
     // Keep current selection for medium roofs (150-200 sq.m)
 
@@ -403,6 +415,8 @@ export function useRoofCalculator() {
       ...prev,
       ...optimizations,
     }));
+
+    return { hasChanges: changesCount > 0, changesCount };
   };
 
   return {
