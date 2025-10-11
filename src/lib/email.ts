@@ -114,7 +114,7 @@ export async function sendVerificationEmail(email: string, code: string) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Verify Your Email - RoofCal</title>
     </head>
-    <body style="margin: 0; padding: 0; background-color: #f2f4f6; font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <body style="margin: 0; padding: 0; background-color: #e0e6e8; font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
       <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
         <!-- Header -->
         <div style="text-align: center; margin-bottom: 32px; padding-top: 20px;">
@@ -124,8 +124,6 @@ export async function sendVerificationEmail(email: string, code: string) {
                  alt="RoofCal Logo" 
                  style="height: 60px; width: auto; margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;"
                  width="120" height="60" />
-            <h1 style="color: #2d3748; margin: 0 0 4px 0; font-size: 28px; font-weight: 700; letter-spacing: -0.025em;">RoofCal</h1>
-            <p style="color: #718096; margin: 0; font-size: 14px; font-weight: 400;">Professional Roof Calculator</p>
           </div>
         </div>
         
@@ -177,7 +175,7 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Reset Your Password - RoofCal</title>
     </head>
-    <body style="margin: 0; padding: 0; background-color: #f2f4f6; font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <body style="margin: 0; padding: 0; background-color: #e0e6e8; font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
       <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
         <!-- Header -->
         <div style="text-align: center; margin-bottom: 32px; padding-top: 20px;">
@@ -187,8 +185,6 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string) {
                  alt="RoofCal Logo" 
                  style="height: 60px; width: auto; margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;"
                  width="120" height="60" />
-            <h1 style="color: #2d3748; margin: 0 0 4px 0; font-size: 28px; font-weight: 700; letter-spacing: -0.025em;">RoofCal</h1>
-            <p style="color: #718096; margin: 0; font-size: 14px; font-weight: 400;">Professional Roof Calculator</p>
           </div>
         </div>
         
