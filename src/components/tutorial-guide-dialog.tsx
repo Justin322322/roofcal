@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import Image from "next/image";
+// import img from "next/image"; // Temporarily disabled for Vercel compatibility
 import {
   X,
   BookOpenIcon,
@@ -314,11 +314,9 @@ export function TutorialGuideDialog() {
                           onClick={() => setSelectedRoofType("gable")}
                         >
                           <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
-                            <Image
+                            <img
                               src="/roof/gable.jpg"
                               alt="Gable Roof"
-                              width={200}
-                              height={200}
                               className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
                             />
                           </div>
@@ -334,11 +332,9 @@ export function TutorialGuideDialog() {
                           onClick={() => setSelectedRoofType("hip")}
                         >
                           <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
-                            <Image
+                            <img
                               src="/roof/hip-roof.avif"
                               alt="Hip Roof"
-                              width={200}
-                              height={200}
                               className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
                             />
                           </div>
@@ -354,11 +350,9 @@ export function TutorialGuideDialog() {
                           onClick={() => setSelectedRoofType("mansard")}
                         >
                           <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
-                            <Image
+                            <img
                               src="/roof/mansard-roof.webp"
                               alt="Mansard Roof"
-                              width={200}
-                              height={200}
                               className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
                             />
                           </div>
@@ -374,11 +368,9 @@ export function TutorialGuideDialog() {
                           onClick={() => setSelectedRoofType("shed")}
                         >
                           <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
-                            <Image
+                            <img
                               src="/roof/shed-roof.jpg"
                               alt="Shed Roof"
-                              width={200}
-                              height={200}
                               className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
                             />
                           </div>
@@ -402,11 +394,9 @@ export function TutorialGuideDialog() {
                           onClick={() => setSelectedRoofType("gambrel")}
                         >
                           <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
-                            <Image
+                            <img
                               src="/roof/gabrel-roof.png"
                               alt="Gambrel Roof"
-                              width={200}
-                              height={200}
                               className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
                             />
                           </div>
@@ -422,11 +412,9 @@ export function TutorialGuideDialog() {
                           onClick={() => setSelectedRoofType("cross-gabled")}
                         >
                           <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
-                            <Image
+                            <img
                               src="/roof/cross-gabled.jpeg"
                               alt="Cross-Gabled Roof"
-                              width={200}
-                              height={200}
                               className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
                             />
                           </div>
@@ -442,11 +430,9 @@ export function TutorialGuideDialog() {
                           onClick={() => setSelectedRoofType("saltbox")}
                         >
                           <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
-                            <Image
+                            <img
                               src="/roof/salt-box.webp"
                               alt="Saltbox Roof"
-                              width={200}
-                              height={200}
                               className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
                             />
                           </div>
@@ -462,11 +448,9 @@ export function TutorialGuideDialog() {
                           onClick={() => setSelectedRoofType("butterfly")}
                         >
                           <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
-                            <Image
+                            <img
                               src="/roof/buttlefly-roof.avif"
                               alt="Butterfly Roof"
-                              width={200}
-                              height={200}
                               className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
                             />
                           </div>
