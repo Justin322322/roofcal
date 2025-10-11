@@ -8,8 +8,10 @@ import type {
 } from "../types";
 import { analyzeProject } from "@/lib/decision-tree";
 import { materials } from "../components/material-selection";
+import * as CONSTANTS from "../constants";
 
 export function useRoofCalculator() {
+  const [loading, setLoading] = useState(true);
   const [measurements, setMeasurements] = useState<Measurements>({
     length: "",
     width: "",
@@ -20,6 +22,13 @@ export function useRoofCalculator() {
     ridgeType: "standard",
     gutterSize: "standard",
     budgetLevel: "medium",
+    budgetAmount: "",
+    constructionMode: "new",
+    gutterLengthA: "",
+    gutterSlope: "",
+    gutterLengthC: "",
+    insulationThickness: "10mm",
+    ventilationPieces: "0",
   });
 
   const [material, setMaterial] = useState("asphalt");
@@ -27,8 +36,17 @@ export function useRoofCalculator() {
   const [results, setResults] = useState<CalculationResults>({
     area: 0,
     materialCost: 0,
+    gutterCost: 0,
+    ridgeCost: 0,
+    screwsCost: 0,
+    insulationCost: 0,
+    ventilationCost: 0,
+    totalMaterialsCost: 0,
     laborCost: 0,
+    removalCost: 0,
     totalCost: 0,
+    gutterPieces: 0,
+    ridgeLength: 0,
   });
 
   const [decisionTree, setDecisionTree] = useState<DecisionTreeResult>({
@@ -45,6 +63,15 @@ export function useRoofCalculator() {
     optimizationTips: [],
   });
 
+  // Simulate initial loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 800); // 800ms loading time
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const calculateRoof = useCallback(() => {
     const length = parseFloat(measurements.length) || 0;
     const width = parseFloat(measurements.width) || 0;
@@ -54,8 +81,17 @@ export function useRoofCalculator() {
       setResults({
         area: 0,
         materialCost: 0,
+        gutterCost: 0,
+        ridgeCost: 0,
+        screwsCost: 0,
+        insulationCost: 0,
+        ventilationCost: 0,
+        totalMaterialsCost: 0,
         laborCost: 0,
+        removalCost: 0,
         totalCost: 0,
+        gutterPieces: 0,
+        ridgeLength: 0,
       });
       setDecisionTree({
         materialRecommendation: {
@@ -73,39 +109,98 @@ export function useRoofCalculator() {
       return;
     }
 
-    // Calculate base area
-    const baseArea = length * width;
+    // 1. Calculate simple area (width × length) in square meters
+    const totalArea = length * width;
 
-    // Apply pitch multiplier
-    const pitchRadians = (pitch * Math.PI) / 180;
-    const pitchMultiplier = 1 / Math.cos(pitchRadians);
-
-    // Apply roof type multiplier
-    const roofTypeMultipliers: Record<string, number> = {
-      gable: 2, // Two sides
-      hip: 2.2, // Four sides with slightly more surface
-      flat: 1, // Single surface
-      mansard: 2.5, // Complex four-sided
-      gambrel: 2.3, // Barn-style two-sided
-    };
-
-    const roofMultiplier = roofTypeMultipliers[measurements.roofType] || 2;
-    const totalArea = baseArea * pitchMultiplier * roofMultiplier;
-
-    // Get material price
+    // 2. Calculate roof material cost
     const selectedMaterial = materials.find((m) => m.value === material);
-    const pricePerSqm = selectedMaterial?.price || 450;
-
-    // Calculate costs
+    const pricePerSqm =
+      selectedMaterial?.price || CONSTANTS.MATERIAL_PRICES.asphalt;
     const materialCost = Math.round(totalArea * pricePerSqm);
-    const laborCost = Math.round(materialCost * 0.3); // 30% of material cost
-    const totalCost = materialCost + laborCost;
+
+    // 3. Calculate gutter cost
+    // Formula: (A-Length + B-Slope + C-Length) × 2 ÷ 2.3 = pieces
+    const gutterA = parseFloat(measurements.gutterLengthA) || 0;
+    const gutterB = parseFloat(measurements.gutterSlope) || 0;
+    const gutterC = parseFloat(measurements.gutterLengthC) || 0;
+    const gutterPieces =
+      gutterA + gutterB + gutterC > 0
+        ? Math.ceil(
+            ((gutterA + gutterB + gutterC) * 2) / CONSTANTS.GUTTER_DIVISOR
+          )
+        : 0;
+    const gutterPricePerPiece =
+      measurements.gutterSize === "large"
+        ? CONSTANTS.GUTTER_PRICES.large
+        : CONSTANTS.GUTTER_PRICES.standard;
+    const gutterCost = gutterPieces * gutterPricePerPiece;
+
+    // 4. Calculate roof ridge cost
+    // Quantity = Length (user input), auto-match material type
+    const ridgeLength = length; // Ridge follows the length of the roof
+    const ridgePricePerMeter =
+      CONSTANTS.RIDGE_PRICES[material as keyof typeof CONSTANTS.RIDGE_PRICES] ||
+      CONSTANTS.RIDGE_PRICES.asphalt;
+    const ridgeCost = Math.round(ridgeLength * ridgePricePerMeter);
+
+    // 5. Calculate screws cost
+    const screwsPricePerSqm =
+      CONSTANTS.SCREWS_PRICE_PER_SQM[
+        material as keyof typeof CONSTANTS.SCREWS_PRICE_PER_SQM
+      ] || CONSTANTS.SCREWS_PRICE_PER_SQM.asphalt;
+    const screwsCost = Math.round(totalArea * screwsPricePerSqm);
+
+    // 6. Calculate insulation cost (100% coverage)
+    const insulationPricePerSqm =
+      CONSTANTS.INSULATION_PRICES[
+        measurements.insulationThickness as keyof typeof CONSTANTS.INSULATION_PRICES
+      ] || CONSTANTS.INSULATION_PRICES["10mm"];
+    const insulationCost = Math.round(totalArea * insulationPricePerSqm);
+
+    // 7. Calculate ventilation cost
+    const ventilationPieces = parseFloat(measurements.ventilationPieces) || 0;
+    const ventilationCost =
+      ventilationPieces * CONSTANTS.VENTILATION_PRICE_PER_PIECE;
+
+    // 8. Calculate total materials cost
+    const totalMaterialsCost =
+      materialCost +
+      gutterCost +
+      ridgeCost +
+      screwsCost +
+      insulationCost +
+      ventilationCost;
+
+    // 9. Calculate labor cost based on construction mode
+    const laborPercentage =
+      measurements.constructionMode === "repair"
+        ? CONSTANTS.LABOR_COST_REPAIR
+        : CONSTANTS.LABOR_COST_NEW_CONSTRUCTION;
+    const laborCost = Math.round(totalMaterialsCost * laborPercentage);
+
+    // 10. Calculate removal cost for repairs (included in labor for repairs)
+    const removalCost =
+      measurements.constructionMode === "repair"
+        ? Math.round(totalMaterialsCost * 0.1) // 10% removal cost
+        : 0;
+
+    // 11. Calculate total cost
+    const totalCost = totalMaterialsCost + laborCost + removalCost;
 
     setResults({
       area: totalArea,
       materialCost,
+      gutterCost,
+      ridgeCost,
+      screwsCost,
+      insulationCost,
+      ventilationCost,
+      totalMaterialsCost,
       laborCost,
+      removalCost,
       totalCost,
+      gutterPieces,
+      ridgeLength,
     });
 
     // Run decision tree analysis
@@ -144,13 +239,29 @@ export function useRoofCalculator() {
       ridgeType: "standard",
       gutterSize: "standard",
       budgetLevel: "medium",
+      budgetAmount: "",
+      constructionMode: "new",
+      gutterLengthA: "",
+      gutterSlope: "",
+      gutterLengthC: "",
+      insulationThickness: "10mm",
+      ventilationPieces: "0",
     });
     setMaterial("asphalt");
     setResults({
       area: 0,
       materialCost: 0,
+      gutterCost: 0,
+      ridgeCost: 0,
+      screwsCost: 0,
+      insulationCost: 0,
+      ventilationCost: 0,
+      totalMaterialsCost: 0,
       laborCost: 0,
+      removalCost: 0,
       totalCost: 0,
+      gutterPieces: 0,
+      ridgeLength: 0,
     });
     setDecisionTree({
       materialRecommendation: {
@@ -176,11 +287,7 @@ export function useRoofCalculator() {
     const length = parseFloat(measurements.length);
     const width = parseFloat(measurements.width);
     const pitch = parseFloat(measurements.pitch) || 30;
-    const area = length * width;
-
-    // Calculate roof area with pitch factor
-    const pitchFactor = 1 + Math.sin((pitch * Math.PI) / 180);
-    const totalArea = area * pitchFactor;
+    const totalArea = length * width; // Simple area calculation
 
     // Determine optimal settings to REDUCE complexity while maintaining quality
     const optimizations: Partial<Measurements> = {};
@@ -270,6 +377,7 @@ export function useRoofCalculator() {
   };
 
   return {
+    loading,
     measurements,
     setMeasurements,
     material,

@@ -20,6 +20,13 @@ interface Measurements {
   ridgeType: string;
   gutterSize: string;
   budgetLevel: string;
+  budgetAmount: string;
+  constructionMode: "new" | "repair";
+  gutterLengthA: string;
+  gutterSlope: string;
+  gutterLengthC: string;
+  insulationThickness: string;
+  ventilationPieces: string;
 }
 
 interface MeasurementFormProps {

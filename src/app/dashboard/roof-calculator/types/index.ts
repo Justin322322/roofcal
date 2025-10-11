@@ -17,13 +17,32 @@ export interface Measurements {
   ridgeType: string;
   gutterSize: string;
   budgetLevel: string;
+  budgetAmount: string;
+  constructionMode: "new" | "repair";
+  // Gutter measurements
+  gutterLengthA: string;
+  gutterSlope: string;
+  gutterLengthC: string;
+  // Insulation
+  insulationThickness: string;
+  // Ventilation
+  ventilationPieces: string;
 }
 
 export interface CalculationResults {
   area: number;
   materialCost: number;
+  gutterCost: number;
+  ridgeCost: number;
+  screwsCost: number;
+  insulationCost: number;
+  ventilationCost: number;
+  totalMaterialsCost: number;
   laborCost: number;
+  removalCost: number;
   totalCost: number;
+  gutterPieces: number;
+  ridgeLength: number;
 }
 
 export interface DecisionTreeResult {

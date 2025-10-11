@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -19,6 +20,11 @@ import { CalculationResults } from "./components/calculation-results";
 import { RoofStatsCards } from "./components/stats-cards";
 import { DecisionInsights } from "./components/decision-insights";
 import { AdditionalSpecs } from "./components/additional-specs";
+import { ConstructionModeSelector } from "./components/construction-mode-selector";
+import { GutterCalculator } from "./components/gutter-calculator";
+import { InsulationVentilation } from "./components/insulation-ventilation";
+import { BudgetValidator } from "./components/budget-validator";
+import { RoofCalculatorSkeleton } from "./components/roof-calculator-skeleton";
 import {
   CalculatorIcon,
   RotateCcwIcon,
@@ -31,6 +37,7 @@ import { useState, useRef, useEffect } from "react";
 
 export function RoofCalculatorContent() {
   const {
+    loading,
     measurements,
     setMeasurements,
     material,
@@ -90,6 +97,10 @@ export function RoofCalculatorContent() {
     }
   }, [isAdditionalSpecsOpen]);
 
+  if (loading) {
+    return <RoofCalculatorSkeleton />;
+  }
+
   return (
     <>
       {/* Header with description and reset button */}
@@ -110,6 +121,7 @@ export function RoofCalculatorContent() {
           complexity={decisionTree.complexity}
           totalCost={results.totalCost}
           material={material}
+          loading={loading}
         />
       </div>
 
@@ -118,6 +130,45 @@ export function RoofCalculatorContent() {
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Left Column - Inputs (Sticky) */}
           <div className="space-y-6 lg:sticky lg:top-4 lg:self-start">
+            {/* Construction Mode */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Construction Mode</CardTitle>
+                <CardDescription>
+                  Select project type for accurate labor calculations
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ConstructionModeSelector
+                  mode={measurements.constructionMode}
+                  onModeChange={(mode) =>
+                    setMeasurements({ ...measurements, constructionMode: mode })
+                  }
+                />
+              </CardContent>
+            </Card>
+
+            {/* Budget Validation */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Budget Planning</CardTitle>
+                <CardDescription>
+                  Enter your budget for validation and recommendations
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <BudgetValidator
+                  budgetAmount={measurements.budgetAmount}
+                  onChange={(value) =>
+                    setMeasurements({ ...measurements, budgetAmount: value })
+                  }
+                  roofArea={results.area}
+                  selectedMaterial={material}
+                  totalCost={results.totalCost}
+                />
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -176,13 +227,49 @@ export function RoofCalculatorContent() {
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <CardContent>
-                    <div ref={additionalSpecsRef}>
+                    <div ref={additionalSpecsRef} className="space-y-6">
                       <AdditionalSpecs
                         measurements={measurements}
                         onMeasurementsChange={(updates) =>
                           setMeasurements({ ...measurements, ...updates })
                         }
                       />
+
+                      <Separator />
+
+                      {/* Gutter Calculator */}
+                      <div>
+                        <h4 className="text-sm font-semibold mb-3">
+                          Gutter Specifications
+                        </h4>
+                        <GutterCalculator
+                          gutterLengthA={measurements.gutterLengthA}
+                          gutterSlope={measurements.gutterSlope}
+                          gutterLengthC={measurements.gutterLengthC}
+                          gutterSize={measurements.gutterSize}
+                          onGutterChange={(field, value) =>
+                            setMeasurements({ ...measurements, [field]: value })
+                          }
+                          calculatedPieces={results.gutterPieces}
+                        />
+                      </div>
+
+                      <Separator />
+
+                      {/* Insulation & Ventilation */}
+                      <div>
+                        <h4 className="text-sm font-semibold mb-3">
+                          Insulation & Ventilation
+                        </h4>
+                        <InsulationVentilation
+                          insulationThickness={measurements.insulationThickness}
+                          ventilationPieces={measurements.ventilationPieces}
+                          onChange={(field, value) =>
+                            setMeasurements({ ...measurements, [field]: value })
+                          }
+                          roofArea={results.area}
+                        />
+                      </div>
                     </div>
                   </CardContent>
                 </CollapsibleContent>
@@ -195,9 +282,20 @@ export function RoofCalculatorContent() {
             <CalculationResults
               area={results.area}
               materialCost={results.materialCost}
+              gutterCost={results.gutterCost}
+              ridgeCost={results.ridgeCost}
+              screwsCost={results.screwsCost}
+              insulationCost={results.insulationCost}
+              ventilationCost={results.ventilationCost}
+              totalMaterialsCost={results.totalMaterialsCost}
               laborCost={results.laborCost}
+              removalCost={results.removalCost}
               totalCost={results.totalCost}
+              gutterPieces={results.gutterPieces}
+              ridgeLength={results.ridgeLength}
               material={materials.find((m) => m.value === material)?.name || ""}
+              constructionMode={measurements.constructionMode}
+              budgetAmount={parseFloat(measurements.budgetAmount) || 0}
               onAutoOptimize={handleAutoOptimize}
             />
 

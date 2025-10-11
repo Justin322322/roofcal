@@ -20,12 +20,19 @@ The **RoofCalc Roof Estimator** is an intelligent roofing cost estimation system
 
 ### Key Capabilities
 
-- Real-time cost calculations with material and labor breakdown
-- Intelligent material recommendations based on project parameters
-- Complexity scoring (1-10 scale) with detailed factor analysis
-- Smart optimization to reduce complexity while maintaining quality
-- Climate-aware recommendations (optimized for heavy rain areas)
-- Budget-conscious material selection
+- **Simplified Area Calculation**: Direct width × length calculation (no pitch factor)
+- **Comprehensive Cost Estimation**: All materials including gutter, ridge, screws, insulation, ventilation
+- **Construction Mode Support**: New construction (40% labor) vs Repair (20% labor + removal)
+- **Budget Validation**: Real-time budget checking with smart alerts and minimum requirements
+- **Advanced Gutter Calculator**: A-B-C formula with automatic piece calculation
+- **Auto-Matched Ridge System**: Ridge material automatically matches roof material
+- **Complete Insulation Coverage**: 100% coverage with thickness selection
+- **Smart Ventilation Recommendations**: Based on roof area with piece calculator
+- **Intelligent Material Recommendations**: Based on project parameters and budget
+- **Complexity Scoring**: 1-10 scale with detailed factor analysis including new specifications
+- **Smart Optimization**: Auto-adjust settings to reduce complexity while maintaining quality
+- **Climate-Aware Recommendations**: Optimized for heavy rain areas
+- **Budget-Conscious Selection**: Prevents unrealistic configurations
 
 ---
 
@@ -50,7 +57,23 @@ flowchart TD
 
 ## Core Features
 
-### 1. **Measurement Input**
+### 1. **Construction Mode Selection**
+
+- **New Construction**: Full installation with 40% labor cost
+- **Repair Mode**: Includes removal (10%) + installation (20% labor)
+- **Visual Interface**: Radio card selection with clear cost implications
+
+### 2. **Budget Validation System**
+
+- **Budget Input**: Enter budget amount in pesos
+- **Real-time Validation**: Checks against minimum viable cost per sq.m
+- **Smart Alerts**:
+  - Red: Insufficient budget (blocks calculation)
+  - Yellow: Warning (under estimated cost)
+  - Green: Sufficient budget with remaining amount
+- **Minimum Standards**: Enforced per material type to prevent unrealistic configurations
+
+### 3. **Measurement Input**
 
 - **Roof Length** (meters): Length of the roof
 - **Roof Width** (meters): Width of the roof
@@ -62,95 +85,124 @@ flowchart TD
 - **Roof Type**: Gable, Hip, Flat, Mansard, Gambrel
 - **Number of Floors**: 1-10 floors (affects complexity and labor costs)
 
-### 2. **Material Selection**
+### 4. **Material Selection**
 
-Six roofing materials with different complexity levels:
+Six roofing materials with updated pricing:
 
-- **Asphalt Shingles** (₱350/sq.m) - Complexity: 0 - Most economical
-- **Wood Shakes** (₱500/sq.m) - Complexity: 1
-- **Metal Roofing** (₱750/sq.m) - Complexity: 2 - Best balance
-- **Clay Tiles** (₱1,200/sq.m) - Complexity: 3 - Premium
-- **Slate** (₱2,000/sq.m) - Complexity: 3 - Premium
+- **Asphalt Shingles** (₱450/sq.m) - Most economical
+- **Wood Shakes** (₱900/sq.m) - Natural option
+- **Metal Roofing** (₱1,200/sq.m) - Best balance
+- **Clay Tiles** (₱1,800/sq.m) - Premium
+- **Slate** (₱2,500/sq.m) - Premium
 
-### 3. **Additional Specifications**
+### 5. **Gutter System Calculator**
 
-- **Budget Level**: Low / Medium / High
-- **Material Thickness**: Standard / Premium / Heavy Duty
-- **Ridge Type**: Standard / Ventilated Ridge Cap
-- **Gutter Size**: Standard (5") / Large (6")
+- **Formula**: (A-Length + B-Slope + C-Length) × 2 ÷ 2.3 = pieces
+- **Example**: (6 + 6 + 6) × 2 ÷ 2.3 = 15.65 → 16 pieces
+- **Sizes**: Standard (5") = ₱350/pc, Large (6") = ₱450/pc
+- **Auto-calculation**: Real-time piece calculation with visual feedback
+
+### 6. **Roof Ridge Calculator**
+
+- **Quantity**: Equals the length input (linear meters)
+- **Auto-Match**: Ridge material automatically matches roof material type
+  - Corrugated roof → Corrugated ridge
+  - Metal roof → Metal ridge
+- **Pricing**: ₱150-300 per linear meter depending on material
+
+### 7. **Insulation & Ventilation**
+
+- **Insulation**: 100% coverage of roof area
+  - Thickness options: 5mm, 10mm, 15mm, 20mm, 25mm
+  - Pricing: ₱80-240 per sq.m
+- **Ventilation**: User-selectable pieces
+  - Recommendation: 1 piece per 50 sq.m
+  - Pricing: ₱850 per piece
 
 ---
 
 ## Calculation Formulas
 
-### 1. **Roof Area Calculation**
+### 1. **Simplified Roof Area Calculation**
 
 ```javascript
-// Base area
-baseArea = length × width
-
-// Pitch factor (accounts for slope)
-pitchFactor = 1 + sin(pitch × π / 180)
-
-// Total roof area
-totalArea = baseArea × pitchFactor
+// Simple area calculation (no pitch factor)
+totalArea = length × width
 ```
 
 **Example:**
 
-- Length: 10m, Width: 8m, Pitch: 30°
-- Base Area: 10 × 8 = 80 sq.m
-- Pitch Factor: 1 + sin(30° × π/180) = 1.5
-- Total Area: 80 × 1.5 = **120 sq.m**
+- Length: 15m, Width: 10m
+- Total area: 15 × 10 = **150 sq.m**
 
-### 2. **Material Cost Calculation**
+### 2. **Comprehensive Material Cost Calculation**
 
 ```javascript
-materialCost = totalArea × materialPricePerSqm
+// Roof material cost
+roofMaterialCost = totalArea × pricePerSqm
+
+// Gutter cost
+gutterPieces = Math.ceil(((gutterA + gutterB + gutterC) × 2) / 2.3)
+gutterCost = gutterPieces × gutterPricePerPiece
+
+// Ridge cost
+ridgeLength = length  // Ridge follows roof length
+ridgeCost = ridgeLength × ridgePricePerMeter
+
+// Screws cost
+screwsCost = totalArea × screwsPricePerSqm
+
+// Insulation cost (100% coverage)
+insulationCost = totalArea × insulationPricePerSqm
+
+// Ventilation cost
+ventilationCost = ventilationPieces × 850
+
+// Total materials cost
+totalMaterialsCost = roofMaterialCost + gutterCost + ridgeCost + screwsCost + insulationCost + ventilationCost
 ```
 
 **Example:**
 
-- Total Area: 120 sq.m
-- Material: Metal Roofing (₱750/sq.m)
-- Material Cost: 120 × 750 = **₱90,000**
+- Area: 150 sq.m, Metal roof (₱1,200/sq.m)
+- Roof material: 150 × 1,200 = ₱180,000
+- Gutter: 16 pieces × ₱350 = ₱5,600
+- Ridge: 15m × ₱200 = ₱3,000
+- Screws: 150 × ₱25 = ₱3,750
+- Insulation: 150 × ₱120 = ₱18,000
+- Ventilation: 3 pieces × ₱850 = ₱2,550
+- **Total Materials: ₱212,900**
 
 ### 3. **Labor Cost Calculation**
 
 ```javascript
-// Base labor cost (30% of material cost)
-baseLaborCost = materialCost × 0.30
-
-// Adjustments based on complexity factors
-if (floors === 2) {
-  baseLaborCost × 1.10  // +10% for two-story
-} else if (floors >= 3) {
-  baseLaborCost × 1.20  // +20% for multi-story
+// New construction
+if (constructionMode === "new") {
+  laborCost = totalMaterialsCost × 0.4  // 40%
 }
-
-// Additional adjustments
-if (pitch > 45) {
-  baseLaborCost × 1.15  // +15% for very steep roofs
+// Repair mode
+else if (constructionMode === "repair") {
+  laborCost = totalMaterialsCost × 0.2  // 20%
+  removalCost = totalMaterialsCost × 0.1  // 10% removal
 }
 ```
 
 **Example:**
 
-- Material Cost: ₱90,000
-- Base Labor: ₱90,000 × 0.30 = ₱27,000
-- Two-story building: ₱27,000 × 1.10 = **₱29,700**
+- Total materials: ₱212,900
+- New construction labor: ₱212,900 × 0.4 = **₱85,160**
+- Repair labor: ₱212,900 × 0.2 = **₱42,580** + removal: **₱21,290**
 
-### 4. **Total Cost**
+### 4. **Total Cost Calculation**
 
 ```javascript
-totalCost = materialCost + laborCost;
+totalCost = totalMaterialsCost + laborCost + removalCost;
 ```
 
 **Example:**
 
-- Material: ₱90,000
-- Labor: ₱29,700
-- Total: **₱119,700**
+- New construction: ₱212,900 + ₱85,160 = **₱298,060**
+- Repair: ₱212,900 + ₱42,580 + ₱21,290 = **₱276,770**
 
 ---
 
@@ -212,7 +264,20 @@ roofTypeScores = {
 };
 score += roofTypeScores[roofType];
 
-// Factor 3: Area Complexity (1-3 points)
+// Factor 3: Building Height (0-2 points)
+if (floors >= 3)
+  score += 2; // Multi-story complexity
+else if (floors === 2) score += 1; // Two-story
+
+// Factor 4: Material Thickness (0-1 points)
+if (materialThickness === "premium") score += 1; // Thicker materials
+
+// Factor 5: Ridge & Gutter Complexity (0-2 points)
+if (ridgeType === "ventilated" && gutterSize === "large")
+  score += 2; // Premium specifications
+else if (ridgeType === "ventilated" || gutterSize === "large") score += 1; // Partial premium
+
+// Factor 6: Area Complexity (1-3 points)
 if (area > 200)
   score += 3; // Very large
 else if (area > 150)
@@ -307,6 +372,48 @@ if (ridgeType === "standard" && pitch > 30) {
 
 if (gutterSize === "standard" && area > 150) {
   tips.push("Large gutters recommended for big roofs to handle heavy rainfall");
+}
+
+// Construction mode optimization
+if (constructionMode === "repair" && area > 100) {
+  tips.push(
+    "Large repair project - consider new construction for better long-term value"
+  );
+}
+
+// Budget validation tips
+if (budgetAmount && parseFloat(budgetAmount) < minimumBudget) {
+  tips.push(
+    "Budget insufficient for selected specifications - consider reducing area or material quality"
+  );
+}
+
+// Insulation optimization
+if (insulationThickness === "5mm" && area > 200) {
+  tips.push(
+    "Consider thicker insulation (10-15mm) for large roofs to improve energy efficiency"
+  );
+}
+
+// Ventilation optimization
+const recommendedVentilation = Math.ceil(area / 50);
+if (parseFloat(ventilationPieces) < recommendedVentilation) {
+  tips.push(
+    `Consider adding more ventilation - recommended ${recommendedVentilation} pieces for ${area} sq.m roof`
+  );
+}
+
+// Gutter calculation optimization
+if (gutterLengthA && gutterSlope && gutterLengthC) {
+  const totalGutter =
+    parseFloat(gutterLengthA) +
+    parseFloat(gutterSlope) +
+    parseFloat(gutterLengthC);
+  if (totalGutter > 30) {
+    tips.push(
+      "Large gutter perimeter - ensure proper downspout placement for efficient drainage"
+    );
+  }
 }
 
 // Always include waste buffer
@@ -412,38 +519,61 @@ Benefits:
 
 ### 1. **Statistics Cards** (4 cards)
 
-- **Roof Area**: Calculated total area with pitch factor
+- **Roof Area**: Simple area calculation (width × length)
 - **Complexity Score**: Visual score with color coding (green/yellow/red)
-- **Total Cost**: Sum of material + labor costs
+- **Total Cost**: Sum of all materials + labor + removal costs
 - **Material**: Selected material with price per sq.m
 
-### 2. **Measurement Form** (Sticky Left Column)
+### 2. **Construction Mode Selector** (Sticky Left Column)
+
+- Radio card selection for New Construction vs Repair
+- Visual icons and cost implications
+- Labor cost percentages clearly displayed (40% vs 20%)
+
+### 3. **Budget Validator** (Sticky Left Column)
+
+- Budget input field with real-time validation
+- Smart alerts: Red (insufficient), Yellow (warning), Green (sufficient)
+- Minimum budget requirements per material type
+- Remaining budget calculation
+
+### 4. **Measurement Form** (Sticky Left Column)
 
 - Length & Width inputs (meters)
 - Pitch selection dropdown (11 options with climate descriptions)
 - Number of floors input
 - Roof type selection
 
-### 3. **Material Selection** (Sticky Left Column)
+### 5. **Material Selection** (Sticky Left Column)
 
-- 5 material cards with prices and descriptions
+- 5 material cards with updated prices and descriptions
 - Visual selection with icons
 - Price comparison
 
-### 4. **Additional Specifications** (Collapsible)
+### 6. **Additional Specifications** (Collapsible)
 
 - Auto-expands when user changes from defaults
 - Budget level selection
 - Material thickness selection
 - Ridge and gutter specifications
+- **Gutter Calculator**: A-B-C formula with calculated pieces
+- **Insulation & Ventilation**: Thickness selection and piece calculator
 - Helpful tips displayed
 
-### 5. **Calculation Results**
+### 7. **Calculation Results** (Right Column)
 
-- Area breakdown
-- Material cost
-- Labor cost (30% of material)
-- Total estimated cost
+- **Area breakdown**: Simple width × length calculation
+- **Material costs**: Detailed breakdown of all components
+  - Roof material cost
+  - Gutter cost (with calculated pieces)
+  - Ridge cost (with auto-matched material)
+  - Screws cost (material-dependent)
+  - Insulation cost (100% coverage)
+  - Ventilation cost (user-selected pieces)
+- **Labor costs**: Based on construction mode (40% new, 20% repair)
+- **Removal costs**: 10% for repair mode
+- **Total estimated cost**: All costs combined
+- **Optimization button**: Auto-adjust settings to reduce complexity
 - **Optimize button** with loading animation
 
 ### 6. **Project Analysis & Insights**
@@ -562,41 +692,57 @@ function calculateRoof() {
 
 ## Usage Guide
 
-### Basic Workflow
+### Complete Workflow
 
-1. **Enter Roof Dimensions**
+1. **Select Construction Mode**
+   - Choose "New Construction" (40% labor) or "Repair" (20% labor + removal)
+   - Visual cards show cost implications
+
+2. **Set Budget & Validate**
+   - Enter budget amount in pesos
+   - System validates against minimum requirements
+   - Smart alerts guide decision-making
+
+3. **Enter Roof Dimensions**
    - Input length and width in meters
    - Select roof pitch (recommended: 15-30° for heavy rain)
    - Choose roof type (Gable is most common)
    - Specify number of floors
 
-2. **Select Material**
+4. **Select Material**
    - Choose based on budget and preferences
    - Consider complexity level
-   - Review price per square meter
+   - Review updated price per square meter
 
-3. **Configure Specifications** (Optional)
-   - Set budget level for better recommendations
+5. **Configure Additional Specifications** (Auto-expands when changed)
+   - Set budget level for recommendations
    - Choose material thickness
    - Select ridge and gutter specifications
-   - Section auto-expands when changed
+   - **Calculate Gutter**: Enter A-B-C measurements for automatic piece calculation
+   - **Configure Insulation**: Select thickness (100% coverage)
+   - **Set Ventilation**: Enter number of pieces (system recommends based on area)
 
-4. **Review Results**
-   - Check calculated roof area
-   - Review cost breakdown
-   - Note complexity score
+6. **Review Comprehensive Results**
+   - Check simple area calculation (width × length)
+   - Review detailed cost breakdown:
+     - Roof material cost
+     - Gutter cost (with calculated pieces)
+     - Ridge cost (auto-matched to material)
+     - Screws cost (material-dependent)
+     - Insulation cost (100% coverage)
+     - Ventilation cost (user-selected)
+     - Labor cost (mode-dependent)
+     - Removal cost (repair mode only)
+   - Note complexity score with all factors
 
-5. **Analyze Insights**
-   - Read material recommendation
-   - Review complexity factors
-   - Follow optimization tips
+7. **Analyze Insights & Optimize**
+   - Read material recommendation with reasoning
+   - Review complexity factors including new specifications
+   - Follow optimization tips for budget, insulation, ventilation
+   - Use "Optimize" button to auto-adjust settings
+   - Consider construction mode recommendations
 
-6. **Optimize** (Optional)
-   - Click "Optimize" button
-   - System adjusts settings to reduce complexity
-   - Review changes and adjust if needed
-
-7. **Finalize Estimate**
+8. **Finalize Estimate**
    - Review total cost
    - Note any special considerations
    - Add 10% buffer for waste
