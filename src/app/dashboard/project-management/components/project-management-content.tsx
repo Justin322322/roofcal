@@ -68,6 +68,7 @@ export function ProjectManagementContent({}: ProjectManagementContentProps) {
   const [projectToDelete, setProjectToDelete] = useState<{
     id: string;
     name: string;
+    isUnarchive?: boolean;
   } | null>(null);
   const limit = 10;
 
@@ -194,6 +195,12 @@ export function ProjectManagementContent({}: ProjectManagementContentProps) {
   const handleDeleteConfirm = async () => {
     if (!projectToDelete) return;
 
+    // Check if this is an unarchive operation
+    if (projectToDelete.isUnarchive) {
+      await handleUnarchiveConfirm();
+      return;
+    }
+
     setActionLoading(projectToDelete.id);
     try {
       const response = await fetch(`/api/projects/${projectToDelete.id}`, {
@@ -228,6 +235,45 @@ export function ProjectManagementContent({}: ProjectManagementContentProps) {
   const handleDeleteCancel = () => {
     setDeleteDialogOpen(false);
     setProjectToDelete(null);
+  };
+
+  const handleUnarchiveClick = async (projectId: string, projectName: string) => {
+    setProjectToDelete({ id: projectId, name: projectName, isUnarchive: true });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleUnarchiveConfirm = async () => {
+    if (!projectToDelete) return;
+
+    setActionLoading(projectToDelete.id);
+    try {
+      const response = await fetch(`/api/projects/${projectToDelete.id}`, {
+        method: "PATCH",
+      });
+
+      if (response.ok) {
+        // Clear cache to force refresh
+        clearProjectCache();
+        // Refresh the projects list
+        await fetchProjects(false, true);
+        toast.success("Project unarchived successfully", {
+          description: `"${projectToDelete.name}" has been restored to active status`,
+        });
+      } else {
+        const errorData = await response.json();
+        toast.error("Failed to unarchive project", {
+          description: errorData.error || "An error occurred",
+        });
+      }
+    } catch {
+      toast.error("Failed to unarchive project", {
+        description: "Network error occurred",
+      });
+    } finally {
+      setActionLoading(null);
+      setDeleteDialogOpen(false);
+      setProjectToDelete(null);
+    }
   };
 
   return (
@@ -266,6 +312,7 @@ export function ProjectManagementContent({}: ProjectManagementContentProps) {
           }}
           onExport={handleExport}
           onDelete={handleDeleteClick}
+          onUnarchive={handleUnarchiveClick}
           actionLoading={actionLoading}
         />
       </div>
@@ -281,17 +328,21 @@ export function ProjectManagementContent({}: ProjectManagementContentProps) {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Archive Project</AlertDialogTitle>
+            <AlertDialogTitle>
+              {projectToDelete?.isUnarchive ? "Unarchive Project" : "Archive Project"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to archive the project{" "}
+              Are you sure you want to {projectToDelete?.isUnarchive ? "unarchive" : "archive"} the project{" "}
               <span className="font-semibold">
                 &ldquo;{projectToDelete?.name}&rdquo;
               </span>
               ?
               <br />
               <br />
-              This will move the project to archived status. You can still view
-              it by filtering for archived projects.
+              {projectToDelete?.isUnarchive 
+                ? "This will restore the project to active status and it will appear in your active projects list."
+                : "This will move the project to archived status. You can still view it by filtering for archived projects."
+              }
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -300,16 +351,20 @@ export function ProjectManagementContent({}: ProjectManagementContentProps) {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className={
+                projectToDelete?.isUnarchive
+                  ? "bg-green-600 text-white hover:bg-green-700"
+                  : "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              }
               disabled={actionLoading === projectToDelete?.id}
             >
               {actionLoading === projectToDelete?.id ? (
                 <>
                   <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-                  Archiving...
+                  {projectToDelete?.isUnarchive ? "Unarchiving..." : "Archiving..."}
                 </>
               ) : (
-                "Archive Project"
+                projectToDelete?.isUnarchive ? "Unarchive Project" : "Archive Project"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

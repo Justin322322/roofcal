@@ -267,3 +267,56 @@ export async function DELETE(
     );
   }
 }
+
+// PATCH /api/projects/[id] - Unarchive project
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await params;
+
+    // Check if project exists and user owns it
+    const existingProject = await prisma.project.findFirst({
+      where: {
+        id,
+        userId: session.user.id,
+      },
+    });
+
+    if (!existingProject) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+
+    // Check if project is actually archived
+    if (existingProject.status !== "ARCHIVED") {
+      return NextResponse.json(
+        { error: "Project is not archived" },
+        { status: 400 }
+      );
+    }
+
+    // Unarchive by setting status to ACTIVE (or previous status if we track it)
+    await prisma.project.update({
+      where: { id },
+      data: { status: "ACTIVE" },
+    });
+
+    return NextResponse.json({ message: "Project unarchived successfully" });
+  } catch (error) {
+    console.error("Error unarchiving project:", error);
+    return NextResponse.json(
+      { error: "Failed to unarchive project" },
+      { status: 500 }
+    );
+  }
+}

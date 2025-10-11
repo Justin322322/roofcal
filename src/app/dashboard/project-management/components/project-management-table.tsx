@@ -25,6 +25,7 @@ import {
   DownloadIcon,
   Loader2Icon,
   TrashIcon,
+  ArchiveIcon,
 } from "lucide-react";
 import type { Project, ProjectStatus } from "@/types/project";
 import { materials } from "@/app/dashboard/roof-calculator/components/material-selection";
@@ -48,6 +49,7 @@ interface ProjectManagementTableProps {
   onViewDetails: (project: Project) => void;
   onExport: (projectId: string) => Promise<void>;
   onDelete: (projectId: string, projectName: string) => Promise<void>;
+  onUnarchive?: (projectId: string, projectName: string) => Promise<void>;
   actionLoading?: string | null;
 }
 
@@ -61,6 +63,7 @@ export function ProjectManagementTable({
   onViewDetails,
   onExport,
   onDelete,
+  onUnarchive,
   actionLoading,
 }: ProjectManagementTableProps) {
   const getStatusBadgeVariant = (status: ProjectStatus) => {
@@ -204,20 +207,37 @@ export function ProjectManagementTable({
                             Export
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() =>
-                              onDelete(project.id, project.projectName)
-                            }
-                            disabled={actionLoading === project.id}
-                            className="text-destructive focus:text-destructive"
-                          >
-                            {actionLoading === project.id ? (
-                              <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                              <TrashIcon className="mr-2 h-4 w-4" />
-                            )}
-                            Archive Project
-                          </DropdownMenuItem>
+                          {project.status === "ARCHIVED" ? (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                onUnarchive?.(project.id, project.projectName)
+                              }
+                              disabled={actionLoading === project.id || !onUnarchive}
+                              className="text-green-600 focus:text-green-600"
+                            >
+                              {actionLoading === project.id ? (
+                                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <ArchiveIcon className="mr-2 h-4 w-4" />
+                              )}
+                              Unarchive Project
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                onDelete(project.id, project.projectName)
+                              }
+                              disabled={actionLoading === project.id}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              {actionLoading === project.id ? (
+                                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <TrashIcon className="mr-2 h-4 w-4" />
+                              )}
+                              Archive Project
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
