@@ -134,7 +134,7 @@ export async function getUserActivities(
   page: number = 1
 ): Promise<ActivityLog[]> {
   try {
-    const pageSize = 10;
+    const pageSize = 5; // Changed to 5 activities per page as requested
     const skip = (page - 1) * pageSize;
 
     const activities = await prisma.activity.findMany({

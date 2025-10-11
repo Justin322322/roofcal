@@ -58,6 +58,8 @@ export function AccountViewModal({
   const [refreshing, setRefreshing] = useState(false);
   const [activityPage, setActivityPage] = useState(1);
   const [hasMoreActivities, setHasMoreActivities] = useState(false);
+  const [totalActivities, setTotalActivities] = useState(0);
+  const ACTIVITIES_PER_PAGE = 5;
 
   // Function to fetch activities
   const fetchActivities = useCallback(
@@ -76,10 +78,13 @@ export function AccountViewModal({
           const activities = await getUserActivities(user.id, page);
           if (page === 1 || isRefresh) {
             setActivityLog(activities);
+            setActivityPage(1);
           } else {
             setActivityLog((prev) => [...prev, ...activities]);
           }
-          setHasMoreActivities(activities.length === 10); // If we get 10, there might be more
+          // Update pagination state based on actual results
+          setHasMoreActivities(activities.length === ACTIVITIES_PER_PAGE);
+          setTotalActivities(prev => isRefresh ? activities.length : prev + activities.length);
         }
       } catch (error) {
         console.error("Error fetching activities:", error);
@@ -148,7 +153,7 @@ export function AccountViewModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl h-[80vh] flex flex-col gap-0 p-0 overflow-hidden">
+      <DialogContent className="max-w-2xl h-[85vh] flex flex-col gap-0 p-0 overflow-hidden">
         {/* Fixed Header */}
         <div className="sticky top-0 z-10 bg-background border-b">
           <DialogHeader className="px-6 pt-6 pb-4">
@@ -362,9 +367,16 @@ export function AccountViewModal({
             <TabsContent value="activity" className="mt-0 py-4 space-y-4">
               <section className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Recent Activity
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Recent Activity
+                    </h3>
+                    {activityLog.length > 0 && (
+                      <Badge variant="secondary" className="text-xs">
+                        {activityLog.length} activities
+                      </Badge>
+                    )}
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -378,8 +390,10 @@ export function AccountViewModal({
                     Refresh
                   </Button>
                 </div>
-                <div className="space-y-2">
-                  {loadingActivities ? (
+                
+                {/* Activity List Container with proper height */}
+                <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                  {loadingActivities && activityLog.length === 0 ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="text-sm text-muted-foreground">
                         Loading activities...
@@ -387,10 +401,12 @@ export function AccountViewModal({
                     </div>
                   ) : activityLog.length > 0 ? (
                     <>
-                      {activityLog.map((activity) => (
+                      {activityLog.map((activity, index) => (
                         <div
                           key={activity.id}
-                          className="p-3 rounded-lg border hover:bg-accent/50 transition-colors"
+                          className={`p-3 rounded-lg border hover:bg-accent/50 transition-colors ${
+                            index === activityLog.length - 1 ? 'mb-2' : ''
+                          }`}
                         >
                           <p className="text-sm font-medium">
                             {activity.description}
@@ -400,23 +416,6 @@ export function AccountViewModal({
                           </p>
                         </div>
                       ))}
-                      {hasMoreActivities && (
-                        <div className="flex justify-center pt-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              const nextPage = activityPage + 1;
-                              setActivityPage(nextPage);
-                              fetchActivities(false, nextPage);
-                            }}
-                            disabled={loadingActivities}
-                            className="text-xs"
-                          >
-                            {loadingActivities ? "Loading..." : "Load More"}
-                          </Button>
-                        </div>
-                      )}
                     </>
                   ) : (
                     <div className="flex items-center justify-center py-8">
@@ -426,6 +425,37 @@ export function AccountViewModal({
                     </div>
                   )}
                 </div>
+
+                {/* Pagination Controls */}
+                {activityLog.length > 0 && (
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="text-xs text-muted-foreground">
+                      Showing {activityLog.length} of {totalActivities || activityLog.length} activities
+                    </div>
+                    {hasMoreActivities && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const nextPage = activityPage + 1;
+                          setActivityPage(nextPage);
+                          fetchActivities(false, nextPage);
+                        }}
+                        disabled={loadingActivities}
+                        className="text-xs"
+                      >
+                        {loadingActivities ? (
+                          <>
+                            <RefreshCwIcon className="h-3 w-3 mr-1 animate-spin" />
+                            Loading...
+                          </>
+                        ) : (
+                          "Load More"
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                )}
               </section>
             </TabsContent>
           </ScrollArea>
