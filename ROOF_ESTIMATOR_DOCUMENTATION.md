@@ -31,32 +31,19 @@ The **RoofCalc Roof Estimator** is an intelligent roofing cost estimation system
 
 ## System Architecture
 
-```
-┌─────────────────────────────────────────────────────┐
-│                  User Interface                      │
-│  (Measurements, Material Selection, Specifications)  │
-└─────────────────────┬───────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────┐
-│              useRoofCalculator Hook                  │
-│  (State Management & Calculation Orchestration)      │
-└─────────────────────┬───────────────────────────────┘
-                      │
-        ┌─────────────┴─────────────┐
-        ▼                           ▼
-┌──────────────────┐      ┌──────────────────────┐
-│  Cost Calculator │      │  Decision Tree Logic │
-│  (Area, Materials│      │  (Recommendations &  │
-│   Labor Costs)   │      │   Optimization)      │
-└──────────────────┘      └──────────────────────┘
-        │                           │
-        └─────────────┬─────────────┘
-                      ▼
-┌─────────────────────────────────────────────────────┐
-│              Results Display                         │
-│  (Stats Cards, Calculations, Insights, Tips)        │
-└─────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A[User Interface<br/>Measurements, Material Selection, Specifications] --> B[useRoofCalculator Hook<br/>State Management & Calculation Orchestration]
+    B --> C[Cost Calculator<br/>Area, Materials, Labor Costs]
+    B --> D[Decision Tree Logic<br/>Recommendations & Optimization]
+    C --> E[Results Display<br/>Stats Cards, Calculations, Insights, Tips]
+    D --> E
+
+    style A fill:#e1f5ff,stroke:#0288d1,stroke-width:2px
+    style B fill:#fff9c4,stroke:#f57c00,stroke-width:2px
+    style C fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style D fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style E fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
 ```
 
 ---
@@ -413,10 +400,10 @@ After Optimization:
 - Complexity Score: 4/10 (Medium)
 
 Benefits:
-✓ 56% complexity reduction
-✓ ~40% cost savings
-✓ Faster installation
-✓ Still excellent for heavy rain
+- 56% complexity reduction
+- ~40% cost savings
+- Faster installation
+- Still excellent for heavy rain
 ```
 
 ---
@@ -616,28 +603,28 @@ function calculateRoof() {
 
 ### Best Practices
 
-✅ **For Heavy Rain Areas (Philippines)**
+**For Heavy Rain Areas (Philippines)**
 
 - Use 20-30° pitch for optimal water runoff
 - Consider metal or tile materials for durability
 - Ensure large gutters for roofs over 150 sq.m
 - Budget for proper waterproofing
 
-✅ **For Budget-Conscious Projects**
+**For Budget-Conscious Projects**
 
 - Choose asphalt shingles for cost-effectiveness
 - Use standard thickness materials
 - Optimize settings to reduce complexity
 - Consider phased approach for large projects
 
-✅ **For Premium Projects**
+**For Premium Projects**
 
 - Select tile or slate for longevity and aesthetics
 - Use premium thickness for better durability
 - Install ventilated ridge caps for attic ventilation
 - Budget 20-30% extra for custom work
 
-✅ **For Multi-Story Buildings**
+**For Multi-Story Buildings**
 
 - Add 10% to labor costs for 2-story
 - Add 15-25% to labor costs for 3+ stories
@@ -676,7 +663,7 @@ Total Cost: ₱31,077
 
 - Factors: Standard pitch, simple roof type, small area, basic material
 
-**Recommendation:** ✅ Optimal configuration for budget
+**Recommendation:** Optimal configuration for budget
 
 ---
 
@@ -709,7 +696,7 @@ Total Cost: ₱179,550
 
 - Factors: Optimal pitch, Hip roof, large area, 2-story, ventilated ridge
 
-**Recommendation:** ✅ Good balance of cost and quality
+**Recommendation:** Good balance of cost and quality
 
 ---
 
@@ -742,7 +729,7 @@ Total Cost: ₱554,880
 
 - Factors: Steep pitch, complex roof, very large area, premium material, 3-story, premium specs
 
-**Recommendation:** ⚠️ Consider optimization
+**Recommendation:** Consider optimization
 
 - Optimize to Metal (complexity 2) with Standard thickness
 - New Total: ~₱380,000 (31% savings)
@@ -799,51 +786,3 @@ Total Cost: ₱554,880
 - Mistakes and adjustments
 - Future repairs
 - Complex roof shapes (add 15%)
-
----
-
-## Support & Maintenance
-
-### System Requirements
-
-- Modern web browser (Chrome, Firefox, Safari, Edge)
-- JavaScript enabled
-- Minimum screen resolution: 1024x768
-
-### Data Privacy
-
-- All calculations performed client-side
-- No data stored on servers
-- No personal information collected
-
-### Future Enhancements
-
-- [ ] Export estimates to PDF
-- [ ] Save and compare multiple projects
-- [ ] Integration with supplier pricing APIs
-- [ ] 3D roof visualization
-- [ ] Weather data integration
-- [ ] Contractor network matching
-
----
-
-## Technical Support
-
-For issues, questions, or feature requests, please contact:
-
-- **Project**: RoofCalc - Roofing Cost Estimation System
-- **Technology**: Next.js 15 + React 18 + TypeScript
-- **Version**: 1.0.0
-
----
-
-## License & Credits
-
-**RoofCalc: A Roofing Cost Estimation System for Residential Construction Projects Using Decision Tree Algorithm**
-
-Built with ❤️ for the construction industry
-
----
-
-_Last Updated: October 2025_
-_Documentation Version: 1.0.0_
