@@ -119,6 +119,11 @@ export async function sendVerificationEmail(email: string, code: string) {
         <!-- Header -->
         <div style="text-align: center; margin-bottom: 32px; padding-top: 20px;">
           <div style="display: inline-block; text-align: center;">
+            <!-- Brand Logo -->
+            <img src="https://unex0yvstmuqs1jv.public.blob.vercel-storage.com/brand/roofcal-logo.png" 
+                 alt="RoofCal Logo" 
+                 style="height: 60px; width: auto; margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;"
+                 width="120" height="60" />
             <h1 style="color: #2d3748; margin: 0 0 4px 0; font-size: 28px; font-weight: 700; letter-spacing: -0.025em;">RoofCal</h1>
             <p style="color: #718096; margin: 0; font-size: 14px; font-weight: 400;">Professional Roof Calculator</p>
           </div>
@@ -177,6 +182,11 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string) {
         <!-- Header -->
         <div style="text-align: center; margin-bottom: 32px; padding-top: 20px;">
           <div style="display: inline-block; text-align: center;">
+            <!-- Brand Logo -->
+            <img src="https://unex0yvstmuqs1jv.public.blob.vercel-storage.com/brand/roofcal-logo.png" 
+                 alt="RoofCal Logo" 
+                 style="height: 60px; width: auto; margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;"
+                 width="120" height="60" />
             <h1 style="color: #2d3748; margin: 0 0 4px 0; font-size: 28px; font-weight: 700; letter-spacing: -0.025em;">RoofCal</h1>
             <p style="color: #718096; margin: 0; font-size: 14px; font-weight: 400;">Professional Roof Calculator</p>
           </div>
