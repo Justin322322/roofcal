@@ -76,9 +76,9 @@ export async function getAccounts(): Promise<Account[]> {
       },
     });
 
-    // Get actual project counts for all users (avoid N+1)
+    // Get actual project counts and total spending for all users (avoid N+1)
     const userIds = users.map((u) => u.id);
-    const groupedProjectCounts =
+    const projectStats =
       userIds.length > 0
         ? await prisma.project.groupBy({
             by: ["userId"],
@@ -86,18 +86,26 @@ export async function getAccounts(): Promise<Account[]> {
               userId: { in: userIds },
             },
             _count: { _all: true },
+            _sum: { totalCost: true },
           })
         : [];
 
-    // Map userId -> count
-    const projectCountByUserId = new Map<string, number>(
-      groupedProjectCounts.map((g) => [g.userId as string, g._count._all])
+    // Map userId -> { count, totalSpend }
+    const projectStatsByUserId = new Map<string, { count: number; totalSpend: number }>(
+      projectStats.map((g) => [
+        g.userId as string, 
+        { 
+          count: g._count._all, 
+          totalSpend: Number(g._sum.totalCost || 0) 
+        }
+      ])
     );
 
     // Transform User data to Account format
     return users.map((user) => {
-      const totalProjects = projectCountByUserId.get(user.id) ?? 0;
-      const totalSpend = totalProjects * 1500;
+      const stats = projectStatsByUserId.get(user.id) ?? { count: 0, totalSpend: 0 };
+      const totalProjects = stats.count;
+      const totalSpend = stats.totalSpend;
 
       return {
         id: user.id, // Use actual user ID from Prisma
