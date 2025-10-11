@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import Image from "next/image";
 import {
   X,
   BookOpenIcon,
@@ -312,10 +313,14 @@ export function TutorialGuideDialog() {
                           className="border rounded-lg p-3 cursor-pointer hover:shadow-md transition-shadow group"
                           onClick={() => setSelectedRoofType("gable")}
                         >
-                          <div className="aspect-square bg-muted/30 rounded-lg mb-2 flex items-center justify-center group-hover:bg-muted/50 transition-colors">
-                            <span className="text-xs text-muted-foreground">
-                              Gable Image
-                            </span>
+                          <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
+                            <Image
+                              src="/roof/gable.jpg"
+                              alt="Gable Roof"
+                              width={200}
+                              height={200}
+                              className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
+                            />
                           </div>
                           <h5 className="font-medium text-foreground text-sm">
                             Gable Roof
@@ -328,10 +333,14 @@ export function TutorialGuideDialog() {
                           className="border rounded-lg p-3 cursor-pointer hover:shadow-md transition-shadow group"
                           onClick={() => setSelectedRoofType("hip")}
                         >
-                          <div className="aspect-square bg-muted/30 rounded-lg mb-2 flex items-center justify-center group-hover:bg-muted/50 transition-colors">
-                            <span className="text-xs text-muted-foreground">
-                              Hip Image
-                            </span>
+                          <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
+                            <Image
+                              src="/roof/hip-roof.avif"
+                              alt="Hip Roof"
+                              width={200}
+                              height={200}
+                              className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
+                            />
                           </div>
                           <h5 className="font-medium text-foreground text-sm">
                             Hip Roof
@@ -344,10 +353,14 @@ export function TutorialGuideDialog() {
                           className="border rounded-lg p-3 cursor-pointer hover:shadow-md transition-shadow group"
                           onClick={() => setSelectedRoofType("mansard")}
                         >
-                          <div className="aspect-square bg-muted/30 rounded-lg mb-2 flex items-center justify-center group-hover:bg-muted/50 transition-colors">
-                            <span className="text-xs text-muted-foreground">
-                              Mansard Image
-                            </span>
+                          <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
+                            <Image
+                              src="/roof/mansard-roof.webp"
+                              alt="Mansard Roof"
+                              width={200}
+                              height={200}
+                              className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
+                            />
                           </div>
                           <h5 className="font-medium text-foreground text-sm">
                             Mansard Roof
@@ -360,10 +373,14 @@ export function TutorialGuideDialog() {
                           className="border rounded-lg p-3 cursor-pointer hover:shadow-md transition-shadow group"
                           onClick={() => setSelectedRoofType("shed")}
                         >
-                          <div className="aspect-square bg-muted/30 rounded-lg mb-2 flex items-center justify-center group-hover:bg-muted/50 transition-colors">
-                            <span className="text-xs text-muted-foreground">
-                              Shed Image
-                            </span>
+                          <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
+                            <Image
+                              src="/roof/shed-roof.jpg"
+                              alt="Shed Roof"
+                              width={200}
+                              height={200}
+                              className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
+                            />
                           </div>
                           <h5 className="font-medium text-foreground text-sm">
                             Shed Roof
@@ -384,10 +401,14 @@ export function TutorialGuideDialog() {
                           className="border rounded-lg p-3 cursor-pointer hover:shadow-md transition-shadow group"
                           onClick={() => setSelectedRoofType("gambrel")}
                         >
-                          <div className="aspect-square bg-muted/30 rounded-lg mb-2 flex items-center justify-center group-hover:bg-muted/50 transition-colors">
-                            <span className="text-xs text-muted-foreground">
-                              Gambrel Image
-                            </span>
+                          <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
+                            <Image
+                              src="/roof/gabrel-roof.png"
+                              alt="Gambrel Roof"
+                              width={200}
+                              height={200}
+                              className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
+                            />
                           </div>
                           <h5 className="font-medium text-foreground text-sm">
                             Gambrel Roof
@@ -400,10 +421,14 @@ export function TutorialGuideDialog() {
                           className="border rounded-lg p-3 cursor-pointer hover:shadow-md transition-shadow group"
                           onClick={() => setSelectedRoofType("cross-gabled")}
                         >
-                          <div className="aspect-square bg-muted/30 rounded-lg mb-2 flex items-center justify-center group-hover:bg-muted/50 transition-colors">
-                            <span className="text-xs text-muted-foreground">
-                              Cross-Gabled Image
-                            </span>
+                          <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
+                            <Image
+                              src="/roof/cross-gabled.jpeg"
+                              alt="Cross-Gabled Roof"
+                              width={200}
+                              height={200}
+                              className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
+                            />
                           </div>
                           <h5 className="font-medium text-foreground text-sm">
                             Cross-Gabled
@@ -416,10 +441,14 @@ export function TutorialGuideDialog() {
                           className="border rounded-lg p-3 cursor-pointer hover:shadow-md transition-shadow group"
                           onClick={() => setSelectedRoofType("saltbox")}
                         >
-                          <div className="aspect-square bg-muted/30 rounded-lg mb-2 flex items-center justify-center group-hover:bg-muted/50 transition-colors">
-                            <span className="text-xs text-muted-foreground">
-                              Saltbox Image
-                            </span>
+                          <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
+                            <Image
+                              src="/roof/salt-box.webp"
+                              alt="Saltbox Roof"
+                              width={200}
+                              height={200}
+                              className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
+                            />
                           </div>
                           <h5 className="font-medium text-foreground text-sm">
                             Saltbox Roof
@@ -432,10 +461,14 @@ export function TutorialGuideDialog() {
                           className="border rounded-lg p-3 cursor-pointer hover:shadow-md transition-shadow group"
                           onClick={() => setSelectedRoofType("butterfly")}
                         >
-                          <div className="aspect-square bg-muted/30 rounded-lg mb-2 flex items-center justify-center group-hover:bg-muted/50 transition-colors">
-                            <span className="text-xs text-muted-foreground">
-                              Butterfly Image
-                            </span>
+                          <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
+                            <Image
+                              src="/roof/buttlefly-roof.avif"
+                              alt="Butterfly Roof"
+                              width={200}
+                              height={200}
+                              className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
+                            />
                           </div>
                           <h5 className="font-medium text-foreground text-sm">
                             Butterfly Roof
