@@ -33,6 +33,7 @@ model user {
   updated_at       DateTime           @updatedAt
   activity         activity[]
   verificationcode verificationcode[]
+  projects         project[]
 
   @@index([email], map: "User_email_idx")
 }
@@ -77,6 +78,81 @@ enum activity_type {
   PROJECT_UPDATED
   PAYMENT_RECEIVED
   EMAIL_VERIFIED
+}
+
+model project {
+  id                  String            @id @default(uuid())
+  userId              String
+  projectName         String
+  clientName          String?
+  status              project_status    @default(DRAFT)
+  
+  // Roof Measurements
+  length              Decimal           @db.Decimal(10, 2)
+  width               Decimal           @db.Decimal(10, 2)
+  pitch               Decimal           @db.Decimal(5, 2)
+  roofType            String
+  floors              Int
+  materialThickness   String
+  ridgeType           String
+  gutterSize          String
+  budgetLevel         String
+  budgetAmount        Decimal?          @db.Decimal(12, 2)
+  constructionMode    construction_mode @default(NEW)
+  gutterLengthA       Decimal?          @db.Decimal(10, 2)
+  gutterSlope         Decimal?          @db.Decimal(10, 2)
+  gutterLengthC       Decimal?          @db.Decimal(10, 2)
+  insulationThickness String
+  ventilationPieces   Int
+  
+  // Material Selection
+  material            String
+  
+  // Calculation Results
+  area                Decimal           @db.Decimal(10, 2)
+  materialCost        Decimal           @db.Decimal(12, 2)
+  gutterCost          Decimal           @db.Decimal(12, 2)
+  ridgeCost           Decimal           @db.Decimal(12, 2)
+  screwsCost          Decimal           @db.Decimal(12, 2)
+  insulationCost      Decimal           @db.Decimal(12, 2)
+  ventilationCost     Decimal           @db.Decimal(12, 2)
+  totalMaterialsCost  Decimal           @db.Decimal(12, 2)
+  laborCost           Decimal           @db.Decimal(12, 2)
+  removalCost         Decimal           @db.Decimal(12, 2)
+  totalCost           Decimal           @db.Decimal(12, 2)
+  gutterPieces        Int
+  ridgeLength         Decimal           @db.Decimal(10, 2)
+  
+  // Decision Tree Results
+  complexityScore     Int
+  complexityLevel     String
+  recommendedMaterial String?
+  optimizationTips    String?           @db.LongText
+  
+  // Metadata
+  notes               String?           @db.LongText
+  created_at          DateTime          @default(now())
+  updated_at          DateTime          @updatedAt
+  
+  // Relationships
+  user                user              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId], map: "Project_userId_idx")
+  @@index([status], map: "Project_status_idx")
+  @@index([created_at], map: "Project_created_at_idx")
+  @@index([projectName], map: "Project_name_idx")
+}
+
+enum project_status {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum construction_mode {
+  NEW
+  REPAIR
 }
 
 enum user_role {

@@ -10,9 +10,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import AccountManagementContent from "./(sections)/account-management";
 import SystemMaintenanceContent from "./(sections)/system-maintenance";
 import { RoofCalculatorContent } from "./roof-calculator";
+import { ProjectManagementClient } from "./project-management/project-management-client";
 
 type DashboardSection =
   | "roof-calculator"
+  | "project-management"
   | "account-management"
   | "system-maintenance";
 
@@ -119,6 +121,8 @@ export default function DashboardClient() {
       case "roof-calculator":
       case null: // Default to roof calculator when no tab is specified
         return <RoofCalculatorContent />;
+      case "project-management":
+        return <ProjectManagementClient />;
       case "account-management":
         return <AccountManagementContent />;
       case "system-maintenance":

@@ -36,18 +36,18 @@ const data = {
   navMain: [
     {
       title: "Roof Estimator",
-      url: "#",
+      url: "/dashboard/roof-calculator",
       icon: CalculatorIcon,
+    },
+    {
+      title: "Project Management",
+      url: "/dashboard/project-management",
+      icon: KanbanSquareIcon,
     },
     {
       title: "Assigned Projects",
       url: "#",
       icon: ClipboardCheckIcon,
-    },
-    {
-      title: "Project Management",
-      url: "#",
-      icon: KanbanSquareIcon,
     },
   ],
   navClouds: [
@@ -133,14 +133,14 @@ export function AppSidebar({
         icon: CalculatorIcon,
       },
       {
+        title: "Project Management",
+        url: "project-management",
+        icon: KanbanSquareIcon,
+      },
+      {
         title: "Assigned Projects",
         url: "#",
         icon: ClipboardCheckIcon,
-      },
-      {
-        title: "Project Management",
-        url: "#",
-        icon: KanbanSquareIcon,
       },
     ],
     navSecondary: [],

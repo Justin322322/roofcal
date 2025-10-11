@@ -24,6 +24,7 @@ import { ConstructionModeSelector } from "./components/construction-mode-selecto
 import { GutterCalculator } from "./components/gutter-calculator";
 import { InsulationVentilation } from "./components/insulation-ventilation";
 import { BudgetValidator } from "./components/budget-validator";
+import { ProjectActions } from "./components/project-actions";
 import {
   CalculatorIcon,
   RotateCcwIcon,
@@ -35,6 +36,7 @@ import { useRoofCalculator } from "./hooks";
 import { materials } from "./components/material-selection";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
+import type { Measurements } from "./types";
 
 export function RoofCalculatorContent() {
   const {
@@ -50,6 +52,11 @@ export function RoofCalculatorContent() {
 
   const [isAdditionalSpecsOpen, setIsAdditionalSpecsOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [currentProjectId, setCurrentProjectId] = useState<
+    string | undefined
+  >();
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [saveEnabled, setSaveEnabled] = useState(false);
   const additionalSpecsRef = useRef<HTMLDivElement>(null);
 
   // Scroll to the end of Additional Specifications when expanded
@@ -78,39 +85,84 @@ export function RoofCalculatorContent() {
     }
   }, [isAdditionalSpecsOpen]);
 
+  // Handle project loaded from ProjectActions
+  const handleProjectLoaded = (data: {
+    measurements: Measurements;
+    material: string;
+    projectId?: string;
+  }) => {
+    // Set measurements including construction mode from loaded project
+    setMeasurements(data.measurements);
+    setMaterial(data.material);
+    setCurrentProjectId(data.projectId);
+    setSaveEnabled(false); // Reset save enabled when project is loaded
+
+    toast.success("Project loaded successfully", {
+      description: "Project data has been loaded into the calculator",
+    });
+  };
+
+  // Handle enabling save for repair project from ConstructionModeSelector
+  const handleSaveRepairProject = () => {
+    setSaveEnabled(true);
+    toast.success("Save Project enabled", {
+      description: "You can now save your calculations as a repair project",
+    });
+  };
+
   return (
     <>
-      {/* Header with description and reset button */}
-      <div className="px-4 lg:px-6 flex items-center justify-between mb-4">
-        <p className="text-muted-foreground">
-          Calculate roofing materials and costs with intelligent recommendations
-        </p>
-        <Button
-          variant="outline"
-          disabled={isResetting}
-          onClick={async () => {
-            setIsResetting(true);
-            try {
-              // Add a small delay to show the loading state
-              await new Promise((resolve) => setTimeout(resolve, 500));
-              handleReset();
-              toast.success("Calculator reset successfully", {
-                description:
-                  "All measurements and selections have been cleared",
-                duration: 3000,
-              });
-            } finally {
-              setIsResetting(false);
-            }
-          }}
-        >
-          {isResetting ? (
-            <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <RotateCcwIcon className="h-4 w-4 mr-2" />
-          )}
-          {isResetting ? "Resetting..." : "Reset"}
-        </Button>
+      {/* Header with description and actions */}
+      <div className="px-4 lg:px-6 mb-4">
+        <div className="flex items-center justify-between">
+          <p className="text-muted-foreground">
+            Calculate roofing materials and costs with intelligent
+            recommendations
+          </p>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2">
+            <ProjectActions
+              measurements={measurements}
+              results={results}
+              decisionTree={decisionTree}
+              material={material}
+              currentProjectId={currentProjectId}
+              saveDialogOpen={saveDialogOpen}
+              onSaveDialogChange={setSaveDialogOpen}
+              saveEnabled={saveEnabled}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isResetting}
+              onClick={async () => {
+                setIsResetting(true);
+                try {
+                  // Add a small delay to show the loading state
+                  await new Promise((resolve) => setTimeout(resolve, 500));
+                  handleReset();
+                  setCurrentProjectId(undefined); // Clear current project on reset
+                  setSaveEnabled(false); // Reset save enabled state
+                  toast.success("Calculator reset successfully", {
+                    description:
+                      "All measurements and selections have been cleared",
+                    duration: 3000,
+                  });
+                } finally {
+                  setIsResetting(false);
+                }
+              }}
+            >
+              {isResetting ? (
+                <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <RotateCcwIcon className="h-4 w-4 mr-2" />
+              )}
+              {isResetting ? "Resetting..." : "Reset"}
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -139,9 +191,17 @@ export function RoofCalculatorContent() {
               <CardContent>
                 <ConstructionModeSelector
                   mode={measurements.constructionMode}
-                  onModeChange={(mode) =>
-                    setMeasurements({ ...measurements, constructionMode: mode })
-                  }
+                  onModeChange={(mode) => {
+                    setMeasurements({
+                      ...measurements,
+                      constructionMode: mode,
+                    });
+                    // Reset save enabled when switching modes
+                    setSaveEnabled(false);
+                  }}
+                  onProjectLoaded={handleProjectLoaded}
+                  currentProjectId={currentProjectId}
+                  onSaveRepairProject={handleSaveRepairProject}
                 />
               </CardContent>
             </Card>
