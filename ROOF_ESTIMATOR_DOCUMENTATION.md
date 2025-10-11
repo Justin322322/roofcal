@@ -39,11 +39,11 @@ flowchart TD
     C --> E[Results Display<br/>Stats Cards, Calculations, Insights, Tips]
     D --> E
 
-    style A fill:#e1f5ff,stroke:#0288d1,stroke-width:2px
-    style B fill:#fff9c4,stroke:#f57c00,stroke-width:2px
-    style C fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    style D fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    style E fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    style A fill:#fff,stroke:#000,stroke-width:2px,color:#000
+    style B fill:#000,stroke:#000,stroke-width:2px,color:#fff
+    style C fill:#fff,stroke:#000,stroke-width:2px,color:#000
+    style D fill:#000,stroke:#000,stroke-width:2px,color:#fff
+    style E fill:#fff,stroke:#000,stroke-width:2px,color:#000
 ```
 
 ---
