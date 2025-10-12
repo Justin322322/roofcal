@@ -112,14 +112,6 @@ export function RoofCalculatorContent() {
 
   return (
     <div className="px-4 lg:px-6">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Project Request</h1>
-        <p className="text-muted-foreground mt-2">
-          Create detailed project requests with accurate calculations and cost estimates for contractors to review
-        </p>
-      </div>
-
       {/* Action Buttons */}
       <div className="mb-4 flex justify-end">
         <div className="flex items-center gap-2">
