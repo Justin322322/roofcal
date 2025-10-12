@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "prisma generate && prisma migrate deploy && tsx prisma/seed-pricing.ts && next build --turbopack",
+    "build": "prisma generate && prisma migrate deploy && next build --turbopack",
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
@@ -15,7 +15,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev -n init_auth",
     "prisma:deploy": "prisma migrate deploy",
-    "prisma:seed": "tsx prisma/seed-pricing.ts",
+    "seed": "tsx prisma/seed-pricing.ts",
+    "seed:prod": "NODE_ENV=production tsx prisma/seed-pricing.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
