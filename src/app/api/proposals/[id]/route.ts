@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
 import { UserRole } from "@/types/user-role";
-import { notifyProposalAccepted, notifyProposalRejected } from "@/lib/notifications";
+import { notifyProposalAccepted, notifyProposalRejected, notifyProposalSent } from "@/lib/notifications";
 
 // PATCH /api/proposals/[id] - Accept or reject a proposal
 export async function PATCH(
@@ -167,6 +167,150 @@ export async function PATCH(
     console.error("Error updating proposal:", error);
     return NextResponse.json(
       { error: "Failed to update proposal" },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT /api/proposals/[id] - Revise a proposal
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    // Only contractors can revise proposals
+    if (session.user.role !== UserRole.ADMIN) {
+      return NextResponse.json(
+        { error: "Only contractors can revise proposals" },
+        { status: 403 }
+      );
+    }
+
+    const { id } = await params;
+    const body = await request.json();
+    const { 
+      proposalText, 
+      customPricing 
+    } = body;
+
+    if (!proposalText?.trim()) {
+      return NextResponse.json(
+        { error: "Proposal text is required" },
+        { status: 400 }
+      );
+    }
+
+    // Verify the project exists and is assigned to this contractor
+    const project = await prisma.project.findFirst({
+      where: {
+        id,
+        contractorId: session.user.id,
+        proposalSent: { not: null }, // Must have been sent before
+      },
+      include: {
+        client: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!project) {
+      return NextResponse.json(
+        { error: "Project not found, access denied, or no proposal to revise" },
+        { status: 404 }
+      );
+    }
+
+    // Update the project with revised proposal details
+    const updatedProject = await prisma.project.update({
+      where: { id },
+      data: {
+        proposalSent: new Date(), // Update the sent timestamp
+        proposalStatus: "REVISED",
+        status: "PROPOSAL_SENT", // Reset to proposal sent status
+        notes: JSON.stringify({
+          proposalText,
+          customPricing,
+          originalNotes: project.notes,
+          revisedAt: new Date().toISOString(),
+        }),
+      },
+      include: {
+        client: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    // Send notification to client about revised proposal
+    if (updatedProject.client) {
+      await notifyProposalSent(
+        id,
+        updatedProject.projectName,
+        session.user.id,
+        session.user.name || "Contractor",
+        updatedProject.client.id,
+        `${updatedProject.client.firstName} ${updatedProject.client.lastName}`,
+        updatedProject.client.email
+      );
+    }
+
+    return NextResponse.json({
+      message: "Proposal revised and sent successfully",
+      project: {
+        ...updatedProject,
+        // Convert Decimal to number for JSON response
+        length: Number(updatedProject.length),
+        width: Number(updatedProject.width),
+        pitch: Number(updatedProject.pitch),
+        budgetAmount: updatedProject.budgetAmount ? Number(updatedProject.budgetAmount) : undefined,
+        gutterLengthA: updatedProject.gutterLengthA ? Number(updatedProject.gutterLengthA) : undefined,
+        gutterSlope: updatedProject.gutterSlope ? Number(updatedProject.gutterSlope) : undefined,
+        gutterLengthC: updatedProject.gutterLengthC ? Number(updatedProject.gutterLengthC) : undefined,
+        area: Number(updatedProject.area),
+        materialCost: Number(updatedProject.materialCost),
+        gutterCost: Number(updatedProject.gutterCost),
+        ridgeCost: Number(updatedProject.ridgeCost),
+        screwsCost: Number(updatedProject.screwsCost),
+        insulationCost: Number(updatedProject.insulationCost),
+        ventilationCost: Number(updatedProject.ventilationCost),
+        totalMaterialsCost: Number(updatedProject.totalMaterialsCost),
+        laborCost: Number(updatedProject.laborCost),
+        removalCost: Number(updatedProject.removalCost),
+        totalCost: Number(updatedProject.totalCost),
+        ridgeLength: Number(updatedProject.ridgeLength),
+      },
+    });
+  } catch (error) {
+    console.error("Error revising proposal:", error);
+    return NextResponse.json(
+      { error: "Failed to revise proposal" },
       { status: 500 }
     );
   }

@@ -73,16 +73,30 @@ export function ProjectStatusManager({
 
     setUpdatingStatus(newStatus);
     try {
-      await onStatusUpdate(newStatus);
-      
+      const response = await fetch(`/api/projects/${project.id}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update status");
+      }
+
       // Show success message
       const newStatusInfo = getStatusDisplayInfo(newStatus);
       toast.success("Status updated", {
         description: `Project status changed to ${newStatusInfo.label}`,
       });
-    } catch {
+
+      // Call the parent callback to refresh project data
+      await onStatusUpdate(newStatus);
+    } catch (error) {
       toast.error("Failed to update status", {
-        description: "Please try again",
+        description: error instanceof Error ? error.message : "Please try again",
       });
     } finally {
       setUpdatingStatus(null);

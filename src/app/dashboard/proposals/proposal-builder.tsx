@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,10 @@ interface ProposalBuilderProps {
   project: Project;
   onProposalSent: () => void;
   onClose: () => void;
+  mode?: "create" | "revise";
 }
 
-export function ProposalBuilder({ project, onProposalSent, onClose }: ProposalBuilderProps) {
+export function ProposalBuilder({ project, onProposalSent, onClose, mode = "create" }: ProposalBuilderProps) {
   const [proposalText, setProposalText] = useState("");
   const [customPricing, setCustomPricing] = useState({
     materialCost: project.materialCost,
@@ -28,6 +29,34 @@ export function ProposalBuilder({ project, onProposalSent, onClose }: ProposalBu
   });
   const [loading, setLoading] = useState(false);
 
+  // Parse existing proposal data if in revise mode
+  useEffect(() => {
+    if (mode === "revise" && project.notes) {
+      try {
+        const parsedNotes = JSON.parse(project.notes);
+        if (parsedNotes.proposalText) {
+          setProposalText(parsedNotes.proposalText);
+        }
+        if (parsedNotes.customPricing) {
+          setCustomPricing({
+            ...parsedNotes.customPricing,
+            totalCost: calculateTotalFromPricing(parsedNotes.customPricing),
+          });
+        }
+      } catch (error) {
+        console.error("Error parsing existing proposal:", error);
+      }
+    }
+  }, [mode, project.notes]);
+
+  const calculateTotalFromPricing = (pricing: {
+    materialCost?: number;
+    laborCost?: number;
+    additionalFees?: number;
+  }) => {
+    return (pricing.materialCost || 0) + (pricing.laborCost || 0) + (pricing.additionalFees || 0);
+  };
+
   const handleSubmit = async () => {
     if (!proposalText.trim()) {
       toast.error("Please provide a proposal message");
@@ -36,32 +65,37 @@ export function ProposalBuilder({ project, onProposalSent, onClose }: ProposalBu
 
     try {
       setLoading(true);
-      const response = await fetch("/api/proposals", {
-        method: "POST",
+      const url = mode === "revise" ? `/api/proposals/${project.id}` : "/api/proposals";
+      const method = mode === "revise" ? "PUT" : "POST";
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          projectId: project.id,
+          ...(mode === "create" && { projectId: project.id }),
           proposalText,
           customPricing: customPricing.additionalFees > 0 ? customPricing : undefined,
         }),
       });
 
       if (response.ok) {
-        toast.success("Proposal sent successfully", {
-          description: "The client will be notified and can review your proposal.",
+        const action = mode === "revise" ? "revised" : "sent";
+        toast.success(`Proposal ${action} successfully`, {
+          description: `The client will be notified and can review your ${mode === "revise" ? "revised" : ""} proposal.`,
         });
         onProposalSent();
         onClose();
       } else {
         const errorData = await response.json();
-        toast.error("Failed to send proposal", {
+        toast.error(`Failed to ${mode === "revise" ? "revise" : "send"} proposal`, {
           description: errorData.error || "An error occurred",
         });
       }
     } catch {
-      toast.error("Failed to send proposal", {
+      const action = mode === "revise" ? "revise" : "send";
+      toast.error(`Failed to ${action} proposal`, {
         description: "Network error occurred",
       });
     } finally {
@@ -238,7 +272,14 @@ export function ProposalBuilder({ project, onProposalSent, onClose }: ProposalBu
                 <div className="text-sm space-y-1">
                   <div>• Project: {project.projectName}</div>
                   <div>• Proposed Cost: {formatCurrency(calculateTotal())}</div>
-                  <div>• Status: <Badge variant="outline">SENT</Badge></div>
+                  <div>• Status: <Badge variant={mode === "revise" ? "secondary" : "outline"}>
+                    {mode === "revise" ? "REVISED" : "SENT"}
+                  </Badge></div>
+                  {mode === "revise" && (
+                    <div className="text-xs text-muted-foreground mt-2">
+                      This is a revision of your previous proposal
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -255,12 +296,12 @@ export function ProposalBuilder({ project, onProposalSent, onClose }: ProposalBu
           {loading ? (
             <>
               <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-              Sending...
+              {mode === "revise" ? "Revising..." : "Sending..."}
             </>
           ) : (
             <>
               <SendIcon className="mr-2 h-4 w-4" />
-              Send Proposal
+              {mode === "revise" ? "Send Revised Proposal" : "Send Proposal"}
             </>
           )}
         </Button>

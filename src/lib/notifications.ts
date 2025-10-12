@@ -2,7 +2,7 @@ import { sendEmail } from "@/lib/email";
 import { createNotification } from "@/components/notification-center";
 
 export interface NotificationData {
-  type: "status_change" | "proposal_sent" | "proposal_accepted" | "proposal_rejected";
+  type: "status_change" | "proposal_sent" | "proposal_accepted" | "proposal_rejected" | "project_assigned";
   projectId: string;
   projectName: string;
   fromUserId: string;
@@ -54,6 +54,8 @@ function generateInAppMessage(notification: NotificationData): string {
       return `Your proposal for "${notification.projectName}" was accepted by ${notification.fromUserName}`;
     case "proposal_rejected":
       return `Your proposal for "${notification.projectName}" was not accepted by ${notification.fromUserName}`;
+    case "project_assigned":
+      return `New project "${notification.projectName}" assigned by ${notification.fromUserName}`;
     default:
       return `Update for project "${notification.projectName}"`;
   }
@@ -144,6 +146,26 @@ function generateEmailContent(notification: NotificationData) {
         text: `Proposal Update\n\nHello ${notification.toUserName},\n\nYour proposal for the project "${notification.projectName}" was not accepted by ${notification.fromUserName}.\n\nYou can review the project details and consider revising your proposal if needed.\n\nView project: ${projectUrl}\n\nFeel free to contact the client for feedback or clarification.`
       };
 
+    case "project_assigned":
+      return {
+        subject: `New Project Assignment: ${notification.projectName}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #007bff;">New Project Assignment</h2>
+            <p>Hello ${notification.toUserName},</p>
+            <p>You have been assigned a new project <strong>"${notification.projectName}"</strong> by ${notification.fromUserName}.</p>
+            <p>Please review the project details and prepare a proposal for the client.</p>
+            <div style="margin: 20px 0;">
+              <a href="${projectUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Review Project</a>
+            </div>
+            <p style="color: #666; font-size: 14px;">
+              You can access the project details in your contractor dashboard to begin your review.
+            </p>
+          </div>
+        `,
+        text: `New Project Assignment\n\nHello ${notification.toUserName},\n\nYou have been assigned a new project "${notification.projectName}" by ${notification.fromUserName}.\n\nPlease review the project details and prepare a proposal for the client.\n\nReview project: ${projectUrl}\n\nYou can access the project details in your contractor dashboard to begin your review.`
+      };
+
     default:
       throw new Error(`Unknown notification type: ${notification.type}`);
   }
@@ -227,6 +249,27 @@ export async function notifyProposalRejected(
 ) {
   return sendProjectNotification({
     type: "proposal_rejected",
+    projectId,
+    projectName,
+    fromUserId,
+    fromUserName,
+    toUserId,
+    toUserName,
+    toUserEmail,
+  });
+}
+
+export async function notifyProjectAssigned(
+  projectId: string,
+  projectName: string,
+  fromUserId: string,
+  fromUserName: string,
+  toUserId: string,
+  toUserName: string,
+  toUserEmail: string
+) {
+  return sendProjectNotification({
+    type: "project_assigned",
     projectId,
     projectName,
     fromUserId,

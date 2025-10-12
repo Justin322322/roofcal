@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
-import { UserRole } from "@/types/user-role";
 
 // GET /api/warehouses - List all warehouse locations
 export async function GET() {

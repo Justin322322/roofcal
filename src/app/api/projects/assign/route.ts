@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
 import { UserRole } from "@/types/user-role";
+import { notifyProjectAssigned } from "@/lib/notifications";
 
 // POST /api/projects/assign - Assign a project to a contractor
 export async function POST(request: NextRequest) {
@@ -75,6 +76,17 @@ export async function POST(request: NextRequest) {
         proposalStatus: "DRAFT",
       },
     });
+
+    // Send notification to contractor about the new assignment
+    await notifyProjectAssigned(
+      projectId,
+      updatedProject.projectName,
+      session.user.id,
+      session.user.name || "Client",
+      contractorId,
+      `${contractor.firstName} ${contractor.lastName}`,
+      contractor.email
+    );
 
     return NextResponse.json({
       message: "Project assigned successfully",
