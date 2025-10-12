@@ -46,15 +46,15 @@ export interface Warehouse {
 export interface DeliveryPricing {
   tier1: {
     maxDistance: number; // miles
-    flatFee: number; // dollars
+    flatFee: number; // pesos
   };
   tier2: {
     maxDistance: number; // miles
-    flatFee: number; // dollars
-    perMileRate: number; // dollars per mile
+    flatFee: number; // pesos
+    perMileRate: number; // pesos per mile
   };
   tier3: {
-    perMileRate: number; // dollars per mile
+    perMileRate: number; // pesos per mile
   };
 }
 

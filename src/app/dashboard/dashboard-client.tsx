@@ -1,6 +1,5 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useQueryState } from "nuqs";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
@@ -8,6 +7,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { UserRole } from "@/types/user-role";
+import { useSessionLoading } from "@/hooks/use-session-loading";
 import AccountManagementContent from "./(sections)/account-management";
 import SystemMaintenanceContent from "./(sections)/system-maintenance";
 import { RoofCalculatorContent } from "./roof-calculator";
@@ -101,9 +101,9 @@ function DashboardSkeleton() {
 
 export default function DashboardClient() {
   const [activeSection, setActiveSection] = useQueryState("tab");
-  const { status, data: session } = useSession();
+  const { isLoading, session } = useSessionLoading();
 
-  if (status === "loading") {
+  if (isLoading) {
     return (
       <SidebarProvider>
         <AppSidebar

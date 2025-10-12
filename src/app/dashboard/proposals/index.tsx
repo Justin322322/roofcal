@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import { useDataLoading } from "@/hooks/use-data-loading";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,44 +42,35 @@ interface ProposalProject extends Project {
 
 export function ProposalsPage() {
   const { data: session } = useSession();
-  const [proposals, setProposals] = useState<ProposalProject[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState<ProposalProject | null>(null);
   const [showBuilder, setShowBuilder] = useState(false);
   const [showViewer, setShowViewer] = useState(false);
 
-  useEffect(() => {
-    // Only fetch proposals if user is authenticated and is an admin
-    if (session?.user?.id && session.user.role === "ADMIN") {
-      fetchProposals();
-    } else if (session === null) {
-      // If session is explicitly null (logged out), stop loading
-      setLoading(false);
+  const fetchProposals = useCallback(async (): Promise<ProposalProject[]> => {
+    const response = await fetch("/api/proposals");
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to fetch proposals");
     }
-  }, [session]);
+    
+    const data = await response.json();
+    return data.proposals || [];
+  }, []);
 
-  const fetchProposals = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("/api/proposals");
-      
-      if (response.ok) {
-        const data = await response.json();
-        setProposals(data.proposals || []);
-      } else {
-        const errorData = await response.json();
-        toast.error("Failed to fetch proposals", {
-          description: errorData.error || "An error occurred",
-        });
-      }
-    } catch {
+  const { data: proposals, loading, error, refetch } = useDataLoading(
+    fetchProposals,
+    []
+  );
+
+  // Show error toast if there's an error
+  useEffect(() => {
+    if (error) {
       toast.error("Failed to fetch proposals", {
-        description: "Network error occurred",
+        description: error,
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [error]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -126,10 +118,10 @@ export function ProposalsPage() {
     });
   };
 
-  const sentProposals = proposals.filter(p => p.proposalStatus === "SENT");
-  const acceptedProposals = proposals.filter(p => p.proposalStatus === "ACCEPTED");
-  const rejectedProposals = proposals.filter(p => p.proposalStatus === "REJECTED");
-  const draftProposals = proposals.filter(p => !p.proposalSent && p.contractorId);
+  const sentProposals = proposals?.filter(p => p.proposalStatus === "SENT") || [];
+  const acceptedProposals = proposals?.filter(p => p.proposalStatus === "ACCEPTED") || [];
+  const rejectedProposals = proposals?.filter(p => p.proposalStatus === "REJECTED") || [];
+  const draftProposals = proposals?.filter(p => !p.proposalSent && p.contractorId) || [];
 
   if (session?.user?.role !== "ADMIN") {
     return (
@@ -179,7 +171,7 @@ export function ProposalsPage() {
         </p>
       </div>
 
-      {proposals.length === 0 ? (
+      {!proposals || proposals.length === 0 ? (
         <Alert>
           <AlertCircleIcon className="h-4 w-4" />
           <AlertDescription>
@@ -295,7 +287,7 @@ export function ProposalsPage() {
               <ProposalBuilder
                 project={selectedProject}
                 onProposalSent={() => {
-                  fetchProposals();
+                  refetch();
                   setShowBuilder(false);
                   setSelectedProject(null);
                 }}

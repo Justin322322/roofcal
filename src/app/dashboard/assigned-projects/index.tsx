@@ -45,7 +45,7 @@ export function AssignedProjectsContent() {
       // If session is explicitly null (logged out), stop loading
       setLoading(false);
     }
-  }, [session]);
+  }, [session?.user?.id, session?.user?.role, session]);
 
   const fetchAssignedProjects = async () => {
     try {

@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,6 +44,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
   ArchiveIcon,
@@ -58,6 +58,8 @@ import {
   SaveIcon,
   XIcon,
   LoaderIcon,
+  SearchIcon,
+  RefreshCwIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -68,11 +70,13 @@ import {
   PRICING_UNITS,
 } from "@/lib/pricing";
 
-export default function SystemMaintenance() {
+export default function PricingMaintenance() {
   const { data: session } = useSession();
   const [pricingData, setPricingData] = useState<PricingConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<string>("materials");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Partial<UpdatePricingConfig>>({});
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -86,10 +90,9 @@ export default function SystemMaintenance() {
     if (session?.user?.id && session.user.role === "ADMIN") {
       loadPricingData();
     } else if (session === null) {
-      // If session is explicitly null (logged out), stop loading
       setIsLoading(false);
     }
-  }, [session]);
+  }, [session?.user?.id, session?.user?.role, session]);
 
   // Check authentication and authorization
   if (session === null) {
@@ -108,7 +111,7 @@ export default function SystemMaintenance() {
       <div className="p-6">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900">Access Denied</h2>
-          <p className="text-gray-600 mt-2">Only administrators can access system maintenance.</p>
+          <p className="text-gray-600 mt-2">Only administrators can access pricing maintenance.</p>
         </div>
       </div>
     );
@@ -158,10 +161,9 @@ export default function SystemMaintenance() {
         throw new Error(error.error || 'Failed to update pricing');
       }
 
-      // Reload data
       await loadPricingData();
-    setEditingItem(null);
-    setEditValues({});
+      setEditingItem(null);
+      setEditValues({});
       toast.success('Pricing updated successfully');
     } catch (error) {
       console.error('Error updating pricing:', error);
@@ -192,7 +194,6 @@ export default function SystemMaintenance() {
         throw new Error(error.error || 'Failed to create pricing');
       }
 
-      // Reload data
       await loadPricingData();
       setIsAddDialogOpen(false);
       setNewItemData({});
@@ -220,7 +221,6 @@ export default function SystemMaintenance() {
         throw new Error(error.error || 'Failed to delete pricing');
       }
 
-      // Reload data
       await loadPricingData();
       toast.success('Pricing item deleted successfully');
     } catch (error) {
@@ -232,7 +232,7 @@ export default function SystemMaintenance() {
   const exportToCSV = async () => {
     try {
       const csvContent = [
-        ['Category', 'Name', 'Label', 'Description', 'Price', 'Unit', 'Status', 'Last Updated'],
+        ['Category', 'Name', 'Label', 'Description', 'Price (₱)', 'Unit', 'Status', 'Last Updated'],
         ...pricingData.map((item) => [
           item.category,
           item.name,
@@ -268,421 +268,475 @@ export default function SystemMaintenance() {
     }
   };
 
+  // Filter data based on selected filters
+  const filteredData = pricingData.filter((item) => {
+    const matchesCategory = !selectedCategory || item.category === selectedCategory;
+    const matchesSearch = !searchTerm || 
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesStatus = statusFilter === "all" || 
+      (statusFilter === "active" && item.isActive) ||
+      (statusFilter === "inactive" && !item.isActive);
+    
+    return matchesCategory && matchesSearch && matchesStatus;
+  });
 
-  const filteredData = pricingData.filter((item) => item.category === activeTab);
   const totalItems = pricingData.length;
   const activeItems = pricingData.filter((item) => item.isActive).length;
+  const inactiveItems = totalItems - activeItems;
 
   if (isLoading) {
     return (
-      <>
+      <div className="space-y-6">
         {/* Header Section */}
-        <div className="px-4 lg:px-6 flex items-center justify-between mb-4">
-          <p className="text-muted-foreground">
-            Manage system costs, pricing, and archived items
-          </p>
-          <Skeleton className="h-9 w-32" />
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Pricing Maintenance</h1>
+            <p className="text-muted-foreground">
+              Manage pricing configurations for roofing materials and services
+            </p>
+          </div>
+          <Skeleton className="h-10 w-32" />
         </div>
 
         {/* Stats Cards */}
-        <div className="px-4 lg:px-6 mb-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-4" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-7 w-20 mb-1" />
-                  <Skeleton className="h-3 w-32" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-7 w-20 mb-1" />
+                <Skeleton className="h-3 w-32" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Main Content */}
-        <div className="px-4 lg:px-6">
-          <Skeleton className="h-96 w-full" />
-        </div>
-      </>
+        <Card>
+          <CardContent className="p-6">
+            <Skeleton className="h-96 w-full" />
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className="space-y-6">
       {/* Header Section */}
-      <div className="px-4 lg:px-6 flex items-center justify-between mb-4">
-        <p className="text-muted-foreground">
-          Manage system costs, pricing, and pricing configurations
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Pricing Maintenance</h1>
+          <p className="text-muted-foreground">
+            Manage pricing configurations for roofing materials and services
+          </p>
+        </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={loadPricingData} disabled={isLoading}>
+            <RefreshCwIcon className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
           <Button variant="outline" onClick={exportToCSV}>
-              <DownloadIcon className="h-4 w-4 mr-2" />
+            <DownloadIcon className="h-4 w-4 mr-2" />
             Export CSV
-            </Button>
+          </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="px-4 lg:px-6 mb-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Items
-              </CardTitle>
-              <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalItems}</div>
-              <p className="text-xs text-muted-foreground">
-                All pricing items
-              </p>
-            </CardContent>
-          </Card>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Items</CardTitle>
+            <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalItems}</div>
+            <p className="text-xs text-muted-foreground">All pricing items</p>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Items</CardTitle>
-              <SettingsIcon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{activeItems}</div>
-              <p className="text-xs text-muted-foreground">
-                Currently active
-              </p>
-            </CardContent>
-          </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Items</CardTitle>
+            <SettingsIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{activeItems}</div>
+            <p className="text-xs text-muted-foreground">Currently active</p>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Categories</CardTitle>
-              <SettingsIcon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{categories.length}</div>
-              <p className="text-xs text-muted-foreground">Pricing categories</p>
-            </CardContent>
-          </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Inactive Items</CardTitle>
+            <ArchiveIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">{inactiveItems}</div>
+            <p className="text-xs text-muted-foreground">Currently inactive</p>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Last Updated
-              </CardTitle>
-              <ArchiveIcon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {pricingData.length > 0 
-                  ? new Date(Math.max(...pricingData.map(item => new Date(item.updated_at).getTime()))).toLocaleDateString()
-                  : 'N/A'
-                }
-              </div>
-              <p className="text-xs text-muted-foreground">Most recent change</p>
-            </CardContent>
-          </Card>
-        </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Categories</CardTitle>
+            <SettingsIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{categories.length}</div>
+            <p className="text-xs text-muted-foreground">Pricing categories</p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Main Content */}
-      <div className="px-4 lg:px-6">
-        <Tabs
-          defaultValue="materials"
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="space-y-4"
-        >
-          <TabsList className="grid w-full grid-cols-7">
-            {categories.map((category) => (
-            <TabsTrigger
-                key={category.id}
-                value={category.id}
-                className="flex items-center gap-2 text-xs"
-            >
-                <DollarSignIcon className="h-3 w-3" />
-                {category.label}
-            </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {categories.map((category) => (
-            <TabsContent key={category.id} value={category.id} className="space-y-4">
-            <Card>
-              <CardHeader>
-                  <div className="flex items-center justify-between">
+      {/* Filters and Actions */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Pricing Items</CardTitle>
+              <CardDescription>
+                Manage all pricing configurations with advanced filtering
+              </CardDescription>
+            </div>
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  Add New Item
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Add New Pricing Item</DialogTitle>
+                  <DialogDescription>
+                    Add a new pricing item to the system.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                <CardTitle className="flex items-center gap-2">
-                  <SettingsIcon className="h-5 w-5" />
-                        {category.label} Pricing
-                </CardTitle>
-                <CardDescription>
-                        Manage pricing for {category.label.toLowerCase()}
-                </CardDescription>
+                      <Label htmlFor="category">Category</Label>
+                      <Select
+                        value={newItemData.category || ""}
+                        onValueChange={(value) => setNewItemData(prev => ({ 
+                          ...prev, 
+                          category: value as CreatePricingConfig['category'],
+                          unit: categories.find(c => c.id === value)?.unit as CreatePricingConfig['unit']
+                        }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button
-                          onClick={() => setNewItemData({ category: category.id as CreatePricingConfig['category'], unit: category.unit as CreatePricingConfig['unit'] })}
-                        >
-                          <PlusIcon className="h-4 w-4 mr-2" />
-                          Add Item
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Add New Pricing Item</DialogTitle>
-                          <DialogDescription>
-                            Add a new {category.label.toLowerCase()} pricing item to the system.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="name">Name (Key)</Label>
-                            <Input
-                              id="name"
-                              value={newItemData.name || ''}
-                              onChange={(e) => setNewItemData(prev => ({ ...prev, name: e.target.value }))}
-                              placeholder="e.g., premium, standard"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="label">Display Label</Label>
-                            <Input
-                              id="label"
-                              value={newItemData.label || ''}
-                              onChange={(e) => setNewItemData(prev => ({ ...prev, label: e.target.value }))}
-                              placeholder="e.g., Premium Material"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="description">Description</Label>
-                            <Textarea
-                              id="description"
-                              value={newItemData.description || ''}
-                              onChange={(e) => setNewItemData(prev => ({ ...prev, description: e.target.value }))}
-                              placeholder="Optional description"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="price">Price</Label>
-                            <Input
-                              id="price"
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              value={newItemData.price || ''}
-                              onChange={(e) => setNewItemData(prev => ({ ...prev, price: parseFloat(e.target.value) }))}
-                              placeholder="0.00"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="unit">Unit</Label>
-                            <Select
-                              value={newItemData.unit || category.unit}
-                              onValueChange={(value) => setNewItemData(prev => ({ ...prev, unit: value as typeof category.unit }))}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {PRICING_UNITS.map((unit) => (
-                                  <SelectItem key={unit} value={unit}>
-                                    {unit.replace('_', ' ')}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                        <DialogFooter>
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              setIsAddDialogOpen(false);
-                              setNewItemData({});
-                            }}
-                          >
-                            Cancel
-                          </Button>
-                          <Button onClick={handleAddItem} disabled={isSubmitting}>
-                            {isSubmitting ? (
-                              <>
-                                <LoaderIcon className="h-4 w-4 mr-2 animate-spin" />
-                                Adding...
-                              </>
-                            ) : (
-                              'Add Item'
-                            )}
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                    <div>
+                      <Label htmlFor="name">Name (Key)</Label>
+                      <Input
+                        id="name"
+                        value={newItemData.name || ''}
+                        onChange={(e) => setNewItemData(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="e.g., premium, standard"
+                      />
+                    </div>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  {filteredData.length === 0 ? (
-                    <div className="text-center py-12">
-                      <DollarSignIcon className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">
-                        No {category.label} Items
-                      </h3>
-                      <p className="text-muted-foreground">
-                        Add your first {category.label.toLowerCase()} pricing item to get started.
-                      </p>
+                  <div>
+                    <Label htmlFor="label">Display Label</Label>
+                    <Input
+                      id="label"
+                      value={newItemData.label || ''}
+                      onChange={(e) => setNewItemData(prev => ({ ...prev, label: e.target.value }))}
+                      placeholder="e.g., Premium Material"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={newItemData.description || ''}
+                      onChange={(e) => setNewItemData(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="Optional description"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="price">Price (₱)</Label>
+                      <Input
+                        id="price"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={newItemData.price || ''}
+                        onChange={(e) => setNewItemData(prev => ({ ...prev, price: parseFloat(e.target.value) }))}
+                        placeholder="0.00"
+                      />
                     </div>
-                  ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Label</TableHead>
-                          <TableHead>Description</TableHead>
-                          <TableHead>Price</TableHead>
-                          <TableHead>Unit</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Last Updated</TableHead>
-                          <TableHead className="w-[50px]">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredData.map((item) => (
-                          <TableRow key={item.id}>
-                            <TableCell className="font-medium">{item.name}</TableCell>
-                            <TableCell>
-                              {editingItem === item.id ? (
-                                <Input
-                                  value={editValues.label || ''}
-                                  onChange={(e) => setEditValues(prev => ({ ...prev, label: e.target.value }))}
-                                  className="h-8"
-                                />
-                              ) : (
-                                item.label
-                              )}
-                            </TableCell>
-                            <TableCell>
+                    <div>
+                      <Label htmlFor="unit">Unit</Label>
+                      <Select
+                        value={newItemData.unit || ""}
+                        onValueChange={(value) => setNewItemData(prev => ({ ...prev, unit: value as CreatePricingConfig['unit'] }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select unit" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PRICING_UNITS.map((unit) => (
+                            <SelectItem key={unit} value={unit}>
+                              {unit.replace('_', ' ')}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsAddDialogOpen(false);
+                      setNewItemData({});
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAddItem} disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <LoaderIcon className="h-4 w-4 mr-2 animate-spin" />
+                        Adding...
+                      </>
+                    ) : (
+                      'Add Item'
+                    )}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Filter Controls */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="flex-1">
+              <div className="relative">
+                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search items..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Categories</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active Only</SelectItem>
+                  <SelectItem value="inactive">Inactive Only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Data Table */}
+          {filteredData.length === 0 ? (
+            <div className="text-center py-12">
+              <DollarSignIcon className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No Items Found</h3>
+              <p className="text-muted-foreground">
+                {searchTerm || selectedCategory || statusFilter !== "all"
+                  ? "Try adjusting your filters to see more results."
+                  : "Add your first pricing item to get started."
+                }
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Label</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Price (₱)</TableHead>
+                    <TableHead>Unit</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Last Updated</TableHead>
+                    <TableHead className="w-[100px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredData.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {categories.find(c => c.id === item.category)?.label || item.category}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-medium">{item.name}</TableCell>
+                      <TableCell>
                         {editingItem === item.id ? (
-                                <Input
-                                  value={editValues.description || ''}
-                                  onChange={(e) => setEditValues(prev => ({ ...prev, description: e.target.value }))}
-                                  className="h-8"
-                                />
-                              ) : (
-                                item.description || '-'
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {editingItem === item.id ? (
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  min="0"
-                                  value={editValues.price || ''}
-                                  onChange={(e) => setEditValues(prev => ({ ...prev, price: parseFloat(e.target.value) }))}
-                                  className="h-8"
-                                />
-                              ) : (
-                                `₱${Number(item.price).toLocaleString()}`
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {editingItem === item.id ? (
-                                <Select
-                                  value={editValues.unit || item.unit}
-                                  onValueChange={(value) => setEditValues(prev => ({ ...prev, unit: value as typeof item.unit }))}
-                                >
-                                  <SelectTrigger className="h-8">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {PRICING_UNITS.map((unit) => (
-                                      <SelectItem key={unit} value={unit}>
-                                        {unit.replace('_', ' ')}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              ) : (
-                                item.unit.replace('_', ' ')
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {editingItem === item.id ? (
-                                <Select
-                                  value={editValues.isActive !== undefined ? editValues.isActive.toString() : item.isActive.toString()}
-                                  onValueChange={(value) => setEditValues(prev => ({ ...prev, isActive: value === 'true' }))}
-                                >
-                                  <SelectTrigger className="h-8">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="true">Active</SelectItem>
-                                    <SelectItem value="false">Inactive</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              ) : (
-                                <Badge variant={item.isActive ? "default" : "secondary"}>
-                                  {item.isActive ? 'Active' : 'Inactive'}
-                                </Badge>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {new Date(item.updated_at).toLocaleDateString()}
-                            </TableCell>
-                            <TableCell>
-                              {editingItem === item.id ? (
-                                <div className="flex gap-1">
-                              <Button
-                                size="sm"
-                                    onClick={() => handleSaveEdit(item.id)}
-                                    disabled={isSubmitting}
-                              >
-                                    <SaveIcon className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={handleCancelEdit}
-                              >
-                                    <XIcon className="h-3 w-3" />
-                              </Button>
+                          <Input
+                            value={editValues.label || ''}
+                            onChange={(e) => setEditValues(prev => ({ ...prev, label: e.target.value }))}
+                            className="h-8"
+                          />
+                        ) : (
+                          item.label
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {editingItem === item.id ? (
+                          <Input
+                            value={editValues.description || ''}
+                            onChange={(e) => setEditValues(prev => ({ ...prev, description: e.target.value }))}
+                            className="h-8"
+                          />
+                        ) : (
+                          item.description || '-'
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {editingItem === item.id ? (
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={editValues.price || ''}
+                            onChange={(e) => setEditValues(prev => ({ ...prev, price: parseFloat(e.target.value) }))}
+                            className="h-8"
+                          />
+                        ) : (
+                          <span className="font-medium">₱{Number(item.price).toLocaleString()}</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {editingItem === item.id ? (
+                          <Select
+                            value={editValues.unit || item.unit}
+                            onValueChange={(value) => setEditValues(prev => ({ ...prev, unit: value as typeof item.unit }))}
+                          >
+                            <SelectTrigger className="h-8">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {PRICING_UNITS.map((unit) => (
+                                <SelectItem key={unit} value={unit}>
+                                  {unit.replace('_', ' ')}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          item.unit.replace('_', ' ')
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {editingItem === item.id ? (
+                          <Select
+                            value={editValues.isActive !== undefined ? editValues.isActive.toString() : item.isActive.toString()}
+                            onValueChange={(value) => setEditValues(prev => ({ ...prev, isActive: value === 'true' }))}
+                          >
+                            <SelectTrigger className="h-8">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="true">Active</SelectItem>
+                              <SelectItem value="false">Inactive</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Badge variant={item.isActive ? "default" : "secondary"}>
+                            {item.isActive ? 'Active' : 'Inactive'}
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(item.updated_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        {editingItem === item.id ? (
+                          <div className="flex gap-1">
+                            <Button
+                              size="sm"
+                              onClick={() => handleSaveEdit(item.id)}
+                              disabled={isSubmitting}
+                            >
+                              <SaveIcon className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={handleCancelEdit}
+                            >
+                              <XIcon className="h-3 w-3" />
+                            </Button>
                           </div>
                         ) : (
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm">
-                                      <MoreVerticalIcon className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => handleEditItem(item)}>
-                                      <EditIcon className="h-4 w-4 mr-2" />
-                                      Edit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem 
-                                      onClick={() => handleDeleteItem(item.id)}
-                                      className="text-red-600"
-                                    >
-                                      <TrashIcon className="h-4 w-4 mr-2" />
-                                      Delete
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-          ))}
-        </Tabs>
-      </div>
-    </>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreVerticalIcon className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleEditItem(item)}>
+                                <EditIcon className="h-4 w-4 mr-2" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteItem(item.id)}
+                                className="text-red-600 focus:text-red-600"
+                              >
+                                <TrashIcon className="h-4 w-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

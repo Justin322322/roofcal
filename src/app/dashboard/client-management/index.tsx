@@ -60,7 +60,7 @@ export function ClientManagementPage() {
       // If session is explicitly null (logged out), stop loading
       setLoading(false);
     }
-  }, [session]);
+  }, [session?.user?.id, session?.user?.role, session]);
 
   const fetchClientData = async () => {
     try {

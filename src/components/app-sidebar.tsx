@@ -133,7 +133,7 @@ const data = {
       icon: UsersIcon,
     },
     {
-      name: "System Maintenance",
+      name: "Maintenance",
       url: "system-maintenance",
       icon: WrenchIcon,
     },
