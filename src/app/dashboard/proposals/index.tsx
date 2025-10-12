@@ -48,8 +48,14 @@ export function ProposalsPage() {
   const [showViewer, setShowViewer] = useState(false);
 
   useEffect(() => {
-    fetchProposals();
-  }, []);
+    // Only fetch proposals if user is authenticated and is an admin
+    if (session?.user?.id && session.user.role === "ADMIN") {
+      fetchProposals();
+    } else if (session === null) {
+      // If session is explicitly null (logged out), stop loading
+      setLoading(false);
+    }
+  }, [session]);
 
   const fetchProposals = async () => {
     try {

@@ -207,3 +207,21 @@ model warehouse {
   
   @@index([created_by], map: "Warehouse_created_by_idx")
 }
+
+model PricingConfig {
+  id          String   @id @default(uuid())
+  category    String   // e.g., "material", "gutter", "ridge", "screws", "insulation", "ventilation", "labor"
+  name        String   // e.g., "asphalt", "metal", "standard", "large", "5mm", "10mm"
+  label       String   // Display name
+  description String?
+  price       Decimal  @db.Decimal(10, 2)
+  unit        String   // e.g., "per_sqm", "per_piece", "per_meter", "percentage"
+  isActive    Boolean  @default(true)
+  metadata    String?  @db.LongText // JSON for additional config
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  
+  @@unique([category, name])
+  @@index([category])
+  @@index([isActive])
+}

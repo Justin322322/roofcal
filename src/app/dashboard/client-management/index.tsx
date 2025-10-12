@@ -53,8 +53,14 @@ export function ClientManagementPage() {
   const [showClientDetails, setShowClientDetails] = useState(false);
 
   useEffect(() => {
-    fetchClientData();
-  }, []);
+    // Only fetch data if user is authenticated and is an admin
+    if (session?.user?.id && session.user.role === "ADMIN") {
+      fetchClientData();
+    } else if (session === null) {
+      // If session is explicitly null (logged out), stop loading
+      setLoading(false);
+    }
+  }, [session]);
 
   const fetchClientData = async () => {
     try {

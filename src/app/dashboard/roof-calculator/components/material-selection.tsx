@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -15,6 +16,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getMaterialPrices } from "@/lib/pricing";
 
 interface MaterialSelectionProps {
   material: string;
@@ -22,7 +25,15 @@ interface MaterialSelectionProps {
   onRidgeTypeChange?: (ridgeType: string) => void;
 }
 
-const materials = [
+interface Material {
+  value: string;
+  name: string;
+  price: number;
+  description: string;
+}
+
+// Fallback materials for when database is unavailable
+const fallbackMaterials: Material[] = [
   {
     value: "asphalt",
     name: "Asphalt Shingles",
@@ -66,6 +77,27 @@ export function MaterialSelection({
   onMaterialChange,
   onRidgeTypeChange,
 }: MaterialSelectionProps) {
+  const [materials, setMaterials] = useState<Material[]>(fallbackMaterials);
+  const [isLoadingMaterials, setIsLoadingMaterials] = useState(true);
+
+  // Load materials from database on mount
+  useEffect(() => {
+    const loadMaterials = async () => {
+      try {
+        setIsLoadingMaterials(true);
+        const dbMaterials = await getMaterialPrices();
+        setMaterials(dbMaterials);
+      } catch (error) {
+        console.error('Failed to load materials from database, using fallback:', error);
+        setMaterials(fallbackMaterials);
+      } finally {
+        setIsLoadingMaterials(false);
+      }
+    };
+
+    loadMaterials();
+  }, []);
+
   const selectedMaterial = materials.find((m) => m.value === material);
 
   const handleMaterialChange = (newMaterial: string) => {
@@ -76,6 +108,26 @@ export function MaterialSelection({
       onRidgeTypeChange("corrugated");
     }
   };
+
+  if (isLoadingMaterials) {
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="material">Roofing Material</Label>
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-5 w-32 mb-2" />
+            <Skeleton className="h-4 w-48" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-6 w-24" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -117,4 +169,5 @@ export function MaterialSelection({
   );
 }
 
-export { materials };
+// Export fallback materials for backwards compatibility
+export { fallbackMaterials as materials };

@@ -38,8 +38,14 @@ export function AssignedProjectsContent() {
   const [showProposalBuilder, setShowProposalBuilder] = useState(false);
 
   useEffect(() => {
-    fetchAssignedProjects();
-  }, []);
+    // Only fetch projects if user is authenticated and is an admin
+    if (session?.user?.id && session.user.role === "ADMIN") {
+      fetchAssignedProjects();
+    } else if (session === null) {
+      // If session is explicitly null (logged out), stop loading
+      setLoading(false);
+    }
+  }, [session]);
 
   const fetchAssignedProjects = async () => {
     try {

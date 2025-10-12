@@ -9,6 +9,8 @@ import type {
 import { analyzeProject } from "@/lib/decision-tree";
 import { materials } from "../components/material-selection";
 import * as CONSTANTS from "../constants";
+import { updatePricingConstants } from "../constants";
+import { getPricingConstants } from "@/lib/pricing";
 
 export function useRoofCalculator() {
   const [measurements, setMeasurements] = useState<Measurements>({
@@ -31,6 +33,8 @@ export function useRoofCalculator() {
   });
 
   const [material, setMaterial] = useState("asphalt");
+  const [isLoadingPricing, setIsLoadingPricing] = useState(true);
+  const [pricingError, setPricingError] = useState<string | null>(null);
 
   const [results, setResults] = useState<CalculationResults>({
     area: 0,
@@ -63,6 +67,29 @@ export function useRoofCalculator() {
 
   const [decisionTree, setDecisionTree] =
     useState<DecisionTreeResult>(initialDecisionTree);
+
+  // Load pricing from database on mount
+  useEffect(() => {
+    const loadPricing = async () => {
+      try {
+        setIsLoadingPricing(true);
+        setPricingError(null);
+        
+        const pricingData = await getPricingConstants();
+        updatePricingConstants(pricingData);
+        
+        console.log('✅ Pricing loaded successfully from database');
+      } catch (error) {
+        console.error('❌ Failed to load pricing from database, using fallback values:', error);
+        setPricingError('Failed to load latest pricing. Using cached values.');
+        // Continue with fallback values (already set in constants)
+      } finally {
+        setIsLoadingPricing(false);
+      }
+    };
+
+    loadPricing();
+  }, []);
 
   // Update decision tree when material or relevant measurements change
   useEffect(() => {
@@ -429,5 +456,7 @@ export function useRoofCalculator() {
     calculateRoof,
     handleReset,
     handleAutoOptimize,
+    isLoadingPricing,
+    pricingError,
   };
 }
