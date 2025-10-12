@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/auth-utils";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
+import { UserRole } from "@/types/user-role";
 
 // GET /api/warehouses - List all warehouse locations
 export async function GET() {
@@ -41,13 +43,24 @@ export async function GET() {
   }
 }
 
-// POST /api/warehouses - Add new warehouse (admin only)
+// POST /api/warehouses - Add new warehouse (admin and contractors)
 export async function POST(request: NextRequest) {
   try {
-    const { error, session } = await requireAdmin();
+    const session = await getServerSession(authOptions);
 
-    if (error) {
-      return error;
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    // Allow both ADMIN and contractors to create warehouses
+    if (session.user.role !== UserRole.ADMIN && session.user.role !== UserRole.CLIENT) {
+      return NextResponse.json(
+        { error: "Access denied" },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();

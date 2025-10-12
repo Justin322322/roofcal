@@ -64,6 +64,11 @@ export default function DeliverySettingsPage() {
       return;
     }
 
+    if (!newWarehouse.name.trim()) {
+      alert("Please enter a warehouse name");
+      return;
+    }
+
     try {
       const response = await fetch("/api/warehouses", {
         method: "POST",
@@ -80,9 +85,13 @@ export default function DeliverySettingsPage() {
         setWarehouses([...warehouses, data.data]);
         setNewWarehouse({ name: "", address: "", city: "", state: "", zipCode: "" });
         setNewWarehouseCoords(null);
+        alert("Warehouse added successfully!");
+      } else {
+        alert(`Failed to add warehouse: ${data.error || "Unknown error"}`);
       }
     } catch (error) {
       console.error("Error adding warehouse:", error);
+      alert("Failed to add warehouse. Please try again.");
     }
   };
 
@@ -94,11 +103,16 @@ export default function DeliverySettingsPage() {
         method: "DELETE",
       });
 
-      if (response.ok) {
+      const data = await response.json();
+      if (response.ok && data.success) {
         setWarehouses(warehouses.filter(w => w.id !== warehouseId));
+        alert("Warehouse deleted successfully!");
+      } else {
+        alert(`Failed to delete warehouse: ${data.error || "Unknown error"}`);
       }
     } catch (error) {
       console.error("Error deleting warehouse:", error);
+      alert("Failed to delete warehouse. Please try again.");
     }
   };
 
@@ -110,14 +124,19 @@ export default function DeliverySettingsPage() {
         body: JSON.stringify({ isDefault: true }),
       });
 
-      if (response.ok) {
+      const data = await response.json();
+      if (response.ok && data.success) {
         setWarehouses(warehouses.map(w => ({
           ...w,
           isDefault: w.id === warehouseId,
         })));
+        alert("Default warehouse updated successfully!");
+      } else {
+        alert(`Failed to set default warehouse: ${data.error || "Unknown error"}`);
       }
     } catch (error) {
       console.error("Error setting default warehouse:", error);
+      alert("Failed to set default warehouse. Please try again.");
     }
   };
 
@@ -132,9 +151,14 @@ export default function DeliverySettingsPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-2">
-        <Settings className="h-6 w-6" />
-        <h1 className="text-2xl font-bold">Delivery Settings</h1>
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Settings className="h-6 w-6" />
+          <h1 className="text-2xl font-bold">Delivery Settings</h1>
+        </div>
+        <p className="text-muted-foreground">
+          Manage your warehouse locations and delivery pricing. Contractors can set up their own warehouses for accurate delivery cost calculations.
+        </p>
       </div>
 
       <Tabs defaultValue="warehouses" className="space-y-6">

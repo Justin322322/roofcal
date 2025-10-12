@@ -1,0 +1,191 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth/config";
+import { prisma } from "@/lib/prisma";
+import { UserRole } from "@/types/user-role";
+
+// GET /api/warehouses/[id] - Get specific warehouse details
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const warehouse = await prisma.warehouse.findUnique({
+      where: { id: params.id },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!warehouse) {
+      return NextResponse.json(
+        { error: "Warehouse not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...warehouse,
+        latitude: Number(warehouse.latitude),
+        longitude: Number(warehouse.longitude),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching warehouse:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch warehouse" },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT /api/warehouses/[id] - Update warehouse
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const { name, address, city, state, zipCode, latitude, longitude, isDefault } = body;
+
+    // Check if warehouse exists
+    const existingWarehouse = await prisma.warehouse.findUnique({
+      where: { id: params.id },
+    });
+
+    if (!existingWarehouse) {
+      return NextResponse.json(
+        { error: "Warehouse not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check permissions: Only the creator or admin can update
+    if (existingWarehouse.created_by !== session.user.id && session.user.role !== UserRole.ADMIN) {
+      return NextResponse.json(
+        { error: "Access denied" },
+        { status: 403 }
+      );
+    }
+
+    // If this is set as default, unset other defaults
+    if (isDefault) {
+      await prisma.warehouse.updateMany({
+        where: { 
+          isDefault: true,
+          id: { not: params.id }
+        },
+        data: { isDefault: false },
+      });
+    }
+
+    const warehouse = await prisma.warehouse.update({
+      where: { id: params.id },
+      data: {
+        ...(name && { name }),
+        ...(address && { address }),
+        ...(city && { city }),
+        ...(state && { state }),
+        ...(zipCode && { zipCode }),
+        ...(latitude && { latitude }),
+        ...(longitude && { longitude }),
+        ...(isDefault !== undefined && { isDefault }),
+      },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...warehouse,
+        latitude: Number(warehouse.latitude),
+        longitude: Number(warehouse.longitude),
+      },
+    });
+  } catch (error) {
+    console.error("Error updating warehouse:", error);
+    return NextResponse.json(
+      { error: "Failed to update warehouse" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/warehouses/[id] - Delete warehouse
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    // Check if warehouse exists
+    const existingWarehouse = await prisma.warehouse.findUnique({
+      where: { id: params.id },
+    });
+
+    if (!existingWarehouse) {
+      return NextResponse.json(
+        { error: "Warehouse not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check permissions: Only the creator or admin can delete
+    if (existingWarehouse.created_by !== session.user.id && session.user.role !== UserRole.ADMIN) {
+      return NextResponse.json(
+        { error: "Access denied" },
+        { status: 403 }
+      );
+    }
+
+    await prisma.warehouse.delete({
+      where: { id: params.id },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Warehouse deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting warehouse:", error);
+    return NextResponse.json(
+      { error: "Failed to delete warehouse" },
+      { status: 500 }
+    );
+  }
+}
