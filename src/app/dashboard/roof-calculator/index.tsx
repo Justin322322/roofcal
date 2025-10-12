@@ -111,61 +111,62 @@ export function RoofCalculatorContent() {
   };
 
   return (
-    <>
-      {/* Header with description and actions */}
-      <div className="px-4 lg:px-6 mb-4">
-        <div className="flex items-center justify-between">
-          <p className="text-muted-foreground">
-            Create detailed project requests with accurate calculations and cost estimates for contractors to review
-          </p>
+    <div className="px-4 lg:px-6">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">Project Request</h1>
+        <p className="text-muted-foreground mt-2">
+          Create detailed project requests with accurate calculations and cost estimates for contractors to review
+        </p>
+      </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2">
-            <ProjectActions
-              measurements={measurements}
-              results={results}
-              decisionTree={decisionTree}
-              material={material}
-              currentProjectId={currentProjectId}
-              saveDialogOpen={saveDialogOpen}
-              onSaveDialogChange={setSaveDialogOpen}
-              saveEnabled={saveEnabled}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={isResetting}
-              onClick={async () => {
-                setIsResetting(true);
-                try {
-                  // Add a small delay to show the loading state
-                  await new Promise((resolve) => setTimeout(resolve, 500));
-                  handleReset();
-                  setCurrentProjectId(undefined); // Clear current project on reset
-                  setSaveEnabled(false); // Reset save enabled state
-                  toast.success("Calculator reset successfully", {
-                    description:
-                      "All measurements and selections have been cleared",
-                    duration: 3000,
-                  });
-                } finally {
-                  setIsResetting(false);
-                }
-              }}
-            >
-              {isResetting ? (
-                <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <RotateCcwIcon className="h-4 w-4 mr-2" />
-              )}
-              {isResetting ? "Resetting..." : "Reset"}
-            </Button>
-          </div>
+      {/* Action Buttons */}
+      <div className="mb-4 flex justify-end">
+        <div className="flex items-center gap-2">
+          <ProjectActions
+            measurements={measurements}
+            results={results}
+            decisionTree={decisionTree}
+            material={material}
+            currentProjectId={currentProjectId}
+            saveDialogOpen={saveDialogOpen}
+            onSaveDialogChange={setSaveDialogOpen}
+            saveEnabled={saveEnabled}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={isResetting}
+            onClick={async () => {
+              setIsResetting(true);
+              try {
+                // Add a small delay to show the loading state
+                await new Promise((resolve) => setTimeout(resolve, 500));
+                handleReset();
+                setCurrentProjectId(undefined); // Clear current project on reset
+                setSaveEnabled(false); // Reset save enabled state
+                toast.success("Calculator reset successfully", {
+                  description:
+                    "All measurements and selections have been cleared",
+                  duration: 3000,
+                });
+              } finally {
+                setIsResetting(false);
+              }
+            }}
+          >
+            {isResetting ? (
+              <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <RotateCcwIcon className="h-4 w-4 mr-2" />
+            )}
+            {isResetting ? "Resetting..." : "Reset"}
+          </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="px-4 lg:px-6">
+      <div className="mb-6">
         <RoofStatsCards
           area={results.area}
           complexity={decisionTree.complexity}
@@ -175,7 +176,7 @@ export function RoofCalculatorContent() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="px-4 lg:px-6">
+      <div>
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Left Column - Inputs (Sticky) */}
           <div className="space-y-6 lg:sticky lg:top-4 lg:self-start">
@@ -401,6 +402,6 @@ export function RoofCalculatorContent() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

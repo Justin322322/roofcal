@@ -9,7 +9,7 @@ export function SiteHeader({ currentSection }: SiteHeaderProps) {
   const getSectionTitle = (section?: string) => {
     switch (section) {
       case "roof-calculator":
-        return "Roof Estimator";
+        return "Project Request";
       case "project-management":
         return "Project Management";
       case "assigned-projects":
