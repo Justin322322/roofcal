@@ -80,6 +80,10 @@ export async function GET(
         price: Number(wm.pricingConfig.price),
         unit: wm.pricingConfig.unit,
         category: wm.pricingConfig.category,
+        length: wm.pricingConfig.length ? Number(wm.pricingConfig.length) : undefined,
+        width: wm.pricingConfig.width ? Number(wm.pricingConfig.width) : undefined,
+        height: wm.pricingConfig.height ? Number(wm.pricingConfig.height) : undefined,
+        volume: wm.pricingConfig.volume ? Number(wm.pricingConfig.volume) : undefined,
       },
     }));
 
@@ -227,6 +231,10 @@ export async function POST(
         price: Number(warehouseMaterial.pricingConfig.price),
         unit: warehouseMaterial.pricingConfig.unit,
         category: warehouseMaterial.pricingConfig.category,
+        length: warehouseMaterial.pricingConfig.length ? Number(warehouseMaterial.pricingConfig.length) : undefined,
+        width: warehouseMaterial.pricingConfig.width ? Number(warehouseMaterial.pricingConfig.width) : undefined,
+        height: warehouseMaterial.pricingConfig.height ? Number(warehouseMaterial.pricingConfig.height) : undefined,
+        volume: warehouseMaterial.pricingConfig.volume ? Number(warehouseMaterial.pricingConfig.volume) : undefined,
       },
     };
 

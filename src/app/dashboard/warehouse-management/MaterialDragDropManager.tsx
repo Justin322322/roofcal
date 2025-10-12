@@ -71,6 +71,10 @@ interface Material {
   price: number;
   unit: string;
   category: string;
+  length?: number;
+  width?: number;
+  height?: number;
+  volume?: number;
 }
 
 interface WarehouseMaterial {
@@ -90,6 +94,7 @@ interface MaterialDragDropManagerProps {
   onChangeWarehouse?: () => void;
   onMaterialsUpdate?: (materials: WarehouseMaterial[]) => void;
   onWarehouseUpdate?: () => void;
+  onMaterialsRefresh?: () => void;
 }
 
 interface DraggableMaterial extends Material {
@@ -250,7 +255,7 @@ function WarehouseMaterialRow({
   );
 }
 
-export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onChangeWarehouse, onMaterialsUpdate, onWarehouseUpdate }: MaterialDragDropManagerProps) {
+export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onChangeWarehouse, onMaterialsUpdate, onWarehouseUpdate, onMaterialsRefresh }: MaterialDragDropManagerProps) {
   const [materials, setMaterials] = useState<DraggableMaterial[]>([]);
   const [warehouseMaterials, setWarehouseMaterials] = useState<WarehouseMaterial[]>([]);
   const [selectedMaterials, setSelectedMaterials] = useState<Set<string>>(new Set());
@@ -429,25 +434,53 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
         }
       }
 
-      // Check warehouse capacity
-      const currentStock = warehouseMaterials.reduce((sum, m) => sum + m.quantity, 0);
-      let totalNewStock = 0;
+      // Check warehouse capacity using volume calculations
+      const currentVolumeUsed = warehouseMaterials.reduce((sum, m) => {
+        let unitVolume = 1;
+        if (m.material.volume && m.material.volume > 0) {
+          unitVolume = m.material.volume;
+        } else if (m.material.length && m.material.width && m.material.height) {
+          unitVolume = m.material.length * m.material.width * m.material.height;
+        }
+        return sum + (m.quantity * unitVolume);
+      }, 0);
+      
+      let totalNewVolume = 0;
       
       if (materialsToAdd.length === 1) {
-        totalNewStock = newMaterialData.quantity;
+        const material = materialsWithStatus.find(m => m.id === materialsToAdd[0]);
+        if (material) {
+          let unitVolume = 1;
+          if (material.volume && material.volume > 0) {
+            unitVolume = material.volume;
+          } else if (material.length && material.width && material.height) {
+            unitVolume = material.length * material.width * material.height;
+          }
+          totalNewVolume = newMaterialData.quantity * unitVolume;
+        }
       } else {
-        totalNewStock = materialsToAdd.reduce((sum, materialId) => {
+        totalNewVolume = materialsToAdd.reduce((sum, materialId) => {
+          const material = materialsWithStatus.find(m => m.id === materialId);
           const materialData = bulkMaterialData[materialId] || { quantity: 1 };
+          if (material) {
+            let unitVolume = 1;
+            if (material.volume && material.volume > 0) {
+              unitVolume = material.volume;
+            } else if (material.length && material.width && material.height) {
+              unitVolume = material.length * material.width * material.height;
+            }
+            return sum + (materialData.quantity * unitVolume);
+          }
           return sum + materialData.quantity;
         }, 0);
       }
       
       const totalCapacity = warehouse.capacity || 0;
       
-      if (totalCapacity > 0 && (currentStock + totalNewStock) > totalCapacity) {
-        const availableCapacity = totalCapacity - currentStock;
+      if (totalCapacity > 0 && (currentVolumeUsed + totalNewVolume) > totalCapacity) {
+        const availableCapacity = totalCapacity - currentVolumeUsed;
         toast.error("Warehouse capacity exceeded", {
-          description: `Cannot add ${totalNewStock} units. Only ${availableCapacity} units of capacity remaining. Consider using the stock balancer to redistribute materials.`,
+          description: `Cannot add ${totalNewVolume.toFixed(2)} m³. Only ${availableCapacity.toFixed(2)} m³ of capacity remaining. Consider using the stock balancer to redistribute materials.`,
         });
         setIsAddingMaterials(false);
         return;
@@ -535,6 +568,7 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
       setNewMaterialData({ quantity: 1, locationAdjustment: 0 });
       setBulkMaterialData({});
       onUpdate();
+      onMaterialsRefresh?.(); // Trigger refresh of parent component's warehouse materials
     } catch (error) {
       console.error('Error adding materials:', error);
       toast.error("Failed to add materials");
@@ -568,6 +602,7 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
         }
         setEditingWarehouseMaterial(null);
         onUpdate();
+        onMaterialsRefresh?.(); // Trigger refresh of parent component's warehouse materials
       } else {
         const error = await response.json();
         toast.error(error.message || "Failed to update material");
@@ -597,6 +632,7 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
           }
         }
         onUpdate();
+        onMaterialsRefresh?.(); // Trigger refresh of parent component's warehouse materials
       } else {
         const error = await response.json();
         toast.error(error.message || "Failed to remove material");
@@ -633,6 +669,7 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
         }
         setSelectedWarehouseMaterials(new Set());
         onUpdate();
+        onMaterialsRefresh?.(); // Trigger refresh of parent component's warehouse materials
       }
 
       if (failedCount > 0) {
@@ -683,8 +720,16 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
                       Capacity: {warehouse.capacity.toFixed(2)} m³
                     </p>
                     {(() => {
-                      const currentStock = warehouseMaterials.reduce((sum, m) => sum + m.quantity, 0);
-                      const utilization = (currentStock / warehouse.capacity) * 100;
+                      const currentVolumeUsed = warehouseMaterials.reduce((sum, m) => {
+                        let unitVolume = 1;
+                        if (m.material.volume && m.material.volume > 0) {
+                          unitVolume = m.material.volume;
+                        } else if (m.material.length && m.material.width && m.material.height) {
+                          unitVolume = m.material.length * m.material.width * m.material.height;
+                        }
+                        return sum + (m.quantity * unitVolume);
+                      }, 0);
+                      const utilization = (currentVolumeUsed / warehouse.capacity) * 100;
                       
                       if (utilization >= 90) {
                         return (

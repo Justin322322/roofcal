@@ -30,6 +30,10 @@ interface WarehouseMaterial {
     id: string;
     label: string;
     category: string;
+    length?: number;
+    width?: number;
+    height?: number;
+    volume?: number;
   };
 }
 
@@ -69,7 +73,18 @@ const StockBalancer: React.FC<StockBalancerProps> = ({
           if (response.ok) {
             const result = await response.json();
             const materials = result.data || [];
-            const used = materials.reduce((sum: number, m: WarehouseMaterial) => sum + m.quantity, 0);
+            const used = materials.reduce((sum: number, m: WarehouseMaterial) => {
+              // Calculate volume based on material dimensions
+              let unitVolume = 1; // Default fallback
+              
+              if (m.material.volume && m.material.volume > 0) {
+                unitVolume = m.material.volume;
+              } else if (m.material.length && m.material.width && m.material.height) {
+                unitVolume = m.material.length * m.material.width * m.material.height;
+              }
+              
+              return sum + (m.quantity * unitVolume);
+            }, 0);
             const capacity = warehouse.capacity || 0;
             const percentage = capacity > 0 ? (used / capacity) * 100 : 0;
             
@@ -110,7 +125,10 @@ const StockBalancer: React.FC<StockBalancerProps> = ({
         capacity: warehouseUtilization[currentWarehouse.id]?.capacity
       });
       
-      if (currentUtilization > 100) {
+      // Target utilization threshold - balance to stay below 85% capacity
+      const targetUtilization = 85;
+      
+      if (currentUtilization > targetUtilization) {
         // Warehouse is overloaded - suggest reducing material quantities
         try {
           const response = await fetch(`/api/warehouses/${currentWarehouse.id}/materials`);
@@ -118,15 +136,17 @@ const StockBalancer: React.FC<StockBalancerProps> = ({
             const result = await response.json();
             const materials = result.data || [];
             
-            // Calculate how much we need to reduce
+            // Calculate how much we need to reduce to reach target utilization
             const currentUsed = warehouseUtilization[currentWarehouse.id]?.used || 0;
             const capacity = warehouseUtilization[currentWarehouse.id]?.capacity || 0;
-            const excessAmount = currentUsed - capacity;
-            const targetReduction = Math.ceil(excessAmount * 1.2); // Reduce 20% more than excess to be safe
+            const targetUsed = (capacity * targetUtilization) / 100;
+            const excessAmount = currentUsed - targetUsed;
+            const targetReduction = Math.ceil(excessAmount * 1.1); // Reduce 10% more than excess to be safe
             
             console.log('Reduction needed:', {
               currentUsed,
               capacity,
+              targetUsed,
               excessAmount,
               targetReduction,
               materialsCount: materials.length
@@ -164,7 +184,7 @@ const StockBalancer: React.FC<StockBalancerProps> = ({
                   materialId: material.id, // Use warehouse material ID, not pricing config ID
                   materialName: material.material.label,
                   quantity: suggestedReduction,
-                  reason: `Reduce ${material.material.label} from ${material.quantity} to ${newQuantity} units (overload relief: ${currentUtilization.toFixed(1)}% → ${((currentUsed - suggestedReduction) / capacity * 100).toFixed(1)}%)`
+                  reason: `Reduce ${material.material.label} from ${material.quantity} to ${newQuantity} units (utilization: ${currentUtilization.toFixed(1)}% → ${((currentUsed - suggestedReduction) / capacity * 100).toFixed(1)}%)`
                 });
                 
                 remainingReduction -= suggestedReduction;
@@ -179,9 +199,9 @@ const StockBalancer: React.FC<StockBalancerProps> = ({
       setRedistributionPlan(plan);
       
       if (plan.length === 0) {
-        if (currentUtilization <= 100) {
+        if (currentUtilization <= targetUtilization) {
           toast.success("Stock distribution is optimal!", {
-            description: "Warehouse utilization is within acceptable limits.",
+            description: `Warehouse utilization is within acceptable limits (${currentUtilization.toFixed(1)}% ≤ ${targetUtilization}%).`,
           });
         } else {
           toast.warning("No reduction plan generated", {
@@ -310,7 +330,7 @@ const StockBalancer: React.FC<StockBalancerProps> = ({
             Smart Stock Balancer
           </DialogTitle>
           <DialogDescription>
-            Analyze and redistribute materials across warehouses for optimal capacity utilization
+            Analyze and balance materials to maintain optimal warehouse capacity utilization (target: ≤85%)
           </DialogDescription>
         </DialogHeader>
 
@@ -465,7 +485,7 @@ const StockBalancer: React.FC<StockBalancerProps> = ({
             <Alert>
               <AlertDescription>
                 Click &quot;Analyze Stock Distribution&quot; to generate optimization recommendations. 
-                For overloaded warehouses, this will suggest material reductions to bring capacity within limits.
+                This will suggest material reductions to maintain capacity utilization below 85% for optimal performance.
               </AlertDescription>
             </Alert>
           )}

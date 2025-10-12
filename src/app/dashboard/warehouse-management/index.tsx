@@ -65,6 +65,10 @@ interface WarehouseMaterial {
     category: string;
     price: number;
     unit: string;
+    length?: number;
+    width?: number;
+    height?: number;
+    volume?: number;
   };
 }
 
@@ -72,6 +76,9 @@ interface WarehouseMaterial {
 let globalWarehouseCache: Warehouse[] | null = null;
 let globalWarehouseLoading = false;
 let globalWarehouseHasFetched = false;
+
+// Global cache for warehouse materials
+const globalWarehouseMaterialsCache: Record<string, WarehouseMaterial[]> = {};
 
 // Custom hook to manage warehouse data with global caching
 function useWarehouseData() {
@@ -591,6 +598,26 @@ export function WarehouseManagementPage() {
   const [editingWarehouse, setEditingWarehouse] = useState<Warehouse | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [warehouseMaterials, setWarehouseMaterials] = useState<WarehouseMaterial[]>([]);
+  
+  // Function to refresh warehouse materials for a specific warehouse
+  const refreshWarehouseMaterials = useCallback(async (warehouseId: string) => {
+    try {
+      const response = await fetch(`/api/warehouses/${warehouseId}/materials`);
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          const materials = result.data || [];
+          setWarehouseMaterials(materials);
+          globalWarehouseMaterialsCache[warehouseId] = materials;
+          return materials;
+        }
+      }
+      return [];
+    } catch (error) {
+      console.error('Error refreshing warehouse materials:', error);
+      return [];
+    }
+  }, []);
 
   console.log('WarehouseManagementPage - Session:', session);
   console.log('WarehouseManagementPage - User role:', session?.user?.role);
@@ -632,6 +659,13 @@ export function WarehouseManagementPage() {
   const handleMaterialsUpdate = useCallback((materials: WarehouseMaterial[]) => {
     setWarehouseMaterials(materials);
   }, []);
+
+  // Load warehouse materials when selected warehouse changes
+  useEffect(() => {
+    if (selectedWarehouse?.id) {
+      refreshWarehouseMaterials(selectedWarehouse.id);
+    }
+  }, [selectedWarehouse?.id, refreshWarehouseMaterials]);
 
   if (session?.user?.role !== "ADMIN" && session?.user?.role !== "CLIENT") {
     return (
@@ -843,18 +877,29 @@ export function WarehouseManagementPage() {
                             <span className="font-medium text-sm">Capacity Utilization:</span>
                             <div className="w-full bg-gray-200 h-2 mt-1">
                               {(() => {
-                                const utilization = Math.min(
-                                  ((warehouseMaterials.reduce((sum, m) => sum + m.quantity, 0)) / warehouse.capacity) * 100,
-                                  100
-                                );
+                                // Calculate total volume used based on material dimensions
+                                const totalVolumeUsed = warehouseMaterials.reduce((sum, m) => {
+                                  // Use material volume if available, otherwise calculate from dimensions
+                                  let unitVolume = 1; // Default fallback
+                                  
+                                  if (m.material.volume && m.material.volume > 0) {
+                                    unitVolume = m.material.volume;
+                                  } else if (m.material.length && m.material.width && m.material.height) {
+                                    unitVolume = m.material.length * m.material.width * m.material.height;
+                                  }
+                                  
+                                  return sum + (m.quantity * unitVolume);
+                                }, 0);
+                                
+                                const utilization = Math.min((totalVolumeUsed / warehouse.capacity) * 100, 100);
                                 let colorClass = 'bg-green-500'; // Default green for low usage
                                 
-                                if (utilization >= 80) {
-                                  colorClass = 'bg-red-500'; // Red for high usage (80%+)
-                                } else if (utilization >= 60) {
-                                  colorClass = 'bg-yellow-500'; // Yellow for medium usage (60-79%)
-                                } else if (utilization >= 40) {
-                                  colorClass = 'bg-orange-500'; // Orange for moderate usage (40-59%)
+                                if (utilization >= 90) {
+                                  colorClass = 'bg-red-500'; // Red for critical usage (90%+)
+                                } else if (utilization >= 75) {
+                                  colorClass = 'bg-yellow-500'; // Yellow for high usage (75-89%)
+                                } else if (utilization >= 50) {
+                                  colorClass = 'bg-orange-500'; // Orange for moderate usage (50-74%)
                                 }
                                 
                                 return (
@@ -868,7 +913,18 @@ export function WarehouseManagementPage() {
                               })()}
                             </div>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {warehouseMaterials.reduce((sum, m) => sum + m.quantity, 0)} / {warehouse.capacity.toFixed(2)} m³ used
+                              {(() => {
+                                const totalVolumeUsed = warehouseMaterials.reduce((sum, m) => {
+                                  let unitVolume = 1;
+                                  if (m.material.volume && m.material.volume > 0) {
+                                    unitVolume = m.material.volume;
+                                  } else if (m.material.length && m.material.width && m.material.height) {
+                                    unitVolume = m.material.length * m.material.width * m.material.height;
+                                  }
+                                  return sum + (m.quantity * unitVolume);
+                                }, 0);
+                                return `${totalVolumeUsed.toFixed(2)} / ${warehouse.capacity.toFixed(2)} m³ used`;
+                              })()}
                             </p>
                           </div>
                         ) : (
@@ -923,6 +979,7 @@ export function WarehouseManagementPage() {
                         onChangeWarehouse={() => setSelectedWarehouse(null)}
                         onMaterialsUpdate={handleMaterialsUpdate}
                         onWarehouseUpdate={fetchWarehouses}
+                        onMaterialsRefresh={() => selectedWarehouse && refreshWarehouseMaterials(selectedWarehouse.id)}
                       />
                     </>
                   ) : (

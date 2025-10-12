@@ -95,6 +95,10 @@ export async function PUT(
         price: Number(updatedWarehouseMaterial.pricingConfig.price),
         unit: updatedWarehouseMaterial.pricingConfig.unit,
         category: updatedWarehouseMaterial.pricingConfig.category,
+        length: updatedWarehouseMaterial.pricingConfig.length ? Number(updatedWarehouseMaterial.pricingConfig.length) : undefined,
+        width: updatedWarehouseMaterial.pricingConfig.width ? Number(updatedWarehouseMaterial.pricingConfig.width) : undefined,
+        height: updatedWarehouseMaterial.pricingConfig.height ? Number(updatedWarehouseMaterial.pricingConfig.height) : undefined,
+        volume: updatedWarehouseMaterial.pricingConfig.volume ? Number(updatedWarehouseMaterial.pricingConfig.volume) : undefined,
       },
     };
 
