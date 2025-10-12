@@ -768,7 +768,10 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
             <div className="flex gap-2">
               <StockBalancer 
                 warehouses={warehouses}
-                onWarehouseUpdate={onWarehouseUpdate || (() => {})}
+                onWarehouseUpdate={() => {
+                  onWarehouseUpdate?.();
+                  onMaterialsRefresh?.();
+                }}
               />
               <Button
                 variant="outline"

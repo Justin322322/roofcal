@@ -597,7 +597,7 @@ export function WarehouseManagementPage() {
   const [showFullScreenMap, setShowFullScreenMap] = useState(false);
   const [editingWarehouse, setEditingWarehouse] = useState<Warehouse | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [warehouseMaterials, setWarehouseMaterials] = useState<WarehouseMaterial[]>([]);
+  const [allWarehouseMaterials, setAllWarehouseMaterials] = useState<Record<string, WarehouseMaterial[]>>({});
   
   // Function to refresh warehouse materials for a specific warehouse
   const refreshWarehouseMaterials = useCallback(async (warehouseId: string) => {
@@ -607,8 +607,12 @@ export function WarehouseManagementPage() {
         const result = await response.json();
         if (result.success) {
           const materials = result.data || [];
-          setWarehouseMaterials(materials);
           globalWarehouseMaterialsCache[warehouseId] = materials;
+          // Update the all warehouse materials state
+          setAllWarehouseMaterials(prev => ({
+            ...prev,
+            [warehouseId]: materials
+          }));
           return materials;
         }
       }
@@ -618,6 +622,36 @@ export function WarehouseManagementPage() {
       return [];
     }
   }, []);
+
+  // Function to refresh materials for all warehouses (for overview tab)
+  const refreshAllWarehouseMaterials = useCallback(async () => {
+    try {
+      const materialsPromises = warehouses.map(async (warehouse) => {
+        const response = await fetch(`/api/warehouses/${warehouse.id}/materials`);
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            const materials = result.data || [];
+            globalWarehouseMaterialsCache[warehouse.id] = materials;
+            return { warehouseId: warehouse.id, materials };
+          }
+        }
+        return { warehouseId: warehouse.id, materials: [] };
+      });
+
+      const results = await Promise.all(materialsPromises);
+      const materialsMap = results.reduce((acc, { warehouseId, materials }) => {
+        acc[warehouseId] = materials;
+        return acc;
+      }, {} as Record<string, WarehouseMaterial[]>);
+
+      setAllWarehouseMaterials(materialsMap);
+      return materialsMap;
+    } catch (error) {
+      console.error('Error refreshing all warehouse materials:', error);
+      return {};
+    }
+  }, [warehouses]);
 
   console.log('WarehouseManagementPage - Session:', session);
   console.log('WarehouseManagementPage - User role:', session?.user?.role);
@@ -657,8 +691,14 @@ export function WarehouseManagementPage() {
   };
 
   const handleMaterialsUpdate = useCallback((materials: WarehouseMaterial[]) => {
-    setWarehouseMaterials(materials);
-  }, []);
+    // Update the all warehouse materials cache
+    if (selectedWarehouse?.id) {
+      setAllWarehouseMaterials(prev => ({
+        ...prev,
+        [selectedWarehouse.id]: materials
+      }));
+    }
+  }, [selectedWarehouse?.id]);
 
   // Load warehouse materials when selected warehouse changes
   useEffect(() => {
@@ -666,6 +706,13 @@ export function WarehouseManagementPage() {
       refreshWarehouseMaterials(selectedWarehouse.id);
     }
   }, [selectedWarehouse?.id, refreshWarehouseMaterials]);
+
+  // Load all warehouse materials when warehouses are loaded or when switching to overview tab
+  useEffect(() => {
+    if (warehouses.length > 0 && activeTab === "overview") {
+      refreshAllWarehouseMaterials();
+    }
+  }, [warehouses, activeTab, refreshAllWarehouseMaterials]);
 
   if (session?.user?.role !== "ADMIN" && session?.user?.role !== "CLIENT") {
     return (
@@ -691,7 +738,12 @@ export function WarehouseManagementPage() {
       {/* Action Buttons */}
       <div className="mb-4 flex justify-end">
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={fetchWarehouses}>
+          <Button variant="outline" onClick={() => {
+            fetchWarehouses();
+            if (activeTab === "overview") {
+              refreshAllWarehouseMaterials();
+            }
+          }}>
             <RefreshCwIcon className="h-4 w-4 mr-2" />
             Refresh
           </Button>
@@ -820,7 +872,11 @@ export function WarehouseManagementPage() {
             <>
               {activeTab === "overview" && (
                 <div className="grid gap-6 md:grid-cols-2">
-                  {warehouses.map((warehouse) => (
+                  {warehouses.map((warehouse) => {
+                    const currentWarehouseMaterials = allWarehouseMaterials[warehouse.id] || [];
+                    const activeMaterials = currentWarehouseMaterials.filter(m => m.isActive);
+                    
+                    return (
                     <Card key={warehouse.id} className="hover:shadow-md transition-shadow overflow-hidden">
                       {/* Map as header - no padding */}
                       <div className="w-full">
@@ -836,8 +892,8 @@ export function WarehouseManagementPage() {
                       <CardHeader className="pt-4">
                         <CardTitle className="flex items-center justify-between">
                           {warehouse.name}
-                          <Badge variant={warehouseMaterials.length ? "default" : "secondary"}>
-                            {warehouseMaterials.length} materials
+                          <Badge variant={activeMaterials.length ? "default" : "secondary"}>
+                            {activeMaterials.length} materials
                           </Badge>
                         </CardTitle>
                         <CardDescription>
@@ -848,7 +904,7 @@ export function WarehouseManagementPage() {
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
                             <span className="font-medium">Materials Available:</span><br />
-                            {warehouseMaterials.length} material types
+                            {activeMaterials.length} material types
                           </div>
                           <div>
                             <span className="font-medium">Capacity:</span><br />
@@ -862,12 +918,12 @@ export function WarehouseManagementPage() {
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
                             <span className="font-medium">Current Stock:</span><br />
-                            {warehouseMaterials.reduce((sum, m) => sum + m.quantity, 0)} units
+                            {activeMaterials.reduce((sum, m) => sum + m.quantity, 0)} units
                           </div>
                           <div>
                             <span className="font-medium">Status:</span><br />
-                            <Badge variant={warehouseMaterials.length ? "default" : "secondary"}>
-                              {warehouseMaterials.length ? "Active" : "Setup Required"}
+                            <Badge variant={activeMaterials.length ? "default" : "secondary"}>
+                              {activeMaterials.length ? "Active" : "Setup Required"}
                             </Badge>
                           </div>
                         </div>
@@ -878,7 +934,7 @@ export function WarehouseManagementPage() {
                             <div className="w-full bg-gray-200 h-2 mt-1">
                               {(() => {
                                 // Calculate total volume used based on material dimensions
-                                const totalVolumeUsed = warehouseMaterials.reduce((sum, m) => {
+                                const totalVolumeUsed = activeMaterials.reduce((sum, m) => {
                                   // Use material volume if available, otherwise calculate from dimensions
                                   let unitVolume = 1; // Default fallback
                                   
@@ -914,7 +970,7 @@ export function WarehouseManagementPage() {
                             </div>
                             <p className="text-xs text-muted-foreground mt-1">
                               {(() => {
-                                const totalVolumeUsed = warehouseMaterials.reduce((sum, m) => {
+                                const totalVolumeUsed = activeMaterials.reduce((sum, m) => {
                                   let unitVolume = 1;
                                   if (m.material.volume && m.material.volume > 0) {
                                     unitVolume = m.material.volume;
@@ -964,7 +1020,8 @@ export function WarehouseManagementPage() {
                         </div>
                       </CardContent>
                     </Card>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
 
@@ -979,7 +1036,13 @@ export function WarehouseManagementPage() {
                         onChangeWarehouse={() => setSelectedWarehouse(null)}
                         onMaterialsUpdate={handleMaterialsUpdate}
                         onWarehouseUpdate={fetchWarehouses}
-                        onMaterialsRefresh={() => selectedWarehouse && refreshWarehouseMaterials(selectedWarehouse.id)}
+                        onMaterialsRefresh={() => {
+                          if (selectedWarehouse) {
+                            refreshWarehouseMaterials(selectedWarehouse.id);
+                          }
+                          // Also refresh all warehouse materials for overview tab
+                          refreshAllWarehouseMaterials();
+                        }}
                       />
                     </>
                   ) : (
