@@ -22,6 +22,22 @@ export const PRICING_UNITS = [
 export type PricingCategory = typeof PRICING_CATEGORIES[number];
 export type PricingUnit = typeof PRICING_UNITS[number];
 
+// Database result type (what Prisma returns)
+interface PricingConfigDBResult {
+  id: string;
+  category: string;
+  name: string;
+  label: string;
+  description: string | null;
+  price: number; // Will be converted from Decimal
+  unit: string;
+  isActive: boolean;
+  metadata: string | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+
 // Zod schemas for validation
 export const PricingConfigSchema = z.object({
   id: z.string().uuid(),
@@ -68,7 +84,7 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
  * Fetch pricing configurations from database with caching
  */
 export async function getPricingConfig(category?: PricingCategory): Promise<PricingConfig[]> {
-  const cacheKey = category || 'all';
+  const cacheKey = category || 'all' as string;
   const cached = pricingCache.get(cacheKey);
   
   // Return cached data if still valid
@@ -78,7 +94,7 @@ export async function getPricingConfig(category?: PricingCategory): Promise<Pric
 
   // Fetch from database
   const where = category ? { category, isActive: true } : { isActive: true };
-  const data = await prisma.pricingConfig.findMany({
+  const data = await (prisma as unknown as { pricingConfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]> } }).pricingConfig.findMany({
     where,
     orderBy: [
       { category: 'asc' },
@@ -86,10 +102,14 @@ export async function getPricingConfig(category?: PricingCategory): Promise<Pric
     ]
   });
 
-  // Convert Decimal to number for JSON serialization
-  const formattedData = data.map(item => ({
+  // Convert Decimal to number for JSON serialization and ensure proper types
+  const formattedData = data.map((item: PricingConfigDBResult) => ({
     ...item,
     price: Number(item.price),
+    category: item.category as PricingCategory,
+    unit: item.unit as PricingUnit,
+    description: item.description ?? undefined,
+    metadata: item.metadata ?? undefined,
     created_at: item.created_at,
     updated_at: item.updated_at,
   }));
@@ -190,7 +210,7 @@ export async function createPricingConfig(data: CreatePricingConfig): Promise<Pr
   const validatedData = CreatePricingConfigSchema.parse(data);
 
   // Check if pricing config with same category and name already exists
-  const existing = await prisma.pricingConfig.findUnique({
+  const existing = await (prisma as unknown as { pricingConfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]>; findUnique: (args: unknown) => Promise<PricingConfigDBResult | null>; create: (args: unknown) => Promise<PricingConfigDBResult>; update: (args: unknown) => Promise<PricingConfigDBResult> } }).pricingConfig.findUnique({
     where: {
       category_name: {
         category: validatedData.category,
@@ -204,7 +224,7 @@ export async function createPricingConfig(data: CreatePricingConfig): Promise<Pr
   }
 
   // Create new pricing config
-  const created = await prisma.pricingConfig.create({
+  const created = await (prisma as unknown as { pricingConfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]>; findUnique: (args: unknown) => Promise<PricingConfigDBResult | null>; create: (args: unknown) => Promise<PricingConfigDBResult>; update: (args: unknown) => Promise<PricingConfigDBResult> } }).pricingConfig.create({
     data: {
       ...validatedData,
       price: validatedData.price,
@@ -213,11 +233,15 @@ export async function createPricingConfig(data: CreatePricingConfig): Promise<Pr
 
   // Clear cache for this category
   clearPricingCache(validatedData.category);
-  clearPricingCache('all');
+  clearPricingCache('all' as string);
 
   return {
     ...created,
     price: Number(created.price),
+    category: created.category as PricingCategory,
+    unit: created.unit as PricingUnit,
+    description: created.description ?? undefined,
+    metadata: created.metadata ?? undefined,
   };
 }
 
@@ -229,7 +253,7 @@ export async function updatePricingConfig(id: string, data: UpdatePricingConfig)
   const validatedData = UpdatePricingConfigSchema.parse(data);
 
   // Check if pricing config exists
-  const existing = await prisma.pricingConfig.findUnique({
+  const existing = await (prisma as unknown as { pricingConfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]>; findUnique: (args: unknown) => Promise<PricingConfigDBResult | null>; create: (args: unknown) => Promise<PricingConfigDBResult>; update: (args: unknown) => Promise<PricingConfigDBResult> } }).pricingConfig.findUnique({
     where: { id }
   });
 
@@ -238,18 +262,22 @@ export async function updatePricingConfig(id: string, data: UpdatePricingConfig)
   }
 
   // Update pricing config
-  const updated = await prisma.pricingConfig.update({
+  const updated = await (prisma as unknown as { pricingConfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]>; findUnique: (args: unknown) => Promise<PricingConfigDBResult | null>; create: (args: unknown) => Promise<PricingConfigDBResult>; update: (args: unknown) => Promise<PricingConfigDBResult> } }).pricingConfig.update({
     where: { id },
     data: validatedData,
   });
 
   // Clear cache for this category
   clearPricingCache(existing.category);
-  clearPricingCache('all');
+  clearPricingCache('all' as string);
 
   return {
     ...updated,
     price: Number(updated.price),
+    category: updated.category as PricingCategory,
+    unit: updated.unit as PricingUnit,
+    description: updated.description ?? undefined,
+    metadata: updated.metadata ?? undefined,
   };
 }
 
@@ -258,7 +286,7 @@ export async function updatePricingConfig(id: string, data: UpdatePricingConfig)
  */
 export async function deletePricingConfig(id: string): Promise<void> {
   // Check if pricing config exists
-  const existing = await prisma.pricingConfig.findUnique({
+  const existing = await (prisma as unknown as { pricingConfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]>; findUnique: (args: unknown) => Promise<PricingConfigDBResult | null>; create: (args: unknown) => Promise<PricingConfigDBResult>; update: (args: unknown) => Promise<PricingConfigDBResult> } }).pricingConfig.findUnique({
     where: { id }
   });
 
@@ -267,20 +295,20 @@ export async function deletePricingConfig(id: string): Promise<void> {
   }
 
   // Soft delete by setting isActive to false
-  await prisma.pricingConfig.update({
+  await (prisma as unknown as { pricingConfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]>; findUnique: (args: unknown) => Promise<PricingConfigDBResult | null>; create: (args: unknown) => Promise<PricingConfigDBResult>; update: (args: unknown) => Promise<PricingConfigDBResult> } }).pricingConfig.update({
     where: { id },
     data: { isActive: false }
   });
 
   // Clear cache for this category
   clearPricingCache(existing.category);
-  clearPricingCache('all');
+  clearPricingCache('all' as string);
 }
 
 /**
  * Clear pricing cache for a specific category or all
  */
-function clearPricingCache(category?: PricingCategory) {
+function clearPricingCache(category?: PricingCategory | string) {
   if (category) {
     pricingCache.delete(category);
   } else {
