@@ -7,11 +7,12 @@ import { UserRole } from "@/types/user-role";
 // GET /api/warehouses/[id] - Get specific warehouse details
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const warehouse = await prisma.warehouse.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         creator: {
           select: {
@@ -51,7 +52,7 @@ export async function GET(
 // PUT /api/warehouses/[id] - Update warehouse
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -63,12 +64,13 @@ export async function PUT(
       );
     }
 
+    const { id } = await params;
     const body = await request.json();
     const { name, address, city, state, zipCode, latitude, longitude, isDefault } = body;
 
     // Check if warehouse exists
     const existingWarehouse = await prisma.warehouse.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingWarehouse) {
@@ -91,14 +93,14 @@ export async function PUT(
       await prisma.warehouse.updateMany({
         where: { 
           isDefault: true,
-          id: { not: params.id }
+          id: { not: id }
         },
         data: { isDefault: false },
       });
     }
 
     const warehouse = await prisma.warehouse.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(name && { name }),
         ...(address && { address }),
@@ -141,7 +143,7 @@ export async function PUT(
 // DELETE /api/warehouses/[id] - Delete warehouse
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -153,9 +155,10 @@ export async function DELETE(
       );
     }
 
+    const { id } = await params;
     // Check if warehouse exists
     const existingWarehouse = await prisma.warehouse.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingWarehouse) {
@@ -174,7 +177,7 @@ export async function DELETE(
     }
 
     await prisma.warehouse.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({
