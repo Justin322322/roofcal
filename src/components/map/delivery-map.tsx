@@ -180,7 +180,7 @@ export function DeliveryMap({
         <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-3 text-sm">
           <div className="font-semibold text-gray-900">Route Details</div>
           <div className="text-gray-600">
-            <div>Distance: {route.distance.toFixed(1)} miles</div>
+            <div>Distance: {route.distance.toFixed(1)} km</div>
             <div>Duration: {Math.round(route.duration)} minutes</div>
           </div>
         </div>

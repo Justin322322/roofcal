@@ -145,7 +145,7 @@ export function WarehouseSelector({
                         {destination && (
                           <div className="flex items-center gap-1 text-sm text-gray-500">
                             <Navigation className="h-3 w-3" />
-                            {warehouse.distance} miles
+                            {warehouse.distance} km
                           </div>
                         )}
                       </div>

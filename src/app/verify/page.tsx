@@ -63,10 +63,10 @@ function VerifyPageSkeleton() {
           </Link>
           <div className="max-w-md space-y-4">
             <h2 className="text-2xl font-semibold text-foreground">
-              Verify Your Email to Get Started
+              Enter Your Verification Code
             </h2>
             <p className="text-muted-foreground">
-              We&apos;ve sent a verification code to your email address. Enter
+              We&apos;ve sent a 6-digit OTP code to your email address. Enter
               it below to complete your account setup.
             </p>
           </div>

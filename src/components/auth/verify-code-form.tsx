@@ -306,17 +306,17 @@ export default function VerifyCodeForm() {
 
   return (
     <AuthLayout
-      brandingTitle="Verify Your Email to Get Started"
-      brandingDescription="We've sent a verification code to your email address. Enter it below to complete your account setup."
+      brandingTitle="Enter Your Verification Code"
+      brandingDescription="We've sent a 6-digit verification code to your email address. Enter it below to complete your account setup."
     >
       <div className="w-full max-w-md space-y-8">
         <Card>
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">
-              Verify Your Email
+              Enter Verification Code
             </CardTitle>
             <CardDescription className="text-center">
-              Enter the 6-digit code sent to {email || "your email"}
+              Enter the 6-digit OTP code sent to {email || "your email"}
             </CardDescription>
           </CardHeader>
           <CardContent>

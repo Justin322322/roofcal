@@ -157,7 +157,7 @@ export default function DeliveryTestPage() {
                   <div>
                     <div className="text-sm text-gray-600">Distance</div>
                     <div className="text-lg font-semibold">
-                      {deliveryCalculation.distance} miles
+                      {deliveryCalculation.distance} km
                     </div>
                   </div>
                   <div>
@@ -173,15 +173,15 @@ export default function DeliveryTestPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span>Base Cost (Tier {deliveryCalculation.pricingBreakdown.tier}):</span>
-                      <span>${deliveryCalculation.pricingBreakdown.baseCost}</span>
+                      <span>₱{deliveryCalculation.pricingBreakdown.baseCost}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Mileage Cost:</span>
-                      <span>${deliveryCalculation.pricingBreakdown.mileageCost}</span>
+                      <span>₱{deliveryCalculation.pricingBreakdown.mileageCost}</span>
                     </div>
                     <div className="flex justify-between font-semibold text-lg border-t pt-2">
                       <span>Total Delivery Cost:</span>
-                      <span>${deliveryCalculation.pricingBreakdown.totalCost}</span>
+                      <span>₱{deliveryCalculation.pricingBreakdown.totalCost}</span>
                     </div>
                   </div>
                 </div>

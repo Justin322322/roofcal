@@ -20,9 +20,9 @@ const AddressInput = dynamic(() => import("@/components/map/address-input").then
 export default function DeliverySettingsPage() {
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [pricing, setPricing] = useState<DeliveryPricing>({
-    tier1: { maxDistance: 10, flatFee: 50 },
-    tier2: { maxDistance: 30, flatFee: 50, perMileRate: 3 },
-    tier3: { perMileRate: 4 },
+    tier1: { maxDistance: 10, flatFee: 250 },
+    tier2: { maxDistance: 30, flatFee: 250, perMileRate: 15 },
+    tier3: { perMileRate: 20 },
   });
   const [loading, setLoading] = useState(true);
   const [newWarehouse, setNewWarehouse] = useState({
@@ -301,7 +301,7 @@ export default function DeliverySettingsPage() {
                     <span className="text-sm text-gray-600">Local Delivery</span>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="tier1MaxDistance">Max Distance (miles)</Label>
+                    <Label htmlFor="tier1MaxDistance">Max Distance (km)</Label>
                     <Input
                       id="tier1MaxDistance"
                       type="number"
@@ -313,7 +313,7 @@ export default function DeliverySettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="tier1FlatFee">Flat Fee ($)</Label>
+                    <Label htmlFor="tier1FlatFee">Flat Fee (₱)</Label>
                     <Input
                       id="tier1FlatFee"
                       type="number"
@@ -333,7 +333,7 @@ export default function DeliverySettingsPage() {
                     <span className="text-sm text-gray-600">Regional Delivery</span>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="tier2MaxDistance">Max Distance (miles)</Label>
+                    <Label htmlFor="tier2MaxDistance">Max Distance (km)</Label>
                     <Input
                       id="tier2MaxDistance"
                       type="number"
@@ -345,7 +345,7 @@ export default function DeliverySettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="tier2FlatFee">Base Fee ($)</Label>
+                    <Label htmlFor="tier2FlatFee">Base Fee (₱)</Label>
                     <Input
                       id="tier2FlatFee"
                       type="number"
@@ -357,7 +357,7 @@ export default function DeliverySettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="tier2PerMile">Per Mile Rate ($)</Label>
+                    <Label htmlFor="tier2PerMile">Per KM Rate (₱)</Label>
                     <Input
                       id="tier2PerMile"
                       type="number"
@@ -378,7 +378,7 @@ export default function DeliverySettingsPage() {
                     <span className="text-sm text-gray-600">Long Distance</span>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="tier3PerMile">Per Mile Rate ($)</Label>
+                    <Label htmlFor="tier3PerMile">Per KM Rate (₱)</Label>
                     <Input
                       id="tier3PerMile"
                       type="number"
@@ -397,9 +397,9 @@ export default function DeliverySettingsPage() {
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h4 className="font-semibold mb-2">Pricing Summary</h4>
                   <div className="text-sm space-y-1">
-                    <div><strong>Tier 1:</strong> 0-{pricing.tier1.maxDistance} miles: ${pricing.tier1.flatFee} flat fee</div>
-                    <div><strong>Tier 2:</strong> {pricing.tier1.maxDistance}-{pricing.tier2.maxDistance} miles: ${pricing.tier2.flatFee} + ${pricing.tier2.perMileRate}/mile</div>
-                    <div><strong>Tier 3:</strong> {pricing.tier2.maxDistance}+ miles: ${pricing.tier2.flatFee} + ${pricing.tier3.perMileRate}/mile</div>
+                    <div><strong>Tier 1:</strong> 0-{pricing.tier1.maxDistance} km: ₱{pricing.tier1.flatFee} flat fee</div>
+                    <div><strong>Tier 2:</strong> {pricing.tier1.maxDistance}-{pricing.tier2.maxDistance} km: ₱{pricing.tier2.flatFee} + ₱{pricing.tier2.perMileRate}/km</div>
+                    <div><strong>Tier 3:</strong> {pricing.tier2.maxDistance}+ km: ₱{pricing.tier2.flatFee} + ₱{pricing.tier3.perMileRate}/km</div>
                   </div>
                 </div>
               </div>

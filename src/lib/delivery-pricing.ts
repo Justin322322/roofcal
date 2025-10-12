@@ -4,19 +4,19 @@
 
 import type { DeliveryPricing, DeliveryCalculation } from '@/types/location';
 
-// Default pricing tiers
+// Default pricing tiers (in Philippine Peso)
 const DEFAULT_PRICING: DeliveryPricing = {
   tier1: {
     maxDistance: 10,
-    flatFee: 50,
+    flatFee: 250, // ₱250 for local delivery
   },
   tier2: {
     maxDistance: 30,
-    flatFee: 50,
-    perMileRate: 3,
+    flatFee: 250, // ₱250 base fee
+    perMileRate: 15, // ₱15 per kilometer
   },
   tier3: {
-    perMileRate: 4,
+    perMileRate: 20, // ₱20 per kilometer for long distance
   },
 };
 
@@ -141,11 +141,11 @@ export function formatPricingBreakdown(calculation: DeliveryCalculation): string
   let breakdown = `Tier ${pricingBreakdown.tier}: `;
   
   if (pricingBreakdown.tier === 1) {
-    breakdown += `$${pricingBreakdown.baseCost} flat fee`;
+    breakdown += `₱${pricingBreakdown.baseCost} flat fee`;
   } else if (pricingBreakdown.tier === 2) {
-    breakdown += `$${pricingBreakdown.baseCost} base + $${pricingBreakdown.mileageCost} mileage`;
+    breakdown += `₱${pricingBreakdown.baseCost} base + ₱${pricingBreakdown.mileageCost} mileage`;
   } else {
-    breakdown += `$${pricingBreakdown.baseCost} base + $${pricingBreakdown.mileageCost} mileage`;
+    breakdown += `₱${pricingBreakdown.baseCost} base + ₱${pricingBreakdown.mileageCost} mileage`;
   }
   
   return breakdown;
@@ -155,9 +155,9 @@ export function formatPricingBreakdown(calculation: DeliveryCalculation): string
  * Get pricing tiers description
  */
 export function getPricingDescription(pricing: DeliveryPricing = DEFAULT_PRICING): string {
-  return `Tier 1 (0-${pricing.tier1.maxDistance} mi): $${pricing.tier1.flatFee} flat fee
-Tier 2 (${pricing.tier1.maxDistance}-${pricing.tier2.maxDistance} mi): $${pricing.tier2.flatFee} + $${pricing.tier2.perMileRate}/mi
-Tier 3 (${pricing.tier2.maxDistance}+ mi): $${pricing.tier2.flatFee} + $${pricing.tier3.perMileRate}/mi`;
+  return `Tier 1 (0-${pricing.tier1.maxDistance} km): ₱${pricing.tier1.flatFee} flat fee
+Tier 2 (${pricing.tier1.maxDistance}-${pricing.tier2.maxDistance} km): ₱${pricing.tier2.flatFee} + ₱${pricing.tier2.perMileRate}/km
+Tier 3 (${pricing.tier2.maxDistance}+ km): ₱${pricing.tier2.flatFee} + ₱${pricing.tier3.perMileRate}/km`;
 }
 
 /**
