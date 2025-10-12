@@ -25,7 +25,10 @@ interface Warehouse {
 interface WarehouseMaterial {
   id: string;
   materialId: string;
+  warehouseId: string;
   quantity: number;
+  locationAdjustment: number;
+  isActive: boolean;
   material: {
     id: string;
     label: string;
@@ -42,6 +45,7 @@ interface StockBalancerProps {
   onWarehouseUpdate: () => void;
   onMaterialsRefresh?: () => void;
   refreshTrigger?: number; // Add a trigger to force refresh
+  warehouseMaterials?: Record<string, WarehouseMaterial[]>; // Real-time materials data
 }
 
 interface RedistributionPlan {
@@ -57,7 +61,8 @@ const StockBalancer: React.FC<StockBalancerProps> = ({
   warehouses,
   onWarehouseUpdate,
   onMaterialsRefresh,
-  refreshTrigger
+  refreshTrigger,
+  warehouseMaterials
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -65,85 +70,59 @@ const StockBalancer: React.FC<StockBalancerProps> = ({
   const [redistributionPlan, setRedistributionPlan] = useState<RedistributionPlan[]>([]);
   const [warehouseUtilization, setWarehouseUtilization] = useState<Record<string, { used: number; capacity: number; percentage: number }>>({});
 
-  // Calculate warehouse utilization
-  const calculateUtilization = useCallback(async () => {
-    // Clear existing data to force fresh display
-    setWarehouseUtilization({});
-    
+  // Calculate warehouse utilization using real-time data
+  const calculateUtilization = useCallback(() => {
     const utilization: Record<string, { used: number; capacity: number; percentage: number }> = {};
     
-    try {
-      // Fetch materials for all warehouses
-      for (const warehouse of warehouses) {
-        try {
-          // Add cache busting to ensure fresh data
-          const cacheBuster = Date.now();
-          const response = await fetch(`/api/warehouses/${warehouse.id}/materials?t=${cacheBuster}`, {
-            cache: 'no-cache',
-            headers: {
-              'Cache-Control': 'no-cache',
-              'Pragma': 'no-cache'
-            }
-          });
-          if (response.ok) {
-            const result = await response.json();
-            const materials = result.data || [];
-            console.log(`StockBalancer: Warehouse ${warehouse.name} has ${materials.length} materials:`, materials);
-            const used = materials.reduce((sum: number, m: WarehouseMaterial) => {
-              // Calculate volume based on material dimensions
-              let unitVolume = 1; // Default fallback
-              
-              if (m.material.volume && m.material.volume > 0) {
-                unitVolume = m.material.volume;
-              } else if (m.material.length && m.material.width && m.material.height) {
-                unitVolume = m.material.length * m.material.width * m.material.height;
-              }
-              
-              return sum + (m.quantity * unitVolume);
-            }, 0);
-            const capacity = warehouse.capacity || 0;
-            const percentage = capacity > 0 ? (used / capacity) * 100 : 0;
-            
-            utilization[warehouse.id] = { used, capacity, percentage };
-          } else {
-            utilization[warehouse.id] = { used: 0, capacity: warehouse.capacity || 0, percentage: 0 };
-          }
-        } catch (error) {
-          console.error(`Error fetching materials for warehouse ${warehouse.id}:`, error);
-          utilization[warehouse.id] = { used: 0, capacity: warehouse.capacity || 0, percentage: 0 };
-        }
-      }
+    // Use real-time warehouse materials data if available, otherwise fetch from API
+    for (const warehouse of warehouses) {
+      const materials = warehouseMaterials?.[warehouse.id] || [];
+      const activeMaterials = materials.filter(m => m.isActive);
       
-      console.log('StockBalancer: Final utilization data:', utilization);
-      setWarehouseUtilization(utilization);
-    } catch (error) {
-      console.error('Error calculating utilization:', error);
+      const used = activeMaterials.reduce((sum: number, m: WarehouseMaterial) => {
+        // Calculate volume based on material dimensions
+        let unitVolume = 1; // Default fallback
+        
+        if (m.material.volume && m.material.volume > 0) {
+          unitVolume = m.material.volume;
+        } else if (m.material.length && m.material.width && m.material.height) {
+          unitVolume = m.material.length * m.material.width * m.material.height;
+        }
+        
+        return sum + (m.quantity * unitVolume);
+      }, 0);
+      
+      const capacity = warehouse.capacity || 0;
+      const percentage = capacity > 0 ? (used / capacity) * 100 : 0;
+      
+      utilization[warehouse.id] = { used, capacity, percentage };
     }
-  }, [warehouses]);
+    
+    setWarehouseUtilization(utilization);
+  }, [warehouses, warehouseMaterials]);
 
   useEffect(() => {
-    if (warehouses.length > 0) {
+    if (warehouses.length > 0 && warehouseMaterials) {
       calculateUtilization();
     }
-  }, [warehouses, calculateUtilization]);
+  }, [warehouses, warehouseMaterials, calculateUtilization]);
 
   // Refresh utilization when refreshTrigger changes (e.g., when materials are deleted)
   useEffect(() => {
-    if (refreshTrigger && warehouses.length > 0) {
-      calculateUtilization();
+    if (refreshTrigger && warehouses.length > 0 && warehouseMaterials) {
+      // Only refresh if modal is open to avoid unnecessary calls
+      if (isOpen) {
+        calculateUtilization();
+      }
     }
-  }, [refreshTrigger, warehouses, calculateUtilization]);
+  }, [refreshTrigger, warehouses, warehouseMaterials, calculateUtilization, isOpen]);
 
   // Refresh utilization when modal opens to ensure fresh data
   useEffect(() => {
-    if (isOpen && warehouses.length > 0) {
-      // Force refresh with cache busting
+    if (isOpen && warehouses.length > 0 && warehouseMaterials) {
       calculateUtilization();
-      // Additional refresh attempts to ensure fresh data
-      setTimeout(() => calculateUtilization(), 200);
-      setTimeout(() => calculateUtilization(), 1000);
     }
-  }, [isOpen, warehouses, calculateUtilization]);
+  }, [isOpen, warehouses, warehouseMaterials, calculateUtilization]);
 
   const analyzeStockDistribution = async () => {
     setIsAnalyzing(true);
@@ -340,55 +319,9 @@ const StockBalancer: React.FC<StockBalancerProps> = ({
       onWarehouseUpdate();
       onMaterialsRefresh?.(); // Trigger refresh of materials data
       
-      // Multiple refresh attempts to ensure data is updated
-      const refreshUtilization = async () => {
-        const utilization: Record<string, { used: number; capacity: number; percentage: number }> = {};
-        
-        // Fetch materials for all warehouses
-        for (const warehouse of warehouses) {
-          try {
-            const response = await fetch(`/api/warehouses/${warehouse.id}/materials`);
-            if (response.ok) {
-              const result = await response.json();
-              const materials = result.data || [];
-              const used = materials.reduce((sum: number, m: WarehouseMaterial) => {
-                // Calculate volume based on material dimensions
-                let unitVolume = 1; // Default fallback
-                
-                if (m.material.volume && m.material.volume > 0) {
-                  unitVolume = m.material.volume;
-                } else if (m.material.length && m.material.width && m.material.height) {
-                  unitVolume = m.material.length * m.material.width * m.material.height;
-                }
-                
-                return sum + (m.quantity * unitVolume);
-              }, 0);
-              const capacity = warehouse.capacity || 0;
-              const percentage = capacity > 0 ? (used / capacity) * 100 : 0;
-              
-              utilization[warehouse.id] = { used, capacity, percentage };
-            } else {
-              utilization[warehouse.id] = { used: 0, capacity: warehouse.capacity || 0, percentage: 0 };
-            }
-          } catch (error) {
-            console.error(`Error fetching materials for warehouse ${warehouse.id}:`, error);
-            utilization[warehouse.id] = { used: 0, capacity: warehouse.capacity || 0, percentage: 0 };
-          }
-        }
-        
-        setWarehouseUtilization(utilization);
-      };
-      
-      // Try multiple times to ensure database is updated
+      // Single refresh after redistribution
       if (warehouses.length > 0) {
-        // Immediate refresh
-        refreshUtilization();
-        
-        // Refresh after 500ms
-        setTimeout(refreshUtilization, 500);
-        
-        // Final refresh after 1.5s
-        setTimeout(refreshUtilization, 1500);
+        setTimeout(() => calculateUtilization(), 1000);
       }
       
       setIsOpen(false);
@@ -409,18 +342,7 @@ const StockBalancer: React.FC<StockBalancerProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => {
-      setIsOpen(open);
-      if (open) {
-        // Force immediate refresh when modal opens
-        calculateUtilization();
-        // Multiple refresh attempts with increasing delays
-        setTimeout(() => calculateUtilization(), 100);
-        setTimeout(() => calculateUtilization(), 300);
-        setTimeout(() => calculateUtilization(), 800);
-        setTimeout(() => calculateUtilization(), 1500);
-      }
-    }}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           Stock Balancer

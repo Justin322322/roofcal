@@ -95,6 +95,7 @@ interface MaterialDragDropManagerProps {
   onMaterialsUpdate?: (materials: WarehouseMaterial[]) => void;
   onWarehouseUpdate?: () => void;
   onMaterialsRefresh?: () => void;
+  allWarehouseMaterials?: Record<string, WarehouseMaterial[]>; // Real-time materials data
 }
 
 interface DraggableMaterial extends Material {
@@ -255,7 +256,7 @@ function WarehouseMaterialRow({
   );
 }
 
-export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onChangeWarehouse, onMaterialsUpdate, onWarehouseUpdate, onMaterialsRefresh }: MaterialDragDropManagerProps) {
+export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onChangeWarehouse, onMaterialsUpdate, onWarehouseUpdate, onMaterialsRefresh, allWarehouseMaterials }: MaterialDragDropManagerProps) {
   const [materials, setMaterials] = useState<DraggableMaterial[]>([]);
   const [warehouseMaterials, setWarehouseMaterials] = useState<WarehouseMaterial[]>([]);
   const [selectedMaterials, setSelectedMaterials] = useState<Set<string>>(new Set());
@@ -780,6 +781,7 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
                 }}
                 onMaterialsRefresh={onMaterialsRefresh}
                 refreshTrigger={refreshTrigger}
+                warehouseMaterials={allWarehouseMaterials}
               />
               <Button
                 variant="outline"

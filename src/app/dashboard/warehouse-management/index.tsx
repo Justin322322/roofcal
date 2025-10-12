@@ -56,15 +56,18 @@ import { MaterialDragDropManager } from "./MaterialDragDropManager";
 interface WarehouseMaterial {
   id: string;
   materialId: string;
+  warehouseId: string;
   quantity: number;
   locationAdjustment: number;
   isActive: boolean;
   material: {
     id: string;
+    name: string;
     label: string;
-    category: string;
+    description: string | null;
     price: number;
     unit: string;
+    category: string;
     length?: number;
     width?: number;
     height?: number;
@@ -1055,6 +1058,7 @@ export function WarehouseManagementPage() {
                             refreshAllWarehouseMaterials();
                           }, 1000);
                         }}
+                        allWarehouseMaterials={allWarehouseMaterials}
                       />
                     </>
                   ) : (
