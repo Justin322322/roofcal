@@ -116,8 +116,7 @@ export function RoofCalculatorContent() {
       <div className="px-4 lg:px-6 mb-4">
         <div className="flex items-center justify-between">
           <p className="text-muted-foreground">
-            Calculate roofing materials and costs with intelligent
-            recommendations
+            Create detailed project requests with accurate calculations and cost estimates for contractors to review
           </p>
 
           {/* Action Buttons */}

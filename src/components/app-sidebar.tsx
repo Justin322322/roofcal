@@ -158,7 +158,7 @@ export function AppSidebar({
     // Base navigation items available to all users
     const baseNavItems = [
       {
-        title: "Roof Estimator",
+        title: "Project Request",
         url: "roof-calculator",
         icon: CalculatorIcon,
         roles: [UserRole.CLIENT, UserRole.ADMIN],
@@ -215,7 +215,7 @@ export function AppSidebar({
         title: "Assigned Projects",
         url: "assigned-projects",
         icon: ClipboardCheckIcon,
-        roles: [UserRole.CLIENT, UserRole.ADMIN], // Both can see assigned projects
+        roles: [UserRole.ADMIN], // Only admins (contractors) can see assigned projects
       },
     ];
 

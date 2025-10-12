@@ -171,12 +171,29 @@ export function ClientProposalsPage() {
       </div>
 
       {proposals.length === 0 ? (
-        <Alert>
-          <AlertCircleIcon className="h-4 w-4" />
-          <AlertDescription>
-            No proposals found. You need to request quotes from contractors first.
-          </AlertDescription>
-        </Alert>
+        <div className="space-y-4">
+          <Alert>
+            <AlertCircleIcon className="h-4 w-4" />
+            <AlertDescription>
+              No proposals found. You need to request quotes from contractors first.
+            </AlertDescription>
+          </Alert>
+          <Alert className="border-blue-200 bg-blue-50">
+            <AlertCircleIcon className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-800">
+              <div className="space-y-2">
+                <p className="font-medium">How to get contractor quotes:</p>
+                <ol className="list-decimal list-inside space-y-1 text-sm">
+                  <li>Create a project request using the "Project Request" calculator</li>
+                  <li>Save your project with all the details</li>
+                  <li>Go to "Project Management" to assign your project to contractors</li>
+                  <li>Contractors will review and send you proposals</li>
+                  <li>View and manage proposals here</li>
+                </ol>
+              </div>
+            </AlertDescription>
+          </Alert>
+        </div>
       ) : (
         <Tabs defaultValue="pending" className="space-y-6">
           <TabsList>
