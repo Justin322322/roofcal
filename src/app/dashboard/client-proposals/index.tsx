@@ -184,9 +184,9 @@ export function ClientProposalsPage() {
               <div className="space-y-2">
                 <p className="font-medium">How to get contractor quotes:</p>
                 <ol className="list-decimal list-inside space-y-1 text-sm">
-                  <li>Create a project request using the "Project Request" calculator</li>
+                  <li>Create a project request using the &quot;Project Request&quot; calculator</li>
                   <li>Save your project with all the details</li>
-                  <li>Go to "Project Management" to assign your project to contractors</li>
+                  <li>Go to &quot;Project Management&quot; to assign your project to contractors</li>
                   <li>Contractors will review and send you proposals</li>
                   <li>View and manage proposals here</li>
                 </ol>
