@@ -794,7 +794,7 @@ export function WarehouseManagementPage() {
 
       {/* Stats Cards */}
       <div className="mb-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Warehouses</CardTitle>
@@ -813,7 +813,11 @@ export function WarehouseManagementPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {warehouses.reduce((sum, w) => sum + (w.materials?.length || 0), 0)}
+                {Object.values(allWarehouseMaterials).reduce((sum, materials) => {
+                  // Count unique material types across all warehouses
+                  const uniqueMaterialIds = new Set(materials.filter(m => m.isActive).map(m => m.materialId));
+                  return sum + uniqueMaterialIds.size;
+                }, 0)}
               </div>
               <p className="text-xs text-muted-foreground">Material types</p>
             </CardContent>
@@ -826,22 +830,11 @@ export function WarehouseManagementPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {warehouses.reduce((sum, w) => sum + (w.materials?.reduce((mSum, m) => mSum + m.quantity, 0) || 0), 0)}
+                {Object.values(allWarehouseMaterials).reduce((sum, materials) => {
+                  return sum + materials.filter(m => m.isActive).reduce((mSum, m) => mSum + m.quantity, 0);
+                }, 0)}
               </div>
               <p className="text-xs text-muted-foreground">Total units</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Default Location</CardTitle>
-              <PackageIcon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {warehouses.filter(w => w.isDefault).length}
-              </div>
-              <p className="text-xs text-muted-foreground">Default warehouse</p>
             </CardContent>
           </Card>
         </div>
