@@ -155,28 +155,28 @@ export function AppSidebar({
   const getNavigationData = () => {
     const userRole = session?.user?.role;
     
-    // Base navigation items available to all users
-    const baseNavItems = [
+    // Client (Homeowner) navigation items
+    const clientNavItems = [
       {
         title: "Project Request",
         url: "roof-calculator",
         icon: CalculatorIcon,
-        roles: [UserRole.CLIENT, UserRole.ADMIN],
+        roles: [UserRole.CLIENT],
+      },
+      {
+        title: "My Proposals",
+        url: "client-proposals",
+        icon: MessageSquareIcon,
+        roles: [UserRole.CLIENT],
       },
     ];
 
-    // Admin-only navigation items
+    // Admin (Contractor) navigation items
     const adminNavItems = [
       {
-        title: "Project Management",
-        url: "project-management",
-        icon: KanbanSquareIcon,
-        roles: [UserRole.CLIENT, UserRole.ADMIN],
-      },
-      {
-        title: "Proposals",
-        url: "proposals",
-        icon: FileTextIcon,
+        title: "Assigned Projects",
+        url: "assigned-projects",
+        icon: ClipboardCheckIcon,
         roles: [UserRole.ADMIN],
       },
       {
@@ -186,41 +186,15 @@ export function AppSidebar({
         roles: [UserRole.ADMIN],
       },
       {
-        title: "Delivery Settings",
-        url: "delivery-settings",
-        icon: SettingsIcon,
-        roles: [UserRole.ADMIN],
-      },
-      {
-        title: "Delivery Test",
-        url: "delivery-test",
-        icon: WrenchIcon,
+        title: "Proposals",
+        url: "proposals",
+        icon: FileTextIcon,
         roles: [UserRole.ADMIN],
       },
     ];
 
-    // Client-only navigation items
-    const clientNavItems = [
-      {
-        title: "My Proposals",
-        url: "client-proposals",
-        icon: MessageSquareIcon,
-        roles: [UserRole.CLIENT],
-      },
-    ];
-
-    // Contractor navigation items (for assigned projects)
-    const contractorNavItems = [
-      {
-        title: "Assigned Projects",
-        url: "assigned-projects",
-        icon: ClipboardCheckIcon,
-        roles: [UserRole.ADMIN], // Only admins (contractors) can see assigned projects
-      },
-    ];
-
-    // Combine all navigation items
-    const allNavItems = [...baseNavItems, ...adminNavItems, ...clientNavItems, ...contractorNavItems];
+    // Combine navigation items
+    const allNavItems = [...clientNavItems, ...adminNavItems];
 
     // Filter navigation items based on user role
     const filteredNavItems = allNavItems.filter(item => 

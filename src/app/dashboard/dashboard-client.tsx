@@ -11,7 +11,6 @@ import { UserRole } from "@/types/user-role";
 import AccountManagementContent from "./(sections)/account-management";
 import SystemMaintenanceContent from "./(sections)/system-maintenance";
 import { RoofCalculatorContent } from "./roof-calculator";
-import { ProjectManagementClient } from "./project-management/project-management-client";
 import { AssignedProjectsContent } from "./assigned-projects";
 import { ProposalsPage } from "./proposals";
 import { ClientManagementPage } from "./client-management";
@@ -21,7 +20,6 @@ import DeliveryTestPage from "./delivery-test/page";
 
 type DashboardSection =
   | "roof-calculator"
-  | "project-management"
   | "assigned-projects"
   | "proposals"
   | "client-management"
@@ -136,53 +134,51 @@ export default function DashboardClient() {
     const hasPermission = (section: string) => {
       switch (section) {
         case "roof-calculator":
-        case "project-management":
+        case "client-proposals":
+          return userRole === UserRole.CLIENT;
         case "assigned-projects":
-          return true; // Available to all users
-        case "proposals":
         case "client-management":
+        case "proposals":
+          return userRole === UserRole.ADMIN;
         case "delivery-settings":
         case "delivery-test":
         case "account-management":
         case "system-maintenance":
           return userRole === UserRole.ADMIN;
-        case "client-proposals":
-          return userRole === UserRole.CLIENT;
         default:
           return false;
       }
     };
 
-    // If user doesn't have permission for the active section, redirect to roof calculator
+    // If user doesn't have permission for the active section, redirect to appropriate default
     if (activeSection && !hasPermission(activeSection)) {
-      setActiveSection("roof-calculator");
-      return <RoofCalculatorContent />;
+      const defaultSection = userRole === UserRole.CLIENT ? "roof-calculator" : "assigned-projects";
+      setActiveSection(defaultSection);
+      return userRole === UserRole.CLIENT ? <RoofCalculatorContent /> : <AssignedProjectsContent />;
     }
 
     switch (activeSection) {
       case "roof-calculator":
-      case null: // Default to roof calculator when no tab is specified
-        return <RoofCalculatorContent />;
-      case "project-management":
-        return <ProjectManagementClient />;
+      case null: // Default based on user role
+        return userRole === UserRole.CLIENT ? <RoofCalculatorContent /> : <AssignedProjectsContent />;
       case "assigned-projects":
         return <AssignedProjectsContent />;
       case "proposals":
-        return userRole === UserRole.ADMIN ? <ProposalsPage /> : <RoofCalculatorContent />;
+        return <ProposalsPage />;
       case "client-management":
-        return userRole === UserRole.ADMIN ? <ClientManagementPage /> : <RoofCalculatorContent />;
+        return <ClientManagementPage />;
       case "client-proposals":
-        return userRole === UserRole.CLIENT ? <ClientProposalsPage /> : <RoofCalculatorContent />;
+        return <ClientProposalsPage />;
       case "account-management":
-        return userRole === UserRole.ADMIN ? <AccountManagementContent /> : <RoofCalculatorContent />;
+        return <AccountManagementContent />;
       case "system-maintenance":
-        return userRole === UserRole.ADMIN ? <SystemMaintenanceContent /> : <RoofCalculatorContent />;
+        return <SystemMaintenanceContent />;
       case "delivery-settings":
-        return userRole === UserRole.ADMIN ? <DeliverySettingsPage /> : <RoofCalculatorContent />;
+        return <DeliverySettingsPage />;
       case "delivery-test":
-        return userRole === UserRole.ADMIN ? <DeliveryTestPage /> : <RoofCalculatorContent />;
+        return <DeliveryTestPage />;
       default:
-        return <RoofCalculatorContent />;
+        return userRole === UserRole.CLIENT ? <RoofCalculatorContent /> : <AssignedProjectsContent />;
     }
   };
 
