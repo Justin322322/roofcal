@@ -171,7 +171,7 @@ export function AppSidebar({
         title: "Project Management",
         url: "project-management",
         icon: KanbanSquareIcon,
-        roles: [UserRole.ADMIN],
+        roles: [UserRole.CLIENT, UserRole.ADMIN],
       },
       {
         title: "Proposals",

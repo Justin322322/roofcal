@@ -162,39 +162,44 @@ export function ClientProposalsPage() {
   }
 
   return (
-    <div className="px-4 lg:px-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">My Proposals</h1>
-        <p className="text-muted-foreground mt-2">
+    <>
+      {/* Header with description */}
+      <div className="px-4 lg:px-6 mb-4">
+        <p className="text-muted-foreground">
           Review and manage proposals from contractors for your roof projects.
         </p>
       </div>
 
-      {proposals.length === 0 ? (
-        <div className="space-y-4">
-          <Alert>
-            <AlertCircleIcon className="h-4 w-4" />
-            <AlertDescription>
-              No proposals found. You need to request quotes from contractors first.
-            </AlertDescription>
-          </Alert>
-          <Alert className="border-blue-200 bg-blue-50">
-            <AlertCircleIcon className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-blue-800">
-              <div className="space-y-2">
-                <p className="font-medium">How to get contractor quotes:</p>
-                <ol className="list-decimal list-inside space-y-1 text-sm">
+      {/* Main Content */}
+      <div className="px-4 lg:px-6">
+        {proposals.length === 0 ? (
+          <div className="space-y-6">
+            <Alert>
+              <AlertCircleIcon className="h-4 w-4" />
+              <AlertDescription>
+                No proposals found. You need to request quotes from contractors first.
+              </AlertDescription>
+            </Alert>
+            <Card className="bg-gradient-to-t from-primary/5 to-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <AlertCircleIcon className="h-4 w-4 text-primary" />
+                  How to get contractor quotes
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
                   <li>Create a project request using the &quot;Project Request&quot; calculator</li>
                   <li>Save your project with all the details</li>
-                  <li>Go to &quot;Project Management&quot; to assign your project to contractors</li>
+                  <li>Go to &quot;Project Management&quot; and click &quot;Request Quote&quot; on your saved project</li>
+                  <li>Select a contractor to send your project for review</li>
                   <li>Contractors will review and send you proposals</li>
                   <li>View and manage proposals here</li>
                 </ol>
-              </div>
-            </AlertDescription>
-          </Alert>
-        </div>
-      ) : (
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
         <Tabs defaultValue="pending" className="space-y-6">
           <TabsList>
             <TabsTrigger value="pending">
@@ -265,7 +270,8 @@ export function ClientProposalsPage() {
             </div>
           </TabsContent>
         </Tabs>
-      )}
+        )}
+      </div>
 
       {/* Proposal Viewer Modal */}
       {showViewer && selectedProject && (
@@ -289,7 +295,7 @@ export function ClientProposalsPage() {
           </Card>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
