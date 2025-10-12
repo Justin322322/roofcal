@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +41,7 @@ interface StockBalancerProps {
   warehouses: Warehouse[];
   onWarehouseUpdate: () => void;
   onMaterialsRefresh?: () => void;
+  refreshTrigger?: number; // Add a trigger to force refresh
 }
 
 interface RedistributionPlan {
@@ -55,7 +56,8 @@ interface RedistributionPlan {
 const StockBalancer: React.FC<StockBalancerProps> = ({
   warehouses,
   onWarehouseUpdate,
-  onMaterialsRefresh
+  onMaterialsRefresh,
+  refreshTrigger
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -64,49 +66,56 @@ const StockBalancer: React.FC<StockBalancerProps> = ({
   const [warehouseUtilization, setWarehouseUtilization] = useState<Record<string, { used: number; capacity: number; percentage: number }>>({});
 
   // Calculate warehouse utilization
-  useEffect(() => {
-    const calculateUtilization = async () => {
-      const utilization: Record<string, { used: number; capacity: number; percentage: number }> = {};
-      
-      // Fetch materials for all warehouses
-      for (const warehouse of warehouses) {
-        try {
-          const response = await fetch(`/api/warehouses/${warehouse.id}/materials`);
-          if (response.ok) {
-            const result = await response.json();
-            const materials = result.data || [];
-            const used = materials.reduce((sum: number, m: WarehouseMaterial) => {
-              // Calculate volume based on material dimensions
-              let unitVolume = 1; // Default fallback
-              
-              if (m.material.volume && m.material.volume > 0) {
-                unitVolume = m.material.volume;
-              } else if (m.material.length && m.material.width && m.material.height) {
-                unitVolume = m.material.length * m.material.width * m.material.height;
-              }
-              
-              return sum + (m.quantity * unitVolume);
-            }, 0);
-            const capacity = warehouse.capacity || 0;
-            const percentage = capacity > 0 ? (used / capacity) * 100 : 0;
+  const calculateUtilization = useCallback(async () => {
+    const utilization: Record<string, { used: number; capacity: number; percentage: number }> = {};
+    
+    // Fetch materials for all warehouses
+    for (const warehouse of warehouses) {
+      try {
+        const response = await fetch(`/api/warehouses/${warehouse.id}/materials`);
+        if (response.ok) {
+          const result = await response.json();
+          const materials = result.data || [];
+          const used = materials.reduce((sum: number, m: WarehouseMaterial) => {
+            // Calculate volume based on material dimensions
+            let unitVolume = 1; // Default fallback
             
-            utilization[warehouse.id] = { used, capacity, percentage };
-          } else {
-            utilization[warehouse.id] = { used: 0, capacity: warehouse.capacity || 0, percentage: 0 };
-          }
-        } catch (error) {
-          console.error(`Error fetching materials for warehouse ${warehouse.id}:`, error);
+            if (m.material.volume && m.material.volume > 0) {
+              unitVolume = m.material.volume;
+            } else if (m.material.length && m.material.width && m.material.height) {
+              unitVolume = m.material.length * m.material.width * m.material.height;
+            }
+            
+            return sum + (m.quantity * unitVolume);
+          }, 0);
+          const capacity = warehouse.capacity || 0;
+          const percentage = capacity > 0 ? (used / capacity) * 100 : 0;
+          
+          utilization[warehouse.id] = { used, capacity, percentage };
+        } else {
           utilization[warehouse.id] = { used: 0, capacity: warehouse.capacity || 0, percentage: 0 };
         }
+      } catch (error) {
+        console.error(`Error fetching materials for warehouse ${warehouse.id}:`, error);
+        utilization[warehouse.id] = { used: 0, capacity: warehouse.capacity || 0, percentage: 0 };
       }
-      
-      setWarehouseUtilization(utilization);
-    };
+    }
     
+    setWarehouseUtilization(utilization);
+  }, [warehouses]);
+
+  useEffect(() => {
     if (warehouses.length > 0) {
       calculateUtilization();
     }
-  }, [warehouses]);
+  }, [warehouses, calculateUtilization]);
+
+  // Refresh utilization when refreshTrigger changes (e.g., when materials are deleted)
+  useEffect(() => {
+    if (refreshTrigger && warehouses.length > 0) {
+      calculateUtilization();
+    }
+  }, [refreshTrigger, warehouses, calculateUtilization]);
 
   const analyzeStockDistribution = async () => {
     setIsAnalyzing(true);

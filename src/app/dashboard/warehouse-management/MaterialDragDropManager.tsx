@@ -269,6 +269,7 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
     locationAdjustment: 0,
   });
   const [bulkMaterialData, setBulkMaterialData] = useState<Record<string, { quantity: number; locationAdjustment: number }>>({});
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -569,6 +570,7 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
       setBulkMaterialData({});
       onUpdate();
       onMaterialsRefresh?.(); // Trigger refresh of parent component's warehouse materials
+      setRefreshTrigger(prev => prev + 1); // Trigger StockBalancer refresh
     } catch (error) {
       console.error('Error adding materials:', error);
       toast.error("Failed to add materials");
@@ -603,6 +605,7 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
         setEditingWarehouseMaterial(null);
         onUpdate();
         onMaterialsRefresh?.(); // Trigger refresh of parent component's warehouse materials
+        setRefreshTrigger(prev => prev + 1); // Trigger StockBalancer refresh
       } else {
         const error = await response.json();
         toast.error(error.message || "Failed to update material");
@@ -633,6 +636,7 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
         }
         onUpdate();
         onMaterialsRefresh?.(); // Trigger refresh of parent component's warehouse materials
+        setRefreshTrigger(prev => prev + 1); // Trigger StockBalancer refresh
       } else {
         const error = await response.json();
         toast.error(error.message || "Failed to remove material");
@@ -670,6 +674,7 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
         setSelectedWarehouseMaterials(new Set());
         onUpdate();
         onMaterialsRefresh?.(); // Trigger refresh of parent component's warehouse materials
+        setRefreshTrigger(prev => prev + 1); // Trigger StockBalancer refresh
       }
 
       if (failedCount > 0) {
@@ -720,7 +725,8 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
                       Capacity: {warehouse.capacity.toFixed(2)} m³
                     </p>
                     {(() => {
-                      const currentVolumeUsed = warehouseMaterials.reduce((sum, m) => {
+                      const activeMaterials = warehouseMaterials.filter(m => m.isActive);
+                      const currentVolumeUsed = activeMaterials.reduce((sum, m) => {
                         let unitVolume = 1;
                         if (m.material.volume && m.material.volume > 0) {
                           unitVolume = m.material.volume;
@@ -773,6 +779,7 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
                   onMaterialsRefresh?.();
                 }}
                 onMaterialsRefresh={onMaterialsRefresh}
+                refreshTrigger={refreshTrigger}
               />
               <Button
                 variant="outline"
