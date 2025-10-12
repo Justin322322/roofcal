@@ -1,8 +1,29 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import ScrollingCalculators from "./ScrollingCalculators";
 
 export default function Hero() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  const handleStartCalculating = () => {
+    if (status === "loading") {
+      return; // Wait for session to load
+    }
+    
+    if (session?.user) {
+      // User is authenticated, go to dashboard
+      router.push("/dashboard");
+    } else {
+      // User is not authenticated, go to login page
+      router.push("/login");
+    }
+  };
+
   return (
     <main
       id="home"
@@ -26,13 +47,18 @@ export default function Hero() {
             <Button
               size="lg"
               className="min-w-[200px] h-14 text-lg font-semibold cursor-pointer"
+              onClick={handleStartCalculating}
+              disabled={status === "loading"}
             >
-              Start Calculating
+              {status === "loading" ? "Loading..." : "Start Calculating"}
             </Button>
             <Button
               variant="accent"
               size="lg"
               className="min-w-[200px] h-14 text-lg font-semibold cursor-pointer"
+              onClick={() => {
+                document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+              }}
             >
               Learn More
             </Button>

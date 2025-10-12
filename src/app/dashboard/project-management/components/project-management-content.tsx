@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Loader2Icon } from "lucide-react";
+import { useSession } from "next-auth/react";
 import type {
   Project,
   ProjectListResponse,
@@ -13,6 +14,7 @@ import { exportProject } from "@/app/dashboard/roof-calculator/actions";
 import { ProjectFilters } from "./project-filters";
 import { ProjectManagementTable } from "./project-management-table";
 import { ProjectDetailsModal } from "./project-details-modal";
+import { RequestQuoteDialog } from "./request-quote-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,6 +50,7 @@ interface ProjectManagementContentProps {
 }
 
 export function ProjectManagementContent({}: ProjectManagementContentProps) {
+  const { data: session } = useSession();
   const [projects, setProjects] = useState<Project[]>(projectCache.data);
   const [loading, setLoading] = useState(!projectCache.data.length);
   const [search, setSearch] = useState("");
@@ -70,6 +73,8 @@ export function ProjectManagementContent({}: ProjectManagementContentProps) {
     name: string;
     isUnarchive?: boolean;
   } | null>(null);
+  const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
+  const [projectForQuote, setProjectForQuote] = useState<Project | null>(null);
   const limit = 10;
 
   // Generate cache key for current filters
@@ -318,6 +323,16 @@ export function ProjectManagementContent({}: ProjectManagementContentProps) {
     }
   };
 
+  const handleRequestQuote = (project: Project) => {
+    setProjectForQuote(project);
+    setQuoteDialogOpen(true);
+  };
+
+  const handleQuoteRequested = () => {
+    // Refresh projects to show updated status
+    fetchProjects(false, true);
+  };
+
   return (
     <>
       {/* Filters */}
@@ -355,7 +370,9 @@ export function ProjectManagementContent({}: ProjectManagementContentProps) {
           onExport={handleExport}
           onDelete={handleDeleteClick}
           onUnarchive={handleUnarchiveClick}
+          onRequestQuote={handleRequestQuote}
           actionLoading={actionLoading}
+          userRole={session?.user?.role}
         />
       </div>
 
@@ -364,6 +381,14 @@ export function ProjectManagementContent({}: ProjectManagementContentProps) {
         project={selectedProject}
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
+      />
+
+      {/* Request Quote Dialog */}
+      <RequestQuoteDialog
+        open={quoteDialogOpen}
+        onOpenChange={setQuoteDialogOpen}
+        project={projectForQuote}
+        onQuoteRequested={handleQuoteRequested}
       />
 
       {/* Delete Confirmation Dialog */}

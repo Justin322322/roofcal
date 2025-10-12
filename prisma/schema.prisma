@@ -22,18 +22,21 @@ model activity {
 }
 
 model user {
-  id               String             @id @default(uuid())
-  email            String             @unique(map: "User_email_key")
-  passwordHash     String
-  firstName        String
-  lastName         String
-  role             user_role          @default(CLIENT)
-  email_verified   DateTime?
-  created_at       DateTime           @default(now())
-  updated_at       DateTime           @updatedAt
-  activity         activity[]
-  verificationcode verificationcode[]
-  projects         project[]
+  id                 String             @id @default(uuid())
+  email              String             @unique(map: "User_email_key")
+  passwordHash       String
+  firstName          String
+  lastName           String
+  role               user_role          @default(CLIENT)
+  email_verified     DateTime?
+  created_at         DateTime           @default(now())
+  updated_at         DateTime           @updatedAt
+  activity           activity[]
+  clientProjects     project[]          @relation("ClientProjects")
+  contractorProjects project[]          @relation("ContractorProjects")
+  projects           project[]          @relation("ProjectOwner")
+  verificationcode   verificationcode[]
+  warehouses         warehouse[]        @relation("WarehouseOwner")
 
   @@index([email], map: "User_email_idx")
 }
@@ -54,30 +57,18 @@ model verificationcode {
 }
 
 model ratelimit {
-  id          String    @id @default(uuid())
-  email       String
-  action      String    @default("otp_generation")
-  attempts    Int       @default(0)
-  lastAttempt DateTime
+  id           String    @id @default(uuid())
+  email        String
+  action       String    @default("otp_generation")
+  attempts     Int       @default(0)
+  lastAttempt  DateTime
   blockedUntil DateTime?
-  created_at  DateTime  @default(now())
-  updated_at  DateTime  @updatedAt
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
 
   @@unique([email, action], map: "RateLimit_email_action_key")
   @@index([created_at], map: "RateLimit_created_at_idx")
   @@index([blockedUntil], map: "RateLimit_blockedUntil_idx")
-}
-
-enum activity_type {
-  LOGIN
-  LOGOUT
-  PROFILE_UPDATE
-  PASSWORD_CHANGE
-  ACCOUNT_CREATED
-  PROJECT_CREATED
-  PROJECT_UPDATED
-  PAYMENT_RECEIVED
-  EMAIL_VERIFIED
 }
 
 model project {
@@ -86,8 +77,6 @@ model project {
   projectName         String
   clientName          String?
   status              project_status    @default(DRAFT)
-  
-  // Roof Measurements
   length              Decimal           @db.Decimal(10, 2)
   width               Decimal           @db.Decimal(10, 2)
   pitch               Decimal           @db.Decimal(5, 2)
@@ -104,11 +93,7 @@ model project {
   gutterLengthC       Decimal?          @db.Decimal(10, 2)
   insulationThickness String
   ventilationPieces   Int
-  
-  // Material Selection
   material            String
-  
-  // Calculation Results
   area                Decimal           @db.Decimal(10, 2)
   materialCost        Decimal           @db.Decimal(12, 2)
   gutterCost          Decimal           @db.Decimal(12, 2)
@@ -122,32 +107,66 @@ model project {
   totalCost           Decimal           @db.Decimal(12, 2)
   gutterPieces        Int
   ridgeLength         Decimal           @db.Decimal(10, 2)
-  
-  // Decision Tree Results
   complexityScore     Int
   complexityLevel     String
   recommendedMaterial String?
   optimizationTips    String?           @db.LongText
-  
-  // Metadata
   notes               String?           @db.LongText
   created_at          DateTime          @default(now())
   updated_at          DateTime          @updatedAt
+  assignedAt          DateTime?
+  clientId            String?
+  contractorId        String?
+  proposalSent        DateTime?
+  proposalStatus      ProposalStatus?   @default(DRAFT)
   
-  // Relationships
-  user                user              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Delivery and Location
+  address             String?
+  city                String?
+  state               String?
+  zipCode             String?
+  latitude            Decimal?          @db.Decimal(10, 8)
+  longitude           Decimal?          @db.Decimal(11, 8)
+  deliveryCost        Decimal?          @db.Decimal(12, 2)
+  deliveryDistance    Decimal?          @db.Decimal(8, 2)
+  warehouseId         String?
   
+  client              user?             @relation("ClientProjects", fields: [clientId], references: [id])
+  contractor          user?             @relation("ContractorProjects", fields: [contractorId], references: [id])
+  user                user              @relation("ProjectOwner", fields: [userId], references: [id], onDelete: Cascade)
+  warehouse           warehouse?        @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
+
   @@index([userId], map: "Project_userId_idx")
+  @@index([contractorId], map: "Project_contractorId_idx")
+  @@index([clientId], map: "Project_clientId_idx")
   @@index([status], map: "Project_status_idx")
   @@index([created_at], map: "Project_created_at_idx")
   @@index([projectName], map: "Project_name_idx")
 }
 
+enum activity_type {
+  LOGIN
+  LOGOUT
+  PROFILE_UPDATE
+  PASSWORD_CHANGE
+  ACCOUNT_CREATED
+  PROJECT_CREATED
+  PROJECT_UPDATED
+  PAYMENT_RECEIVED
+  EMAIL_VERIFIED
+}
+
 enum project_status {
   DRAFT
   ACTIVE
+  CLIENT_PENDING
+  CONTRACTOR_REVIEWING
+  PROPOSAL_SENT
+  ACCEPTED
+  IN_PROGRESS
   COMPLETED
   ARCHIVED
+  REJECTED
 }
 
 enum construction_mode {
@@ -155,7 +174,36 @@ enum construction_mode {
   REPAIR
 }
 
+enum ProposalStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  REVISED
+}
+
 enum user_role {
   CLIENT
   ADMIN
+}
+
+model warehouse {
+  id          String    @id @default(uuid())
+  name        String
+  address     String
+  city        String
+  state       String
+  zipCode     String
+  latitude    Decimal   @db.Decimal(10, 8)
+  longitude   Decimal   @db.Decimal(11, 8)
+  isDefault   Boolean   @default(false)
+  created_by  String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  
+  // Relationships
+  creator     user      @relation("WarehouseOwner", fields: [created_by], references: [id], onDelete: Cascade)
+  projects    project[]
+  
+  @@index([created_by], map: "Warehouse_created_by_idx")
 }

@@ -416,6 +416,11 @@ export async function exportProject(
       removalCost: Number(project.removalCost),
       totalCost: Number(project.totalCost),
       ridgeLength: Number(project.ridgeLength),
+      // Convert location Decimal fields to number
+      latitude: project.latitude ? Number(project.latitude) : null,
+      longitude: project.longitude ? Number(project.longitude) : null,
+      deliveryCost: project.deliveryCost ? Number(project.deliveryCost) : null,
+      deliveryDistance: project.deliveryDistance ? Number(project.deliveryDistance) : null,
     };
 
     return { success: true, data: projectData };

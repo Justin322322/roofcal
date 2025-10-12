@@ -6,10 +6,12 @@ import {
   KanbanSquareIcon,
   FileCodeIcon,
   FileTextIcon,
+  MessageSquareIcon,
   UsersIcon,
   CalculatorIcon,
   ClipboardCheckIcon,
   WrenchIcon,
+  SettingsIcon,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { UserRole } from "@/types/user-role";
@@ -46,8 +48,33 @@ const data = {
     },
     {
       title: "Assigned Projects",
-      url: "#",
+      url: "/dashboard/assigned-projects",
       icon: ClipboardCheckIcon,
+    },
+    {
+      title: "Proposals",
+      url: "/dashboard/proposals",
+      icon: FileTextIcon,
+    },
+    {
+      title: "Client Management",
+      url: "/dashboard/client-management",
+      icon: UsersIcon,
+    },
+    {
+      title: "My Proposals",
+      url: "/dashboard/client-proposals",
+      icon: MessageSquareIcon,
+    },
+    {
+      title: "Delivery Settings",
+      url: "/dashboard/settings/delivery-settings",
+      icon: SettingsIcon,
+    },
+    {
+      title: "Delivery Test",
+      url: "/dashboard/delivery-test",
+      icon: WrenchIcon,
     },
   ],
   navClouds: [
@@ -139,8 +166,33 @@ export function AppSidebar({
       },
       {
         title: "Assigned Projects",
-        url: "#",
+        url: "assigned-projects",
         icon: ClipboardCheckIcon,
+      },
+      {
+        title: "Proposals",
+        url: "proposals",
+        icon: FileTextIcon,
+      },
+      {
+        title: "Client Management",
+        url: "client-management",
+        icon: UsersIcon,
+      },
+      {
+        title: "My Proposals",
+        url: "client-proposals",
+        icon: MessageSquareIcon,
+      },
+      {
+        title: "Delivery Settings",
+        url: "delivery-settings",
+        icon: SettingsIcon,
+      },
+      {
+        title: "Delivery Test",
+        url: "delivery-test",
+        icon: WrenchIcon,
       },
     ],
     navSecondary: [],

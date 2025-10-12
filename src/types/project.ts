@@ -8,8 +8,9 @@ import type {
   DecisionTreeResult,
 } from "@/app/dashboard/roof-calculator/types";
 
-export type ProjectStatus = "DRAFT" | "ACTIVE" | "COMPLETED" | "ARCHIVED";
+export type ProjectStatus = "DRAFT" | "ACTIVE" | "CLIENT_PENDING" | "CONTRACTOR_REVIEWING" | "PROPOSAL_SENT" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "ARCHIVED" | "REJECTED";
 export type ConstructionMode = "NEW" | "REPAIR";
+export type ProposalStatus = "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "REVISED";
 
 export interface Project {
   id: string;
@@ -17,6 +18,24 @@ export interface Project {
   projectName: string;
   clientName?: string;
   status: ProjectStatus;
+  
+  // Contractor-Client relationship fields
+  contractorId?: string | null;
+  clientId?: string | null;
+  assignedAt?: Date | null;
+  proposalSent?: Date | null;
+  proposalStatus?: ProposalStatus | null;
+
+  // Delivery and Location
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipCode?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  deliveryCost?: number | null;
+  deliveryDistance?: number | null;
+  warehouseId?: string | null;
 
   // Roof Measurements
   length: number;
@@ -70,6 +89,24 @@ export interface CreateProjectInput {
   projectName: string;
   clientName?: string;
   status?: ProjectStatus;
+  
+  // Contractor-Client relationship fields
+  contractorId?: string | null;
+  clientId?: string | null;
+  assignedAt?: Date | null;
+  proposalSent?: Date | null;
+  proposalStatus?: ProposalStatus | null;
+
+  // Delivery and Location
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipCode?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  deliveryCost?: number | null;
+  deliveryDistance?: number | null;
+  warehouseId?: string | null;
 
   // All measurement fields
   length: number;
@@ -121,6 +158,24 @@ export interface UpdateProjectInput {
   projectName?: string;
   clientName?: string;
   status?: ProjectStatus;
+  
+  // Contractor-Client relationship fields
+  contractorId?: string | null;
+  clientId?: string | null;
+  assignedAt?: Date | null;
+  proposalSent?: Date | null;
+  proposalStatus?: ProposalStatus | null;
+
+  // Delivery and Location
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipCode?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  deliveryCost?: number | null;
+  deliveryDistance?: number | null;
+  warehouseId?: string | null;
 
   // Allow updating measurements and results
   length?: number;
@@ -208,4 +263,42 @@ export interface ProjectToCalculator {
   measurements: Measurements;
   material: string;
   projectId?: string;
+}
+
+// New interfaces for contractor-homeowner workflow
+export interface ContractorInfo {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  companyName?: string;
+  phoneNumber?: string;
+  location?: string;
+  rating?: number;
+  completedProjects?: number;
+}
+
+export interface ProjectAssignment {
+  projectId: string;
+  contractorId: string;
+  clientId: string;
+  assignedAt: Date;
+  status: ProjectStatus;
+}
+
+export interface ProposalData {
+  projectId: string;
+  contractorId: string;
+  clientId: string;
+  proposalText?: string;
+  proposalStatus: ProposalStatus;
+  sentAt?: Date;
+  acceptedAt?: Date;
+  rejectedAt?: Date;
+  customPricing?: {
+    materialCost?: number;
+    laborCost?: number;
+    additionalFees?: number;
+    totalCost?: number;
+  };
 }

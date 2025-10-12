@@ -1,6 +1,6 @@
 "use client";
 
-import { BellIcon, LogOutIcon, MoreVerticalIcon } from "lucide-react";
+import { LogOutIcon, MoreVerticalIcon } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/sidebar";
 import LogoutDialog from "@/components/auth/logout-dialog";
 import { getUserInitials } from "@/lib/user-utils";
+import { NotificationCenter } from "@/components/notification-center";
 
 export function NavUser({
   user,
@@ -81,10 +82,9 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BellIcon />
-                Notifications
-              </DropdownMenuItem>
+              <div className="px-2 py-1">
+                <NotificationCenter />
+              </div>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <LogoutDialog

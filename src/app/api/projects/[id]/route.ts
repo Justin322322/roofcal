@@ -24,7 +24,11 @@ export async function GET(
     const project = await prisma.project.findFirst({
       where: {
         id,
-        userId: session.user.id, // Ensure user owns the project
+        OR: [
+          { userId: session.user.id }, // Project owner
+          { contractorId: session.user.id }, // Assigned contractor
+          { clientId: session.user.id }, // Assigned client
+        ],
       },
     });
 
@@ -92,11 +96,14 @@ export async function PUT(
     const { id } = await params;
     const body: UpdateProjectInput = await request.json();
 
-    // Check if project exists and user owns it
+    // Check if project exists and user has access to it
     const existingProject = await prisma.project.findFirst({
       where: {
         id,
-        userId: session.user.id,
+        OR: [
+          { userId: session.user.id }, // Project owner
+          { contractorId: session.user.id }, // Assigned contractor
+        ],
       },
     });
 
@@ -175,6 +182,13 @@ export async function PUT(
         ...(body.optimizationTips !== undefined && {
           optimizationTips: body.optimizationTips,
         }),
+
+        // Contractor-Client relationship fields
+        ...(body.contractorId !== undefined && { contractorId: body.contractorId }),
+        ...(body.clientId !== undefined && { clientId: body.clientId }),
+        ...(body.assignedAt !== undefined && { assignedAt: body.assignedAt }),
+        ...(body.proposalSent !== undefined && { proposalSent: body.proposalSent }),
+        ...(body.proposalStatus !== undefined && { proposalStatus: body.proposalStatus }),
 
         // Metadata
         ...(body.notes !== undefined && { notes: body.notes }),

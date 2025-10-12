@@ -11,12 +11,24 @@ import AccountManagementContent from "./(sections)/account-management";
 import SystemMaintenanceContent from "./(sections)/system-maintenance";
 import { RoofCalculatorContent } from "./roof-calculator";
 import { ProjectManagementClient } from "./project-management/project-management-client";
+import { AssignedProjectsContent } from "./assigned-projects";
+import { ProposalsPage } from "./proposals";
+import { ClientManagementPage } from "./client-management";
+import { ClientProposalsPage } from "./client-proposals";
+import DeliverySettingsPage from "./settings/delivery-settings/page";
+import DeliveryTestPage from "./delivery-test/page";
 
 type DashboardSection =
   | "roof-calculator"
   | "project-management"
+  | "assigned-projects"
+  | "proposals"
+  | "client-management"
+  | "client-proposals"
   | "account-management"
-  | "system-maintenance";
+  | "system-maintenance"
+  | "delivery-settings"
+  | "delivery-test";
 
 function DashboardSkeleton() {
   return (
@@ -123,10 +135,22 @@ export default function DashboardClient() {
         return <RoofCalculatorContent />;
       case "project-management":
         return <ProjectManagementClient />;
+      case "assigned-projects":
+        return <AssignedProjectsContent />;
+      case "proposals":
+        return <ProposalsPage />;
+      case "client-management":
+        return <ClientManagementPage />;
+      case "client-proposals":
+        return <ClientProposalsPage />;
       case "account-management":
         return <AccountManagementContent />;
       case "system-maintenance":
         return <SystemMaintenanceContent />;
+      case "delivery-settings":
+        return <DeliverySettingsPage />;
+      case "delivery-test":
+        return <DeliveryTestPage />;
       default:
         return <RoofCalculatorContent />;
     }

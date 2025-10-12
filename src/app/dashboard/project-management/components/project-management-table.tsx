@@ -26,6 +26,7 @@ import {
   Loader2Icon,
   TrashIcon,
   ArchiveIcon,
+  MessageSquareIcon,
 } from "lucide-react";
 import type { Project, ProjectStatus } from "@/types/project";
 import { materials } from "@/app/dashboard/roof-calculator/components/material-selection";
@@ -50,7 +51,9 @@ interface ProjectManagementTableProps {
   onExport: (projectId: string) => Promise<void>;
   onDelete: (projectId: string, projectName: string) => Promise<void>;
   onUnarchive?: (projectId: string, projectName: string) => Promise<void>;
+  onRequestQuote?: (project: Project) => void;
   actionLoading?: string | null;
+  userRole?: string;
 }
 
 export function ProjectManagementTable({
@@ -64,7 +67,9 @@ export function ProjectManagementTable({
   onExport,
   onDelete,
   onUnarchive,
+  onRequestQuote,
   actionLoading,
+  userRole,
 }: ProjectManagementTableProps) {
   const getStatusBadgeVariant = (status: ProjectStatus) => {
     switch (status) {
@@ -194,6 +199,21 @@ export function ProjectManagementTable({
                             <EyeIcon className="mr-2 h-4 w-4" />
                             View Details
                           </DropdownMenuItem>
+                          {userRole === "CLIENT" && 
+                           !project.contractorId && 
+                           project.status === "DRAFT" && 
+                           onRequestQuote && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => onRequestQuote(project)}
+                                className="text-blue-600 focus:text-blue-600"
+                              >
+                                <MessageSquareIcon className="mr-2 h-4 w-4" />
+                                Request Quote
+                              </DropdownMenuItem>
+                            </>
+                          )}
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => onExport(project.id)}

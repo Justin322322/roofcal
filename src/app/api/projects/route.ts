@@ -41,6 +41,13 @@ export async function POST(request: NextRequest) {
         clientName: body.clientName,
         status: body.status || "DRAFT",
 
+        // Contractor-Client relationship fields
+        contractorId: body.contractorId,
+        clientId: body.clientId,
+        assignedAt: body.assignedAt,
+        proposalSent: body.proposalSent,
+        proposalStatus: body.proposalStatus || "DRAFT",
+
         // Measurements
         length: body.length,
         width: body.width,
@@ -158,9 +165,20 @@ export async function GET(request: NextRequest) {
     const skip = (filters.page! - 1) * filters.limit!;
     const take = filters.limit!;
 
-    // Build orderBy
+    // Build orderBy - ensure field names match Prisma schema
     const orderBy: Record<string, "asc" | "desc"> = {};
-    orderBy[filters.sortBy!] = filters.sortOrder!;
+    
+    // Map frontend sortBy to actual database field names
+    const sortFieldMap: Record<string, string> = {
+      "created_at": "created_at",
+      "updated_at": "updated_at", 
+      "projectName": "projectName",
+      "totalCost": "totalCost",
+      "area": "area"
+    };
+    
+    const dbFieldName = sortFieldMap[filters.sortBy!] || "created_at";
+    orderBy[dbFieldName] = filters.sortOrder!;
 
     // Get projects and total count
     const [projects, total] = await Promise.all([
@@ -169,6 +187,33 @@ export async function GET(request: NextRequest) {
         orderBy,
         skip,
         take,
+        include: {
+          contractor: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          },
+          client: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          },
+          warehouse: {
+            select: {
+              id: true,
+              name: true,
+              address: true,
+              city: true,
+              state: true
+            }
+          }
+        }
       }),
       prisma.project.count({ where }),
     ]);
@@ -210,6 +255,11 @@ export async function GET(request: NextRequest) {
         removalCost: Number(project.removalCost),
         totalCost: Number(project.totalCost),
         ridgeLength: Number(project.ridgeLength),
+        // Convert location Decimal fields to number
+        latitude: project.latitude ? Number(project.latitude) : null,
+        longitude: project.longitude ? Number(project.longitude) : null,
+        deliveryCost: project.deliveryCost ? Number(project.deliveryCost) : null,
+        deliveryDistance: project.deliveryDistance ? Number(project.deliveryDistance) : null,
       })),
       total,
       page: filters.page!,
@@ -220,6 +270,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching projects:", error);
+    
+    // Log more detailed error information for debugging
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
+    
+    // Check for Prisma-specific errors
+    if (error && typeof error === 'object' && 'code' in error) {
+      const prismaError = error as { code?: string; meta?: unknown };
+      console.error("Prisma error code:", prismaError.code);
+      console.error("Prisma error meta:", prismaError.meta);
+    }
+    
     return NextResponse.json(
       { error: "Failed to fetch projects" },
       { status: 500 }
