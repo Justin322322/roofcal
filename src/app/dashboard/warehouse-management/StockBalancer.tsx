@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, RefreshCwIcon } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Warehouse {
@@ -64,21 +64,31 @@ const StockBalancer: React.FC<StockBalancerProps> = ({
   const [isRedistributing, setIsRedistributing] = useState(false);
   const [redistributionPlan, setRedistributionPlan] = useState<RedistributionPlan[]>([]);
   const [warehouseUtilization, setWarehouseUtilization] = useState<Record<string, { used: number; capacity: number; percentage: number }>>({});
-  const [isRefreshingData, setIsRefreshingData] = useState(false);
 
   // Calculate warehouse utilization
   const calculateUtilization = useCallback(async () => {
-    setIsRefreshingData(true);
+    // Clear existing data to force fresh display
+    setWarehouseUtilization({});
+    
     const utilization: Record<string, { used: number; capacity: number; percentage: number }> = {};
     
     try {
       // Fetch materials for all warehouses
       for (const warehouse of warehouses) {
         try {
-          const response = await fetch(`/api/warehouses/${warehouse.id}/materials`);
+          // Add cache busting to ensure fresh data
+          const cacheBuster = Date.now();
+          const response = await fetch(`/api/warehouses/${warehouse.id}/materials?t=${cacheBuster}`, {
+            cache: 'no-cache',
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
+            }
+          });
           if (response.ok) {
             const result = await response.json();
             const materials = result.data || [];
+            console.log(`StockBalancer: Warehouse ${warehouse.name} has ${materials.length} materials:`, materials);
             const used = materials.reduce((sum: number, m: WarehouseMaterial) => {
               // Calculate volume based on material dimensions
               let unitVolume = 1; // Default fallback
@@ -104,9 +114,10 @@ const StockBalancer: React.FC<StockBalancerProps> = ({
         }
       }
       
+      console.log('StockBalancer: Final utilization data:', utilization);
       setWarehouseUtilization(utilization);
-    } finally {
-      setIsRefreshingData(false);
+    } catch (error) {
+      console.error('Error calculating utilization:', error);
     }
   }, [warehouses]);
 
@@ -126,7 +137,11 @@ const StockBalancer: React.FC<StockBalancerProps> = ({
   // Refresh utilization when modal opens to ensure fresh data
   useEffect(() => {
     if (isOpen && warehouses.length > 0) {
+      // Force refresh with cache busting
       calculateUtilization();
+      // Additional refresh attempts to ensure fresh data
+      setTimeout(() => calculateUtilization(), 200);
+      setTimeout(() => calculateUtilization(), 1000);
     }
   }, [isOpen, warehouses, calculateUtilization]);
 
@@ -397,11 +412,13 @@ const StockBalancer: React.FC<StockBalancerProps> = ({
     <Dialog open={isOpen} onOpenChange={(open) => {
       setIsOpen(open);
       if (open) {
-        // Force refresh when modal opens with multiple attempts
+        // Force immediate refresh when modal opens
         calculateUtilization();
-        // Also refresh after a short delay to ensure database is updated
+        // Multiple refresh attempts with increasing delays
         setTimeout(() => calculateUtilization(), 100);
-        setTimeout(() => calculateUtilization(), 500);
+        setTimeout(() => calculateUtilization(), 300);
+        setTimeout(() => calculateUtilization(), 800);
+        setTimeout(() => calculateUtilization(), 1500);
       }
     }}>
       <DialogTrigger asChild>
@@ -412,34 +429,12 @@ const StockBalancer: React.FC<StockBalancerProps> = ({
       
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle>
-                Smart Stock Balancer
-              </DialogTitle>
-              <DialogDescription>
-                Analyze and balance materials to maintain optimal warehouse capacity utilization (target: ≤85%)
-              </DialogDescription>
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={calculateUtilization}
-              disabled={isRefreshingData}
-            >
-              {isRefreshingData ? (
-                <>
-                  <div className="animate-spin h-4 w-4 mr-2 border-2 border-gray-300 border-t-gray-600 rounded-full"></div>
-                  Refreshing...
-                </>
-              ) : (
-                <>
-                  <RefreshCwIcon className="h-4 w-4 mr-2" />
-                  Refresh Data
-                </>
-              )}
-            </Button>
-          </div>
+          <DialogTitle>
+            Smart Stock Balancer
+          </DialogTitle>
+          <DialogDescription>
+            Analyze and balance materials to maintain optimal warehouse capacity utilization (target: ≤85%)
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
