@@ -772,6 +772,7 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
                   onWarehouseUpdate?.();
                   onMaterialsRefresh?.();
                 }}
+                onMaterialsRefresh={onMaterialsRefresh}
               />
               <Button
                 variant="outline"

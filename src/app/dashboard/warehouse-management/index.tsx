@@ -742,6 +742,9 @@ export function WarehouseManagementPage() {
             fetchWarehouses();
             if (activeTab === "overview") {
               refreshAllWarehouseMaterials();
+              // Force multiple refreshes to ensure data is updated
+              setTimeout(() => refreshAllWarehouseMaterials(), 100);
+              setTimeout(() => refreshAllWarehouseMaterials(), 500);
             }
           }}>
             <RefreshCwIcon className="h-4 w-4 mr-2" />
@@ -1042,6 +1045,15 @@ export function WarehouseManagementPage() {
                           }
                           // Also refresh all warehouse materials for overview tab
                           refreshAllWarehouseMaterials();
+                          
+                          // Force immediate refresh of overview cards
+                          setTimeout(() => {
+                            refreshAllWarehouseMaterials();
+                          }, 100);
+                          
+                          setTimeout(() => {
+                            refreshAllWarehouseMaterials();
+                          }, 1000);
                         }}
                       />
                     </>
