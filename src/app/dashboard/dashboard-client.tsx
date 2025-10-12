@@ -136,8 +136,9 @@ export default function DashboardClient() {
     const hasPermission = (section: string) => {
       switch (section) {
         case "roof-calculator":
-          return true; // Available to all users
         case "project-management":
+        case "assigned-projects":
+          return true; // Available to all users
         case "proposals":
         case "client-management":
         case "delivery-settings":
@@ -147,8 +148,6 @@ export default function DashboardClient() {
           return userRole === UserRole.ADMIN;
         case "client-proposals":
           return userRole === UserRole.CLIENT;
-        case "assigned-projects":
-          return true; // Available to both clients and admins
         default:
           return false;
       }
@@ -165,7 +164,7 @@ export default function DashboardClient() {
       case null: // Default to roof calculator when no tab is specified
         return <RoofCalculatorContent />;
       case "project-management":
-        return userRole === UserRole.ADMIN ? <ProjectManagementClient /> : <RoofCalculatorContent />;
+        return <ProjectManagementClient />;
       case "assigned-projects":
         return <AssignedProjectsContent />;
       case "proposals":

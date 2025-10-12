@@ -162,43 +162,94 @@ export function ClientProposalsPage() {
   }
 
   return (
-    <>
-      {/* Header with description */}
-      <div className="px-4 lg:px-6 mb-4">
-        <p className="text-muted-foreground">
+    <div className="px-4 lg:px-6">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">My Proposals</h1>
+        <p className="text-muted-foreground mt-2">
           Review and manage proposals from contractors for your roof projects.
         </p>
       </div>
 
       {/* Main Content */}
-      <div className="px-4 lg:px-6">
-        {proposals.length === 0 ? (
-          <div className="space-y-6">
-            <Alert>
-              <AlertCircleIcon className="h-4 w-4" />
-              <AlertDescription>
-                No proposals found. You need to request quotes from contractors first.
-              </AlertDescription>
-            </Alert>
-            <Card className="bg-gradient-to-t from-primary/5 to-card">
+      {proposals.length === 0 ? (
+        <div className="space-y-6">
+          {/* Info Card */}
+          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <MessageSquareIcon className="h-5 w-5 text-blue-600" />
+                How to get contractor quotes
+              </CardTitle>
+              <CardDescription className="text-base">
+                Follow these steps to receive proposals from contractors for your roof project
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <ol className="list-decimal list-inside space-y-3 text-sm">
+                <li className="flex items-start gap-2">
+                  <span className="font-medium text-blue-600">Create a project request</span> using the &quot;Project Request&quot; calculator
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-medium text-blue-600">Save your project</span> with all the details
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-medium text-blue-600">Go to &quot;Project Management&quot;</span> and click &quot;Request Quote&quot; on your saved project
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-medium text-blue-600">Select a contractor</span> to send your project for review
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-medium text-blue-600">Contractors will review</span> and send you proposals
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-medium text-blue-600">View and manage proposals</span> here
+                </li>
+              </ol>
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="hover:shadow-md transition-shadow">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <AlertCircleIcon className="h-4 w-4 text-primary" />
-                  How to get contractor quotes
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileTextIcon className="h-4 w-4 text-primary" />
+                  Start a New Project
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-                  <li>Create a project request using the &quot;Project Request&quot; calculator</li>
-                  <li>Save your project with all the details</li>
-                  <li>Go to &quot;Project Management&quot; and click &quot;Request Quote&quot; on your saved project</li>
-                  <li>Select a contractor to send your project for review</li>
-                  <li>Contractors will review and send you proposals</li>
-                  <li>View and manage proposals here</li>
-                </ol>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Create a new roof project request to get started with contractor quotes.
+                </p>
+                <Button className="w-full" asChild>
+                  <a href="/dashboard?tab=roof-calculator">
+                    Create Project Request
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <UserIcon className="h-4 w-4 text-primary" />
+                  Manage Existing Projects
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <p className="text-sm text-muted-foreground mb-3">
+                  View and manage your saved projects to request quotes from contractors.
+                </p>
+                <Button variant="outline" className="w-full" asChild>
+                  <a href="/dashboard?tab=project-management">
+                    Go to Project Management
+                  </a>
+                </Button>
               </CardContent>
             </Card>
           </div>
+        </div>
         ) : (
         <Tabs defaultValue="pending" className="space-y-6">
           <TabsList>
@@ -271,7 +322,6 @@ export function ClientProposalsPage() {
           </TabsContent>
         </Tabs>
         )}
-      </div>
 
       {/* Proposal Viewer Modal */}
       {showViewer && selectedProject && (
@@ -295,7 +345,7 @@ export function ClientProposalsPage() {
           </Card>
         </div>
       )}
-    </>
+    </div>
   );
 }
 
