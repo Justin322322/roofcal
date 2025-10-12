@@ -6,7 +6,7 @@ import type { Coordinates } from "@/types/location";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { address, coordinates, country = "us" } = body;
+    const { address, coordinates, country = "ph" } = body;
 
     if (!address && !coordinates) {
       return NextResponse.json(

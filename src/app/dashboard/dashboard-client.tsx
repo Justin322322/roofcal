@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { UserRole } from "@/types/user-role";
 import AccountManagementContent from "./(sections)/account-management";
 import SystemMaintenanceContent from "./(sections)/system-maintenance";
 import { RoofCalculatorContent } from "./roof-calculator";
@@ -102,7 +103,7 @@ function DashboardSkeleton() {
 
 export default function DashboardClient() {
   const [activeSection, setActiveSection] = useQueryState("tab");
-  const { status } = useSession();
+  const { status, data: session } = useSession();
 
   if (status === "loading") {
     return (
@@ -129,28 +130,58 @@ export default function DashboardClient() {
   }
 
   const renderContent = () => {
+    const userRole = session?.user?.role;
+
+    // Check if user has permission to access the requested section
+    const hasPermission = (section: string) => {
+      switch (section) {
+        case "roof-calculator":
+          return true; // Available to all users
+        case "project-management":
+        case "proposals":
+        case "client-management":
+        case "delivery-settings":
+        case "delivery-test":
+        case "account-management":
+        case "system-maintenance":
+          return userRole === UserRole.ADMIN;
+        case "client-proposals":
+          return userRole === UserRole.CLIENT;
+        case "assigned-projects":
+          return true; // Available to both clients and admins
+        default:
+          return false;
+      }
+    };
+
+    // If user doesn't have permission for the active section, redirect to roof calculator
+    if (activeSection && !hasPermission(activeSection)) {
+      setActiveSection("roof-calculator");
+      return <RoofCalculatorContent />;
+    }
+
     switch (activeSection) {
       case "roof-calculator":
       case null: // Default to roof calculator when no tab is specified
         return <RoofCalculatorContent />;
       case "project-management":
-        return <ProjectManagementClient />;
+        return userRole === UserRole.ADMIN ? <ProjectManagementClient /> : <RoofCalculatorContent />;
       case "assigned-projects":
         return <AssignedProjectsContent />;
       case "proposals":
-        return <ProposalsPage />;
+        return userRole === UserRole.ADMIN ? <ProposalsPage /> : <RoofCalculatorContent />;
       case "client-management":
-        return <ClientManagementPage />;
+        return userRole === UserRole.ADMIN ? <ClientManagementPage /> : <RoofCalculatorContent />;
       case "client-proposals":
-        return <ClientProposalsPage />;
+        return userRole === UserRole.CLIENT ? <ClientProposalsPage /> : <RoofCalculatorContent />;
       case "account-management":
-        return <AccountManagementContent />;
+        return userRole === UserRole.ADMIN ? <AccountManagementContent /> : <RoofCalculatorContent />;
       case "system-maintenance":
-        return <SystemMaintenanceContent />;
+        return userRole === UserRole.ADMIN ? <SystemMaintenanceContent /> : <RoofCalculatorContent />;
       case "delivery-settings":
-        return <DeliverySettingsPage />;
+        return userRole === UserRole.ADMIN ? <DeliverySettingsPage /> : <RoofCalculatorContent />;
       case "delivery-test":
-        return <DeliveryTestPage />;
+        return userRole === UserRole.ADMIN ? <DeliveryTestPage /> : <RoofCalculatorContent />;
       default:
         return <RoofCalculatorContent />;
     }

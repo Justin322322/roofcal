@@ -110,49 +110,35 @@ export async function recordOTPAttempt(
     const now = new Date();
     const client = tx ?? prisma;
 
-    // Find existing rate limit entry within the window
-    const existingEntry = await client.ratelimit.findFirst({
+    // Use upsert to handle both create and update cases
+    // This prevents the unique constraint error
+    await client.ratelimit.upsert({
       where: {
-        email,
-        action,
-        created_at: {
-          gte: new Date(now.getTime() - RATE_LIMIT_WINDOW_MINUTES * 60 * 1000),
-        },
-      },
-    });
-
-    if (existingEntry) {
-      // Update existing entry
-      const newBlock = new Date(now.getTime() + OTP_COOLDOWN_SECONDS * 1000);
-      const refreshedBlockedUntil =
-        existingEntry.blockedUntil && existingEntry.blockedUntil > newBlock
-          ? existingEntry.blockedUntil
-          : newBlock;
-
-      await client.ratelimit.update({
-        where: { id: existingEntry.id },
-        data: {
-          attempts: { increment: 1 },
-          lastAttempt: now,
-          updated_at: now,
-          blockedUntil: refreshedBlockedUntil,
-        },
-      });
-    } else {
-      // Create new entry
-      await client.ratelimit.create({
-        data: {
-          id: crypto.randomUUID(),
+        email_action: {
           email,
           action,
-          attempts: 1,
-          lastAttempt: now,
-          blockedUntil: new Date(now.getTime() + OTP_COOLDOWN_SECONDS * 1000),
-          created_at: now,
-          updated_at: now,
         },
-      });
-    }
+      },
+      update: {
+        attempts: { increment: 1 },
+        lastAttempt: now,
+        updated_at: now,
+        // Update blockedUntil only if it's not already set or if the new block is later
+        blockedUntil: {
+          set: new Date(now.getTime() + OTP_COOLDOWN_SECONDS * 1000),
+        },
+      },
+      create: {
+        id: crypto.randomUUID(),
+        email,
+        action,
+        attempts: 1,
+        lastAttempt: now,
+        blockedUntil: new Date(now.getTime() + OTP_COOLDOWN_SECONDS * 1000),
+        created_at: now,
+        updated_at: now,
+      },
+    });
   } catch (error) {
     console.error("Error recording OTP attempt:", error);
     // Don't throw error to avoid breaking the OTP generation flow

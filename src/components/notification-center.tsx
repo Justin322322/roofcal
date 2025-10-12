@@ -115,17 +115,18 @@ export function NotificationCenter() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="relative">
+        <div className="flex w-full items-center justify-start gap-2 px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">
           <BellIcon className="h-4 w-4" />
+          <span>Notifications</span>
           {unreadCount > 0 && (
             <Badge 
               variant="destructive" 
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+              className="ml-auto h-5 w-5 flex items-center justify-center p-0 text-xs"
             >
               {unreadCount > 9 ? "9+" : unreadCount}
             </Badge>
           )}
-        </Button>
+        </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
         <div className="flex items-center justify-between p-2">

@@ -164,7 +164,7 @@ export default function DeliverySettingsPage() {
                   <Label htmlFor="warehouseName">Warehouse Name</Label>
                   <Input
                     id="warehouseName"
-                    placeholder="Main Warehouse"
+                    placeholder="Warehouse Name"
                     value={newWarehouse.name}
                     onChange={(e) => setNewWarehouse({ ...newWarehouse, name: e.target.value })}
                   />
@@ -173,34 +173,34 @@ export default function DeliverySettingsPage() {
                   <Label htmlFor="warehouseAddress">Street Address</Label>
                   <Input
                     id="warehouseAddress"
-                    placeholder="123 Industrial Blvd"
+                    placeholder="Street Address"
                     value={newWarehouse.address}
                     onChange={(e) => setNewWarehouse({ ...newWarehouse, address: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="warehouseCity">City</Label>
+                  <Label htmlFor="warehouseCity">City/Municipality</Label>
                   <Input
                     id="warehouseCity"
-                    placeholder="New York"
+                    placeholder="City/Municipality"
                     value={newWarehouse.city}
                     onChange={(e) => setNewWarehouse({ ...newWarehouse, city: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="warehouseState">State</Label>
+                  <Label htmlFor="warehouseState">Province</Label>
                   <Input
                     id="warehouseState"
-                    placeholder="NY"
+                    placeholder="Province"
                     value={newWarehouse.state}
                     onChange={(e) => setNewWarehouse({ ...newWarehouse, state: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="warehouseZip">ZIP Code</Label>
+                  <Label htmlFor="warehouseZip">Postal Code</Label>
                   <Input
                     id="warehouseZip"
-                    placeholder="10001"
+                    placeholder="Postal Code"
                     value={newWarehouse.zipCode}
                     onChange={(e) => setNewWarehouse({ ...newWarehouse, zipCode: e.target.value })}
                   />

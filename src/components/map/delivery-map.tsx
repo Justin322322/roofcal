@@ -67,8 +67,8 @@ export function DeliveryMap({
     setupLeafletIcons();
   }, []);
 
-  // Default center (New York City)
-  const defaultCenter: [number, number] = [40.7128, -74.0060];
+  // Default center (Manila, Philippines)
+  const defaultCenter: [number, number] = [14.5995, 120.9842];
 
   // Calculate bounds if we have both origin and destination
   useEffect(() => {

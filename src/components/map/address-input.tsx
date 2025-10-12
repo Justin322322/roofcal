@@ -63,7 +63,7 @@ export function AddressInput({
     setGeocodingError(null);
 
     try {
-      const result = await geocodeAddress(fullAddress);
+      const result = await geocodeAddress(fullAddress, { country: 'ph' });
       
       if (result) {
         setCoordinates(result.coordinates);
@@ -113,40 +113,40 @@ export function AddressInput({
               </Label>
               <Input
                 id="street"
-                placeholder="123 Main St"
+                placeholder="Street Address"
                 value={address.street}
                 onChange={(e) => handleAddressChange("street", e.target.value)}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="city">
-                City {required && <span className="text-red-500">*</span>}
+                City/Municipality {required && <span className="text-red-500">*</span>}
               </Label>
               <Input
                 id="city"
-                placeholder="New York"
+                placeholder="City/Municipality"
                 value={address.city}
                 onChange={(e) => handleAddressChange("city", e.target.value)}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="state">
-                State {required && <span className="text-red-500">*</span>}
+                Province {required && <span className="text-red-500">*</span>}
               </Label>
               <Input
                 id="state"
-                placeholder="NY"
+                placeholder="Province"
                 value={address.state}
                 onChange={(e) => handleAddressChange("state", e.target.value)}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="zipCode">
-                ZIP Code {required && <span className="text-red-500">*</span>}
+                Postal Code {required && <span className="text-red-500">*</span>}
               </Label>
               <Input
                 id="zipCode"
-                placeholder="10001"
+                placeholder="Postal Code"
                 value={address.zipCode}
                 onChange={(e) => handleAddressChange("zipCode", e.target.value)}
               />

@@ -11,10 +11,17 @@ NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=vy1VeB8JJJK8Z0YpItUd7ndcEsuEF+k/fy7m3nYOVXE=
 DATABASE_URL="mysql://root:@localhost:3306/roofcalc"
 
+# Email Service Configuration
+# Set EMAIL_SERVICE to 'smtp' (default for your setup), or 'none' to disable emails
+EMAIL_SERVICE="smtp"
+
+# SMTP Configuration (your existing Gmail SMTP setup)
 SMTP_HOST="smtp.gmail.com"
 SMTP_PORT="587"
 SMTP_USER=justinmarlosibonga@gmail.com
 SMTP_PASSWORD=vyhuebhgfrynmshc
+SMTP_SECURE="false"
+FROM_EMAIL="justinmarlosibonga@gmail.com"
 
 # =============================================================================
 # ADDITIONAL VARIABLES NEEDED FOR PRODUCTION DEPLOYMENT
@@ -67,7 +74,8 @@ NODE_ENV="development"
 #    - DATABASE_URL: Your Railway MySQL URL
 #    - NEXTAUTH_URL: Your Vercel app URL (https://your-app.vercel.app)
 #    - NEXTAUTH_SECRET: Generate new secure secret
-#    - SMTP_* variables: Your email configuration
+#    - EMAIL_SERVICE: 'smtp' (to use your Gmail SMTP) or 'none' (to disable emails)
+#    - SMTP_* variables: Your Gmail SMTP configuration
 #    - NODE_ENV: production
 #
 # RAILWAY MYSQL URL FORMAT:
@@ -78,7 +86,8 @@ NODE_ENV="development"
 # - DATABASE_URL (copy from Railway's MySQL service variables)
 # - NEXTAUTH_SECRET (generate with: openssl rand -base64 32)
 # - NEXTAUTH_URL (your Vercel app URL)
-# - SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM
+# - EMAIL_SERVICE (set to 'smtp' to use your Gmail SMTP, or 'none' to disable emails)
+# - SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, FROM_EMAIL (your Gmail SMTP settings)
 # - NODE_ENV=production
 #
 # =============================================================================

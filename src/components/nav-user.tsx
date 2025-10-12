@@ -82,9 +82,9 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <div className="px-2 py-1">
+              <DropdownMenuItem asChild>
                 <NotificationCenter />
-              </div>
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <LogoutDialog

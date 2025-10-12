@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/auth/config";
+import { requireAdmin } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { UserRole } from "@/types/user-role";
 
@@ -46,20 +45,10 @@ export async function GET() {
 // POST /api/warehouses - Add new warehouse (admin only)
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { error, session } = await requireAdmin();
 
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
-
-    if (session.user.role !== UserRole.ADMIN) {
-      return NextResponse.json(
-        { error: "Admin access required" },
-        { status: 403 }
-      );
+    if (error) {
+      return error;
     }
 
     const body = await request.json();

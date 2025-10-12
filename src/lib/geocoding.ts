@@ -14,7 +14,10 @@ export interface NominatimResponse {
     house_number?: string;
     road?: string;
     city?: string;
+    municipality?: string;
+    town?: string;
     state?: string;
+    province?: string;
     postcode?: string;
     country?: string;
   };
@@ -40,7 +43,7 @@ export async function geocodeAddress(
       format: 'json',
       limit: '1',
       addressdetails: '1',
-      countrycodes: options.country || 'us',
+      countrycodes: options.country || 'ph',
     });
     
     // Add optional parameters
@@ -69,10 +72,10 @@ export async function geocodeAddress(
       longitude: parseFloat(result.lon),
     };
 
-    // Parse address components
+    // Parse address components (Philippine format)
     const street = result.address?.road || '';
-    const city = result.address?.city || '';
-    const state = result.address?.state || '';
+    const city = result.address?.city || result.address?.municipality || result.address?.town || '';
+    const state = result.address?.state || result.address?.province || '';
     const zipCode = result.address?.postcode || '';
 
     return {
@@ -124,10 +127,10 @@ export async function reverseGeocode(coordinates: Coordinates): Promise<Geocoded
       longitude: parseFloat(result.lon),
     };
 
-    // Parse address components
+    // Parse address components (Philippine format)
     const street = result.address?.road || '';
-    const city = result.address?.city || '';
-    const state = result.address?.state || '';
+    const city = result.address?.city || result.address?.municipality || result.address?.town || '';
+    const state = result.address?.state || result.address?.province || '';
     const zipCode = result.address?.postcode || '';
 
     return {
