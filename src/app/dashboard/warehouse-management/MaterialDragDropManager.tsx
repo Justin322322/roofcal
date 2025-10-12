@@ -272,6 +272,11 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
   const [bulkMaterialData, setBulkMaterialData] = useState<Record<string, { quantity: number; locationAdjustment: number }>>({});
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   
+  // Filter state for warehouse materials
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -343,6 +348,35 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
     [warehouseMaterials]
   );
 
+  // Filtered warehouse materials based on search and filters
+  const filteredWarehouseMaterials = useMemo(() => {
+    let filtered = activeWarehouseMaterials;
+
+    // Apply search filter
+    if (searchTerm.trim()) {
+      const search = searchTerm.toLowerCase();
+      filtered = filtered.filter(material =>
+        material.material.name.toLowerCase().includes(search) ||
+        material.material.label.toLowerCase().includes(search) ||
+        material.material.description?.toLowerCase().includes(search)
+      );
+    }
+
+    // Apply category filter
+    if (categoryFilter !== "all") {
+      filtered = filtered.filter(material => material.material.category.toLowerCase() === categoryFilter.toLowerCase());
+    }
+
+    // Apply status filter
+    if (statusFilter === "active") {
+      filtered = filtered.filter(material => material.isActive);
+    } else if (statusFilter === "inactive") {
+      filtered = filtered.filter(material => !material.isActive);
+    }
+
+    return filtered;
+  }, [activeWarehouseMaterials, searchTerm, categoryFilter, statusFilter]);
+
   // Pagination logic
   const totalPages = Math.ceil(availableMaterials.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -391,15 +425,17 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
-    if (over && over.id === 'warehouse-drop-zone') {
-      // Add dragged material to warehouse
-      const draggedMaterial = materialsWithStatus.find(m => m.id === active.id);
-      if (draggedMaterial && !draggedMaterial.isInWarehouse) {
-        setSelectedMaterials(new Set([draggedMaterial.id]));
-        setNewMaterialData({ quantity: 1, locationAdjustment: 0 });
-        setShowAddDialog(true);
+      if (over && over.id === 'warehouse-drop-zone') {
+        // Add dragged material to warehouse
+        const draggedMaterial = materialsWithStatus.find(m => m.id === active.id);
+        if (draggedMaterial && !draggedMaterial.isInWarehouse) {
+          setSelectedMaterials(new Set([draggedMaterial.id]));
+          // Labor materials should always be quantity 1 (fixed)
+          const defaultQuantity = draggedMaterial.category.toLowerCase() === 'labor' ? 1 : 1;
+          setNewMaterialData({ quantity: defaultQuantity, locationAdjustment: 0 });
+          setShowAddDialog(true);
+        }
       }
-    }
   };
 
   const handleAddSelectedMaterials = () => {
@@ -411,7 +447,10 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
     // Initialize bulk material data with default values
     const initialBulkData: Record<string, { quantity: number; locationAdjustment: number }> = {};
     selectedMaterials.forEach(materialId => {
-      initialBulkData[materialId] = { quantity: 1, locationAdjustment: 0 };
+      const material = materialsWithStatus.find(m => m.id === materialId);
+      // Labor materials should always be quantity 1 (fixed)
+      const defaultQuantity = material?.category.toLowerCase() === 'labor' ? 1 : 1;
+      initialBulkData[materialId] = { quantity: defaultQuantity, locationAdjustment: 0 };
     });
     setBulkMaterialData(initialBulkData);
     
@@ -425,15 +464,19 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
       
       // Validate quantities
       if (materialsToAdd.length === 1) {
-        if (newMaterialData.quantity <= 0) {
+        const material = materialsWithStatus.find(m => m.id === materialsToAdd[0]);
+        const quantity = material?.category.toLowerCase() === 'labor' ? 1 : newMaterialData.quantity;
+        if (quantity <= 0) {
           toast.error("Please enter a quantity greater than 0");
           setIsAddingMaterials(false);
           return;
         }
       } else {
         const invalidMaterials = materialsToAdd.filter(materialId => {
+          const material = materialsWithStatus.find(m => m.id === materialId);
           const materialData = bulkMaterialData[materialId] || { quantity: 1, locationAdjustment: 0 };
-          return materialData.quantity <= 0;
+          const quantity = material?.category.toLowerCase() === 'labor' ? 1 : materialData.quantity;
+          return quantity <= 0;
         });
         
         if (invalidMaterials.length > 0) {
@@ -465,7 +508,9 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
           } else if (material.length && material.width && material.height) {
             unitVolume = material.length * material.width * material.height;
           }
-          totalNewVolume = newMaterialData.quantity * unitVolume;
+          // Use quantity 1 for labor materials, otherwise use form data
+          const quantity = material.category.toLowerCase() === 'labor' ? 1 : newMaterialData.quantity;
+          totalNewVolume = quantity * unitVolume;
         }
       } else {
         totalNewVolume = materialsToAdd.reduce((sum, materialId) => {
@@ -478,7 +523,9 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
             } else if (material.length && material.width && material.height) {
               unitVolume = material.length * material.width * material.height;
             }
-            return sum + (materialData.quantity * unitVolume);
+            // Use quantity 1 for labor materials, otherwise use form data
+            const quantity = material.category.toLowerCase() === 'labor' ? 1 : materialData.quantity;
+            return sum + (quantity * unitVolume);
           }
           return sum + materialData.quantity;
         }, 0);
@@ -500,12 +547,15 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
         const material = materialsWithStatus.find(m => m.id === materialsToAdd[0]);
         if (!material) return;
 
+        // Use quantity 1 for labor materials, otherwise use form data
+        const quantity = material.category.toLowerCase() === 'labor' ? 1 : newMaterialData.quantity;
+        
         const response = await fetch(`/api/warehouses/${warehouse.id}/materials`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             materialId: material.id,
-            quantity: newMaterialData.quantity,
+            quantity: quantity,
             locationAdjustment: newMaterialData.locationAdjustment,
           }),
         });
@@ -529,13 +579,15 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
           if (!material) return Promise.resolve();
 
           const materialData = bulkMaterialData[materialId] || { quantity: 1, locationAdjustment: 0 };
+          // Use quantity 1 for labor materials, otherwise use form data
+          const quantity = material.category.toLowerCase() === 'labor' ? 1 : materialData.quantity;
 
           return fetch(`/api/warehouses/${warehouse.id}/materials`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               materialId: material.id,
-              quantity: materialData.quantity,
+              quantity: quantity,
               locationAdjustment: materialData.locationAdjustment,
             }),
           });
@@ -695,10 +747,10 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
   };
 
   const handleSelectAllWarehouseMaterials = () => {
-    if (selectedWarehouseMaterials.size === activeWarehouseMaterials.length) {
+    if (selectedWarehouseMaterials.size === filteredWarehouseMaterials.length) {
       setSelectedWarehouseMaterials(new Set());
     } else {
-      setSelectedWarehouseMaterials(new Set(activeWarehouseMaterials.map(m => m.id)));
+      setSelectedWarehouseMaterials(new Set(filteredWarehouseMaterials.map(m => m.id)));
     }
   };
 
@@ -711,6 +763,19 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
     }
     setSelectedWarehouseMaterials(newSelected);
   };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchTerm("");
+    setCategoryFilter("all");
+    setStatusFilter("all");
+  };
+
+  // Get unique categories from materials for dynamic category filter
+  const availableCategories = useMemo(() => {
+    const categories = new Set(activeWarehouseMaterials.map(m => m.material.category));
+    return Array.from(categories).sort();
+  }, [activeWarehouseMaterials]);
 
   return (
     <div className="space-y-6">
@@ -955,22 +1020,26 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
                   <Input
                     placeholder="Search materials..."
                     className="pl-10"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
               </div>
               <div className="flex gap-2">
-                <Select>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                   <SelectTrigger className="w-[200px]">
                     <SelectValue placeholder="All Categories" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
-                    <SelectItem value="materials">Materials</SelectItem>
-                    <SelectItem value="labor">Labor</SelectItem>
-                    <SelectItem value="equipment">Equipment</SelectItem>
+                    {availableCategories.map(category => (
+                      <SelectItem key={category} value={category.toLowerCase()}>
+                        {category}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
-                <Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-[140px]">
                     <SelectValue placeholder="Select Status" />
                   </SelectTrigger>
@@ -980,8 +1049,44 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
                     <SelectItem value="inactive">Inactive Only</SelectItem>
                   </SelectContent>
                 </Select>
+                {(searchTerm || categoryFilter !== "all" || statusFilter !== "all") && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="whitespace-nowrap"
+                  >
+                    Clear Filters
+                  </Button>
+                )}
               </div>
             </div>
+
+            {/* Filter Summary */}
+            {(searchTerm || categoryFilter !== "all" || statusFilter !== "all") && (
+              <div className="mb-4 p-3 bg-muted rounded-lg">
+                <div className="flex items-center justify-between text-sm">
+                  <div>
+                    Showing {filteredWarehouseMaterials.length} of {activeWarehouseMaterials.length} materials
+                    {searchTerm && (
+                      <span className="ml-2">
+                        matching &ldquo;{searchTerm}&rdquo;
+                      </span>
+                    )}
+                    {categoryFilter !== "all" && (
+                      <span className="ml-2">
+                        in category &ldquo;{categoryFilter}&rdquo;
+                      </span>
+                    )}
+                    {statusFilter !== "all" && (
+                      <span className="ml-2">
+                        with status &ldquo;{statusFilter}&rdquo;
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Data Table */}
             {activeWarehouseMaterials.length === 0 ? (
@@ -992,6 +1097,14 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
                   Add materials from the catalog above to get started with inventory management.
                 </p>
               </div>
+            ) : filteredWarehouseMaterials.length === 0 ? (
+              <div className="text-center py-12">
+                <PackageIcon className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Materials Match Filters</h3>
+                <p className="text-muted-foreground">
+                  Try adjusting your search terms or filter criteria.
+                </p>
+              </div>
             ) : (
               <div className="rounded-md border">
                 <Table>
@@ -999,7 +1112,7 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
                     <TableRow>
                       <TableHead>
                         <Checkbox
-                          checked={selectedWarehouseMaterials.size === activeWarehouseMaterials.length && activeWarehouseMaterials.length > 0}
+                          checked={selectedWarehouseMaterials.size === filteredWarehouseMaterials.length && filteredWarehouseMaterials.length > 0}
                           onCheckedChange={handleSelectAllWarehouseMaterials}
                         />
                       </TableHead>
@@ -1014,7 +1127,7 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {activeWarehouseMaterials.map((material) => (
+                    {filteredWarehouseMaterials.map((material) => (
                       <WarehouseMaterialRow
                         key={material.id}
                         material={material}
@@ -1070,17 +1183,28 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium mb-2">Initial Stock Quantity</label>
+                        <label className="block text-sm font-medium mb-2">
+                          Initial Stock Quantity
+                          {material.category.toLowerCase() === 'labor' && (
+                            <span className="text-xs text-muted-foreground ml-2">(Fixed for labor)</span>
+                          )}
+                        </label>
                         <Input
                           type="number"
                           min="1"
                           required
-                          value={newMaterialData.quantity}
-                          onChange={(e) => setNewMaterialData({
-                            ...newMaterialData, 
-                            quantity: parseInt(e.target.value) || 1 
-                          })}
-                          placeholder="Enter initial stock quantity (minimum 1)"
+                          value={material.category.toLowerCase() === 'labor' ? 1 : newMaterialData.quantity}
+                          onChange={(e) => {
+                            if (material.category.toLowerCase() !== 'labor') {
+                              setNewMaterialData({
+                                ...newMaterialData, 
+                                quantity: parseInt(e.target.value) || 1 
+                              });
+                            }
+                          }}
+                          placeholder={material.category.toLowerCase() === 'labor' ? "Labor is fixed at 1 unit" : "Enter initial stock quantity (minimum 1)"}
+                          disabled={material.category.toLowerCase() === 'labor'}
+                          className={material.category.toLowerCase() === 'labor' ? 'bg-gray-100' : ''}
                         />
                       </div>
 
@@ -1138,16 +1262,21 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
                                type="number"
                                min="1"
                                required
-                               value={materialData.quantity}
-                               onChange={(e) => setBulkMaterialData({
-                                 ...bulkMaterialData,
-                                 [materialId]: {
-                                   ...materialData,
-                                   quantity: parseInt(e.target.value) || 1
+                               value={material.category.toLowerCase() === 'labor' ? 1 : materialData.quantity}
+                               onChange={(e) => {
+                                 if (material.category.toLowerCase() !== 'labor') {
+                                   setBulkMaterialData({
+                                     ...bulkMaterialData,
+                                     [materialId]: {
+                                       ...materialData,
+                                       quantity: parseInt(e.target.value) || 1
+                                     }
+                                   });
                                  }
-                               })}
-                               placeholder="0"
-                               className="h-8 text-sm text-center"
+                               }}
+                               placeholder={material.category.toLowerCase() === 'labor' ? "1" : "0"}
+                               className={`h-8 text-sm text-center ${material.category.toLowerCase() === 'labor' ? 'bg-gray-100' : ''}`}
+                               disabled={material.category.toLowerCase() === 'labor'}
                              />
                            </div>
                            <div className="col-span-3">
