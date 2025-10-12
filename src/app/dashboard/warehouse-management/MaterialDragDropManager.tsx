@@ -354,6 +354,13 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
     setCurrentPage(1);
   }, [availableMaterials.length]);
 
+  // Sync local warehouseMaterials with real-time data
+  useEffect(() => {
+    if (allWarehouseMaterials?.[warehouse.id]) {
+      setWarehouseMaterials(allWarehouseMaterials[warehouse.id]);
+    }
+  }, [allWarehouseMaterials, warehouse.id]);
+
   const handleSelectMaterial = (id: string, selected: boolean) => {
     const newSelected = new Set(selectedMaterials);
     if (selected) {
@@ -726,7 +733,10 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
                       Capacity: {warehouse.capacity.toFixed(2)} m³
                     </p>
                     {(() => {
-                      const activeMaterials = warehouseMaterials.filter(m => m.isActive);
+                      // Use real-time materials data if available, otherwise fall back to local state
+                      const realtimeMaterials = allWarehouseMaterials?.[warehouse.id] || [];
+                      const materialsToUse = realtimeMaterials.length > 0 ? realtimeMaterials : warehouseMaterials;
+                      const activeMaterials = materialsToUse.filter(m => m.isActive);
                       const currentVolumeUsed = activeMaterials.reduce((sum, m) => {
                         let unitVolume = 1;
                         if (m.material.volume && m.material.volume > 0) {
