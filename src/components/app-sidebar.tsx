@@ -12,6 +12,7 @@ import {
   ClipboardCheckIcon,
   WrenchIcon,
   SettingsIcon,
+  WarehouseIcon,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { UserRole } from "@/types/user-role";
@@ -133,9 +134,14 @@ const data = {
       icon: UsersIcon,
     },
     {
-      name: "Maintenance",
+      name: "Pricing Maintenance",
       url: "system-maintenance",
       icon: WrenchIcon,
+    },
+    {
+      name: "Warehouse Management",
+      url: "warehouse-management",
+      icon: WarehouseIcon,
     },
   ],
 };

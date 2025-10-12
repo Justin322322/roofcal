@@ -22,6 +22,8 @@ export function SiteHeader({ currentSection }: SiteHeaderProps) {
         return "Account Management";
       case "system-maintenance":
         return "System Maintenance";
+      case "warehouse-management":
+        return "Warehouse Management";
       case "delivery-settings":
         return "Delivery Settings";
       case "delivery-test":

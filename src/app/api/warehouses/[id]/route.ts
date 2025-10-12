@@ -38,6 +38,10 @@ export async function GET(
         ...warehouse,
         latitude: Number(warehouse.latitude),
         longitude: Number(warehouse.longitude),
+        length: warehouse.length ? Number(warehouse.length) : null,
+        width: warehouse.width ? Number(warehouse.width) : null,
+        height: warehouse.height ? Number(warehouse.height) : null,
+        capacity: warehouse.capacity ? Number(warehouse.capacity) : null,
       },
     });
   } catch (error) {
@@ -66,7 +70,12 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const { name, address, city, state, zipCode, latitude, longitude, isDefault } = body;
+    const { name, address, city, state, zipCode, latitude, longitude, isDefault, length, width, height, capacity } = body;
+    
+    console.log('Warehouse update request data:', {
+      id, name, address, city, state, zipCode, latitude, longitude, isDefault, 
+      length, width, height, capacity
+    });
 
     // Check if warehouse exists
     const existingWarehouse = await prisma.warehouse.findUnique({
@@ -110,6 +119,10 @@ export async function PUT(
         ...(latitude && { latitude }),
         ...(longitude && { longitude }),
         ...(isDefault !== undefined && { isDefault }),
+        ...(length !== undefined && { length }),
+        ...(width !== undefined && { width }),
+        ...(height !== undefined && { height }),
+        ...(capacity !== undefined && { capacity }),
       },
       include: {
         creator: {
@@ -123,13 +136,21 @@ export async function PUT(
       },
     });
 
+    const responseData = {
+      ...warehouse,
+      latitude: Number(warehouse.latitude),
+      longitude: Number(warehouse.longitude),
+      length: warehouse.length ? Number(warehouse.length) : null,
+      width: warehouse.width ? Number(warehouse.width) : null,
+      height: warehouse.height ? Number(warehouse.height) : null,
+      capacity: warehouse.capacity ? Number(warehouse.capacity) : null,
+    };
+    
+    console.log('Warehouse update response data:', responseData);
+
     return NextResponse.json({
       success: true,
-      data: {
-        ...warehouse,
-        latitude: Number(warehouse.latitude),
-        longitude: Number(warehouse.longitude),
-      },
+      data: responseData,
     });
   } catch (error) {
     console.error("Error updating warehouse:", error);

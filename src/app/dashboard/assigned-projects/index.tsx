@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
@@ -29,32 +28,32 @@ interface AssignedProject extends Project {
   };
 }
 
-export function AssignedProjectsContent() {
+// Global cache for assigned projects data to prevent re-fetching on tab switches
+let globalAssignedProjectsCache: AssignedProject[] | null = null;
+let globalAssignedProjectsLoading = false;
+let globalAssignedProjectsHasFetched = false;
+
+// Custom hook to manage assigned projects data with global caching
+function useAssignedProjectsData() {
   const { data: session } = useSession();
-  const [assignedProjects, setAssignedProjects] = useState<AssignedProject[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [selectedProject, setSelectedProject] = useState<AssignedProject | null>(null);
-  const [showProposalBuilder, setShowProposalBuilder] = useState(false);
+  const [assignedProjects, setAssignedProjects] = useState<AssignedProject[]>(globalAssignedProjectsCache || []);
+  const [loading, setLoading] = useState(globalAssignedProjectsLoading);
+  const hasFetched = useRef(globalAssignedProjectsHasFetched);
 
-  useEffect(() => {
-    // Only fetch projects if user is authenticated and is an admin
-    if (session?.user?.id && session.user.role === "ADMIN") {
-      fetchAssignedProjects();
-    } else if (session === null) {
-      // If session is explicitly null (logged out), stop loading
-      setLoading(false);
-    }
-  }, [session?.user?.id, session?.user?.role, session]);
-
-  const fetchAssignedProjects = async () => {
+  const fetchAssignedProjects = useCallback(async () => {
+    if (globalAssignedProjectsLoading) return; // Prevent duplicate requests
+    
+    globalAssignedProjectsLoading = true;
+    setLoading(true);
+    
     try {
-      setLoading(true);
       const response = await fetch("/api/projects/assigned");
       
       if (response.ok) {
         const data = await response.json();
-        setAssignedProjects(data.projects || []);
+        const fetchedProjects = data.projects || [];
+        setAssignedProjects(fetchedProjects);
+        globalAssignedProjectsCache = fetchedProjects;
       } else {
         const errorData = await response.json();
         toast.error("Failed to fetch assigned projects", {
@@ -67,8 +66,40 @@ export function AssignedProjectsContent() {
       });
     } finally {
       setLoading(false);
+      globalAssignedProjectsLoading = false;
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (session?.user?.id && session.user.role === "ADMIN") {
+      if (!hasFetched.current) {
+        hasFetched.current = true;
+        globalAssignedProjectsHasFetched = true;
+        fetchAssignedProjects();
+      } else if (globalAssignedProjectsCache) {
+        // Use cached data if available
+        setAssignedProjects(globalAssignedProjectsCache);
+        setLoading(false);
+      }
+    } else if (session === null) {
+      // Reset cache on logout
+      globalAssignedProjectsCache = null;
+      globalAssignedProjectsHasFetched = false;
+      hasFetched.current = false;
+      setAssignedProjects([]);
+      setLoading(false);
+    }
+  }, [session?.user?.id, session?.user?.role, session, fetchAssignedProjects]);
+
+  return { assignedProjects, loading, fetchAssignedProjects };
+}
+
+export function AssignedProjectsContent() {
+  const { data: session } = useSession();
+  const { assignedProjects, fetchAssignedProjects } = useAssignedProjectsData();
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [selectedProject, setSelectedProject] = useState<AssignedProject | null>(null);
+  const [showProposalBuilder, setShowProposalBuilder] = useState(false);
 
   const handleStatusUpdate = async (projectId: string, newStatus: Project["status"]) => {
     setActionLoading(projectId);
@@ -82,14 +113,8 @@ export function AssignedProjectsContent() {
       });
 
       if (response.ok) {
-        // Update local state
-        setAssignedProjects(prev =>
-          prev.map(project =>
-            project.id === projectId
-              ? { ...project, status: newStatus }
-              : project
-          )
-        );
+        // Refresh data to get updated state
+        await fetchAssignedProjects();
         toast.success("Project status updated successfully");
       } else {
         const errorData = await response.json();
@@ -163,15 +188,17 @@ export function AssignedProjectsContent() {
     });
   };
 
-  const pendingProjects = assignedProjects.filter(p => 
-    ["CLIENT_PENDING", "CONTRACTOR_REVIEWING"].includes(p.status)
-  );
-  const activeProjects = assignedProjects.filter(p => 
-    ["PROPOSAL_SENT", "ACCEPTED", "IN_PROGRESS"].includes(p.status)
-  );
-  const completedProjects = assignedProjects.filter(p => 
-    ["COMPLETED", "REJECTED"].includes(p.status)
-  );
+  const { pendingProjects, activeProjects, completedProjects } = useMemo(() => ({
+    pendingProjects: assignedProjects.filter(p => 
+      ["CLIENT_PENDING", "CONTRACTOR_REVIEWING"].includes(p.status)
+    ),
+    activeProjects: assignedProjects.filter(p => 
+      ["PROPOSAL_SENT", "ACCEPTED", "IN_PROGRESS"].includes(p.status)
+    ),
+    completedProjects: assignedProjects.filter(p => 
+      ["COMPLETED", "REJECTED"].includes(p.status)
+    ),
+  }), [assignedProjects]);
 
   if (session?.user?.role !== "ADMIN") {
     return (
@@ -186,38 +213,12 @@ export function AssignedProjectsContent() {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="px-4 lg:px-6 space-y-6">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-4 w-96" />
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-5 w-48" />
-                <Skeleton className="h-4 w-32" />
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-8 w-24" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="px-4 lg:px-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Assigned Projects</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage projects assigned to you by homeowners and track their progress.
+        <p className="text-muted-foreground">
+          Manage projects assigned to you by homeowners and track their progress
         </p>
       </div>
 

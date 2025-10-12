@@ -7,10 +7,10 @@ export default withAuth(
     const token = req.nextauth.token;
     const { pathname } = req.nextUrl;
 
-    // Debug logging
-    console.log("Middleware - Path:", pathname);
-    console.log("Middleware - Token:", token ? "exists" : "null");
-    console.log("Middleware - EmailVerified:", token?.emailVerified);
+    // Debug logging (commented out to prevent console spam)
+    // console.log("Middleware - Path:", pathname);
+    // console.log("Middleware - Token:", token ? "exists" : "null");
+    // console.log("Middleware - EmailVerified:", token?.emailVerified);
 
     // Admin-only routes
     if (pathname.startsWith("/dashboard/account-management")) {
@@ -20,9 +20,9 @@ export default withAuth(
     }
 
     // Redirect to verification page if email not verified
-    if (pathname.startsWith("/dashboard") && !token?.emailVerified) {
+    if (pathname.startsWith("/dashboard") && token && !token.emailVerified) {
       // Redirect to verification page if user has email but not verified
-      if (token?.email) {
+      if (token.email) {
         const verifyUrl = new URL("/verify", req.url);
         verifyUrl.searchParams.set("email", token.email);
         return NextResponse.redirect(verifyUrl);

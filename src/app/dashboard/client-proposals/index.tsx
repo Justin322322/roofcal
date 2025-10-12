@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,25 +38,32 @@ interface ProposalProject extends Project {
   };
 }
 
-export function ClientProposalsPage() {
+// Global cache for proposals data to prevent re-fetching on tab switches
+let globalProposalsCache: ProposalProject[] | null = null;
+let globalLoadingState = false;
+let globalHasFetched = false;
+
+// Custom hook to manage proposals data with global caching
+function useProposalsData() {
   const { data: session } = useSession();
-  const [proposals, setProposals] = useState<ProposalProject[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedProject, setSelectedProject] = useState<ProposalProject | null>(null);
-  const [showViewer, setShowViewer] = useState(false);
+  const [proposals, setProposals] = useState<ProposalProject[]>(globalProposalsCache || []);
+  const [loading, setLoading] = useState(globalLoadingState);
+  const hasFetched = useRef(globalHasFetched);
 
-  useEffect(() => {
-    fetchProposals();
-  }, []);
-
-  const fetchProposals = async () => {
+  const fetchProposals = useCallback(async () => {
+    if (globalLoadingState) return; // Prevent duplicate requests
+    
+    globalLoadingState = true;
+    setLoading(true);
+    
     try {
-      setLoading(true);
       const response = await fetch("/api/proposals?type=received");
       
       if (response.ok) {
         const data = await response.json();
-        setProposals(data.proposals || []);
+        const fetchedProposals = data.proposals || [];
+        setProposals(fetchedProposals);
+        globalProposalsCache = fetchedProposals;
       } else {
         const errorData = await response.json();
         toast.error("Failed to fetch proposals", {
@@ -69,8 +76,39 @@ export function ClientProposalsPage() {
       });
     } finally {
       setLoading(false);
+      globalLoadingState = false;
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (session?.user?.id && session.user.role === "CLIENT") {
+      if (!hasFetched.current) {
+        hasFetched.current = true;
+        globalHasFetched = true;
+        fetchProposals();
+      } else if (globalProposalsCache) {
+        // Use cached data if available
+        setProposals(globalProposalsCache);
+        setLoading(false);
+      }
+    } else if (session === null) {
+      // Reset cache on logout
+      globalProposalsCache = null;
+      globalHasFetched = false;
+      hasFetched.current = false;
+      setProposals([]);
+      setLoading(false);
+    }
+  }, [session?.user?.id, session?.user?.role, session, fetchProposals]);
+
+  return { proposals, loading, fetchProposals };
+}
+
+export function ClientProposalsPage() {
+  const { data: session } = useSession();
+  const { proposals, loading } = useProposalsData();
+  const [selectedProject, setSelectedProject] = useState<ProposalProject | null>(null);
+  const [showViewer, setShowViewer] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -118,9 +156,11 @@ export function ClientProposalsPage() {
     });
   };
 
-  const pendingProposals = proposals.filter(p => p.proposalStatus === "SENT");
-  const acceptedProposals = proposals.filter(p => p.proposalStatus === "ACCEPTED");
-  const rejectedProposals = proposals.filter(p => p.proposalStatus === "REJECTED");
+  const { pendingProposals, acceptedProposals, rejectedProposals } = useMemo(() => ({
+    pendingProposals: proposals.filter(p => p.proposalStatus === "SENT"),
+    acceptedProposals: proposals.filter(p => p.proposalStatus === "ACCEPTED"),
+    rejectedProposals: proposals.filter(p => p.proposalStatus === "REJECTED"),
+  }), [proposals]);
 
   if (session?.user?.role !== "CLIENT") {
     return (

@@ -1,5 +1,5 @@
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 /**
  * Custom hook to manage loading states based on session status
@@ -8,10 +8,21 @@ import { useEffect, useState } from "react";
 export function useSessionLoading() {
   const { status, data: session } = useSession();
   const [isInitialized, setIsInitialized] = useState(false);
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
-    if (status !== "loading") {
+    // Only set initialized once to prevent re-renders
+    if (status !== "loading" && !hasInitialized.current) {
       setIsInitialized(true);
+      hasInitialized.current = true;
+    }
+  }, [status]);
+
+  // Reset initialization when session becomes loading again (logout/login)
+  useEffect(() => {
+    if (status === "loading" && hasInitialized.current) {
+      setIsInitialized(false);
+      hasInitialized.current = false;
     }
   }, [status]);
 

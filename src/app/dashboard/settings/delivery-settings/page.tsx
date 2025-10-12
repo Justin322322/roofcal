@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,7 @@ const AddressInput = dynamic(() => import("@/components/map/address-input").then
 });
 
 export default function DeliverySettingsPage() {
+  const { data: session } = useSession();
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [pricing, setPricing] = useState<DeliveryPricing>({
     tier1: { maxDistance: 10, flatFee: 250 },
@@ -34,11 +36,15 @@ export default function DeliverySettingsPage() {
   });
   const [newWarehouseCoords, setNewWarehouseCoords] = useState<Coordinates | null>(null);
 
-  // Load warehouses and pricing on component mount
+  // Load warehouses and pricing when authenticated
   useEffect(() => {
-    loadWarehouses();
-    loadPricing();
-  }, []);
+    if (session?.user?.id && session.user.role === "ADMIN") {
+      loadWarehouses();
+      loadPricing();
+    } else if (session === null) {
+      setLoading(false);
+    }
+  }, [session?.user?.id, session?.user?.role, session]);
 
   const loadWarehouses = async () => {
     try {

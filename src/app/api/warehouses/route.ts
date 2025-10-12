@@ -28,7 +28,13 @@ export async function GET() {
       ...warehouse,
       latitude: Number(warehouse.latitude),
       longitude: Number(warehouse.longitude),
+      length: warehouse.length ? Number(warehouse.length) : null,
+      width: warehouse.width ? Number(warehouse.width) : null,
+      height: warehouse.height ? Number(warehouse.height) : null,
+      capacity: warehouse.capacity ? Number(warehouse.capacity) : null,
     }));
+
+    console.log('Warehouses GET response data:', formattedWarehouses);
 
     return NextResponse.json({
       success: true,
@@ -64,7 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, address, city, state, zipCode, latitude, longitude, isDefault = false } = body;
+    const { name, address, city, state, zipCode, latitude, longitude, isDefault = false, length, width, height, capacity } = body;
 
     if (!name || !address || !city || !state || !zipCode || !latitude || !longitude) {
       return NextResponse.json(
@@ -92,6 +98,10 @@ export async function POST(request: NextRequest) {
         longitude,
         isDefault,
         created_by: session.user.id,
+        ...(length !== undefined && { length }),
+        ...(width !== undefined && { width }),
+        ...(height !== undefined && { height }),
+        ...(capacity !== undefined && { capacity }),
       },
       include: {
         creator: {
@@ -111,6 +121,10 @@ export async function POST(request: NextRequest) {
         ...warehouse,
         latitude: Number(warehouse.latitude),
         longitude: Number(warehouse.longitude),
+        length: warehouse.length ? Number(warehouse.length) : null,
+        width: warehouse.width ? Number(warehouse.width) : null,
+        height: warehouse.height ? Number(warehouse.height) : null,
+        capacity: warehouse.capacity ? Number(warehouse.capacity) : null,
       },
     });
   } catch (error) {

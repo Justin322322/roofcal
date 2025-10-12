@@ -30,7 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -84,6 +83,14 @@ export default function PricingMaintenance() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const categories = getPricingCategories();
+
+  // Format price based on unit type
+  const formatPrice = (price: number, unit: string) => {
+    if (unit === 'percentage') {
+      return `${(price * 100).toFixed(1)}%`;
+    }
+    return `₱${Number(price).toLocaleString()}`;
+  };
 
   // Load pricing data on mount - only if user is authenticated and is an admin
   useEffect(() => {
@@ -232,13 +239,13 @@ export default function PricingMaintenance() {
   const exportToCSV = async () => {
     try {
       const csvContent = [
-        ['Category', 'Name', 'Label', 'Description', 'Price (₱)', 'Unit', 'Status', 'Last Updated'],
+        ['Category', 'Name', 'Label', 'Description', 'Price', 'Unit', 'Status', 'Last Updated'],
         ...pricingData.map((item) => [
           item.category,
           item.name,
           item.label,
           item.description || '',
-          item.price.toString(),
+          formatPrice(item.price, item.unit),
           item.unit,
           item.isActive ? 'Active' : 'Inactive',
           new Date(item.updated_at).toLocaleDateString(),
@@ -286,56 +293,17 @@ export default function PricingMaintenance() {
   const activeItems = pricingData.filter((item) => item.isActive).length;
   const inactiveItems = totalItems - activeItems;
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        {/* Header Section */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Pricing Maintenance</h1>
-            <p className="text-muted-foreground">
-              Manage pricing configurations for roofing materials and services
-            </p>
-          </div>
-          <Skeleton className="h-10 w-32" />
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-4" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-7 w-20 mb-1" />
-                <Skeleton className="h-3 w-32" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Main Content */}
-        <Card>
-          <CardContent className="p-6">
-            <Skeleton className="h-96 w-full" />
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
-    <div className="space-y-6">
-      {/* Header Section */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Pricing Maintenance</h1>
-          <p className="text-muted-foreground">
-            Manage pricing configurations for roofing materials and services
-          </p>
-        </div>
+    <div className="px-4 lg:px-6">
+      <div className="mb-6">
+        <p className="text-muted-foreground">
+          Manage pricing configurations for roofing materials and services
+        </p>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="mb-4 flex justify-end">
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={loadPricingData} disabled={isLoading}>
             <RefreshCwIcon className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
@@ -349,7 +317,8 @@ export default function PricingMaintenance() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Items</CardTitle>
@@ -367,7 +336,7 @@ export default function PricingMaintenance() {
             <SettingsIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{activeItems}</div>
+            <div className="text-2xl font-bold">{activeItems}</div>
             <p className="text-xs text-muted-foreground">Currently active</p>
           </CardContent>
         </Card>
@@ -378,7 +347,7 @@ export default function PricingMaintenance() {
             <ArchiveIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{inactiveItems}</div>
+            <div className="text-2xl font-bold">{inactiveItems}</div>
             <p className="text-xs text-muted-foreground">Currently inactive</p>
           </CardContent>
         </Card>
@@ -393,6 +362,7 @@ export default function PricingMaintenance() {
             <p className="text-xs text-muted-foreground">Pricing categories</p>
           </CardContent>
         </Card>
+        </div>
       </div>
 
       {/* Filters and Actions */}
@@ -473,7 +443,7 @@ export default function PricingMaintenance() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="price">Price (₱)</Label>
+                      <Label htmlFor="price">Price</Label>
                       <Input
                         id="price"
                         type="number"
@@ -591,7 +561,7 @@ export default function PricingMaintenance() {
                     <TableHead>Name</TableHead>
                     <TableHead>Label</TableHead>
                     <TableHead>Description</TableHead>
-                    <TableHead>Price (₱)</TableHead>
+                    <TableHead>Price</TableHead>
                     <TableHead>Unit</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Last Updated</TableHead>
@@ -600,7 +570,7 @@ export default function PricingMaintenance() {
                 </TableHeader>
                 <TableBody>
                   {filteredData.map((item) => (
-                    <TableRow key={item.id}>
+                    <TableRow key={item.id} className={editingItem === item.id ? "bg-blue-100 dark:bg-blue-800/50 border-blue-300 dark:border-blue-600 hover:bg-blue-100 dark:hover:bg-blue-800/50" : ""}>
                       <TableCell>
                         <Badge variant="outline">
                           {categories.find(c => c.id === item.category)?.label || item.category}
@@ -640,7 +610,7 @@ export default function PricingMaintenance() {
                             className="h-8"
                           />
                         ) : (
-                          <span className="font-medium">₱{Number(item.price).toLocaleString()}</span>
+                          <span className="font-medium">{formatPrice(item.price, item.unit)}</span>
                         )}
                       </TableCell>
                       <TableCell>

@@ -34,14 +34,16 @@ export function NavDocuments({
               onClick={() => {
                 if (
                   (item.url === "account-management" ||
-                    item.url === "system-maintenance") &&
+                    item.url === "system-maintenance" ||
+                    item.url === "warehouse-management") &&
                   onSectionChange
                 ) {
                   onSectionChange(item.url);
                 } else if (
                   item.url !== "#" &&
                   item.url !== "account-management" &&
-                  item.url !== "system-maintenance"
+                  item.url !== "system-maintenance" &&
+                  item.url !== "warehouse-management"
                 ) {
                   // Handle other navigation
                   console.log("Navigate to:", item.url);

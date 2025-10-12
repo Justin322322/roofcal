@@ -1,6 +1,7 @@
 "use client";
 
 import { useQueryState } from "nuqs";
+import { useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -15,6 +16,7 @@ import { AssignedProjectsContent } from "./assigned-projects";
 import { ProposalsPage } from "./proposals";
 import { ClientManagementPage } from "./client-management";
 import { ClientProposalsPage } from "./client-proposals";
+import WarehouseManagementSection from "./(sections)/warehouse-management";
 import DeliverySettingsPage from "./settings/delivery-settings/page";
 import DeliveryTestPage from "./delivery-test/page";
 
@@ -26,6 +28,7 @@ type DashboardSection =
   | "client-proposals"
   | "account-management"
   | "system-maintenance"
+  | "warehouse-management"
   | "delivery-settings"
   | "delivery-test";
 
@@ -103,6 +106,40 @@ export default function DashboardClient() {
   const [activeSection, setActiveSection] = useQueryState("tab");
   const { isLoading, session } = useSessionLoading();
 
+  // Check if user has permission to access the requested section
+  const hasPermission = (section: string, userRole: string | undefined) => {
+    switch (section) {
+      case "roof-calculator":
+      case "client-proposals":
+        return userRole === UserRole.CLIENT;
+      case "assigned-projects":
+      case "client-management":
+      case "proposals":
+        return userRole === UserRole.ADMIN;
+      case "delivery-settings":
+      case "delivery-test":
+      case "account-management":
+      case "system-maintenance":
+      case "warehouse-management":
+        return userRole === UserRole.ADMIN;
+      default:
+        return false;
+    }
+  };
+
+  // Handle permission-based section redirection in useEffect to prevent infinite re-renders
+  useEffect(() => {
+    if (!isLoading && session?.user?.role && activeSection) {
+      if (!hasPermission(activeSection, session.user.role)) {
+        const defaultSection = session.user.role === UserRole.CLIENT ? "roof-calculator" : "assigned-projects";
+        // Only redirect if we're not already on the correct section
+        if (activeSection !== defaultSection) {
+          setActiveSection(defaultSection);
+        }
+      }
+    }
+  }, [isLoading, session?.user?.role, activeSection, setActiveSection]);
+
   if (isLoading) {
     return (
       <SidebarProvider>
@@ -130,33 +167,6 @@ export default function DashboardClient() {
   const renderContent = () => {
     const userRole = session?.user?.role;
 
-    // Check if user has permission to access the requested section
-    const hasPermission = (section: string) => {
-      switch (section) {
-        case "roof-calculator":
-        case "client-proposals":
-          return userRole === UserRole.CLIENT;
-        case "assigned-projects":
-        case "client-management":
-        case "proposals":
-          return userRole === UserRole.ADMIN;
-        case "delivery-settings":
-        case "delivery-test":
-        case "account-management":
-        case "system-maintenance":
-          return userRole === UserRole.ADMIN;
-        default:
-          return false;
-      }
-    };
-
-    // If user doesn't have permission for the active section, redirect to appropriate default
-    if (activeSection && !hasPermission(activeSection)) {
-      const defaultSection = userRole === UserRole.CLIENT ? "roof-calculator" : "assigned-projects";
-      setActiveSection(defaultSection);
-      return userRole === UserRole.CLIENT ? <RoofCalculatorContent /> : <AssignedProjectsContent />;
-    }
-
     switch (activeSection) {
       case "roof-calculator":
       case null: // Default based on user role
@@ -173,6 +183,8 @@ export default function DashboardClient() {
         return <AccountManagementContent />;
       case "system-maintenance":
         return <SystemMaintenanceContent />;
+      case "warehouse-management":
+        return <WarehouseManagementSection />;
       case "delivery-settings":
         return <DeliverySettingsPage />;
       case "delivery-test":

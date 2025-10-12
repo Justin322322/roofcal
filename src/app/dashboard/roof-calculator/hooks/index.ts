@@ -10,7 +10,7 @@ import { analyzeProject } from "@/lib/decision-tree";
 import { materials } from "../components/material-selection";
 import * as CONSTANTS from "../constants";
 import { updatePricingConstants } from "../constants";
-import { getPricingConstants } from "@/lib/pricing";
+// Remove direct import of server-side function
 
 export function useRoofCalculator() {
   const [measurements, setMeasurements] = useState<Measurements>({
@@ -68,19 +68,29 @@ export function useRoofCalculator() {
   const [decisionTree, setDecisionTree] =
     useState<DecisionTreeResult>(initialDecisionTree);
 
-  // Load pricing from database on mount
+  // Load pricing from API on mount
   useEffect(() => {
     const loadPricing = async () => {
       try {
         setIsLoadingPricing(true);
         setPricingError(null);
         
-        const pricingData = await getPricingConstants();
-        updatePricingConstants(pricingData);
+        const response = await fetch('/api/pricing?constants=true');
         
-        console.log('✅ Pricing loaded successfully from database');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+          updatePricingConstants(result.data);
+          console.log('✅ Pricing constants loaded successfully from API');
+        } else {
+          throw new Error('Invalid API response format');
+        }
       } catch (error) {
-        console.error('❌ Failed to load pricing from database, using fallback values:', error);
+        console.error('❌ Failed to load pricing from API, using fallback values:', error);
         setPricingError('Failed to load latest pricing. Using cached values.');
         // Continue with fallback values (already set in constants)
       } finally {

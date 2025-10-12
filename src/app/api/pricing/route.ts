@@ -4,6 +4,7 @@ import { authOptions } from "@/auth/config";
 import { UserRole } from "@/types/user-role";
 import {
   getPricingConfig,
+  getPricingConstants,
   createPricingConfig,
   CreatePricingConfigSchema,
   type PricingCategory,
@@ -14,6 +15,16 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category") as PricingCategory | null;
+    const constants = searchParams.get("constants");
+
+    // Handle pricing constants request
+    if (constants === "true") {
+      const pricingConstants = await getPricingConstants();
+      return NextResponse.json({
+        success: true,
+        data: pricingConstants,
+      });
+    }
 
     // Validate category if provided
     if (category && !["materials", "gutters", "ridges", "screws", "insulation", "ventilation", "labor"].includes(category)) {

@@ -1,0 +1,88 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": [
+    "src/app/**/*.{js,jsx,ts,tsx}",
+    "src/middleware.ts",
+    "next.config.ts",
+    "tailwind.config.ts",
+    "postcss.config.mjs",
+    "eslint.config.mjs",
+    "components.json"
+  ],
+  "project": [
+    "src/**/*.{js,jsx,ts,tsx}",
+    "prisma/**/*.{js,ts}",
+    "public/**/*"
+  ],
+  "ignore": [
+    "**/*.d.ts",
+    "**/node_modules/**",
+    "**/.next/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/.git/**",
+    "**/coverage/**",
+    "**/test-results/**",
+    "**/playwright-report/**",
+    "**/blob-report/**",
+    "**/test-results.xml/**",
+    "**/playwright/.cache/**",
+    "**/prisma/migrations/**"
+  ],
+  "ignoreDependencies": [
+    // Next.js built-in dependencies
+    "next",
+    "react",
+    "react-dom",
+    "@types/react",
+    "@types/react-dom",
+    "@types/node",
+    
+    // Development tools that might not be directly imported
+    "eslint",
+    "prettier",
+    "husky",
+    "lint-staged",
+    "typescript",
+    "tailwindcss",
+    "@tailwindcss/postcss",
+    
+    // Prisma
+    "prisma",
+    "@prisma/client",
+    
+    // Build and config files
+    "next-themes",
+    
+    // Environment and deployment
+    "bcrypt",
+    "@types/bcrypt"
+  ],
+  "ignoreExportsUsedInFile": true,
+  "includeEntryExports": true,
+  "includeEntryBinaries": true,
+  "workspaces": {
+    ".": {
+      "entry": [
+        "src/app/**/*.{js,jsx,ts,tsx}",
+        "src/middleware.ts",
+        "next.config.ts",
+        "tailwind.config.ts",
+        "postcss.config.mjs",
+        "eslint.config.mjs",
+        "components.json"
+      ],
+      "project": [
+        "src/**/*.{js,jsx,ts,tsx}",
+        "prisma/**/*.{js,ts}"
+      ]
+    }
+  },
+  "plugins": {
+    "next": true,
+    "react": true,
+    "typescript": true,
+    "tailwindcss": true,
+    "prisma": true
+  }
+}

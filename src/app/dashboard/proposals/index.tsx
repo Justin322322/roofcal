@@ -1,14 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useSession } from "next-auth/react";
-import { toast } from "sonner";
-import { useDataLoading } from "@/hooks/use-data-loading";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   CalendarIcon, 
@@ -40,37 +37,77 @@ interface ProposalProject extends Project {
   };
 }
 
+// Global cache for proposals data to prevent re-fetching on tab switches
+let globalProposalsCache: ProposalProject[] | null = null;
+let globalProposalsLoading = false;
+let globalProposalsHasFetched = false;
+
+// Custom hook to manage proposals data with global caching
+function useProposalsData() {
+  const { data: session } = useSession();
+  const [proposals, setProposals] = useState<ProposalProject[]>(globalProposalsCache || []);
+  const [loading, setLoading] = useState(globalProposalsLoading);
+  const hasFetched = useRef(globalProposalsHasFetched);
+
+  const fetchProposals = useCallback(async (): Promise<ProposalProject[]> => {
+    if (globalProposalsLoading) return globalProposalsCache || []; // Prevent duplicate requests
+    
+    globalProposalsLoading = true;
+    setLoading(true);
+    
+    try {
+      const response = await fetch("/api/proposals");
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch proposals");
+      }
+      
+      const data = await response.json();
+      const fetchedProposals = data.proposals || [];
+      setProposals(fetchedProposals);
+      globalProposalsCache = fetchedProposals;
+      return fetchedProposals;
+    } catch (error) {
+      throw error;
+    } finally {
+      setLoading(false);
+      globalProposalsLoading = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (session?.user?.id && session.user.role === "ADMIN") {
+      if (!hasFetched.current) {
+        hasFetched.current = true;
+        globalProposalsHasFetched = true;
+        fetchProposals().catch(() => {
+          // Error handling is done in the fetch function
+        });
+      } else if (globalProposalsCache) {
+        // Use cached data if available
+        setProposals(globalProposalsCache);
+        setLoading(false);
+      }
+    } else if (session === null) {
+      // Reset cache on logout
+      globalProposalsCache = null;
+      globalProposalsHasFetched = false;
+      hasFetched.current = false;
+      setProposals([]);
+      setLoading(false);
+    }
+  }, [session?.user?.id, session?.user?.role, session, fetchProposals]);
+
+  return { proposals, loading, refetch: fetchProposals };
+}
+
 export function ProposalsPage() {
   const { data: session } = useSession();
+  const { proposals, refetch } = useProposalsData();
   const [selectedProject, setSelectedProject] = useState<ProposalProject | null>(null);
   const [showBuilder, setShowBuilder] = useState(false);
   const [showViewer, setShowViewer] = useState(false);
-
-  const fetchProposals = useCallback(async (): Promise<ProposalProject[]> => {
-    const response = await fetch("/api/proposals");
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || "Failed to fetch proposals");
-    }
-    
-    const data = await response.json();
-    return data.proposals || [];
-  }, []);
-
-  const { data: proposals, loading, error, refetch } = useDataLoading(
-    fetchProposals,
-    []
-  );
-
-  // Show error toast if there's an error
-  useEffect(() => {
-    if (error) {
-      toast.error("Failed to fetch proposals", {
-        description: error,
-      });
-    }
-  }, [error]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -118,10 +155,12 @@ export function ProposalsPage() {
     });
   };
 
-  const sentProposals = proposals?.filter(p => p.proposalStatus === "SENT") || [];
-  const acceptedProposals = proposals?.filter(p => p.proposalStatus === "ACCEPTED") || [];
-  const rejectedProposals = proposals?.filter(p => p.proposalStatus === "REJECTED") || [];
-  const draftProposals = proposals?.filter(p => !p.proposalSent && p.contractorId) || [];
+  const { sentProposals, acceptedProposals, rejectedProposals, draftProposals } = useMemo(() => ({
+    sentProposals: proposals?.filter(p => p.proposalStatus === "SENT") || [],
+    acceptedProposals: proposals?.filter(p => p.proposalStatus === "ACCEPTED") || [],
+    rejectedProposals: proposals?.filter(p => p.proposalStatus === "REJECTED") || [],
+    draftProposals: proposals?.filter(p => !p.proposalSent && p.contractorId) || [],
+  }), [proposals]);
 
   if (session?.user?.role !== "ADMIN") {
     return (
@@ -136,38 +175,12 @@ export function ProposalsPage() {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="px-4 lg:px-6 space-y-6">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-4 w-96" />
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-5 w-48" />
-                <Skeleton className="h-4 w-32" />
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-8 w-24" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="px-4 lg:px-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Proposal Management</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage your proposals and track their status with clients.
+        <p className="text-muted-foreground">
+          Manage your proposals and track their status with clients
         </p>
       </div>
 

@@ -17,7 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getMaterialPrices } from "@/lib/pricing";
+// Remove direct import of server-side function
 
 interface MaterialSelectionProps {
   material: string;
@@ -30,6 +30,20 @@ interface Material {
   name: string;
   price: number;
   description: string;
+}
+
+interface PricingConfigAPIResponse {
+  id: string;
+  category: string;
+  name: string;
+  label: string;
+  description: string | null;
+  price: number;
+  unit: string;
+  isActive: boolean;
+  metadata: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 // Fallback materials for when database is unavailable
@@ -80,15 +94,33 @@ export function MaterialSelection({
   const [materials, setMaterials] = useState<Material[]>(fallbackMaterials);
   const [isLoadingMaterials, setIsLoadingMaterials] = useState(true);
 
-  // Load materials from database on mount
+  // Load materials from API on mount
   useEffect(() => {
     const loadMaterials = async () => {
       try {
         setIsLoadingMaterials(true);
-        const dbMaterials = await getMaterialPrices();
-        setMaterials(dbMaterials);
+        const response = await fetch('/api/pricing?category=materials');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+          // Transform API data to match expected format
+          const dbMaterials = result.data.map((material: PricingConfigAPIResponse) => ({
+            value: material.name,
+            name: material.label,
+            price: material.price,
+            description: material.description || '',
+          }));
+          setMaterials(dbMaterials);
+        } else {
+          throw new Error('Invalid API response format');
+        }
       } catch (error) {
-        console.error('Failed to load materials from database, using fallback:', error);
+        console.error('Failed to load materials from API, using fallback:', error);
         setMaterials(fallbackMaterials);
       } finally {
         setIsLoadingMaterials(false);

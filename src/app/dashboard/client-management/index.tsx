@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { 
@@ -44,28 +43,29 @@ interface ProjectSummary {
   averageValue: number;
 }
 
-export function ClientManagementPage() {
+// Global cache for client management data to prevent re-fetching on tab switches
+let globalClientManagementCache: {
+  clients: ClientData[];
+  projectSummary: ProjectSummary | null;
+} | null = null;
+let globalClientManagementLoading = false;
+let globalClientManagementHasFetched = false;
+
+// Custom hook to manage client management data with global caching
+function useClientManagementData() {
   const { data: session } = useSession();
-  const [clients, setClients] = useState<ClientData[]>([]);
-  const [projectSummary, setProjectSummary] = useState<ProjectSummary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [selectedClient, setSelectedClient] = useState<ClientData | null>(null);
-  const [showClientDetails, setShowClientDetails] = useState(false);
+  const [clients, setClients] = useState<ClientData[]>(globalClientManagementCache?.clients || []);
+  const [projectSummary, setProjectSummary] = useState<ProjectSummary | null>(globalClientManagementCache?.projectSummary || null);
+  const [loading, setLoading] = useState(globalClientManagementLoading);
+  const hasFetched = useRef(globalClientManagementHasFetched);
 
-  useEffect(() => {
-    // Only fetch data if user is authenticated and is an admin
-    if (session?.user?.id && session.user.role === "ADMIN") {
-      fetchClientData();
-    } else if (session === null) {
-      // If session is explicitly null (logged out), stop loading
-      setLoading(false);
-    }
-  }, [session?.user?.id, session?.user?.role, session]);
-
-  const fetchClientData = async () => {
+  const fetchClientData = useCallback(async () => {
+    if (globalClientManagementLoading) return; // Prevent duplicate requests
+    
+    globalClientManagementLoading = true;
+    setLoading(true);
+    
     try {
-      setLoading(true);
-      
       // Fetch all assigned projects to get client data
       const response = await fetch("/api/projects/assigned");
       
@@ -134,6 +134,12 @@ export function ClientManagementPage() {
         summary.averageValue = summary.total > 0 ? summary.totalValue / summary.total : 0;
         setProjectSummary(summary);
         
+        // Update global cache
+        globalClientManagementCache = {
+          clients: clientList,
+          projectSummary: summary,
+        };
+        
       } else {
         const errorData = await response.json();
         toast.error("Failed to fetch client data", {
@@ -146,8 +152,41 @@ export function ClientManagementPage() {
       });
     } finally {
       setLoading(false);
+      globalClientManagementLoading = false;
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (session?.user?.id && session.user.role === "ADMIN") {
+      if (!hasFetched.current) {
+        hasFetched.current = true;
+        globalClientManagementHasFetched = true;
+        fetchClientData();
+      } else if (globalClientManagementCache) {
+        // Use cached data if available
+        setClients(globalClientManagementCache.clients);
+        setProjectSummary(globalClientManagementCache.projectSummary);
+        setLoading(false);
+      }
+    } else if (session === null) {
+      // Reset cache on logout
+      globalClientManagementCache = null;
+      globalClientManagementHasFetched = false;
+      hasFetched.current = false;
+      setClients([]);
+      setProjectSummary(null);
+      setLoading(false);
+    }
+  }, [session?.user?.id, session?.user?.role, session, fetchClientData]);
+
+  return { clients, projectSummary, loading, fetchClientData };
+}
+
+export function ClientManagementPage() {
+  const { data: session } = useSession();
+  const { clients, projectSummary, fetchClientData } = useClientManagementData();
+  const [selectedClient, setSelectedClient] = useState<ClientData | null>(null);
+  const [showClientDetails, setShowClientDetails] = useState(false);
 
   const handleStatusUpdate = async (projectId: string, newStatus: Project["status"]) => {
     try {
@@ -199,35 +238,12 @@ export function ClientManagementPage() {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="px-4 lg:px-6 space-y-6">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-4 w-96" />
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-5 w-32" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-16" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="px-4 lg:px-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Client Management</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage your clients and track project progress across all assignments.
+        <p className="text-muted-foreground">
+          Manage your clients and track project progress across all assignments
         </p>
       </div>
 
