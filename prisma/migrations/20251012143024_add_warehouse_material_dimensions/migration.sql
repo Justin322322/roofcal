@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE `pricingconfig` ADD COLUMN `height` DECIMAL(8, 2) NULL,
+ALTER TABLE `PricingConfig` ADD COLUMN `height` DECIMAL(8, 2) NULL,
     ADD COLUMN `length` DECIMAL(8, 2) NULL,
     ADD COLUMN `volume` DECIMAL(10, 4) NULL,
     ADD COLUMN `width` DECIMAL(8, 2) NULL;
