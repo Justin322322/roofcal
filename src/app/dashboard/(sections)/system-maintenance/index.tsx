@@ -74,7 +74,7 @@ export default function PricingMaintenance() {
   const { data: session } = useSession();
   const [pricingData, setPricingData] = useState<PricingConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [editingItem, setEditingItem] = useState<string | null>(null);
@@ -270,15 +270,15 @@ export default function PricingMaintenance() {
 
   // Filter data based on selected filters
   const filteredData = pricingData.filter((item) => {
-    const matchesCategory = !selectedCategory || item.category === selectedCategory;
-    const matchesSearch = !searchTerm || 
+    const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
+    const matchesSearch = !searchTerm ||
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesStatus = statusFilter === "all" || 
+    const matchesStatus = statusFilter === "all" ||
       (statusFilter === "active" && item.isActive) ||
       (statusFilter === "inactive" && !item.isActive);
-    
+
     return matchesCategory && matchesSearch && matchesStatus;
   });
 
@@ -549,7 +549,7 @@ export default function PricingMaintenance() {
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Categories</SelectItem>
+                  <SelectItem value="all">All Categories</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.label}
@@ -559,7 +559,7 @@ export default function PricingMaintenance() {
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[140px]">
-                  <SelectValue />
+                  <SelectValue placeholder="Select Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
