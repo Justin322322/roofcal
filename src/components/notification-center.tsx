@@ -24,7 +24,7 @@ import {
 
 interface Notification {
   id: string;
-  type: "proposal_sent" | "proposal_accepted" | "proposal_rejected" | "status_change";
+  type: "proposal_sent" | "proposal_accepted" | "proposal_rejected" | "status_change" | "project_assigned";
   title: string;
   message: string;
   projectId: string;
@@ -105,6 +105,8 @@ export function NotificationCenter() {
         return <AlertCircleIcon className="h-4 w-4 text-red-600" />;
       case "status_change":
         return <ClockIcon className="h-4 w-4 text-orange-600" />;
+      case "project_assigned":
+        return <CheckIcon className="h-4 w-4 text-purple-600" />;
       default:
         return <BellIcon className="h-4 w-4 text-gray-600" />;
     }

@@ -16,7 +16,7 @@ export interface Project {
   id: string;
   userId: string;
   projectName: string;
-  clientName?: string;
+  clientName?: string | null;
   status: ProjectStatus;
   
   // Contractor-Client relationship fields
@@ -76,18 +76,18 @@ export interface Project {
   // Decision Tree Results
   complexityScore: number;
   complexityLevel: string;
-  recommendedMaterial?: string;
-  optimizationTips?: string;
+  recommendedMaterial?: string | null;
+  optimizationTips?: string | null;
 
   // Metadata
-  notes?: string;
+  notes?: string | null;
   created_at: Date;
   updated_at: Date;
 }
 
 export interface CreateProjectInput {
   projectName: string;
-  clientName?: string;
+  clientName?: string | null;
   status?: ProjectStatus;
   
   // Contractor-Client relationship fields
@@ -147,16 +147,16 @@ export interface CreateProjectInput {
   // Decision Tree Results
   complexityScore: number;
   complexityLevel: string;
-  recommendedMaterial?: string;
-  optimizationTips?: string;
+  recommendedMaterial?: string | null;
+  optimizationTips?: string | null;
 
   // Metadata
-  notes?: string;
+  notes?: string | null;
 }
 
 export interface UpdateProjectInput {
   projectName?: string;
-  clientName?: string;
+  clientName?: string | null;
   status?: ProjectStatus;
   
   // Contractor-Client relationship fields
@@ -214,10 +214,10 @@ export interface UpdateProjectInput {
 
   complexityScore?: number;
   complexityLevel?: string;
-  recommendedMaterial?: string;
-  optimizationTips?: string;
+  recommendedMaterial?: string | null;
+  optimizationTips?: string | null;
 
-  notes?: string;
+  notes?: string | null;
 }
 
 export interface ProjectFilters {
@@ -254,8 +254,8 @@ export interface ProjectFromCalculator {
   decisionTree: DecisionTreeResult;
   material: string;
   projectName: string;
-  clientName?: string;
-  notes?: string;
+  clientName?: string | null;
+  notes?: string | null;
 }
 
 // Helper type for converting project data back to calculator format

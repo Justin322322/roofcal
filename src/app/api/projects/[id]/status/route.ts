@@ -77,13 +77,41 @@ export async function PATCH(
       );
     }
 
+    // Convert Decimal fields to numbers for validation
+    const projectForValidation = {
+      ...project,
+      length: Number(project.length),
+      width: Number(project.width),
+      pitch: Number(project.pitch),
+      budgetAmount: project.budgetAmount ? Number(project.budgetAmount) : undefined,
+      gutterLengthA: project.gutterLengthA ? Number(project.gutterLengthA) : undefined,
+      gutterSlope: project.gutterSlope ? Number(project.gutterSlope) : undefined,
+      gutterLengthC: project.gutterLengthC ? Number(project.gutterLengthC) : undefined,
+      area: Number(project.area),
+      materialCost: Number(project.materialCost),
+      gutterCost: Number(project.gutterCost),
+      ridgeCost: Number(project.ridgeCost),
+      screwsCost: Number(project.screwsCost),
+      insulationCost: Number(project.insulationCost),
+      ventilationCost: Number(project.ventilationCost),
+      totalMaterialsCost: Number(project.totalMaterialsCost),
+      laborCost: Number(project.laborCost),
+      removalCost: Number(project.removalCost),
+      totalCost: Number(project.totalCost),
+      ridgeLength: Number(project.ridgeLength),
+      latitude: project.latitude ? Number(project.latitude) : null,
+      longitude: project.longitude ? Number(project.longitude) : null,
+      deliveryCost: project.deliveryCost ? Number(project.deliveryCost) : null,
+      deliveryDistance: project.deliveryDistance ? Number(project.deliveryDistance) : null,
+    };
+
     // Validate the workflow transition
     const validation = validateWorkflowTransition(
       project.status,
       newStatus as ProjectStatus,
       session.user.role as UserRole,
       project.proposalSent !== null,
-      project
+      projectForValidation
     );
 
     if (!validation.isValid) {
@@ -106,7 +134,7 @@ export async function PATCH(
     });
 
     // Send notifications to relevant parties
-    const currentUser = session.user.name || `${session.user.firstName} ${session.user.lastName}` || "User";
+    const currentUser = session.user.name || "User";
     
     // Notify client if contractor changed status
     if (session.user.role === UserRole.ADMIN && project.client) {
@@ -146,7 +174,7 @@ export async function PATCH(
         currentUser,
         project.userId,
         `${project.user.firstName} ${project.user.lastName}`,
-        project.user.email || ""
+        "" // Email not available in user include
       );
     }
 
