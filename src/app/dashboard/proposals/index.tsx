@@ -45,6 +45,7 @@ import type { Project } from "@/types/project";
 import { UserRole } from "@/types/user-role";
 import { ProposalBuilder } from "./proposal-builder";
 import { ProposalViewer } from "./proposal-viewer";
+import { formatStatus } from "@/lib/utils";
 
 interface ProposalProject extends Project {
   contractor: {
@@ -158,7 +159,7 @@ export function ProposalsPage() {
     
     if (statusFilter !== "all") {
       filtered = filtered.filter(p => {
-        const status = p.status || p.proposalStatus;
+        const status = p.proposalStatus || p.status;
         return status === statusFilter;
       });
     }
@@ -288,10 +289,10 @@ export function ProposalsPage() {
   const { draftProposals, pendingProposals, acceptedProposals, sentProposals } = useMemo(() => {
     if (session?.user?.role === UserRole.CLIENT) {
       return {
-        draftProposals: proposals.filter(p => (p.status || p.proposalStatus) === "DRAFT"),
-        pendingProposals: proposals.filter(p => (p.status || p.proposalStatus) === "CLIENT_PENDING"),
-        acceptedProposals: proposals.filter(p => (p.status || p.proposalStatus) === "ACCEPTED"),
-        sentProposals: proposals.filter(p => (p.status || p.proposalStatus) === "PROPOSAL_SENT"),
+        draftProposals: proposals.filter(p => (p.proposalStatus || p.status) === "DRAFT"),
+        pendingProposals: proposals.filter(p => (p.proposalStatus || p.status) === "CLIENT_PENDING"),
+        acceptedProposals: proposals.filter(p => (p.proposalStatus || p.status) === "ACCEPTED"),
+        sentProposals: proposals.filter(p => (p.proposalStatus || p.status) === "PROPOSAL_SENT"),
       };
     } else {
       return {
@@ -551,7 +552,7 @@ export function ProposalsPage() {
             ) : (
               <div className="space-y-4">
                 {filteredProposals.map((project) => {
-                  const status = project.status || project.proposalStatus;
+                  const status = project.proposalStatus || project.status;
                   return (
                     <div key={project.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center space-x-4">
@@ -566,7 +567,7 @@ export function ProposalsPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge className={`${getStatusColor(status)} px-3 py-1`}>
-                          {status}
+                          {formatStatus(status)}
                         </Badge>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

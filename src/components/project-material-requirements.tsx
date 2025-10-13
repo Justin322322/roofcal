@@ -13,6 +13,7 @@ import {
   RotateCcwIcon
 } from "lucide-react";
 import { toast } from "sonner";
+import { formatStatus } from "@/lib/utils";
 
 
 interface MaterialSummary {
@@ -109,7 +110,7 @@ export function ProjectMaterialRequirements({
       case 'CANCELLED':
         return <Badge variant="destructive"><AlertTriangleIcon className="h-3 w-3 mr-1" />Cancelled</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline">{formatStatus(status)}</Badge>;
     }
   };
 

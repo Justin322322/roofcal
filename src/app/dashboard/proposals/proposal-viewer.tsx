@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CheckCircleIcon, CalculatorIcon, PackageIcon, DollarSignIcon, TrendingUpIcon } from "lucide-react";
+import { formatStatus } from "@/lib/utils";
 import type { Project } from "@/types/project";
 
 interface ProposalViewerProps {
@@ -75,15 +76,23 @@ export function ProposalViewer({ project, onClose }: ProposalViewerProps) {
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
       case "REJECTED":
         return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+      case "COMPLETED":
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
       case "DRAFT":
         return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+      case "CLIENT_PENDING":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+      case "PROPOSAL_SENT":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+      case "CONTRACTOR_REVIEWING":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
     }
   };
 
 
-  const status = project.proposalStatus || "DRAFT";
+  const status = (project as Project).status || project.proposalStatus || "DRAFT";
 
   // Calculate slope multiplier based on pitch
   const calculateSlopeMultiplier = (pitch: number) => {
@@ -146,7 +155,7 @@ export function ProposalViewer({ project, onClose }: ProposalViewerProps) {
               <CardDescription className="text-lg">Professional Roofing Proposal</CardDescription>
             </div>
             <Badge className={`${getStatusColor(status)} px-4 py-2 text-sm font-medium`}>
-              {status}
+              {formatStatus(status)}
             </Badge>
           </div>
         </CardHeader>
@@ -358,7 +367,7 @@ export function ProposalViewer({ project, onClose }: ProposalViewerProps) {
       </Card>
 
       {/* Actions */}
-      {status === "SENT" && (
+      {status === "PROPOSAL_SENT" && (
         <Card className="border-2 border-primary/20">
           <CardContent className="pt-8">
             <Alert className="mb-8">
@@ -408,7 +417,7 @@ export function ProposalViewer({ project, onClose }: ProposalViewerProps) {
         </Alert>
       )}
 
-      {status !== "SENT" && (
+      {status !== "PROPOSAL_SENT" && (
         <div className="flex justify-end pt-4">
           <Button variant="outline" onClick={onClose} className="px-6">
             Close

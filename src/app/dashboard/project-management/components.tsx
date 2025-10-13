@@ -333,3 +333,6 @@ export function ClientDetailsContent({
     </div>
   );
 }
+
+// Export the components
+export { ProjectCard, ClientCard, ClientDetailsContent };

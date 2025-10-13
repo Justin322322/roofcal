@@ -888,3 +888,5 @@ export function ProjectManagementPage() {
   );
 }
 
+export default ProjectManagementPage;
+

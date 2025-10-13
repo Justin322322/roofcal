@@ -9,6 +9,7 @@ import {
   KanbanCard,
 } from "@/components/ui/shadcn-io/kanban";
 import { Badge } from "@/components/ui/badge";
+import { formatStatus } from "@/lib/utils";
 
 export interface BoardItem {
   id: string;
@@ -80,7 +81,7 @@ export function KanbanBoardComponent({
       {(column) => (
         <KanbanBoard id={column.id} className="bg-background">
           <KanbanHeader className="flex items-center justify-between">
-            <span className="text-sm font-medium">{column.name}</span>
+            <span className="text-sm font-medium">{formatStatus(column.name)}</span>
             <Badge variant="outline" className="ml-2">
               {itemsByColumn[column.id]?.length || 0}
             </Badge>

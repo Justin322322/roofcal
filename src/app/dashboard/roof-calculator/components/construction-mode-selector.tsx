@@ -31,6 +31,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { loadProject, getUserProjects } from "../actions";
 import type { Measurements } from "../types";
+import { formatStatus } from "@/lib/utils";
 
 interface ConstructionModeSelectorProps {
   mode: "new" | "repair";
@@ -245,7 +246,7 @@ export function ConstructionModeSelector({
                 <SelectContent>
                   {userProjects.map((project) => (
                     <SelectItem key={project.id} value={project.id}>
-                      {project.projectName} ({project.status})
+                      {project.projectName} ({formatStatus(project.status)})
                     </SelectItem>
                   ))}
                 </SelectContent>
