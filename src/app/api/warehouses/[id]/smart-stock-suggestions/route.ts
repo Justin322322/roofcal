@@ -189,14 +189,11 @@ export async function POST(
 
         if (warehouseMaterial) {
           // Update the stock quantity
-          const updatedMaterial = await prisma.warehousematerial.update({
+          await prisma.warehousematerial.update({
             where: { id: warehouseMaterial.id },
             data: {
               quantity: suggestion.suggestedStock,
               updated_at: new Date()
-            },
-            include: {
-              pricingconfig: true
             }
           });
 

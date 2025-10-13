@@ -207,7 +207,7 @@ function calculateDemandBasedStock(warning: {
  * Generate human-readable reason for the suggestion
  */
 function generateSuggestionReason(
-  warning: any,
+  warning: { criticalLevel: boolean; reservedForProjects: number; projectsUsing: unknown[] },
   suggestedStock: number,
   capacityInfo: WarehouseCapacityInfo
 ): string {
@@ -237,7 +237,7 @@ function generateSuggestionReason(
  * Calculate confidence score for the suggestion (0-1)
  */
 function calculateConfidence(
-  warning: any,
+  warning: { criticalLevel: boolean; reservedForProjects: number; projectsUsing: unknown[] },
   suggestedStock: number,
   capacityInfo: WarehouseCapacityInfo
 ): number {
