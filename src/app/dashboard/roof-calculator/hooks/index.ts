@@ -21,6 +21,7 @@ export function useRoofCalculator() {
     roofType: "gable",
     floors: "1",
     materialThickness: "0.4",
+    insulationType: "fiberglass-batt",
     ridgeType: "corrugated",
     gutterSize: "standard",
     budgetLevel: "low",
@@ -30,6 +31,7 @@ export function useRoofCalculator() {
     gutterSlope: "",
     gutterLengthC: "",
     insulationThickness: "10mm",
+    ventilationType: "ridge-vent",
     ventilationPieces: "0",
     screwType: "roofing-with-washer",
   });
@@ -141,6 +143,45 @@ export function useRoofCalculator() {
     measurements.length,
     measurements.width,
   ]);
+
+  // Auto-populate selections based on budget level and area
+  useEffect(() => {
+    const length = parseFloat(measurements.length) || 0;
+    const width = parseFloat(measurements.width) || 0;
+    const area = length * width;
+
+    setMeasurements((prev) => {
+      const isLow = prev.budgetLevel === "low";
+
+      // Gutter size: large for very large areas, otherwise standard
+      const nextGutterSize = area > 200 ? "large" : "standard";
+
+      // Ridge type: high budget prefers ventilated, low budget standard
+      const nextRidgeType = isLow ? "standard" : "ventilated";
+
+      // Screw type: basic for low budget, premium for high budget
+      const nextScrew = isLow ? "roofing-with-washer" : "tek-screw";
+
+      // Insulation: type + thickness vary by budget
+      const nextInsulationType = isLow ? "fiberglass-batt" : "spray-foam";
+      const nextInsulationThickness = isLow ? "10mm" : "20mm";
+
+      // Ventilation: default ridge vent; pieces based on area
+      const nextVentType = "ridge-vent";
+      const nextVentPieces = area > 0 ? String(Math.max(0, Math.ceil(area / 50))) : prev.ventilationPieces;
+
+      return {
+        ...prev,
+        gutterSize: nextGutterSize,
+        ridgeType: nextRidgeType,
+        screwType: nextScrew,
+        insulationType: nextInsulationType,
+        insulationThickness: nextInsulationThickness,
+        ventilationType: nextVentType,
+        ventilationPieces: nextVentPieces,
+      };
+    });
+  }, [measurements.budgetLevel, measurements.length, measurements.width]);
 
   const calculateRoof = useCallback(() => {
     const length = parseFloat(measurements.length) || 0;
@@ -313,6 +354,7 @@ export function useRoofCalculator() {
       roofType: "gable",
       floors: "1",
       materialThickness: "0.4",
+      insulationType: "fiberglass-batt",
       ridgeType: "corrugated",
       gutterSize: "standard",
       budgetLevel: "low",
@@ -322,6 +364,7 @@ export function useRoofCalculator() {
       gutterSlope: "",
       gutterLengthC: "",
       insulationThickness: "10mm",
+      ventilationType: "ridge-vent",
       ventilationPieces: "0",
       screwType: "roofing-with-washer",
     });

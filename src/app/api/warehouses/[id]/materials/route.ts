@@ -208,6 +208,7 @@ export async function POST(
           quantity: validatedData.quantity,
           locationAdjustment: validatedData.locationAdjustment,
           isActive: true,
+          created_at: new Date(),
           updated_at: new Date(),
         },
         include: {

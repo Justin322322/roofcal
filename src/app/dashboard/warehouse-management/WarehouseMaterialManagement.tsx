@@ -291,17 +291,98 @@ export function WarehouseMaterialManagement({ warehouse, onUpdate }: WarehouseMa
 
               <div>
                 <Label htmlFor="quantity">Initial Stock Quantity</Label>
-                <Input
-                  id="quantity"
-                  type="number"
-                  min="0"
-                  value={newMaterialData.quantity}
-                  onChange={(e) => setNewMaterialData({ 
-                    ...newMaterialData, 
-                    quantity: parseInt(e.target.value) || 0 
-                  })}
-                  placeholder="Enter initial stock quantity"
-                />
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="quantity"
+                    type="number"
+                    min="0"
+                    value={newMaterialData.quantity}
+                    onChange={(e) => setNewMaterialData({ 
+                      ...newMaterialData, 
+                      quantity: parseInt(e.target.value) || 0 
+                    })}
+                    placeholder="Enter initial stock quantity"
+                    className="flex-1"
+                  />
+                  <div className="flex flex-col gap-1">
+                    <div className="flex gap-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setNewMaterialData({ 
+                          ...newMaterialData, 
+                          quantity: Math.max(0, newMaterialData.quantity + 10)
+                        })}
+                        className="h-6 w-8 px-1 text-xs"
+                      >
+                        +10
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setNewMaterialData({ 
+                          ...newMaterialData, 
+                          quantity: Math.max(0, newMaterialData.quantity + 100)
+                        })}
+                        className="h-6 w-10 px-1 text-xs"
+                      >
+                        +100
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setNewMaterialData({ 
+                          ...newMaterialData, 
+                          quantity: Math.max(0, newMaterialData.quantity + 1000)
+                        })}
+                        className="h-6 w-12 px-1 text-xs"
+                      >
+                        +1K
+                      </Button>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setNewMaterialData({ 
+                          ...newMaterialData, 
+                          quantity: Math.max(0, newMaterialData.quantity - 10)
+                        })}
+                        className="h-6 w-8 px-1 text-xs"
+                      >
+                        -10
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setNewMaterialData({ 
+                          ...newMaterialData, 
+                          quantity: Math.max(0, newMaterialData.quantity - 100)
+                        })}
+                        className="h-6 w-10 px-1 text-xs"
+                      >
+                        -100
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setNewMaterialData({ 
+                          ...newMaterialData, 
+                          quantity: Math.max(0, newMaterialData.quantity - 1000)
+                        })}
+                        className="h-6 w-12 px-1 text-xs"
+                      >
+                        -1K
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -478,16 +559,97 @@ export function WarehouseMaterialManagement({ warehouse, onUpdate }: WarehouseMa
             <div className="space-y-4">
               <div>
                 <Label htmlFor="edit-quantity">Stock Quantity</Label>
-                <Input
-                  id="edit-quantity"
-                  type="number"
-                  min="0"
-                  value={editingMaterial.quantity}
-                  onChange={(e) => setEditingMaterial({
-                    ...editingMaterial,
-                    quantity: parseInt(e.target.value) || 0
-                  })}
-                />
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="edit-quantity"
+                    type="number"
+                    min="0"
+                    value={editingMaterial.quantity}
+                    onChange={(e) => setEditingMaterial({
+                      ...editingMaterial,
+                      quantity: parseInt(e.target.value) || 0
+                    })}
+                    className="flex-1"
+                  />
+                  <div className="flex flex-col gap-1">
+                    <div className="flex gap-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingMaterial({
+                          ...editingMaterial,
+                          quantity: Math.max(0, editingMaterial.quantity + 10)
+                        })}
+                        className="h-6 w-8 px-1 text-xs"
+                      >
+                        +10
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingMaterial({
+                          ...editingMaterial,
+                          quantity: Math.max(0, editingMaterial.quantity + 100)
+                        })}
+                        className="h-6 w-10 px-1 text-xs"
+                      >
+                        +100
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingMaterial({
+                          ...editingMaterial,
+                          quantity: Math.max(0, editingMaterial.quantity + 1000)
+                        })}
+                        className="h-6 w-12 px-1 text-xs"
+                      >
+                        +1K
+                      </Button>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingMaterial({
+                          ...editingMaterial,
+                          quantity: Math.max(0, editingMaterial.quantity - 10)
+                        })}
+                        className="h-6 w-8 px-1 text-xs"
+                      >
+                        -10
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingMaterial({
+                          ...editingMaterial,
+                          quantity: Math.max(0, editingMaterial.quantity - 100)
+                        })}
+                        className="h-6 w-10 px-1 text-xs"
+                      >
+                        -100
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingMaterial({
+                          ...editingMaterial,
+                          quantity: Math.max(0, editingMaterial.quantity - 1000)
+                        })}
+                        className="h-6 w-12 px-1 text-xs"
+                      >
+                        -1K
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div>

@@ -14,6 +14,8 @@ export interface Measurements {
   roofType: string;
   floors: string;
   materialThickness: string;
+  // Insulation
+  insulationType?: "fiberglass-batt" | "foam-board" | "reflective-roll" | "spray-foam" | "mineral-wool";
   ridgeType: string;
   gutterSize: string;
   budgetLevel: string;
@@ -26,6 +28,7 @@ export interface Measurements {
   // Insulation
   insulationThickness: string;
   // Ventilation
+  ventilationType?: "ridge-vent" | "turbine-vent" | "static-vent" | "soffit-vent" | "exhaust-fan";
   ventilationPieces: string;
   // Screw selection
   screwType: string;

@@ -4,12 +4,11 @@ import { authOptions } from "@/auth/config";
 import { UserRole } from "@/types/user-role";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
-import { notifyLowStock } from "@/lib/notifications";
 
-// Validation schema for updating warehouse material
-const UpdateWarehouseMaterialSchema = z.object({
-  quantity: z.number().min(0).optional(),
-  locationAdjustment: z.number().optional(),
+// Validation schema for updating material in warehouse
+const UpdateMaterialInWarehouseSchema = z.object({
+  quantity: z.number().min(0),
+  locationAdjustment: z.number().default(0),
   isActive: z.boolean().optional(),
 });
 
@@ -28,7 +27,7 @@ export async function PUT(
       );
     }
 
-    // Only ADMIN can update warehouse materials
+    // Only ADMIN can update materials in warehouses
     if (session.user.role !== UserRole.ADMIN) {
       return NextResponse.json(
         { error: "Access denied" },
@@ -40,11 +39,26 @@ export async function PUT(
     const body = await request.json();
 
     // Validate request body
-    const validatedData = UpdateWarehouseMaterialSchema.parse(body);
+    const validatedData = UpdateMaterialInWarehouseSchema.parse(body);
+
+    // Verify warehouse exists
+    const warehouse = await prisma.warehouse.findUnique({
+      where: { id: warehouseId },
+    });
+
+    if (!warehouse) {
+      return NextResponse.json(
+        { error: "Warehouse not found" },
+        { status: 404 }
+      );
+    }
 
     // Verify warehouse material exists
-    const existingWarehouseMaterial = await prisma.warehousematerial.findUnique({
-      where: { id: materialId },
+    const existingWarehouseMaterial = await prisma.warehousematerial.findFirst({
+      where: {
+        id: materialId,
+        warehouseId,
+      },
       include: {
         pricingconfig: true,
       },
@@ -57,21 +71,13 @@ export async function PUT(
       );
     }
 
-    // Verify warehouse ID matches
-    if (existingWarehouseMaterial.warehouseId !== warehouseId) {
-      return NextResponse.json(
-        { error: "Warehouse material does not belong to this warehouse" },
-        { status: 400 }
-      );
-    }
-
     // Update warehouse material
-    const updatedWarehouseMaterial = await prisma.warehousematerial.update({
+    const warehouseMaterial = await prisma.warehousematerial.update({
       where: { id: materialId },
       data: {
-        ...(validatedData.quantity !== undefined && { quantity: validatedData.quantity }),
-        ...(validatedData.locationAdjustment !== undefined && { locationAdjustment: validatedData.locationAdjustment }),
-        ...(validatedData.isActive !== undefined && { isActive: validatedData.isActive }),
+        quantity: validatedData.quantity,
+        locationAdjustment: validatedData.locationAdjustment,
+        isActive: validatedData.isActive !== undefined ? validatedData.isActive : existingWarehouseMaterial.isActive,
         updated_at: new Date(),
       },
       include: {
@@ -79,76 +85,34 @@ export async function PUT(
       },
     });
 
-    // If quantity was updated, evaluate thresholds and notify if low
-    if (validatedData.quantity !== undefined) {
-      const newQty = updatedWarehouseMaterial.quantity;
-      // Simple threshold heuristic based on category like in warnings component
-      let warningThreshold = 10;
-      let criticalThreshold = 5;
-      const category = updatedWarehouseMaterial.pricingconfig.category;
-      if (category === 'Labor') {
-        warningThreshold = 1;
-        criticalThreshold = 0;
-      } else if (category === 'Insulation' || category === 'Ventilation') {
-        warningThreshold = 5;
-        criticalThreshold = 2;
-      } else if (category === 'Gutter') {
-        warningThreshold = 15;
-        criticalThreshold = 8;
-      }
-
-      if (newQty <= warningThreshold) {
-        try {
-          // Determine recipients: notify the updating admin and optionally an admin inbox
-          const toUserId = session.user.id;
-          const toUserName = session.user.name || 'Admin';
-          const toUserEmail = session.user.email || '';
-
-          await notifyLowStock({
-            fromUserId: session.user.id,
-            fromUserName: session.user.name || 'System',
-            toUserId,
-            toUserName,
-            toUserEmail,
-            warehouseName: (await prisma.warehouse.findUnique({ where: { id: warehouseId }, select: { name: true } }))?.name || 'Warehouse',
-            materialName: updatedWarehouseMaterial.pricingconfig.label || updatedWarehouseMaterial.pricingconfig.name,
-            currentStock: newQty,
-            threshold: criticalThreshold,
-          });
-        } catch (e) {
-          console.error('Failed to send low stock notification', e);
-        }
-      }
-    }
-
     const formattedMaterial = {
-      id: updatedWarehouseMaterial.id,
-      materialId: updatedWarehouseMaterial.materialId,
-      warehouseId: updatedWarehouseMaterial.warehouseId,
-      quantity: updatedWarehouseMaterial.quantity,
-      locationAdjustment: Number(updatedWarehouseMaterial.locationAdjustment),
-      isActive: updatedWarehouseMaterial.isActive,
-      createdAt: updatedWarehouseMaterial.created_at,
-      updatedAt: updatedWarehouseMaterial.updated_at,
+      id: warehouseMaterial.id,
+      materialId: warehouseMaterial.materialId,
+      warehouseId: warehouseMaterial.warehouseId,
+      quantity: warehouseMaterial.quantity,
+      locationAdjustment: Number(warehouseMaterial.locationAdjustment),
+      isActive: warehouseMaterial.isActive,
+      createdAt: warehouseMaterial.created_at,
+      updatedAt: warehouseMaterial.updated_at,
       material: {
-        id: updatedWarehouseMaterial.pricingconfig.id,
-        name: updatedWarehouseMaterial.pricingconfig.name,
-        label: updatedWarehouseMaterial.pricingconfig.label,
-        description: updatedWarehouseMaterial.pricingconfig.description,
-        price: Number(updatedWarehouseMaterial.pricingconfig.price),
-        unit: updatedWarehouseMaterial.pricingconfig.unit,
-        category: updatedWarehouseMaterial.pricingconfig.category,
-        length: updatedWarehouseMaterial.pricingconfig.length ? Number(updatedWarehouseMaterial.pricingconfig.length) : undefined,
-        width: updatedWarehouseMaterial.pricingconfig.width ? Number(updatedWarehouseMaterial.pricingconfig.width) : undefined,
-        height: updatedWarehouseMaterial.pricingconfig.height ? Number(updatedWarehouseMaterial.pricingconfig.height) : undefined,
-        volume: updatedWarehouseMaterial.pricingconfig.volume ? Number(updatedWarehouseMaterial.pricingconfig.volume) : undefined,
+        id: warehouseMaterial.pricingconfig.id,
+        name: warehouseMaterial.pricingconfig.name,
+        label: warehouseMaterial.pricingconfig.label,
+        description: warehouseMaterial.pricingconfig.description,
+        price: Number(warehouseMaterial.pricingconfig.price),
+        unit: warehouseMaterial.pricingconfig.unit,
+        category: warehouseMaterial.pricingconfig.category,
+        length: warehouseMaterial.pricingconfig.length ? Number(warehouseMaterial.pricingconfig.length) : undefined,
+        width: warehouseMaterial.pricingconfig.width ? Number(warehouseMaterial.pricingconfig.width) : undefined,
+        height: warehouseMaterial.pricingconfig.height ? Number(warehouseMaterial.pricingconfig.height) : undefined,
+        volume: warehouseMaterial.pricingconfig.volume ? Number(warehouseMaterial.pricingconfig.volume) : undefined,
       },
     };
 
     return NextResponse.json({
       success: true,
       data: formattedMaterial,
-      message: "Warehouse material updated successfully",
+      message: "Material updated successfully",
     });
   } catch (error) {
     console.error("Error updating warehouse material:", error);
@@ -177,7 +141,7 @@ export async function PUT(
   }
 }
 
-// DELETE /api/warehouses/[id]/materials/[materialId] - Remove material from warehouse
+// DELETE /api/warehouses/[id]/materials/[materialId] - Remove warehouse material
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; materialId: string }> }
@@ -192,7 +156,7 @@ export async function DELETE(
       );
     }
 
-    // Only ADMIN can remove warehouse materials
+    // Only ADMIN can remove materials from warehouses
     if (session.user.role !== UserRole.ADMIN) {
       return NextResponse.json(
         { error: "Access denied" },
@@ -202,9 +166,24 @@ export async function DELETE(
 
     const { id: warehouseId, materialId } = await params;
 
+    // Verify warehouse exists
+    const warehouse = await prisma.warehouse.findUnique({
+      where: { id: warehouseId },
+    });
+
+    if (!warehouse) {
+      return NextResponse.json(
+        { error: "Warehouse not found" },
+        { status: 404 }
+      );
+    }
+
     // Verify warehouse material exists
-    const existingWarehouseMaterial = await prisma.warehousematerial.findUnique({
-      where: { id: materialId },
+    const existingWarehouseMaterial = await prisma.warehousematerial.findFirst({
+      where: {
+        id: materialId,
+        warehouseId,
+      },
     });
 
     if (!existingWarehouseMaterial) {
@@ -214,18 +193,10 @@ export async function DELETE(
       );
     }
 
-    // Verify warehouse ID matches
-    if (existingWarehouseMaterial.warehouseId !== warehouseId) {
-      return NextResponse.json(
-        { error: "Warehouse material does not belong to this warehouse" },
-        { status: 400 }
-      );
-    }
-
-    // Soft delete by setting isActive to false
+    // Deactivate the material instead of deleting it to maintain history
     await prisma.warehousematerial.update({
       where: { id: materialId },
-      data: { 
+      data: {
         isActive: false,
         updated_at: new Date(),
       },
@@ -233,10 +204,18 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      message: "Material removed from warehouse successfully",
+      message: "Material removed successfully",
     });
   } catch (error) {
     console.error("Error removing warehouse material:", error);
+
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Failed to remove warehouse material" },
       { status: 500 }

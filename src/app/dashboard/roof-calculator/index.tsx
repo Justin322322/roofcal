@@ -36,6 +36,7 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProjectList } from "./components/project-list";
 import type { Measurements } from "./types";
+import { RecommendedSelections } from "./components/recommended-selections";
 
 export function RoofCalculatorContent() {
   const {
@@ -288,6 +289,14 @@ export function RoofCalculatorContent() {
                   }}
                   selectedWarehouseId={selectedWarehouseId}
                 />
+
+                {/* Recommended Selections */}
+                <div className="mt-6">
+                  <RecommendedSelections
+                    measurements={measurements}
+                    materialName={materials.find((m) => m.value === material)?.name || ""}
+                  />
+                </div>
               </CardContent>
             </Card>
 

@@ -157,48 +157,90 @@ export function ConsolidatedAdditionalSpecs({
       <div className="space-y-4">
         <h4 className="text-sm font-semibold">Insulation & Ventilation</h4>
         
-        <div className="grid gap-4 md:grid-cols-2">
-          {/* Insulation */}
-          <div className="space-y-2">
-            <Label htmlFor="insulationThickness">
-              Insulation Thickness (100% Coverage)
-            </Label>
-            <Select
-              value={measurements.insulationThickness}
-              onValueChange={(value) => handleChange("insulationThickness", value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select thickness" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="5mm">5mm</SelectItem>
-                <SelectItem value="10mm">10mm</SelectItem>
-                <SelectItem value="15mm">15mm</SelectItem>
-                <SelectItem value="20mm">20mm</SelectItem>
-                <SelectItem value="25mm">25mm</SelectItem>
-              </SelectContent>
-            </Select>
-            {roofArea > 0 && (
-              <p className="text-xs text-muted-foreground">
-                Coverage: {roofArea.toFixed(2)} sq.m (100% roof area)
-              </p>
-            )}
+        <div className="grid gap-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Insulation Type */}
+            <div className="space-y-2">
+              <Label htmlFor="insulationType">Insulation</Label>
+              <Select
+                value={measurements.insulationType}
+                onValueChange={(value) => handleChange("insulationType", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select insulation type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="fiberglass-batt">Fiberglass batt</SelectItem>
+                  <SelectItem value="foam-board">Foam board</SelectItem>
+                  <SelectItem value="reflective-roll">Reflective roll</SelectItem>
+                  <SelectItem value="spray-foam">Spray foam</SelectItem>
+                  <SelectItem value="mineral-wool">Mineral wool</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Insulation Thickness */}
+            <div className="space-y-2">
+              <Label htmlFor="insulationThickness">Insulation Thickness (100% Coverage)</Label>
+              <Select
+                value={measurements.insulationThickness}
+                onValueChange={(value) => handleChange("insulationThickness", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select thickness" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5mm">5mm</SelectItem>
+                  <SelectItem value="10mm">10mm</SelectItem>
+                  <SelectItem value="15mm">15mm</SelectItem>
+                  <SelectItem value="20mm">20mm</SelectItem>
+                  <SelectItem value="25mm">25mm</SelectItem>
+                </SelectContent>
+              </Select>
+              {roofArea > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Coverage: {roofArea.toFixed(2)} sq.m (100% roof area)
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Ventilation */}
-          <div className="space-y-2">
-            <Label htmlFor="ventilationPieces">Number of Ventilation Pieces</Label>
-            <Input
-              id="ventilationPieces"
-              type="number"
-              placeholder="0"
-              value={measurements.ventilationPieces}
-              onChange={(e) => handleChange("ventilationPieces", e.target.value)}
-              min="0"
-            />
-            <p className="text-xs text-muted-foreground">
-              Recommended: 1 piece per 50 sq.m (Approx. {recommendedVentilationPieces} pieces for your roof)
-            </p>
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Ventilation Type */}
+            <div className="space-y-2">
+              <Label htmlFor="ventilationType">Ventilation</Label>
+              <Select
+                value={measurements.ventilationType}
+                onValueChange={(value) => handleChange("ventilationType", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select ventilation type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ridge-vent">Ridge vent</SelectItem>
+                  <SelectItem value="turbine-vent">Turbine vent</SelectItem>
+                  <SelectItem value="static-vent">Static roof vent</SelectItem>
+                  <SelectItem value="soffit-vent">Soffit vent</SelectItem>
+                  <SelectItem value="exhaust-fan">Exhaust fan</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Ventilation Pieces */}
+            <div className="space-y-2">
+              <Label htmlFor="ventilationPieces">Number of Ventilation Pieces</Label>
+              <Input
+                id="ventilationPieces"
+                type="number"
+                placeholder="0"
+                value={measurements.ventilationPieces}
+                onChange={(e) => handleChange("ventilationPieces", e.target.value)}
+                min="0"
+              />
+              <p className="text-xs text-muted-foreground">
+                Recommended: 1 piece per 50 sq.m (Approx. {recommendedVentilationPieces} pieces for your roof)
+              </p>
+            </div>
           </div>
         </div>
       </div>
