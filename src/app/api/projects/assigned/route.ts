@@ -29,16 +29,18 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
 
-    // Build where clause
+    // Build where clause - exclude DRAFT status from admin view as per workflow
     const where: {
       contractorId: string;
-      status?: "DRAFT" | "ACTIVE" | "CLIENT_PENDING" | "CONTRACTOR_REVIEWING" | "PROPOSAL_SENT" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "ARCHIVED" | "REJECTED";
+      status?: { not: "DRAFT" } | "ACTIVE" | "CLIENT_PENDING" | "CONTRACTOR_REVIEWING" | "PROPOSAL_SENT" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "ARCHIVED" | "REJECTED";
     } = {
       contractorId: session.user.id,
+      status: { not: "DRAFT" }, // Exclude DRAFT status for admin view
     };
 
     if (status && status !== "ALL") {
-      where.status = status as "DRAFT" | "ACTIVE" | "CLIENT_PENDING" | "CONTRACTOR_REVIEWING" | "PROPOSAL_SENT" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "ARCHIVED" | "REJECTED";
+      // If a specific status is requested, override the DRAFT exclusion
+      where.status = status as "ACTIVE" | "CLIENT_PENDING" | "CONTRACTOR_REVIEWING" | "PROPOSAL_SENT" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "ARCHIVED" | "REJECTED";
     }
 
     // Calculate pagination

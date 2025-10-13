@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -21,6 +22,7 @@ import {
   CheckCircleIcon,
   ClockIcon,
 } from "lucide-react";
+import { getNotificationUrl } from "@/lib/notification-utils";
 
 interface Notification {
   id: string;
@@ -34,8 +36,18 @@ interface Notification {
   actionUrl?: string;
 }
 
-export function NotificationCenter() {
+interface NotificationCenterProps {
+  onNotificationRead?: () => void;
+  onNotificationUpdate?: () => void;
+}
+
+
+export function NotificationCenter({ 
+  onNotificationRead, 
+  onNotificationUpdate 
+}: NotificationCenterProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -106,6 +118,10 @@ export function NotificationCenter() {
           n.id === notificationId ? { ...n, read: true } : n
         );
         setNotifications(updated);
+        
+        // Call callback to update parent component
+        onNotificationRead?.();
+        onNotificationUpdate?.();
       } else {
         console.error("Failed to mark notification as read");
       }
@@ -130,6 +146,10 @@ export function NotificationCenter() {
         // Update local state
         const updated = notifications.map(n => ({ ...n, read: true }));
         setNotifications(updated);
+        
+        // Call callback to update parent component
+        onNotificationRead?.();
+        onNotificationUpdate?.();
       } else {
         console.error("Failed to mark all notifications as read");
       }
@@ -148,12 +168,26 @@ export function NotificationCenter() {
         // Update local state
         const updated = notifications.filter(n => n.id !== notificationId);
         setNotifications(updated);
+        
+        // Call callback to update parent component
+        onNotificationUpdate?.();
       } else {
         console.error("Failed to delete notification");
       }
     } catch (error) {
       console.error("Error deleting notification:", error);
     }
+  };
+
+  const handleNotificationClick = async (notification: Notification) => {
+    // Mark as read if not already read
+    if (!notification.read) {
+      await markAsRead(notification.id);
+    }
+    
+    // Navigate to the appropriate page
+    const url = getNotificationUrl(notification);
+    router.push(url);
   };
 
   const getNotificationIcon = (type: Notification["type"]) => {
@@ -221,9 +255,10 @@ export function NotificationCenter() {
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-3 border-b hover:bg-muted/50 transition-colors ${
+                  className={`p-3 border-b hover:bg-muted/50 transition-colors cursor-pointer ${
                     !notification.read ? "bg-blue-50/50" : ""
                   }`}
+                  onClick={() => handleNotificationClick(notification)}
                 >
                   <div className="flex items-start gap-2">
                     {getNotificationIcon(notification.type)}
@@ -239,7 +274,10 @@ export function NotificationCenter() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => deleteNotification(notification.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteNotification(notification.id);
+                            }}
                             className="h-6 w-6 p-0"
                           >
                             <XIcon className="h-3 w-3" />
@@ -260,7 +298,10 @@ export function NotificationCenter() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => markAsRead(notification.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            markAsRead(notification.id);
+                          }}
                           className="mt-2 h-6 text-xs"
                         >
                           <CheckIcon className="h-3 w-3 mr-1" />

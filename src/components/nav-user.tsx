@@ -1,6 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { LogOutIcon, MoreVerticalIcon } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -32,16 +34,48 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
+  const { data: session } = useSession();
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const userInitials = getUserInitials(user.name);
+
+  // Check for unread notifications
+  useEffect(() => {
+    const checkUnreadNotifications = async () => {
+      if (!session?.user?.id) return;
+      
+      try {
+        const response = await fetch("/api/notifications?unreadOnly=true&limit=1");
+        if (response.ok) {
+          const data = await response.json();
+          setHasUnreadNotifications(data.unreadCount > 0);
+          
+          // Auto-open dropdown if there are unread notifications and it's not already open
+          if (data.unreadCount > 0 && !dropdownOpen) {
+            setDropdownOpen(true);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to check unread notifications:", error);
+      }
+    };
+
+    checkUnreadNotifications();
+    
+    // Check periodically for new notifications
+    const interval = setInterval(checkUnreadNotifications, 30000); // Check every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, [session?.user?.id, dropdownOpen]);
 
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
+        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground relative"
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
                 <AvatarImage src={user.avatar} alt={user.name} />
@@ -55,7 +89,12 @@ export function NavUser({
                   {user.email}
                 </span>
               </div>
-              <MoreVerticalIcon className="ml-auto size-4" />
+              <div className="flex items-center gap-2">
+                {hasUnreadNotifications && (
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                )}
+                <MoreVerticalIcon className="size-4" />
+              </div>
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -83,7 +122,24 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <NotificationCenter />
+                <NotificationCenter 
+                  onNotificationRead={() => setHasUnreadNotifications(false)}
+                  onNotificationUpdate={() => {
+                    // Re-check notifications when they're updated
+                    const checkUnread = async () => {
+                      try {
+                        const response = await fetch("/api/notifications?unreadOnly=true&limit=1");
+                        if (response.ok) {
+                          const data = await response.json();
+                          setHasUnreadNotifications(data.unreadCount > 0);
+                        }
+                      } catch (error) {
+                        console.error("Failed to check unread notifications:", error);
+                      }
+                    };
+                    checkUnread();
+                  }}
+                />
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

@@ -14,7 +14,6 @@ import {
   MapPinIcon, 
   DollarSignIcon, 
   UserIcon,
-  ClockIcon,
   CheckCircleIcon,
   AlertCircleIcon,
   UsersIcon,
@@ -29,7 +28,7 @@ import { ProjectStatusManager } from "@/components/project-status-manager";
 import { getStatusDisplayInfo } from "@/lib/project-workflow";
 
 interface AssignedProject extends Project {
-  client: {
+  client?: {
     firstName: string;
     lastName: string;
     email: string;
@@ -84,7 +83,7 @@ function useAssignedProjectsData() {
       
       if (response.ok) {
         const data = await response.json();
-        const projects: Project[] = data.projects || [];
+        const projects: AssignedProject[] = data.projects || [];
         
         // Group projects by client for client management
         const clientMap = new Map<string, ClientData>();
@@ -94,11 +93,18 @@ function useAssignedProjectsData() {
             const clientId = project.clientId;
             
             if (!clientMap.has(clientId)) {
+              // Use actual client data if available, otherwise fallback to placeholder
+              const clientData = project.client || {
+                firstName: "Unknown",
+                lastName: "Client",
+                email: `client-${clientId.slice(-4)}@example.com`
+              };
+              
               clientMap.set(clientId, {
                 id: clientId,
-                firstName: "Client", // We don't have client details in this API
-                lastName: `#${clientId.slice(-4)}`,
-                email: `client-${clientId.slice(-4)}@example.com`,
+                firstName: clientData.firstName,
+                lastName: clientData.lastName,
+                email: clientData.email,
                 projects: [],
                 totalValue: 0,
                 completedProjects: 0,
@@ -146,13 +152,13 @@ function useAssignedProjectsData() {
         summary.averageValue = summary.total > 0 ? summary.totalValue / summary.total : 0;
         
         // Update state
-        setAssignedProjects(projects as AssignedProject[]);
+        setAssignedProjects(projects);
         setClients(clientList);
         setProjectSummary(summary);
         
         // Update global cache
         globalAssignedProjectsCache = {
-          projects: projects as AssignedProject[],
+          projects: projects,
           clients: clientList,
           projectSummary: summary,
         };
@@ -240,26 +246,6 @@ export function AssignedProjectsContent() {
   };
 
 
-  const getStatusIcon = (status: Project["status"]) => {
-    switch (status) {
-      case "CLIENT_PENDING":
-        return <ClockIcon className="h-4 w-4" />;
-      case "CONTRACTOR_REVIEWING":
-        return <AlertCircleIcon className="h-4 w-4" />;
-      case "PROPOSAL_SENT":
-        return <AlertCircleIcon className="h-4 w-4" />;
-      case "ACCEPTED":
-        return <CheckCircleIcon className="h-4 w-4" />;
-      case "IN_PROGRESS":
-        return <ClockIcon className="h-4 w-4" />;
-      case "COMPLETED":
-        return <CheckCircleIcon className="h-4 w-4" />;
-      case "REJECTED":
-        return <AlertCircleIcon className="h-4 w-4" />;
-      default:
-        return <ClockIcon className="h-4 w-4" />;
-    }
-  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-PH', {
@@ -276,10 +262,6 @@ export function AssignedProjectsContent() {
     });
   };
 
-  const getStatusColor = (status: string) => {
-    const statusInfo = getStatusDisplayInfo(status as Project["status"]);
-    return statusInfo.color;
-  };
 
   const { pendingProjects, activeProjects, completedProjects } = useMemo(() => ({
     pendingProjects: assignedProjects.filter(p => 
@@ -423,8 +405,6 @@ export function AssignedProjectsContent() {
                       actionLoading={actionLoading}
                       formatCurrency={formatCurrency}
                       formatDate={formatDate}
-                      getStatusColor={getStatusColor}
-                      getStatusIcon={getStatusIcon}
                     />
                   ))}
                 </div>
@@ -440,8 +420,6 @@ export function AssignedProjectsContent() {
                       actionLoading={actionLoading}
                       formatCurrency={formatCurrency}
                       formatDate={formatDate}
-                      getStatusColor={getStatusColor}
-                      getStatusIcon={getStatusIcon}
                     />
                   ))}
                 </div>
@@ -457,8 +435,6 @@ export function AssignedProjectsContent() {
                       actionLoading={actionLoading}
                       formatCurrency={formatCurrency}
                       formatDate={formatDate}
-                      getStatusColor={getStatusColor}
-                      getStatusIcon={getStatusIcon}
                     />
                   ))}
                 </div>
@@ -508,9 +484,6 @@ export function AssignedProjectsContent() {
                             </div>
                           </div>
                           <div className="flex items-center gap-3">
-                            <Badge className={getStatusColor(project.status)}>
-                              {getStatusDisplayInfo(project.status).label}
-                            </Badge>
                             <ProjectStatusManager
                               project={project}
                               onStatusUpdate={(newStatus) => handleStatusUpdate(project.id, newStatus)}
@@ -544,7 +517,7 @@ export function AssignedProjectsContent() {
                       return (
                         <div key={statusKey} className="space-y-1">
                           <div className="flex justify-between text-sm">
-                            <span className={getStatusColor(status)}>
+                            <span className={getStatusDisplayInfo(status).color}>
                               {getStatusDisplayInfo(status).label}
                             </span>
                             <span>{count} ({percentage.toFixed(1)}%)</span>
@@ -655,8 +628,6 @@ interface ProjectCardProps {
   actionLoading: string | null;
   formatCurrency: (amount: number) => string;
   formatDate: (date: Date | string) => string;
-  getStatusColor: (status: Project["status"]) => string;
-  getStatusIcon: (status: Project["status"]) => React.ReactNode;
 }
 
 function ProjectCard({
@@ -665,8 +636,6 @@ function ProjectCard({
   actionLoading,
   formatCurrency,
   formatDate,
-  getStatusColor,
-  getStatusIcon,
 }: ProjectCardProps) {
   const getAvailableActions = (status: Project["status"]) => {
     switch (status) {
@@ -707,14 +676,15 @@ function ProjectCard({
             <CardDescription>
               <div className="flex items-center gap-2">
                 <UserIcon className="h-4 w-4" />
-                {project.client.firstName} {project.client.lastName}
+                {project.client ? `${project.client.firstName} ${project.client.lastName}` : 'Unknown Client'}
               </div>
             </CardDescription>
           </div>
-          <Badge className={`${getStatusColor(project.status)} flex items-center gap-1`}>
-            {getStatusIcon(project.status)}
-            {project.status.replace('_', ' ')}
-          </Badge>
+          <ProjectStatusManager
+            project={project}
+            onStatusUpdate={async (newStatus) => onStatusUpdate(project.id, newStatus)}
+            compact
+          />
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -829,7 +799,7 @@ interface ClientDetailsContentProps {
   client: ClientData;
   onClose: () => void;
   formatCurrency: (amount: number) => string;
-  onStatusUpdate: (projectId: string, status: Project["status"]) => Promise<void>;
+  onStatusUpdate: (projectId: string, status: Project["status"]) => void;
 }
 
 function ClientDetailsContent({ 
@@ -878,7 +848,7 @@ function ClientDetailsContent({
                 </div>
                 <ProjectStatusManager
                   project={project}
-                  onStatusUpdate={(newStatus) => onStatusUpdate(project.id, newStatus)}
+                  onStatusUpdate={async (newStatus) => onStatusUpdate(project.id, newStatus)}
                   compact
                 />
               </div>
