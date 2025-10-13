@@ -57,6 +57,10 @@ export function CalculationResults({
   constructionMode,
   budgetAmount,
   onAutoOptimize,
+  length,
+  width,
+  pitch,
+  roofTypeLabel,
 }: CalculationResultsProps) {
   const [isOptimizing, setIsOptimizing] = useState(false);
 
