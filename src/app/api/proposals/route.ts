@@ -93,17 +93,6 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Debug logging
-    console.log("Proposals API Debug:", {
-      userId: session.user.id,
-      userRole: session.user.role,
-      type,
-      status,
-      whereClause,
-      projectsFound: projects.length,
-      projectIds: projects.map(p => p.id),
-      projectStatuses: projects.map(p => ({ id: p.id, status: p.status, proposalStatus: p.proposalStatus, clientId: p.clientId, userId: p.userId }))
-    });
 
     // Transform the data
     const proposals = projects.map((project) => ({

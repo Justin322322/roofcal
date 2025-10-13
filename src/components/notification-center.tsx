@@ -42,22 +42,45 @@ export function NotificationCenter() {
   const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
-      // In a real app, this would fetch from an API
-      // For now, we'll simulate with local storage
-      const savedNotifications = localStorage.getItem(`notifications_${session?.user?.id}`);
-      if (savedNotifications) {
-        const parsed = JSON.parse(savedNotifications).map((n: Notification) => ({
-          ...n,
-          createdAt: new Date(n.createdAt),
+      const response = await fetch("/api/notifications?limit=50");
+      
+      if (response.ok) {
+        const data = await response.json();
+        const fetchedNotifications = data.notifications || [];
+        
+        // Transform the data to match our interface
+        const transformedNotifications = fetchedNotifications.map((n: {
+          id: string;
+          type: string;
+          title: string;
+          message: string;
+          projectId: string | null;
+          projectName: string | null;
+          read: boolean;
+          created_at: string;
+          actionUrl: string | null;
+        }) => ({
+          id: n.id,
+          type: n.type,
+          title: n.title,
+          message: n.message,
+          projectId: n.projectId,
+          projectName: n.projectName,
+          read: n.read,
+          createdAt: new Date(n.created_at),
+          actionUrl: n.actionUrl,
         }));
-        setNotifications(parsed);
+        
+        setNotifications(transformedNotifications);
+      } else {
+        console.error("Failed to fetch notifications:", response.statusText);
       }
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
     } finally {
       setLoading(false);
     }
-  }, [session?.user?.id]);
+  }, []);
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -66,32 +89,70 @@ export function NotificationCenter() {
   }, [session?.user?.id, fetchNotifications]);
 
   const markAsRead = async (notificationId: string) => {
-    const updated = notifications.map(n => 
-      n.id === notificationId ? { ...n, read: true } : n
-    );
-    setNotifications(updated);
-    
-    // Save to local storage
-    if (session?.user?.id) {
-      localStorage.setItem(`notifications_${session.user.id}`, JSON.stringify(updated));
+    try {
+      const response = await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          notificationIds: [notificationId],
+        }),
+      });
+
+      if (response.ok) {
+        // Update local state
+        const updated = notifications.map(n => 
+          n.id === notificationId ? { ...n, read: true } : n
+        );
+        setNotifications(updated);
+      } else {
+        console.error("Failed to mark notification as read");
+      }
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
     }
   };
 
   const markAllAsRead = async () => {
-    const updated = notifications.map(n => ({ ...n, read: true }));
-    setNotifications(updated);
-    
-    if (session?.user?.id) {
-      localStorage.setItem(`notifications_${session.user.id}`, JSON.stringify(updated));
+    try {
+      const response = await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          markAllAsRead: true,
+        }),
+      });
+
+      if (response.ok) {
+        // Update local state
+        const updated = notifications.map(n => ({ ...n, read: true }));
+        setNotifications(updated);
+      } else {
+        console.error("Failed to mark all notifications as read");
+      }
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
     }
   };
 
   const deleteNotification = async (notificationId: string) => {
-    const updated = notifications.filter(n => n.id !== notificationId);
-    setNotifications(updated);
-    
-    if (session?.user?.id) {
-      localStorage.setItem(`notifications_${session.user.id}`, JSON.stringify(updated));
+    try {
+      const response = await fetch(`/api/notifications?id=${notificationId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        // Update local state
+        const updated = notifications.filter(n => n.id !== notificationId);
+        setNotifications(updated);
+      } else {
+        console.error("Failed to delete notification");
+      }
+    } catch (error) {
+      console.error("Error deleting notification:", error);
     }
   };
 
@@ -229,35 +290,3 @@ export function NotificationCenter() {
   );
 }
 
-// Helper function to create notifications (called from API endpoints)
-export function createNotification(
-  userId: string,
-  notification: Omit<Notification, "id" | "read" | "createdAt">
-) {
-  try {
-    const newNotification: Notification = {
-      ...notification,
-      id: crypto.randomUUID(),
-      read: false,
-      createdAt: new Date(),
-    };
-
-    // Get existing notifications
-    const existing = localStorage.getItem(`notifications_${userId}`);
-    const notifications = existing ? JSON.parse(existing) : [];
-    
-    // Add new notification at the beginning
-    notifications.unshift(newNotification);
-    
-    // Keep only last 50 notifications
-    const limited = notifications.slice(0, 50);
-    
-    // Save back to localStorage
-    localStorage.setItem(`notifications_${userId}`, JSON.stringify(limited));
-    
-    return newNotification;
-  } catch (error) {
-    console.error("Failed to create notification:", error);
-    return null;
-  }
-}

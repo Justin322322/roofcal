@@ -37,6 +37,7 @@ model user {
   projects           project[]          @relation("ProjectOwner")
   verificationcode   verificationcode[]
   warehouses         warehouse[]        @relation("WarehouseOwner")
+  notifications      Notification[]
 
   @@index([email], map: "User_email_idx")
 }
@@ -298,4 +299,23 @@ model ProjectMaterial {
   @@index([warehouseMaterialId])
   @@index([status])
   @@index([consumedAt])
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  userId      String
+  type        String   // "proposal_sent", "project_assigned", etc.
+  title       String
+  message     String   @db.Text
+  projectId   String?
+  projectName String?
+  actionUrl   String?
+  read        Boolean  @default(false)
+  created_at  DateTime @default(now())
+  
+  user        user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([read])
+  @@index([created_at])
 }

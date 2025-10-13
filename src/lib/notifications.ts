@@ -1,5 +1,5 @@
 import { sendEmail } from "@/lib/email";
-import { createNotification } from "@/components/notification-center";
+import { prisma } from "@/lib/prisma";
 
 export interface NotificationData {
   type: "status_change" | "proposal_sent" | "proposal_accepted" | "proposal_rejected" | "project_assigned";
@@ -26,14 +26,17 @@ export async function sendProjectNotification(notification: NotificationData) {
       text: emailContent.text,
     });
 
-    // Create in-app notification
-    createNotification(notification.toUserId, {
-      type: notification.type,
-      title: emailContent.subject,
-      message: generateInAppMessage(notification),
-      projectId: notification.projectId,
-      projectName: notification.projectName,
-      actionUrl: `/dashboard/project-management`,
+    // Create in-app notification in database
+    await prisma.notification.create({
+      data: {
+        userId: notification.toUserId,
+        type: notification.type,
+        title: emailContent.subject,
+        message: generateInAppMessage(notification),
+        projectId: notification.projectId,
+        projectName: notification.projectName,
+        actionUrl: `/dashboard/project-management`,
+      },
     });
 
     console.log(`Notification sent to ${notification.toUserEmail} for project ${notification.projectName}`);
