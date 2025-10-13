@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { SparklesIcon, Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import { formatNumberWithCommas } from "../utils/format";
+import { getSlopeMultiplier } from "../constants";
 import { toast } from "sonner";
 
 interface CalculationResultsProps {
@@ -23,10 +24,17 @@ interface CalculationResultsProps {
   totalCost: number;
   gutterPieces: number;
   ridgeLength: number;
+  materialQuantity: number;
+  screwsQuantity: number;
   material: string;
   constructionMode: "new" | "repair";
   budgetAmount?: number;
   onAutoOptimize?: () => { hasChanges: boolean; changesCount: number };
+  // For area breakdown
+  length?: number;
+  width?: number;
+  pitch?: number;
+  roofTypeLabel?: string;
 }
 
 export function CalculationResults({
@@ -43,12 +51,22 @@ export function CalculationResults({
   totalCost,
   gutterPieces,
   ridgeLength,
+  materialQuantity,
+  screwsQuantity,
   material,
   constructionMode,
   budgetAmount,
   onAutoOptimize,
 }: CalculationResultsProps) {
   const [isOptimizing, setIsOptimizing] = useState(false);
+
+  // Compute area breakdown based on provided inputs
+  const planArea =
+    typeof length === "number" && typeof width === "number"
+      ? length * width
+      : undefined;
+  const slopeMultiplier =
+    typeof pitch === "number" ? getSlopeMultiplier(pitch) : undefined;
 
   const handleOptimizeClick = async () => {
     if (!onAutoOptimize) return;
@@ -136,13 +154,28 @@ export function CalculationResults({
               {area.toFixed(2)} sq.m
             </span>
           </div>
+          {planArea && slopeMultiplier ? (
+            <div className="rounded-md border bg-green-50 text-green-900 dark:bg-green-950/40 dark:text-green-200 px-4 py-3 space-y-1">
+              <div className="text-sm font-semibold">Area from dimensions</div>
+              <div className="text-sm">Base: {length} × {width} = {planArea.toFixed(1)} m²</div>
+              {roofTypeLabel && (
+                <div className="text-sm">{roofTypeLabel}</div>
+              )}
+              {typeof pitch === "number" && (
+                <div className="text-sm">{pitch}° pitch (+{((slopeMultiplier - 1) * 100).toFixed(0)}% slope area)</div>
+              )}
+              <div className="text-sm">Total multiplier: {slopeMultiplier.toFixed(2)}x</div>
+            </div>
+          ) : null}
           <Separator />
         </div>
 
         {/* Material Breakdown */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Roof Material</span>
+            <span className="text-sm text-muted-foreground">
+              Roof Material ({materialQuantity.toFixed(2)} sq.m)
+            </span>
             <span className="text-base font-medium">
               ₱{formatNumberWithCommas(materialCost)}
             </span>
@@ -178,7 +211,9 @@ export function CalculationResults({
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Screws</span>
+            <span className="text-sm text-muted-foreground">
+              Screws ({screwsQuantity} pcs)
+            </span>
             <span className="text-base font-medium">
               ₱{formatNumberWithCommas(screwsCost)}
             </span>

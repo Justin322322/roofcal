@@ -107,3 +107,47 @@ export const MIN_COST_PER_SQM = {
 
 // Gutter calculation constant
 export const GUTTER_DIVISOR = 2.3;
+
+// Pitch-based slope multipliers (derived from screenshot rules)
+// Keys are degrees; values are multipliers applied to plan area
+export const PITCH_SLOPE_MULTIPLIER: Record<number, number> = {
+  5: 1.01,
+  10: 1.02,
+  15: 1.03,
+  20: 1.04,
+  25: 1.05,
+  30: 1.06,
+  35: 1.08,
+  40: 1.1,
+  45: 1.13,
+  50: 1.17,
+  60: 1.25,
+};
+
+/**
+ * Get the slope multiplier for a given pitch in degrees.
+ * Rounds to the nearest known key from PITCH_SLOPE_MULTIPLIER; defaults to 1.
+ */
+export function getSlopeMultiplier(pitchDegrees: number): number {
+  if (!isFinite(pitchDegrees)) return 1;
+  const keys = Object.keys(PITCH_SLOPE_MULTIPLIER)
+    .map((k) => Number(k))
+    .sort((a, b) => a - b);
+
+  // If exact match
+  if (pitchDegrees in PITCH_SLOPE_MULTIPLIER) {
+    return PITCH_SLOPE_MULTIPLIER[pitchDegrees as keyof typeof PITCH_SLOPE_MULTIPLIER];
+  }
+
+  // Find nearest degree key
+  let nearest = keys[0];
+  let minDiff = Math.abs(pitchDegrees - nearest);
+  for (let i = 1; i < keys.length; i++) {
+    const diff = Math.abs(pitchDegrees - keys[i]);
+    if (diff < minDiff) {
+      minDiff = diff;
+      nearest = keys[i];
+    }
+  }
+  return PITCH_SLOPE_MULTIPLIER[nearest];
+}

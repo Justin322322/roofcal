@@ -9,6 +9,7 @@ import type {
 import { analyzeProject } from "@/lib/decision-tree";
 import { materials } from "../components/material-selection";
 import * as CONSTANTS from "../constants";
+import { getSlopeMultiplier } from "../constants";
 import { updatePricingConstants } from "../constants";
 // Remove direct import of server-side function
 
@@ -50,6 +51,8 @@ export function useRoofCalculator() {
     totalCost: 0,
     gutterPieces: 0,
     ridgeLength: 0,
+    materialQuantity: 0,
+    screwsQuantity: 0,
   });
 
   // Initialize decision tree with current state
@@ -158,6 +161,8 @@ export function useRoofCalculator() {
         totalCost: 0,
         gutterPieces: 0,
         ridgeLength: 0,
+        materialQuantity: 0,
+        screwsQuantity: 0,
       });
       setDecisionTree({
         materialRecommendation: {
@@ -175,8 +180,10 @@ export function useRoofCalculator() {
       return;
     }
 
-    // 1. Calculate simple area (width × length) in square meters
-    const totalArea = length * width;
+    // 1. Calculate plan area and apply slope multiplier derived from pitch
+    const planArea = length * width;
+    const slopeMultiplier = getSlopeMultiplier(pitch);
+    const totalArea = planArea * slopeMultiplier;
 
     // 2. Calculate roof material cost
     const selectedMaterial = materials.find((m) => m.value === material);
@@ -209,12 +216,16 @@ export function useRoofCalculator() {
       CONSTANTS.RIDGE_PRICES.asphalt;
     const ridgeCost = Math.round(ridgeLength * ridgePricePerMeter);
 
-    // 5. Calculate screws cost
+    // 5. Calculate screws cost and quantity
     const screwsPricePerSqm =
       CONSTANTS.SCREWS_PRICE_PER_SQM[
         material as keyof typeof CONSTANTS.SCREWS_PRICE_PER_SQM
       ] || CONSTANTS.SCREWS_PRICE_PER_SQM.asphalt;
     const screwsCost = Math.round(totalArea * screwsPricePerSqm);
+    
+    // Calculate screws quantity (assuming ~10 screws per sq.m for most materials)
+    const screwsPerSqm = 10; // Base screws per square meter
+    const screwsQuantity = Math.ceil(totalArea * screwsPerSqm);
 
     // 6. Calculate insulation cost (100% coverage)
     const insulationPricePerSqm =
@@ -267,6 +278,8 @@ export function useRoofCalculator() {
       totalCost,
       gutterPieces,
       ridgeLength,
+      materialQuantity: totalArea, // Material quantity is the same as area in sq.m
+      screwsQuantity,
     });
 
     // Run decision tree analysis
@@ -328,6 +341,8 @@ export function useRoofCalculator() {
       totalCost: 0,
       gutterPieces: 0,
       ridgeLength: 0,
+      materialQuantity: 0,
+      screwsQuantity: 0,
     });
     setDecisionTree({
       materialRecommendation: {

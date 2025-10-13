@@ -367,10 +367,16 @@ export function RoofCalculatorContent() {
               totalCost={results.totalCost}
               gutterPieces={results.gutterPieces}
               ridgeLength={results.ridgeLength}
+              materialQuantity={results.materialQuantity}
+              screwsQuantity={results.screwsQuantity}
               material={materials.find((m) => m.value === material)?.name || ""}
               constructionMode={measurements.constructionMode}
               budgetAmount={parseFloat(measurements.budgetAmount) || 0}
               onAutoOptimize={handleAutoOptimize}
+              length={parseFloat(measurements.length) || undefined}
+              width={parseFloat(measurements.width) || undefined}
+              pitch={parseFloat(measurements.pitch) || undefined}
+              roofTypeLabel={`${measurements.roofType.charAt(0).toUpperCase()}${measurements.roofType.slice(1)} roof${measurements.roofType === "shed" ? " (single slope)" : ""}`}
             />
 
             {results.totalCost > 0 && (

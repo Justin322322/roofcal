@@ -43,6 +43,8 @@ export interface CalculationResults {
   totalCost: number;
   gutterPieces: number;
   ridgeLength: number;
+  materialQuantity: number;
+  screwsQuantity: number;
 }
 
 export interface DecisionTreeResult {
