@@ -256,19 +256,14 @@ export function WarehouseMaterialWarnings({
       {filteredWarnings.map((warehouse) => (
         <Card key={warehouse.warehouseId}>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <WarehouseIcon className="h-5 w-5" />
-                  {warehouse.warehouseName}
-                </CardTitle>
-                <CardDescription>
-                  {warehouse.warnings.length} material warning{warehouse.warnings.length !== 1 ? 's' : ''} detected
-                </CardDescription>
-              </div>
-              <Button variant="outline" onClick={fetchWarnings}>
-                Refresh Warnings
-              </Button>
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <WarehouseIcon className="h-5 w-5" />
+                {warehouse.warehouseName}
+              </CardTitle>
+              <CardDescription>
+                {warehouse.warnings.length} material warning{warehouse.warnings.length !== 1 ? 's' : ''} detected
+              </CardDescription>
             </div>
           </CardHeader>
           <CardContent>
