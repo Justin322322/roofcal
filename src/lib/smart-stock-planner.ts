@@ -116,10 +116,11 @@ export async function calculateSmartStockSuggestions(
       }
     });
 
-    const availableCapacity = warehouse.capacity - usedCapacity;
+    const totalCapacity = Number(warehouse.capacity) || 0;
+    const availableCapacity = totalCapacity - usedCapacity;
     const capacityInfo: WarehouseCapacityInfo = {
       warehouseId,
-      totalCapacity: warehouse.capacity,
+      totalCapacity,
       usedCapacity,
       availableCapacity: Math.max(0, availableCapacity)
     };

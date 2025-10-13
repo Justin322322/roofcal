@@ -511,7 +511,7 @@ export function WarehouseMaterialWarnings({
                   </div>
 
                   <div className="grid gap-3 max-h-60 overflow-y-auto">
-                    {smartStockPlans[warehouse.warehouseId].suggestions.map((suggestion, index) => (
+                    {smartStockPlans[warehouse.warehouseId].suggestions.map((suggestion) => (
                       <div key={suggestion.materialId} className="bg-white p-3 rounded border">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
