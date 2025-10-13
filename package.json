@@ -15,6 +15,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev -n init_auth",
     "prisma:deploy": "prisma migrate deploy",
+    "prisma:fix-projectmaterial": "tsx scripts/apply-projectmaterial-migration.ts",
     "seed": "tsx prisma/seed-pricing.ts",
     "seed:prod": "NODE_ENV=production tsx prisma/seed-pricing.ts",
     "postinstall": "prisma generate"
