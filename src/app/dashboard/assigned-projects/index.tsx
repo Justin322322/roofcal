@@ -220,6 +220,7 @@ export function AssignedProjectsContent() {
 
   // Kanban setup
   const projectColumns = [
+    "DRAFT",
     "CLIENT_PENDING",
     "CONTRACTOR_REVIEWING",
     "PROPOSAL_SENT",
@@ -237,9 +238,27 @@ export function AssignedProjectsContent() {
         status: p.status as string,
         position: (p as unknown as { boardPosition?: number }).boardPosition ?? 0,
         meta: (
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>{p.material}</span>
-            <span>{(p.area as number).toFixed(1)} m²</span>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <span>{p.material}</span>
+              <span>{(p.area as number).toFixed(1)} m²</span>
+            </div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>{p.roofType}</span>
+              <span className="font-semibold text-primary">
+                {new Intl.NumberFormat('en-PH', {
+                  style: 'currency',
+                  currency: 'PHP',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
+                }).format(p.totalCost)}
+              </span>
+            </div>
+            {p.client && (
+              <div className="text-xs text-muted-foreground">
+                Client: {p.client.firstName} {p.client.lastName}
+              </div>
+            )}
           </div>
         ),
       })),
@@ -260,6 +279,7 @@ export function AssignedProjectsContent() {
       // Admin-only page; enforce forward-only
       const from = item.status;
       const forward: Record<string, string[]> = {
+        DRAFT: ["CLIENT_PENDING"],
         CLIENT_PENDING: ["CONTRACTOR_REVIEWING"],
         CONTRACTOR_REVIEWING: ["PROPOSAL_SENT"],
         PROPOSAL_SENT: [], // accept/reject happens by client
@@ -321,7 +341,8 @@ export function AssignedProjectsContent() {
   };
 
 
-  const { pendingProjects, activeProjects, completedProjects } = useMemo(() => ({
+  const { pendingProjects, activeProjects, completedProjects, draftProjects } = useMemo(() => ({
+    draftProjects: assignedProjects.filter(p => p.status === "DRAFT"),
     pendingProjects: assignedProjects.filter(p => 
       ["CLIENT_PENDING", "CONTRACTOR_REVIEWING"].includes(p.status)
     ),
@@ -425,7 +446,7 @@ export function AssignedProjectsContent() {
         <Tabs defaultValue="tasks" className="space-y-6">
           <TabsList>
             <TabsTrigger value="tasks">
-              My Tasks ({pendingProjects.length + activeProjects.length})
+              My Tasks ({pendingProjects.length + activeProjects.length + draftProjects.length})
             </TabsTrigger>
             <TabsTrigger value="clients">
               Clients ({clients.length})
@@ -441,8 +462,11 @@ export function AssignedProjectsContent() {
 
           {/* My Tasks Tab */}
           <TabsContent value="tasks" className="space-y-4">
-            <Tabs defaultValue="pending" className="space-y-4">
+            <Tabs defaultValue="draft" className="space-y-4">
               <TabsList>
+                <TabsTrigger value="draft">
+                  Draft ({draftProjects.length})
+                </TabsTrigger>
                 <TabsTrigger value="pending">
                   Pending ({pendingProjects.length})
                 </TabsTrigger>
@@ -453,6 +477,21 @@ export function AssignedProjectsContent() {
                   Completed ({completedProjects.length})
                 </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="draft" className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {draftProjects.map((project) => (
+                    <ProjectCard
+                      key={project.id}
+                      project={project}
+                      onStatusUpdate={handleStatusUpdate}
+                      actionLoading={actionLoading}
+                      formatCurrency={formatCurrency}
+                      formatDate={formatDate}
+                    />
+                  ))}
+                </div>
+              </TabsContent>
 
               <TabsContent value="pending" className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

@@ -58,7 +58,7 @@ function generateInAppMessage(notification: NotificationData): string {
     case "proposal_rejected":
       return `Your proposal for "${notification.projectName}" was not accepted by ${notification.fromUserName}`;
     case "project_assigned":
-      return `New project "${notification.projectName}" assigned by ${notification.fromUserName}`;
+      return `Project "${notification.projectName}" ready for review from ${notification.fromUserName}`;
     default:
       return `Update for project "${notification.projectName}"`;
   }
@@ -151,11 +151,11 @@ function generateEmailContent(notification: NotificationData): {
 
     case "project_assigned":
       return {
-        subject: `New Project Assignment: ${notification.projectName}`,
+        subject: `Project Ready for Review: ${notification.projectName}`,
         templateData: {
-          title: "New Project Assignment",
-          heading: "New Project Assignment",
-          content: `Hello ${notification.toUserName},<br/><br/>You have been assigned a new project <strong>"${notification.projectName}"</strong> by ${notification.fromUserName}.<br/>Please review the project details and prepare a proposal for the client.`,
+          title: "Project Ready for Review",
+          heading: "Project Ready for Review",
+          content: `Hello ${notification.toUserName},<br/><br/>A new project <strong>"${notification.projectName}"</strong> is ready for your review. The client ${notification.fromUserName} has submitted their project details and is requesting a proposal.<br/>Please review the project specifications and prepare a detailed proposal for the client.`,
           actionContent: `
             <div style="text-align: center; margin: 32px 0;">
               <a href="${projectUrl}" style="display: inline-block; background: linear-gradient(135deg, #4a7c7e, #2d5a5c); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;">
@@ -163,9 +163,9 @@ function generateEmailContent(notification: NotificationData): {
               </a>
             </div>
           `,
-          securityNotice: "You can access the project details in your contractor dashboard to begin your review.",
+          securityNotice: "Access the project details in your contractor dashboard to begin your review and create a proposal.",
         },
-        text: `New Project Assignment\n\nHello ${notification.toUserName},\n\nYou have been assigned a new project "${notification.projectName}" by ${notification.fromUserName}.\n\nPlease review the project details and prepare a proposal for the client.\n\nReview project: ${projectUrl}\n\nYou can access the project details in your contractor dashboard to begin your review.`,
+        text: `Project Ready for Review\n\nHello ${notification.toUserName},\n\nA new project "${notification.projectName}" is ready for your review. The client ${notification.fromUserName} has submitted their project details and is requesting a proposal.\n\nPlease review the project specifications and prepare a detailed proposal for the client.\n\nReview project: ${projectUrl}\n\nAccess the project details in your contractor dashboard to begin your review and create a proposal.`,
       };
 
     default:

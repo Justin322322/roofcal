@@ -20,9 +20,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { projectId, contractorId } = body;
 
-    if (!projectId || !contractorId) {
+    if (!projectId) {
       return NextResponse.json(
-        { error: "Project ID and Contractor ID are required" },
+        { error: "Project ID is required" },
         { status: 400 }
       );
     }
@@ -42,17 +42,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify the contractor exists
-    const contractor = await prisma.user.findFirst({
-      where: {
-        id: contractorId,
-        role: UserRole.ADMIN, // Must be a contractor
-      },
-    });
+    // Find contractor - use provided ID or find first available
+    let contractor;
+    if (contractorId) {
+      contractor = await prisma.user.findFirst({
+        where: {
+          id: contractorId,
+          role: UserRole.ADMIN, // Must be a contractor
+        },
+      });
+    } else {
+      // Auto-assign to first available contractor
+      contractor = await prisma.user.findFirst({
+        where: {
+          role: UserRole.ADMIN,
+        },
+      });
+    }
 
     if (!contractor) {
       return NextResponse.json(
-        { error: "Contractor not found" },
+        { error: "No contractor available for assignment" },
         { status: 404 }
       );
     }
@@ -69,7 +79,7 @@ export async function POST(request: NextRequest) {
     const updatedProject = await prisma.project.update({
       where: { id: projectId },
       data: {
-        contractorId: contractorId,
+        contractorId: contractor.id,
         clientId: session.user.id, // Set the current user as the client
         assignedAt: new Date(),
         status: "CLIENT_PENDING", // Set status to pending contractor review
@@ -83,7 +93,7 @@ export async function POST(request: NextRequest) {
       updatedProject.projectName,
       session.user.id,
       session.user.name || "Client",
-      contractorId,
+      contractor.id,
       `${contractor.firstName} ${contractor.lastName}`,
       contractor.email
     );

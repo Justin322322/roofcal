@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export interface KanbanItem {
   id: string;
@@ -19,6 +19,11 @@ export interface UseKanbanOptions {
 export function useKanban(items: KanbanItem[], options: UseKanbanOptions) {
   const [localItems, setLocalItems] = useState<KanbanItem[]>(items);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Update localItems when items prop changes
+  useEffect(() => {
+    setLocalItems(items);
+  }, [items]);
 
   const columns = options.columns;
 

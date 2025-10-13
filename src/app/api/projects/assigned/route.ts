@@ -29,18 +29,17 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
 
-    // Build where clause - exclude DRAFT status from admin view as per workflow
+    // Build where clause - include all assigned projects including DRAFT
     const where: {
       contractorId: string;
-      status?: { not: "DRAFT" } | "ACTIVE" | "CLIENT_PENDING" | "CONTRACTOR_REVIEWING" | "PROPOSAL_SENT" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "ARCHIVED" | "REJECTED";
+      status?: "ACTIVE" | "CLIENT_PENDING" | "CONTRACTOR_REVIEWING" | "PROPOSAL_SENT" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "ARCHIVED" | "REJECTED" | "DRAFT";
     } = {
       contractorId: session.user.id,
-      status: { not: "DRAFT" }, // Exclude DRAFT status for admin view
+      // Include all statuses including DRAFT since projects now start as DRAFT
     };
 
     if (status && status !== "ALL") {
-      // If a specific status is requested, override the DRAFT exclusion
-      where.status = status as "ACTIVE" | "CLIENT_PENDING" | "CONTRACTOR_REVIEWING" | "PROPOSAL_SENT" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "ARCHIVED" | "REJECTED";
+      where.status = status as "ACTIVE" | "CLIENT_PENDING" | "CONTRACTOR_REVIEWING" | "PROPOSAL_SENT" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "ARCHIVED" | "REJECTED" | "DRAFT";
     }
 
     // Calculate pagination
@@ -60,9 +59,10 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        orderBy: {
-          assignedAt: "desc",
-        },
+        orderBy: [
+          { status: "asc" },
+          { assignedAt: "desc" },
+        ],
         skip,
         take,
       }),
@@ -94,11 +94,11 @@ export async function GET(request: NextRequest) {
       removalCost: Number(project.removalCost),
       totalCost: Number(project.totalCost),
       ridgeLength: Number(project.ridgeLength),
-        client: project.client || {
-          firstName: "Unknown",
-          lastName: "Client",
-          email: "unknown@example.com"
-        },
+      client: project.client || {
+        firstName: "Unknown",
+        lastName: "Client",
+        email: "unknown@example.com"
+      },
     }));
 
     return NextResponse.json({

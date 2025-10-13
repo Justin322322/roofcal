@@ -151,9 +151,25 @@ export function ProposalsPage() {
         status: (p.proposalStatus || "DRAFT") as string,
         position: (p as unknown as { proposalPosition?: number }).proposalPosition ?? 0,
         meta: (
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>{p.material}</span>
-            <span>{(p.area as number).toFixed(1)} m²</span>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <span>{p.material}</span>
+              <span>{(p.area as number).toFixed(1)} m²</span>
+            </div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>{p.roofType}</span>
+              <span className="font-semibold text-primary">
+                {new Intl.NumberFormat('en-PH', {
+                  style: 'currency',
+                  currency: 'PHP',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
+                }).format(p.totalCost)}
+              </span>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Client: {p.clientName || 'Unknown'}
+            </div>
           </div>
         ),
       })),
@@ -190,30 +206,29 @@ export function ProposalsPage() {
 
   const handleSendToContractor = async (project: ProposalProject) => {
     try {
-      // For now, we'll update the project status to indicate it's ready for contractor assignment
-      // This will make it visible to contractors in their project management dashboard
-      const response = await fetch(`/api/projects/${project.id}/status`, {
-        method: 'PATCH',
+      // Assign the project to the first available contractor
+      const response = await fetch(`/api/projects/assign`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          status: "CLIENT_PENDING",
-          // This will make the project available for contractors to claim
+          projectId: project.id,
+          // We'll let the API find the first available contractor
         }),
       });
 
       if (response.ok) {
-        toast.success("Project is now available for contractors to bid on");
+        toast.success("Project has been assigned to a contractor for review");
         fetchProposals(); // Refresh the proposals list
       } else {
         const errorData = await response.json();
-        toast.error("Failed to make project available for bidding", {
+        toast.error("Failed to assign project to contractor", {
           description: errorData.error || "An error occurred",
         });
       }
     } catch {
-      toast.error("Failed to send project to contractors", {
+      toast.error("Failed to send project to contractor", {
         description: "Network error occurred",
       });
     }

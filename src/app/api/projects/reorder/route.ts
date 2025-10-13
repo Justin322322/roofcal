@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
     const byId = new Map(projects.map((p) => [p.id, p]));
 
     const allowedTransitions: Record<string, string[]> = {
+      DRAFT: ["CLIENT_PENDING"],
       CLIENT_PENDING: ["CONTRACTOR_REVIEWING"],
       CONTRACTOR_REVIEWING: ["PROPOSAL_SENT"],
       PROPOSAL_SENT: ["ACCEPTED", "REJECTED"],
@@ -63,7 +64,6 @@ export async function POST(request: NextRequest) {
       IN_PROGRESS: ["COMPLETED"],
       COMPLETED: [],
       REJECTED: [],
-      DRAFT: ["CLIENT_PENDING"],
       ACTIVE: ["IN_PROGRESS"],
       ARCHIVED: [],
     };
