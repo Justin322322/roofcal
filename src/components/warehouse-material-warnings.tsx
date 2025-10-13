@@ -9,11 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { 
   WarehouseIcon, 
   AlertTriangleIcon, 
-  PackageIcon,
-  BrainIcon,
-  CheckIcon,
-  XIcon,
-  Loader2Icon
+  PackageIcon
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -82,25 +78,6 @@ interface Warehouse {
   };
 }
 
-interface StockSuggestion {
-  materialId: string;
-  materialName: string;
-  currentStock: number;
-  suggestedStock: number;
-  stockToAdd: number;
-  reason: string;
-  priority: 'critical' | 'warning' | 'optimization';
-  confidence: number;
-}
-
-interface SmartStockPlan {
-  warehouseId: string;
-  warehouseName: string;
-  suggestions: StockSuggestion[];
-  totalSuggestions: number;
-  totalStockToAdd: number;
-}
-
 interface WarehouseMaterialWarningsProps {
   warehouseId?: string;
   warehouses?: Warehouse[];
@@ -116,9 +93,6 @@ export function WarehouseMaterialWarnings({
 }: WarehouseMaterialWarningsProps) {
   const [warnings, setWarnings] = useState<WarehouseMaterialWarning[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [smartStockPlans, setSmartStockPlans] = useState<Record<string, SmartStockPlan>>({});
-  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
-  const [isApplyingPlan, setIsApplyingPlan] = useState(false);
 
   const fetchWarnings = useCallback(async () => {
     try {
@@ -206,76 +180,6 @@ export function WarehouseMaterialWarnings({
     }
   };
 
-  const generateSmartStockPlan = async (warehouseId: string) => {
-    try {
-      setIsGeneratingPlan(true);
-      
-      const response = await fetch(`/api/warehouses/${warehouseId}/smart-stock-suggestions`);
-      if (!response.ok) {
-        throw new Error('Failed to generate smart stock plan');
-      }
-      
-      const result = await response.json();
-      if (result.success) {
-        setSmartStockPlans(prev => ({
-          ...prev,
-          [warehouseId]: result.data
-        }));
-        toast.success(`Generated smart stock plan with ${result.data.totalSuggestions} suggestions`);
-      } else {
-        throw new Error(result.error || 'Failed to generate smart stock plan');
-      }
-    } catch (error) {
-      console.error('Error generating smart stock plan:', error);
-      toast.error('Failed to generate smart stock plan');
-    } finally {
-      setIsGeneratingPlan(false);
-    }
-  };
-
-  const applySmartStockPlan = async (warehouseId: string) => {
-    const plan = smartStockPlans[warehouseId];
-    if (!plan || plan.suggestions.length === 0) return;
-
-    try {
-      setIsApplyingPlan(true);
-      
-      const response = await fetch(`/api/warehouses/${warehouseId}/smart-stock-suggestions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          suggestions: plan.suggestions
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to apply smart stock plan');
-      }
-
-      const result = await response.json();
-      if (result.success) {
-        toast.success(result.message);
-        // Clear the plan after successful application
-        setSmartStockPlans(prev => {
-          const updated = { ...prev };
-          delete updated[warehouseId];
-          return updated;
-        });
-        // Refresh warnings to show updated stock levels
-        fetchWarnings();
-      } else {
-        throw new Error(result.error || 'Failed to apply smart stock plan');
-      }
-    } catch (error) {
-      console.error('Error applying smart stock plan:', error);
-      toast.error('Failed to apply smart stock plan');
-    } finally {
-      setIsApplyingPlan(false);
-    }
-  };
-
   const getWarningIcon = (level: string) => {
     switch (level) {
       case 'critical':
@@ -353,35 +257,14 @@ export function WarehouseMaterialWarnings({
       {filteredWarnings.map((warehouse) => (
         <Card key={warehouse.warehouseId}>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <WarehouseIcon className="h-5 w-5" />
-                  {warehouse.warehouseName}
-                </CardTitle>
-                <CardDescription>
-                  {warehouse.warnings.length} material warning{warehouse.warnings.length !== 1 ? 's' : ''} detected
-                </CardDescription>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => generateSmartStockPlan(warehouse.warehouseId)}
-                disabled={isGeneratingPlan}
-                className="flex items-center gap-2"
-              >
-                {isGeneratingPlan ? (
-                  <>
-                    <Loader2Icon className="h-4 w-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <BrainIcon className="h-4 w-4" />
-                    Generate Plan
-                  </>
-                )}
-              </Button>
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <WarehouseIcon className="h-5 w-5" />
+                {warehouse.warehouseName}
+              </CardTitle>
+              <CardDescription>
+                {warehouse.warnings.length} material warning{warehouse.warnings.length !== 1 ? 's' : ''} detected
+              </CardDescription>
             </div>
           </CardHeader>
           <CardContent>
