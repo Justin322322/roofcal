@@ -263,7 +263,7 @@ export async function findBestWarehouseForProject(project: Project | ProjectWith
   const warehouses = await prisma.warehouse.findMany({
     where: { isDefault: true }, // Start with default warehouses
     include: {
-      materials: {
+      warehousematerial: {
         where: { isActive: true },
         include: {
           pricingconfig: true
@@ -283,7 +283,7 @@ export async function findBestWarehouseForProject(project: Project | ProjectWith
     for (const requiredMaterial of materialCalculation.materials) {
       totalMaterials++;
       
-      const warehouseMaterial = warehouse.materials.find(
+      const warehouseMaterial = warehouse.warehousematerial.find(
         wm => wm.materialId === requiredMaterial.materialId
       );
 

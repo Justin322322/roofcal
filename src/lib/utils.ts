@@ -35,5 +35,6 @@ export function formatCurrency(amount: number, currency: string = "₱"): string
  * Format area with proper unit
  */
 export function formatArea(area: number): string {
-  return `${formatNumber(area.toFixed(1))} m²`;
+  const rounded = Math.round(area * 10) / 10;
+  return `${formatNumber(rounded)} m²`;
 }
