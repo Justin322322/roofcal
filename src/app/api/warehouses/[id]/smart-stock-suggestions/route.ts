@@ -43,7 +43,22 @@ export async function GET(
     }
 
     // Get current warehouse materials with low stock warnings
-    let warehouseMaterials;
+    let warehouseMaterials: Array<{
+      materialId: string;
+      quantity: number;
+      pricingconfig: {
+        label: string;
+        category: string;
+      };
+      projectmaterial?: Array<{
+        quantity: number;
+        project: {
+          id: string;
+          projectName: string;
+        };
+      }>;
+    }>;
+    
     try {
       warehouseMaterials = await prisma.warehousematerial.findMany({
         where: { 
@@ -78,13 +93,27 @@ export async function GET(
         include: {
           pricingconfig: true
         }
-      });
+      }) as Array<{
+        materialId: string;
+        quantity: number;
+        pricingconfig: {
+          label: string;
+          category: string;
+        };
+        projectmaterial?: Array<{
+          quantity: number;
+          project: {
+            id: string;
+            projectName: string;
+          };
+        }>;
+      }>;
     }
 
     // Transform to warnings format
     const warnings = warehouseMaterials.map(wm => {
       const currentStock = wm.quantity;
-      const reservedForProjects = wm.projectmaterial ? wm.projectmaterial.reduce((sum, pm) => sum + pm.quantity, 0) : 0;
+      const reservedForProjects = wm.projectmaterial ? wm.projectmaterial.reduce((sum: number, pm: { quantity: number }) => sum + pm.quantity, 0) : 0;
       const projectedStock = currentStock - reservedForProjects;
       
       // Determine if this is a warning (low stock)
@@ -112,7 +141,7 @@ export async function GET(
         reservedForProjects,
         projectedStock,
         criticalLevel: criticalLevel || warningLevel,
-        projectsUsing: wm.projectmaterial ? wm.projectmaterial.map(pm => ({
+        projectsUsing: wm.projectmaterial ? wm.projectmaterial.map((pm: { quantity: number; project: { id: string; projectName: string } }) => ({
           projectId: pm.project.id,
           projectName: pm.project.projectName,
           quantity: pm.quantity
