@@ -326,7 +326,7 @@ export async function DELETE(
   }
 }
 
-// PATCH /api/projects/[id] - Unarchive project
+// PATCH /api/projects/[id] - Update project status or unarchive
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -342,12 +342,17 @@ export async function PATCH(
     }
 
     const { id } = await params;
+    const body = await request.json();
 
-    // Check if project exists and user owns it
+    // Check if project exists and user has access to it
     const existingProject = await prisma.project.findFirst({
       where: {
         id,
-        userId: session.user.id,
+        OR: [
+          { userId: session.user.id }, // Project owner
+          { contractorId: session.user.id }, // Assigned contractor
+          { clientId: session.user.id }, // Assigned client
+        ],
       },
     });
 
@@ -355,25 +360,99 @@ export async function PATCH(
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    // Check if project is actually archived
-    if (existingProject.status !== "ARCHIVED") {
-      return NextResponse.json(
-        { error: "Project is not archived" },
-        { status: 400 }
-      );
+    // Handle status updates
+    if (body.status) {
+      const oldStatus = existingProject.status;
+      const newStatus = body.status;
+
+      // Handle material consumption based on status changes
+      if (newStatus !== oldStatus) {
+        // When project is accepted, reserve materials
+        if (newStatus === "ACCEPTED" && !existingProject.materialsConsumed) {
+          const reserveResult = await reserveProjectMaterials(id);
+          if (!reserveResult.success) {
+            return NextResponse.json(
+              { error: reserveResult.message },
+              { status: 400 }
+            );
+          }
+        }
+
+        // When project starts work, consume reserved materials
+        if (newStatus === "IN_PROGRESS" && oldStatus === "ACCEPTED") {
+          const consumeResult = await consumeProjectMaterials(id);
+          if (!consumeResult.success) {
+            return NextResponse.json(
+              { error: consumeResult.message },
+              { status: 400 }
+            );
+          }
+        }
+
+        // When project is rejected, cancelled, or archived, return materials
+        if ((newStatus === "REJECTED" || newStatus === "ARCHIVED") && 
+            (oldStatus === "ACCEPTED" || oldStatus === "IN_PROGRESS")) {
+          const returnResult = await returnProjectMaterials(id, `Status changed from ${oldStatus} to ${newStatus}`);
+          if (!returnResult.success) {
+            console.error("Failed to return materials:", returnResult.message);
+            // Don't fail the status update, just log the error
+          }
+        }
+
+        // When project is completed, automatically update proposalStatus to COMPLETED if it was ACCEPTED
+        if (newStatus === "COMPLETED" && existingProject.proposalStatus === "ACCEPTED") {
+          body.proposalStatus = "COMPLETED";
+        }
+      }
+
+      // Update project status
+      const project = await prisma.project.update({
+        where: { id },
+        data: {
+          status: newStatus,
+          ...(body.proposalStatus && { proposalStatus: body.proposalStatus }),
+        },
+      });
+
+      return NextResponse.json({ 
+        message: "Project status updated successfully",
+        project: {
+          ...project,
+          length: Number(project.length),
+          width: Number(project.width),
+          pitch: Number(project.pitch),
+          area: Number(project.area),
+          materialCost: Number(project.materialCost),
+          laborCost: Number(project.laborCost),
+          removalCost: Number(project.removalCost),
+          totalCost: Number(project.totalCost),
+          ridgeLength: Number(project.ridgeLength),
+        }
+      });
     }
 
-    // Unarchive by setting status to ACTIVE (or previous status if we track it)
-    await prisma.project.update({
-      where: { id },
-      data: { status: "ACTIVE" },
-    });
+    // Handle unarchive (legacy functionality)
+    if (body.unarchive) {
+      if (existingProject.status !== "ARCHIVED") {
+        return NextResponse.json(
+          { error: "Project is not archived" },
+          { status: 400 }
+        );
+      }
 
-    return NextResponse.json({ message: "Project unarchived successfully" });
+      await prisma.project.update({
+        where: { id },
+        data: { status: "ACTIVE" },
+      });
+
+      return NextResponse.json({ message: "Project unarchived successfully" });
+    }
+
+    return NextResponse.json({ error: "No valid update provided" }, { status: 400 });
   } catch (error) {
-    console.error("Error unarchiving project:", error);
+    console.error("Error updating project:", error);
     return NextResponse.json(
-      { error: "Failed to unarchive project" },
+      { error: "Failed to update project" },
       { status: 500 }
     );
   }

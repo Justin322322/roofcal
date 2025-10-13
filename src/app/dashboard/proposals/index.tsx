@@ -140,8 +140,9 @@ export function ProposalsPage() {
   const [showViewer, setShowViewer] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [sendingToContractor, setSendingToContractor] = useState<string | null>(null);
 
-  // Kanban setup (must be before any early returns)
+  // Kanban setup (only for admins - clients don't need project management kanban)
   const proposalColumns = ["DRAFT", "SENT", "ACCEPTED", "REJECTED", "REVISED", "COMPLETED"] as const;
   const kanbanItems = useMemo(
     () =>
@@ -205,6 +206,7 @@ export function ProposalsPage() {
   });
 
   const handleSendToContractor = async (project: ProposalProject) => {
+    setSendingToContractor(project.id);
     try {
       // Assign the project to the first available contractor
       const response = await fetch(`/api/projects/assign`, {
@@ -231,6 +233,8 @@ export function ProposalsPage() {
       toast.error("Failed to send project to contractor", {
         description: "Network error occurred",
       });
+    } finally {
+      setSendingToContractor(null);
     }
   };
 
@@ -524,7 +528,9 @@ export function ProposalsPage() {
       <Tabs defaultValue="list">
         <TabsList>
           <TabsTrigger value="list">List</TabsTrigger>
-          <TabsTrigger value="board">Board</TabsTrigger>
+          {session?.user?.role === "ADMIN" && (
+            <TabsTrigger value="board">Board</TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="list">
@@ -640,7 +646,20 @@ export function ProposalsPage() {
                                   {session?.user?.role === "CLIENT" && status === "DRAFT" && (
                                     <>
                                       <DropdownMenuSeparator />
-                                      <DropdownMenuItem onClick={() => handleSendToContractor(project)}>Send to Contractor</DropdownMenuItem>
+                                      <DropdownMenuItem 
+                                        onClick={() => handleSendToContractor(project)}
+                                        disabled={sendingToContractor === project.id}
+                                        className="flex items-center gap-2"
+                                      >
+                                        {sendingToContractor === project.id ? (
+                                          <>
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                                            Sending...
+                                          </>
+                                        ) : (
+                                          "Send to Contractor"
+                                        )}
+                                      </DropdownMenuItem>
                                     </>
                                   )}
                                   <DropdownMenuSeparator />
@@ -667,13 +686,15 @@ export function ProposalsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="board">
-          <KanbanBoardComponent
-            columns={proposalColumns as unknown as string[]}
-            itemsByColumn={itemsByColumn as unknown as Record<string, { id: string; status: string; position: number; title: string; meta?: React.ReactNode }[]>}
-            onMove={moveItem}
-          />
-        </TabsContent>
+        {session?.user?.role === "ADMIN" && (
+          <TabsContent value="board">
+            <KanbanBoardComponent
+              columns={proposalColumns as unknown as string[]}
+              itemsByColumn={itemsByColumn as unknown as Record<string, { id: string; status: string; position: number; title: string; meta?: React.ReactNode }[]>}
+              onMove={moveItem}
+            />
+          </TabsContent>
+        )}
       </Tabs>
 
       {/* Proposal Builder Modal */}

@@ -306,7 +306,7 @@ export function ProposalViewer({ project, onClose }: ProposalViewerProps) {
               </TableHeader>
               <TableBody>
                 <TableRow>
-                  <TableCell className="font-medium">Client Budget</TableCell>
+                  <TableCell className="font-medium">Your Budget</TableCell>
                   <TableCell className="text-right font-semibold">{formatCurrency(clientBudget)}</TableCell>
                 </TableRow>
                 <TableRow>
@@ -322,8 +322,8 @@ export function ProposalViewer({ project, onClose }: ProposalViewerProps) {
                 <CheckCircleIcon className="h-5 w-5" />
                 <span className="font-semibold">
                   {budgetStatus === 'sufficient' 
-                    ? '✅ Budget is sufficient with contingency funds.' 
-                    : '⚠️ Budget exceeds client allocation.'
+                    ? 'Budget is sufficient with contingency funds.' 
+                    : 'Budget exceeds client allocation.'
                   }
                 </span>
               </div>
