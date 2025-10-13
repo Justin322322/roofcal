@@ -60,18 +60,39 @@ function useProposalsData() {
       // Add timestamp to prevent caching
       const response = await fetch(`/api/proposals?type=received&_t=${Date.now()}`);
       
+      console.log("Client fetch response:", {
+        status: response.status,
+        ok: response.ok,
+        url: response.url
+      });
+      
       if (response.ok) {
         const data = await response.json();
         const fetchedProposals = data.proposals || [];
+        
+        console.log("Client received proposals:", {
+          proposalsCount: fetchedProposals.length,
+          proposals: fetchedProposals.map((p: ProposalProject) => ({
+            id: p.id,
+            projectName: p.projectName,
+            status: p.status,
+            proposalStatus: p.proposalStatus,
+            clientId: p.clientId,
+            userId: p.userId
+          }))
+        });
+        
         setProposals(fetchedProposals);
         globalProposalsCache = fetchedProposals;
       } else {
         const errorData = await response.json();
+        console.error("API Error:", errorData);
         toast.error("Failed to fetch proposals", {
           description: errorData.error || "An error occurred",
         });
       }
-    } catch {
+    } catch (error) {
+      console.error("Fetch Error:", error);
       toast.error("Failed to fetch proposals", {
         description: "Network error occurred",
       });
@@ -82,19 +103,32 @@ function useProposalsData() {
   }, []);
 
   useEffect(() => {
+    console.log("Session debug:", {
+      session: session ? {
+        userId: session.user?.id,
+        userRole: session.user?.role,
+        userEmail: session.user?.email,
+        userName: session.user?.name
+      } : null
+    });
+    
     if (session?.user?.id && session.user.role === "CLIENT") {
+      console.log("Fetching proposals for client:", session.user.id);
       // Always fetch fresh data to ensure we get the latest projects
       globalProposalsCache = null;
       globalHasFetched = false;
       hasFetched.current = false;
       fetchProposals();
     } else if (session === null) {
+      console.log("No session, resetting cache");
       // Reset cache on logout
       globalProposalsCache = null;
       globalHasFetched = false;
       hasFetched.current = false;
       setProposals([]);
       setLoading(false);
+    } else {
+      console.log("Session exists but user is not a client:", session.user?.role);
     }
   }, [session?.user?.id, session?.user?.role, session, fetchProposals]);
 
