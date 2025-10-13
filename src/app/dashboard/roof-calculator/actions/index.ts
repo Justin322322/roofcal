@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
+import { notifyProjectAssigned } from "@/lib/notifications";
 import type {
   CreateProjectInput,
   UpdateProjectInput,
@@ -97,15 +98,61 @@ export async function saveProject(
       notes: data.notes,
     };
 
+    // For client-created projects, automatically assign to the first available contractor
+    let contractorId = null;
+    if (session.user.role === UserRole.CLIENT) {
+      // Find the first available contractor (admin user)
+      const contractor = await prisma.user.findFirst({
+        where: {
+          role: UserRole.ADMIN,
+        },
+        select: {
+          id: true,
+        },
+      });
+      contractorId = contractor?.id || null;
+    }
+
     const project = await prisma.project.create({
       data: {
         userId: session.user.id,
         clientId: session.user.role === UserRole.CLIENT ? session.user.id : null,
+        contractorId: contractorId,
         status: session.user.role === UserRole.CLIENT ? "CLIENT_PENDING" : "DRAFT",
         proposalStatus: session.user.role === UserRole.CLIENT ? "DRAFT" : "DRAFT",
+        assignedAt: contractorId ? new Date() : null,
         ...projectData,
       },
     });
+
+    // Send notification to contractor if project was auto-assigned
+    if (contractorId && session.user.role === UserRole.CLIENT) {
+      try {
+        const contractor = await prisma.user.findUnique({
+          where: { id: contractorId },
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        });
+
+        if (contractor) {
+          await notifyProjectAssigned(
+            project.id,
+            project.projectName,
+            session.user.id,
+            session.user.name || "Client",
+            contractorId,
+            `${contractor.firstName} ${contractor.lastName}`,
+            contractor.email
+          );
+        }
+      } catch (error) {
+        console.error("Failed to send project assignment notification:", error);
+        // Don't fail the project creation if notification fails
+      }
+    }
 
     revalidatePath("/dashboard/project-management");
     revalidatePath("/dashboard?tab=client-proposals");
