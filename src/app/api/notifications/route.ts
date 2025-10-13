@@ -115,6 +115,7 @@ export async function POST(request: NextRequest) {
     // Create notification
     const notification = await prisma.notification.create({
       data: {
+        id: crypto.randomUUID(),
         userId,
         type,
         title,

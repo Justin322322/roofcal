@@ -24,6 +24,7 @@ import {
   MapPinIcon,
   RefreshCwIcon,
 } from "lucide-react";
+import { formatCurrency, formatArea } from "@/lib/utils";
 import { ProposalViewer } from "./proposal-viewer";
 import { useSession } from "next-auth/react";
 import { UserRole } from "@/types/user-role";
@@ -82,7 +83,8 @@ export function ProjectList() {
           const formattedProjects = result.projects.map((p: any) => ({
             ...p,
             totalCost: Number(p.totalCost),
-            createdAt: new Date(p.createdAt as string),
+            area: Number(p.area),
+            createdAt: p.createdAt ? new Date(p.createdAt) : new Date(),
           }));
           console.log('Formatted projects:', formattedProjects);
           setProjects(formattedProjects);
@@ -243,20 +245,23 @@ export function ProjectList() {
                   </div>
                   <div>
                     <div className="font-medium text-muted-foreground">Area</div>
-                    <div>{project.area.toFixed(1)} m²</div>
+                    <div>{formatArea(project.area)}</div>
                   </div>
                   <div>
                     <div className="font-medium text-muted-foreground">Est. Cost</div>
                     <div className="flex items-center gap-1">
                       <DollarSignIcon className="h-3 w-3" />
-                      ₱{project.totalCost.toFixed(0)}
+                      {formatCurrency(project.totalCost)}
                     </div>
                   </div>
                   <div>
                     <div className="font-medium text-muted-foreground">Created</div>
                     <div className="flex items-center gap-1">
                       <CalendarIcon className="h-3 w-3" />
-                      {new Date(project.createdAt).toLocaleDateString()}
+                      {project.createdAt instanceof Date && !isNaN(project.createdAt.getTime()) 
+                        ? project.createdAt.toLocaleDateString()
+                        : new Date(project.createdAt).toLocaleDateString()
+                      }
                     </div>
                   </div>
                 </div>

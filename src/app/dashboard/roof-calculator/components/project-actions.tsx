@@ -26,6 +26,7 @@ import { SaveIcon, Loader2Icon, SendIcon, UsersIcon } from "lucide-react";
 import { saveProject, updateProject, getProjectDetails } from "../actions";
 import { AddressInput } from "@/components/map/address-input";
 import { WarehouseSelector } from "@/components/map/warehouse-selector";
+import { formatCurrency, formatArea } from "@/lib/utils";
 import type {
   Measurements,
   CalculationResults,
@@ -389,8 +390,8 @@ export function ProjectActions({
               <div className="text-sm font-medium">Project Summary</div>
               <div className="text-sm text-muted-foreground mt-1">
                 <div>Material: {material}</div>
-                <div>Total Area: {results.area.toFixed(2)} m²</div>
-                <div>Estimated Cost: ₱{results.totalCost.toFixed(2)}</div>
+                <div>Total Area: {formatArea(results.area)}</div>
+                <div>Estimated Cost: {formatCurrency(results.totalCost)}</div>
               </div>
             </div>
           </div>

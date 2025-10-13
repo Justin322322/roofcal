@@ -50,6 +50,17 @@ export async function POST(request: NextRequest) {
         proposalSent: body.proposalSent,
         proposalStatus: body.proposalStatus || "DRAFT",
 
+        // Delivery and Location
+        address: body.address,
+        city: body.city,
+        state: body.state,
+        zipCode: body.zipCode,
+        latitude: body.latitude,
+        longitude: body.longitude,
+        deliveryCost: body.deliveryCost,
+        deliveryDistance: body.deliveryDistance,
+        warehouseId: body.warehouseId,
+
         // Measurements
         length: body.length,
         width: body.width,

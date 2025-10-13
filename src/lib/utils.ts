@@ -16,3 +16,24 @@ export function formatStatus(status: string): string {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 }
+
+/**
+ * Format a number with thousands separators (e.g., 1,000)
+ */
+export function formatNumber(num: number): string {
+  return num.toLocaleString();
+}
+
+/**
+ * Format currency with proper formatting
+ */
+export function formatCurrency(amount: number, currency: string = "₱"): string {
+  return `${currency}${formatNumber(Math.round(amount))}`;
+}
+
+/**
+ * Format area with proper unit
+ */
+export function formatArea(area: number): string {
+  return `${formatNumber(area.toFixed(1))} m²`;
+}

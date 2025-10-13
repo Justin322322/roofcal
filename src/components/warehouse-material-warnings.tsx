@@ -9,8 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { 
   WarehouseIcon, 
   AlertTriangleIcon, 
-  PackageIcon,
-  UsersIcon
+  PackageIcon
 } from "lucide-react";
 
 interface WarehouseMaterialWarning {
@@ -191,16 +190,6 @@ export function WarehouseMaterialWarnings({
     }
   };
 
-  const getWarningColor = (level: string) => {
-    switch (level) {
-      case 'critical':
-        return 'border-red-200 bg-red-50';
-      case 'warning':
-        return 'border-yellow-200 bg-yellow-50';
-      default:
-        return 'border-blue-200 bg-blue-50';
-    }
-  };
 
   if (isLoading) {
     return (
