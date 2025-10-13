@@ -3,10 +3,8 @@
 import * as React from "react";
 import {
   CameraIcon,
-  KanbanSquareIcon,
   FileCodeIcon,
   FileTextIcon,
-  MessageSquareIcon,
   UsersIcon,
   CalculatorIcon,
   ClipboardCheckIcon,

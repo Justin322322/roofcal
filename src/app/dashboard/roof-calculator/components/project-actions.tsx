@@ -53,7 +53,7 @@ export function ProjectActions({
   saveEnabled,
   selectedWarehouseId,
   onWarehouseChange,
-  projectAddress,
+  projectAddress: _projectAddress, // eslint-disable-line @typescript-eslint/no-unused-vars
   onAddressChange,
 }: ProjectActionsProps) {
   const [isLoading, setIsLoading] = useState(false);

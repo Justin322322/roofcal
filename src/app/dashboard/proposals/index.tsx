@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -30,11 +31,8 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  AlertCircleIcon,
   RefreshCwIcon,
   DownloadIcon,
   MoreVerticalIcon,
@@ -43,15 +41,12 @@ import {
   MessageSquareIcon,
   CheckCircleIcon,
   ClockIcon,
-  SendIcon,
-  XCircleIcon,
-  UserIcon,
-  CalendarIcon,
-  DollarSignIcon,
 } from "lucide-react";
 import type { Project } from "@/types/project";
 import { ProposalBuilder } from "./proposal-builder";
 import { ProposalViewer } from "./proposal-viewer";
+import { KanbanBoard } from "@/components/kanban/kanban-board";
+import { useKanban } from "@/hooks/use-kanban";
 
 interface ProposalProject extends Project {
   contractor: {
@@ -146,6 +141,53 @@ export function ProposalsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
+  // Kanban setup (must be before any early returns)
+  const proposalColumns = ["DRAFT", "SENT", "ACCEPTED", "REJECTED", "REVISED", "COMPLETED"] as const;
+  const kanbanItems = useMemo(
+    () =>
+      proposals.map((p) => ({
+        id: p.id,
+        title: p.projectName,
+        status: (p.proposalStatus || "DRAFT") as string,
+        position: (p as unknown as { proposalPosition?: number }).proposalPosition ?? 0,
+        meta: (
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <span>{p.material}</span>
+            <span>{(p.area as number).toFixed(1)} m²</span>
+          </div>
+        ),
+      })),
+    [proposals]
+  );
+
+  const { itemsByColumn, moveItem } = useKanban(kanbanItems, {
+    columns: (proposalColumns as unknown as string[]),
+    onReorder: async (items) => {
+      await fetch("/api/proposals/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items }),
+      });
+      await fetchProposals();
+    },
+    canMove: (item, toStatus) => {
+      const role = session?.user?.role;
+      const from = item.status;
+      if (role === "ADMIN") {
+        // Admin may move to SENT/REVISED from any except COMPLETED
+        if (toStatus === "SENT" || toStatus === "REVISED") return from !== "COMPLETED";
+        // Cannot set ACCEPTED/REJECTED via drag
+        if (toStatus === "ACCEPTED" || toStatus === "REJECTED") return false;
+        return toStatus === from; // allow reordering within same column
+      }
+      // Client can only move from SENT/REVISED to ACCEPTED/REJECTED
+      if ((from === "SENT" || from === "REVISED") && (toStatus === "ACCEPTED" || toStatus === "REJECTED")) return true;
+      // Reordering within same col allowed except terminal states
+      if (toStatus === from && !["ACCEPTED", "REJECTED", "COMPLETED"].includes(from)) return true;
+      return false;
+    },
+  });
+
   const handleSendToContractor = async (project: ProposalProject) => {
     try {
       // For now, we'll update the project status to indicate it's ready for contractor assignment
@@ -194,20 +236,7 @@ export function ProposalsPage() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "SENT":
-        return <SendIcon className="h-4 w-4" />;
-      case "ACCEPTED":
-        return <CheckCircleIcon className="h-4 w-4" />;
-      case "REJECTED":
-        return <XCircleIcon className="h-4 w-4" />;
-      case "DRAFT":
-        return <FileTextIcon className="h-4 w-4" />;
-      default:
-        return <ClockIcon className="h-4 w-4" />;
-    }
-  };
+  // Removed unused getStatusIcon helper
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-PH', {
@@ -280,14 +309,13 @@ export function ProposalsPage() {
     return matchesSearch && matchesStatus;
   });
 
-  const { draftProposals, pendingProposals, acceptedProposals, sentProposals, rejectedProposals } = useMemo(() => {
+  const { draftProposals, pendingProposals, acceptedProposals, sentProposals } = useMemo(() => {
     if (session?.user?.role === "CLIENT") {
       return {
         draftProposals: proposals.filter(p => p.proposalStatus === "DRAFT"),
         pendingProposals: proposals.filter(p => p.proposalStatus === "SENT"),
         acceptedProposals: proposals.filter(p => p.proposalStatus === "ACCEPTED"),
         sentProposals: [],
-        rejectedProposals: proposals.filter(p => p.proposalStatus === "REJECTED"),
       };
     } else {
       return {
@@ -295,7 +323,6 @@ export function ProposalsPage() {
         pendingProposals: [],
         acceptedProposals: proposals.filter(p => p.proposalStatus === "ACCEPTED"),
         sentProposals: proposals.filter(p => p.proposalStatus === "SENT"),
-        rejectedProposals: proposals.filter(p => p.proposalStatus === "REJECTED"),
       };
     }
   }, [proposals, session?.user?.role]);
@@ -305,7 +332,7 @@ export function ProposalsPage() {
   const pendingCount = pendingProposals.length;
   const acceptedCount = acceptedProposals.length;
   const sentCount = sentProposals.length;
-  const rejectedCount = rejectedProposals.length;
+  // Removed unused rejectedCount
 
   if (loading) {
     return (
@@ -478,152 +505,161 @@ export function ProposalsPage() {
         </div>
       </div>
 
-      {/* Main Content */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Proposals</CardTitle>
-              <CardDescription>
-                {session?.user?.role === "CLIENT" 
-                  ? "Review and manage proposals for your roofing projects"
-                  : "Review and manage proposals you've sent to clients"
-                }
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {/* Filter Controls */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="flex-1">
-              <div className="relative">
-                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search projects..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="All Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="DRAFT">Draft</SelectItem>
-                  <SelectItem value="SENT">Pending</SelectItem>
-                  <SelectItem value="ACCEPTED">Accepted</SelectItem>
-                  <SelectItem value="REJECTED">Rejected</SelectItem>
-                  <SelectItem value="COMPLETED">Completed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+      {/* Main Content: List | Board */}
+      <Tabs defaultValue="list">
+        <TabsList>
+          <TabsTrigger value="list">List</TabsTrigger>
+          <TabsTrigger value="board">Board</TabsTrigger>
+        </TabsList>
 
-          {/* Data Table */}
-          {filteredData.length === 0 ? (
-            <div className="text-center py-12">
-              <FileTextIcon className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Proposals Found</h3>
-              <p className="text-muted-foreground">
-                {searchTerm || statusFilter !== "all"
-                  ? "Try adjusting your filters to see more results."
-                  : session?.user?.role === "CLIENT"
-                    ? "Create a project using the Roof Calculator to get started, or wait for proposals from contractors."
-                    : "You need to have projects assigned to you before you can create proposals."
-                }
-              </p>
-            </div>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Project Name</TableHead>
-                    <TableHead>{session?.user?.role === "CLIENT" ? "Contractor" : "Client"}</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Total Cost</TableHead>
-                    <TableHead>Area</TableHead>
-                    <TableHead>Material</TableHead>
-                    <TableHead>Date Sent</TableHead>
-                    <TableHead className="w-[100px]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredData.map((project) => {
-                    const status = project.proposalStatus || "DRAFT";
-                    return (
-                      <TableRow key={project.id}>
-                        <TableCell className="font-medium">{project.projectName}</TableCell>
-                        <TableCell>
-                          {session?.user?.role === "CLIENT" ? (
-                            status === "DRAFT" ? (
-                              <span className="text-muted-foreground">Not assigned</span>
-                            ) : (
-                              project.contractor ? `${project.contractor.firstName} ${project.contractor.lastName}` : 'Unknown'
-                            )
-                          ) : (
-                            `${project.client.firstName} ${project.client.lastName}`
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={`${getStatusColor(status)} px-2 py-1 text-xs font-medium`}>
-                            {status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-medium">{formatCurrency(project.totalCost)}</TableCell>
-                        <TableCell>{project.area.toFixed(1)} m²</TableCell>
-                        <TableCell>{project.material}</TableCell>
-                        <TableCell>{formatDate(project.proposalSent || null)}</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreVerticalIcon className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => {
-                                setSelectedProject(project);
-                                setShowViewer(true);
-                              }}>
-                                View Proposal
-                              </DropdownMenuItem>
-                              {session?.user?.role === "ADMIN" && status === "DRAFT" && (
-                                <>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem onClick={() => {
-                                    setSelectedProject(project);
-                                    setShowBuilder(true);
-                                  }}>
-                                    Create Proposal
-                                  </DropdownMenuItem>
-                                </>
-                              )}
-                              {session?.user?.role === "CLIENT" && status === "DRAFT" && (
-                                <>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem onClick={() => handleSendToContractor(project)}>
-                                    Send to Contractor
-                                  </DropdownMenuItem>
-                                </>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
+        <TabsContent value="list">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Proposals</CardTitle>
+                  <CardDescription>
+                    {session?.user?.role === "CLIENT" 
+                      ? "Review and manage proposals for your roofing projects"
+                      : "Review and manage proposals you've sent to clients"}
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <div className="flex-1">
+                  <div className="relative">
+                    <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search projects..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="All Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="DRAFT">Draft</SelectItem>
+                      <SelectItem value="SENT">Pending</SelectItem>
+                      <SelectItem value="ACCEPTED">Accepted</SelectItem>
+                      <SelectItem value="REJECTED">Rejected</SelectItem>
+                      <SelectItem value="COMPLETED">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {filteredData.length === 0 ? (
+                <div className="text-center py-12">
+                  <FileTextIcon className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No Proposals Found</h3>
+                  <p className="text-muted-foreground">
+                    {searchTerm || statusFilter !== "all"
+                      ? "Try adjusting your filters to see more results."
+                      : session?.user?.role === "CLIENT"
+                        ? "Create a project using the Roof Calculator to get started, or wait for proposals from contractors."
+                        : "You need to have projects assigned to you before you can create proposals."}
+                  </p>
+                </div>
+              ) : (
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Project Name</TableHead>
+                        <TableHead>{session?.user?.role === "CLIENT" ? "Contractor" : "Client"}</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Total Cost</TableHead>
+                        <TableHead>Area</TableHead>
+                        <TableHead>Material</TableHead>
+                        <TableHead>Date Sent</TableHead>
+                        <TableHead className="w-[100px]">Actions</TableHead>
                       </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredData.map((project) => {
+                        const status = project.proposalStatus || "DRAFT";
+                        return (
+                          <TableRow key={project.id}>
+                            <TableCell className="font-medium">{project.projectName}</TableCell>
+                            <TableCell>
+                              {session?.user?.role === "CLIENT" ? (
+                                status === "DRAFT" ? (
+                                  <span className="text-muted-foreground">Not assigned</span>
+                                ) : (
+                                  project.contractor ? `${project.contractor.firstName} ${project.contractor.lastName}` : 'Unknown'
+                                )
+                              ) : (
+                                `${project.client.firstName} ${project.client.lastName}`
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={`${getStatusColor(status)} px-2 py-1 text-xs font-medium`}>{status}</Badge>
+                            </TableCell>
+                            <TableCell className="font-medium">{formatCurrency(project.totalCost)}</TableCell>
+                            <TableCell>{project.area.toFixed(1)} m²</TableCell>
+                            <TableCell>{project.material}</TableCell>
+                            <TableCell>{formatDate(project.proposalSent || null)}</TableCell>
+                            <TableCell>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreVerticalIcon className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => { setSelectedProject(project); setShowViewer(true); }}>View Proposal</DropdownMenuItem>
+                                  {session?.user?.role === "ADMIN" && status === "DRAFT" && (
+                                    <>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem onClick={() => { setSelectedProject(project); setShowBuilder(true); }}>Create Proposal</DropdownMenuItem>
+                                    </>
+                                  )}
+                                  {session?.user?.role === "CLIENT" && status === "DRAFT" && (
+                                    <>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem onClick={() => handleSendToContractor(project)}>Send to Contractor</DropdownMenuItem>
+                                    </>
+                                  )}
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={async () => {
+                                    const ok = window.confirm("Archive this project? You can unarchive later.");
+                                    if (!ok) return;
+                                    try {
+                                      const res = await fetch(`/api/projects/${project.id}`, { method: "DELETE" });
+                                      if (res.ok) { toast.success("Project archived"); fetchProposals(); }
+                                      else { const err = await res.json().catch(() => ({})); toast.error("Failed to archive", { description: err.error || "Unknown error" }); }
+                                    } catch { toast.error("Failed to archive", { description: "Network error" }); }
+                                  }}>Archive</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="board">
+          <KanbanBoard
+            columns={proposalColumns as unknown as string[]}
+            itemsByColumn={itemsByColumn as unknown as Record<string, { id: string; status: string; position: number; title: string; meta?: React.ReactNode }[]>}
+            onMove={moveItem}
+          />
+        </TabsContent>
+      </Tabs>
 
       {/* Proposal Builder Modal */}
       {showBuilder && selectedProject && (

@@ -78,6 +78,8 @@ model project {
   projectName         String
   clientName          String?
   status              project_status    @default(DRAFT)
+  // Order of the project within its current status column (Kanban ordering)
+  boardPosition       Int               @default(0)
   length              Decimal           @db.Decimal(10, 2)
   width               Decimal           @db.Decimal(10, 2)
   pitch               Decimal           @db.Decimal(5, 2)
@@ -120,6 +122,8 @@ model project {
   contractorId        String?
   proposalSent        DateTime?
   proposalStatus      ProposalStatus?   @default(DRAFT)
+  // Order of the proposal within its current proposalStatus column
+  proposalPosition    Int               @default(0)
   
   // Delivery and Location
   address             String?

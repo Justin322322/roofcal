@@ -159,6 +159,9 @@ async function seedPricingData() {
     console.log('✅ Seeded labor rates');
 
     console.log('🎉 Pricing data seeding completed successfully!');
+
+    // Skipping demo users/projects; registration and data are managed elsewhere
+
   } catch (error) {
     console.error('❌ Error seeding pricing data:', error);
     throw error;

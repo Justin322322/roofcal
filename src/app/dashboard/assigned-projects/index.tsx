@@ -27,6 +27,8 @@ import type { Project } from "@/types/project";
 import { ProposalBuilder } from "../proposals/proposal-builder";
 import { ProjectStatusManager } from "@/components/project-status-manager";
 import { getStatusDisplayInfo } from "@/lib/project-workflow";
+import { KanbanBoard } from "@/components/kanban/kanban-board";
+import { useKanban } from "@/hooks/use-kanban";
 
 interface AssignedProject extends Project {
   client?: {
@@ -216,6 +218,61 @@ export function AssignedProjectsContent() {
   const [selectedClient, setSelectedClient] = useState<ClientData | null>(null);
   const [showClientDetails, setShowClientDetails] = useState(false);
 
+  // Kanban setup
+  const projectColumns = [
+    "CLIENT_PENDING",
+    "CONTRACTOR_REVIEWING",
+    "PROPOSAL_SENT",
+    "ACCEPTED",
+    "IN_PROGRESS",
+    "COMPLETED",
+    "REJECTED",
+  ] as const;
+
+  const kanbanItems = useMemo(
+    () =>
+      assignedProjects.map((p) => ({
+        id: p.id,
+        title: p.projectName,
+        status: p.status as string,
+        position: (p as unknown as { boardPosition?: number }).boardPosition ?? 0,
+        meta: (
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <span>{p.material}</span>
+            <span>{(p.area as number).toFixed(1)} m²</span>
+          </div>
+        ),
+      })),
+    [assignedProjects]
+  );
+
+  const { itemsByColumn, moveItem } = useKanban(kanbanItems, {
+    columns: (projectColumns as unknown as string[]),
+    onReorder: async (items) => {
+      await fetch("/api/projects/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items }),
+      });
+      await fetchAssignedProjects();
+    },
+    canMove: (item, toStatus) => {
+      // Admin-only page; enforce forward-only
+      const from = item.status;
+      const forward: Record<string, string[]> = {
+        CLIENT_PENDING: ["CONTRACTOR_REVIEWING"],
+        CONTRACTOR_REVIEWING: ["PROPOSAL_SENT"],
+        PROPOSAL_SENT: [], // accept/reject happens by client
+        ACCEPTED: ["IN_PROGRESS"],
+        IN_PROGRESS: ["COMPLETED"],
+        COMPLETED: [],
+        REJECTED: [],
+      };
+      if (toStatus === from) return true; // reorder within column
+      return forward[from]?.includes(toStatus) ?? false;
+    },
+  });
+
   const handleStatusUpdate = async (projectId: string, newStatus: Project["status"]) => {
     setActionLoading(projectId);
     try {
@@ -379,6 +436,7 @@ export function AssignedProjectsContent() {
             <TabsTrigger value="analytics">
               Analytics
             </TabsTrigger>
+            <TabsTrigger value="board">Board</TabsTrigger>
           </TabsList>
 
           {/* My Tasks Tab */}
@@ -600,6 +658,15 @@ export function AssignedProjectsContent() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Board Tab */}
+          <TabsContent value="board" className="space-y-4">
+            <KanbanBoard
+              columns={projectColumns as unknown as string[]}
+              itemsByColumn={itemsByColumn as unknown as Record<string, { id: string; status: string; position: number; title: string; meta?: React.ReactNode }[]>}
+              onMove={moveItem}
+            />
           </TabsContent>
         </Tabs>
       )}

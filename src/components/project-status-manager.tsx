@@ -17,8 +17,7 @@ import {
   ChevronDownIcon, 
   ClockIcon,
   AlertCircleIcon,
-  InfoIcon,
-  type LucideIcon
+  InfoIcon
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import type { Project, ProjectStatus } from "@/types/project";

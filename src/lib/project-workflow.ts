@@ -10,7 +10,6 @@ import {
   CheckCircle2Icon,
   XCircleIcon,
   ArchiveIcon,
-  type LucideIcon,
 } from "lucide-react";
 
 export interface WorkflowTransition {
