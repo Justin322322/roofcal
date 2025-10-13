@@ -21,6 +21,7 @@ import DeliveryTestPage from "./delivery-test/page";
 type DashboardSection =
   | "roof-calculator"
   | "assigned-projects"
+  | "project-management"
   | "proposals"
   | "account-management"
   | "system-maintenance"
@@ -109,6 +110,7 @@ export default function DashboardClient() {
       case "proposals":
         return true; // Both admin and client can access proposals
       case "assigned-projects":
+      case "project-management":
       case "delivery-settings":
       case "delivery-test":
       case "account-management":
@@ -123,7 +125,7 @@ export default function DashboardClient() {
   // Set default tab based on user role when no tab is specified
   useEffect(() => {
     if (!isLoading && session?.user?.role && !activeSection) {
-      const defaultSection = session.user.role === UserRole.CLIENT ? "roof-calculator" : "assigned-projects";
+      const defaultSection = session.user.role === UserRole.CLIENT ? "roof-calculator" : "project-management";
       setActiveSection(defaultSection);
     }
   }, [isLoading, session?.user?.role, activeSection, setActiveSection]);
@@ -132,7 +134,7 @@ export default function DashboardClient() {
   useEffect(() => {
     if (!isLoading && session?.user?.role && activeSection) {
       if (!hasPermission(activeSection, session.user.role)) {
-        const defaultSection = session.user.role === UserRole.CLIENT ? "roof-calculator" : "assigned-projects";
+        const defaultSection = session.user.role === UserRole.CLIENT ? "roof-calculator" : "project-management";
         // Only redirect if we're not already on the correct section
         if (activeSection !== defaultSection) {
           setActiveSection(defaultSection);
@@ -172,6 +174,7 @@ export default function DashboardClient() {
       case "roof-calculator":
         return <RoofCalculatorContent />;
       case "assigned-projects":
+      case "project-management":
         return <AssignedProjectsContent />;
       case "proposals":
         return <ProposalsPage />;
