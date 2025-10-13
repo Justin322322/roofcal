@@ -51,12 +51,12 @@ export async function GET(
     }
 
     // Get warehouse materials with pricing info
-    const warehouseMaterials = await prisma.warehouseMaterial.findMany({
+    const warehouseMaterials = await prisma.warehousematerial.findMany({
       where: { 
         warehouseId
       },
       include: {
-        pricingConfig: true,
+        pricingconfig: true,
       },
       orderBy: {
         created_at: 'desc',
@@ -73,17 +73,17 @@ export async function GET(
       createdAt: wm.created_at,
       updatedAt: wm.updated_at,
       material: {
-        id: wm.pricingConfig.id,
-        name: wm.pricingConfig.name,
-        label: wm.pricingConfig.label,
-        description: wm.pricingConfig.description,
-        price: Number(wm.pricingConfig.price),
-        unit: wm.pricingConfig.unit,
-        category: wm.pricingConfig.category,
-        length: wm.pricingConfig.length ? Number(wm.pricingConfig.length) : undefined,
-        width: wm.pricingConfig.width ? Number(wm.pricingConfig.width) : undefined,
-        height: wm.pricingConfig.height ? Number(wm.pricingConfig.height) : undefined,
-        volume: wm.pricingConfig.volume ? Number(wm.pricingConfig.volume) : undefined,
+        id: wm.pricingconfig.id,
+        name: wm.pricingconfig.name,
+        label: wm.pricingconfig.label,
+        description: wm.pricingconfig.description,
+        price: Number(wm.pricingconfig.price),
+        unit: wm.pricingconfig.unit,
+        category: wm.pricingconfig.category,
+        length: wm.pricingconfig.length ? Number(wm.pricingconfig.length) : undefined,
+        width: wm.pricingconfig.width ? Number(wm.pricingconfig.width) : undefined,
+        height: wm.pricingconfig.height ? Number(wm.pricingconfig.height) : undefined,
+        volume: wm.pricingconfig.volume ? Number(wm.pricingconfig.volume) : undefined,
       },
     }));
 
@@ -142,7 +142,7 @@ export async function POST(
     }
 
     // Verify material exists in pricing config
-    const material = await prisma.pricingConfig.findUnique({
+    const material = await prisma.pricingconfig.findUnique({
       where: { id: validatedData.materialId },
     });
 
@@ -154,7 +154,7 @@ export async function POST(
     }
 
     // Check if material already exists in warehouse (active only)
-    const existingActiveMaterial = await prisma.warehouseMaterial.findFirst({
+    const existingActiveMaterial = await prisma.warehousematerial.findFirst({
       where: {
         warehouseId,
         materialId: validatedData.materialId,
@@ -170,7 +170,7 @@ export async function POST(
     }
 
     // Check if there's an inactive material to reactivate
-    const existingInactiveMaterial = await prisma.warehouseMaterial.findUnique({
+    const existingInactiveMaterial = await prisma.warehousematerial.findUnique({
       where: {
         warehouseId_materialId: {
           warehouseId,
@@ -178,7 +178,7 @@ export async function POST(
         },
       },
       include: {
-        pricingConfig: true,
+        pricingconfig: true,
       },
     });
 
@@ -186,7 +186,7 @@ export async function POST(
 
     if (existingInactiveMaterial && !existingInactiveMaterial.isActive) {
       // Reactivate existing inactive material
-      warehouseMaterial = await prisma.warehouseMaterial.update({
+      warehouseMaterial = await prisma.warehousematerial.update({
         where: { id: existingInactiveMaterial.id },
         data: {
           quantity: validatedData.quantity,
@@ -195,21 +195,23 @@ export async function POST(
           updated_at: new Date(),
         },
         include: {
-          pricingConfig: true,
+          pricingconfig: true,
         },
       });
     } else {
       // Create new warehouse material
-      warehouseMaterial = await prisma.warehouseMaterial.create({
+      warehouseMaterial = await prisma.warehousematerial.create({
         data: {
+          id: crypto.randomUUID(),
           warehouseId,
           materialId: validatedData.materialId,
           quantity: validatedData.quantity,
           locationAdjustment: validatedData.locationAdjustment,
           isActive: true,
+          updated_at: new Date(),
         },
         include: {
-          pricingConfig: true,
+          pricingconfig: true,
         },
       });
     }
@@ -224,17 +226,17 @@ export async function POST(
       createdAt: warehouseMaterial.created_at,
       updatedAt: warehouseMaterial.updated_at,
       material: {
-        id: warehouseMaterial.pricingConfig.id,
-        name: warehouseMaterial.pricingConfig.name,
-        label: warehouseMaterial.pricingConfig.label,
-        description: warehouseMaterial.pricingConfig.description,
-        price: Number(warehouseMaterial.pricingConfig.price),
-        unit: warehouseMaterial.pricingConfig.unit,
-        category: warehouseMaterial.pricingConfig.category,
-        length: warehouseMaterial.pricingConfig.length ? Number(warehouseMaterial.pricingConfig.length) : undefined,
-        width: warehouseMaterial.pricingConfig.width ? Number(warehouseMaterial.pricingConfig.width) : undefined,
-        height: warehouseMaterial.pricingConfig.height ? Number(warehouseMaterial.pricingConfig.height) : undefined,
-        volume: warehouseMaterial.pricingConfig.volume ? Number(warehouseMaterial.pricingConfig.volume) : undefined,
+        id: warehouseMaterial.pricingconfig.id,
+        name: warehouseMaterial.pricingconfig.name,
+        label: warehouseMaterial.pricingconfig.label,
+        description: warehouseMaterial.pricingconfig.description,
+        price: Number(warehouseMaterial.pricingconfig.price),
+        unit: warehouseMaterial.pricingconfig.unit,
+        category: warehouseMaterial.pricingconfig.category,
+        length: warehouseMaterial.pricingconfig.length ? Number(warehouseMaterial.pricingconfig.length) : undefined,
+        width: warehouseMaterial.pricingconfig.width ? Number(warehouseMaterial.pricingconfig.width) : undefined,
+        height: warehouseMaterial.pricingconfig.height ? Number(warehouseMaterial.pricingconfig.height) : undefined,
+        volume: warehouseMaterial.pricingconfig.volume ? Number(warehouseMaterial.pricingconfig.volume) : undefined,
       },
     };
 

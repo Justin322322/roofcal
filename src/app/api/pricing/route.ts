@@ -34,11 +34,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const pricingConfig = await getPricingConfig(category || undefined);
+    const pricingconfig = await getPricingConfig(category || undefined);
 
     return NextResponse.json({
       success: true,
-      data: pricingConfig,
+      data: pricingconfig,
     });
   } catch (error) {
     console.error("Error fetching pricing config:", error);
@@ -73,11 +73,11 @@ export async function POST(request: NextRequest) {
     // Validate request body
     const validatedData = CreatePricingConfigSchema.parse(body);
 
-    const pricingConfig = await createPricingConfig(validatedData);
+    const pricingconfig = await createPricingConfig(validatedData);
 
     return NextResponse.json({
       success: true,
-      data: pricingConfig,
+      data: pricingconfig,
       message: "Pricing configuration created successfully",
     });
   } catch (error) {

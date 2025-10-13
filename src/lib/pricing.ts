@@ -95,7 +95,7 @@ export async function getPricingConfig(category?: PricingCategory): Promise<Pric
 
   // Fetch from database
   const where = category ? { category, isActive: true } : { isActive: true };
-  const data = await (prisma as unknown as { pricingConfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]> } }).pricingConfig.findMany({
+  const data = await (prisma as unknown as { pricingconfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]> } }).pricingconfig.findMany({
     where,
     orderBy: [
       { category: 'asc' },
@@ -211,7 +211,7 @@ export async function createPricingConfig(data: CreatePricingConfig): Promise<Pr
   const validatedData = CreatePricingConfigSchema.parse(data);
 
   // Check if pricing config with same category and name already exists
-  const existing = await (prisma as unknown as { pricingConfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]>; findUnique: (args: unknown) => Promise<PricingConfigDBResult | null>; create: (args: unknown) => Promise<PricingConfigDBResult>; update: (args: unknown) => Promise<PricingConfigDBResult> } }).pricingConfig.findUnique({
+  const existing = await (prisma as unknown as { pricingconfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]>; findUnique: (args: unknown) => Promise<PricingConfigDBResult | null>; create: (args: unknown) => Promise<PricingConfigDBResult>; update: (args: unknown) => Promise<PricingConfigDBResult> } }).pricingconfig.findUnique({
     where: {
       category_name: {
         category: validatedData.category,
@@ -225,7 +225,7 @@ export async function createPricingConfig(data: CreatePricingConfig): Promise<Pr
   }
 
   // Create new pricing config
-  const created = await (prisma as unknown as { pricingConfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]>; findUnique: (args: unknown) => Promise<PricingConfigDBResult | null>; create: (args: unknown) => Promise<PricingConfigDBResult>; update: (args: unknown) => Promise<PricingConfigDBResult> } }).pricingConfig.create({
+  const created = await (prisma as unknown as { pricingconfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]>; findUnique: (args: unknown) => Promise<PricingConfigDBResult | null>; create: (args: unknown) => Promise<PricingConfigDBResult>; update: (args: unknown) => Promise<PricingConfigDBResult> } }).pricingconfig.create({
     data: {
       ...validatedData,
       price: validatedData.price,
@@ -254,7 +254,7 @@ export async function updatePricingConfig(id: string, data: UpdatePricingConfig)
   const validatedData = UpdatePricingConfigSchema.parse(data);
 
   // Check if pricing config exists
-  const existing = await (prisma as unknown as { pricingConfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]>; findUnique: (args: unknown) => Promise<PricingConfigDBResult | null>; create: (args: unknown) => Promise<PricingConfigDBResult>; update: (args: unknown) => Promise<PricingConfigDBResult> } }).pricingConfig.findUnique({
+  const existing = await (prisma as unknown as { pricingconfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]>; findUnique: (args: unknown) => Promise<PricingConfigDBResult | null>; create: (args: unknown) => Promise<PricingConfigDBResult>; update: (args: unknown) => Promise<PricingConfigDBResult> } }).pricingconfig.findUnique({
     where: { id }
   });
 
@@ -263,7 +263,7 @@ export async function updatePricingConfig(id: string, data: UpdatePricingConfig)
   }
 
   // Update pricing config
-  const updated = await (prisma as unknown as { pricingConfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]>; findUnique: (args: unknown) => Promise<PricingConfigDBResult | null>; create: (args: unknown) => Promise<PricingConfigDBResult>; update: (args: unknown) => Promise<PricingConfigDBResult> } }).pricingConfig.update({
+  const updated = await (prisma as unknown as { pricingconfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]>; findUnique: (args: unknown) => Promise<PricingConfigDBResult | null>; create: (args: unknown) => Promise<PricingConfigDBResult>; update: (args: unknown) => Promise<PricingConfigDBResult> } }).pricingconfig.update({
     where: { id },
     data: validatedData,
   });
@@ -287,7 +287,7 @@ export async function updatePricingConfig(id: string, data: UpdatePricingConfig)
  */
 export async function deletePricingConfig(id: string): Promise<void> {
   // Check if pricing config exists
-  const existing = await (prisma as unknown as { pricingConfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]>; findUnique: (args: unknown) => Promise<PricingConfigDBResult | null>; create: (args: unknown) => Promise<PricingConfigDBResult>; update: (args: unknown) => Promise<PricingConfigDBResult> } }).pricingConfig.findUnique({
+  const existing = await (prisma as unknown as { pricingconfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]>; findUnique: (args: unknown) => Promise<PricingConfigDBResult | null>; create: (args: unknown) => Promise<PricingConfigDBResult>; update: (args: unknown) => Promise<PricingConfigDBResult> } }).pricingconfig.findUnique({
     where: { id }
   });
 
@@ -296,7 +296,7 @@ export async function deletePricingConfig(id: string): Promise<void> {
   }
 
   // Soft delete by setting isActive to false
-  await (prisma as unknown as { pricingConfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]>; findUnique: (args: unknown) => Promise<PricingConfigDBResult | null>; create: (args: unknown) => Promise<PricingConfigDBResult>; update: (args: unknown) => Promise<PricingConfigDBResult> } }).pricingConfig.update({
+  await (prisma as unknown as { pricingconfig: { findMany: (args: unknown) => Promise<PricingConfigDBResult[]>; findUnique: (args: unknown) => Promise<PricingConfigDBResult | null>; create: (args: unknown) => Promise<PricingConfigDBResult>; update: (args: unknown) => Promise<PricingConfigDBResult> } }).pricingconfig.update({
     where: { id },
     data: { isActive: false }
   });

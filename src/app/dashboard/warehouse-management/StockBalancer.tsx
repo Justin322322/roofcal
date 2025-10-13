@@ -190,7 +190,7 @@ const StockBalancer: React.FC<StockBalancerProps> = ({
                 maxReduction,
                 suggestedReduction,
                 materialId: material.id,
-                pricingConfigId: material.materialId
+                pricingconfigId: material.materialId
               });
               
               if (suggestedReduction > 0 && suggestedReduction < material.quantity) {

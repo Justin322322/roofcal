@@ -40,11 +40,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     // Validate request body
     const validatedData = UpdatePricingConfigSchema.parse(body);
 
-    const pricingConfig = await updatePricingConfig(id, validatedData);
+    const pricingconfig = await updatePricingConfig(id, validatedData);
 
     return NextResponse.json({
       success: true,
-      data: pricingConfig,
+      data: pricingconfig,
       message: "Pricing configuration updated successfully",
     });
   } catch (error) {

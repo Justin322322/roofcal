@@ -70,23 +70,23 @@ export async function validateMaterialAvailability(
   const insufficientMaterials: MaterialAvailabilityCheck['insufficientMaterials'] = [];
 
   // Get warehouse materials
-  const warehouseMaterials = await prisma.warehouseMaterial.findMany({
+  const warehousematerials = await prisma.warehousematerial.findMany({
     where: {
       warehouseId: targetWarehouseId,
       isActive: true
     },
     include: {
-      pricingConfig: true
+      pricingconfig: true
     }
   });
 
   // Check availability for each required material
   for (const requiredMaterial of materialCalculation.materials) {
-    const warehouseMaterial = warehouseMaterials.find(
+    const warehousematerial = warehousematerials.find(
       wm => wm.materialId === requiredMaterial.materialId
     );
 
-    if (!warehouseMaterial) {
+    if (!warehousematerial) {
       insufficientMaterials.push({
         materialId: requiredMaterial.materialId,
         materialName: requiredMaterial.label,
@@ -94,13 +94,13 @@ export async function validateMaterialAvailability(
         available: 0,
         shortage: requiredMaterial.quantity
       });
-    } else if (warehouseMaterial.quantity < requiredMaterial.quantity) {
+    } else if (warehousematerial.quantity < requiredMaterial.quantity) {
       insufficientMaterials.push({
         materialId: requiredMaterial.materialId,
         materialName: requiredMaterial.label,
         required: requiredMaterial.quantity,
-        available: warehouseMaterial.quantity,
-        shortage: requiredMaterial.quantity - warehouseMaterial.quantity
+        available: warehousematerial.quantity,
+        shortage: requiredMaterial.quantity - warehousematerial.quantity
       });
     }
   }
@@ -169,37 +169,39 @@ export async function reserveProjectMaterials(
       // Process each required material
       for (const requiredMaterial of materialCalculation.materials) {
         // Get or create warehouse material record
-        let warehouseMaterial = await tx.warehouseMaterial.findFirst({
+        let warehousematerial = await tx.warehousematerial.findFirst({
           where: {
             warehouseId: targetWarehouseId,
             materialId: requiredMaterial.materialId
           }
         });
 
-        if (!warehouseMaterial) {
+        if (!warehousematerial) {
           // Create new warehouse material record
-          warehouseMaterial = await tx.warehouseMaterial.create({
+          warehousematerial = await tx.warehousematerial.create({
             data: {
+              id: crypto.randomUUID(),
               warehouseId: targetWarehouseId,
               materialId: requiredMaterial.materialId,
               quantity: 0, // Start with 0 since we're consuming
               locationAdjustment: 0,
-              isActive: true
+              isActive: true,
+              updated_at: new Date()
             }
           });
         }
 
         // Check if materials are already reserved for this project
-        const existingReservation = await tx.projectMaterial.findFirst({
+        const existingReservation = await tx.projectmaterial.findFirst({
           where: {
             projectId: projectId,
-            warehouseMaterialId: warehouseMaterial.id
+            warehouseMaterialId: warehousematerial.id
           }
         });
 
         if (existingReservation) {
           // Update existing reservation
-          await tx.projectMaterial.update({
+          await tx.projectmaterial.update({
             where: { id: existingReservation.id },
             data: {
               quantity: requiredMaterial.quantity,
@@ -211,13 +213,15 @@ export async function reserveProjectMaterials(
           });
         } else {
           // Create new reservation
-          await tx.projectMaterial.create({
+          await tx.projectmaterial.create({
             data: {
+              id: crypto.randomUUID(),
               projectId: projectId,
-              warehouseMaterialId: warehouseMaterial.id,
+              warehouseMaterialId: warehousematerial.id,
               quantity: requiredMaterial.quantity,
               status: 'RESERVED',
-              reservedAt: new Date()
+              reservedAt: new Date(),
+              updated_at: new Date()
             }
           });
         }
@@ -225,7 +229,7 @@ export async function reserveProjectMaterials(
         consumedMaterials.push({
           materialId: requiredMaterial.materialId,
           quantity: requiredMaterial.quantity,
-          remainingStock: warehouseMaterial.quantity
+          remainingStock: warehousematerial.quantity
         });
       }
 
@@ -265,17 +269,17 @@ export async function consumeProjectMaterials(
 ): Promise<MaterialConsumptionResult> {
   try {
     // Get project materials that are reserved
-    const projectMaterials = await prisma.projectMaterial.findMany({
+    const projectmaterials = await prisma.projectmaterial.findMany({
       where: {
         projectId: projectId,
         status: 'RESERVED'
       },
       include: {
-        warehouseMaterial: true
+        warehousematerial: true
       }
     });
 
-    if (projectMaterials.length === 0) {
+    if (projectmaterials.length === 0) {
       return {
         success: false,
         message: "No reserved materials found for project",
@@ -287,28 +291,28 @@ export async function consumeProjectMaterials(
     const result = await prisma.$transaction(async (tx) => {
       const consumedMaterials: MaterialConsumptionResult['consumedMaterials'] = [];
       
-      for (const projectMaterial of projectMaterials) {
+      for (const projectmaterial of projectmaterials) {
         // Check if warehouse has enough stock
-        if (projectMaterial.warehouseMaterial.quantity < projectMaterial.quantity) {
+        if (projectmaterial.warehousematerial.quantity < projectmaterial.quantity) {
           throw new Error(
-            `Insufficient stock for material ${projectMaterial.warehouseMaterial.materialId}. ` +
-            `Required: ${projectMaterial.quantity}, Available: ${projectMaterial.warehouseMaterial.quantity}`
+            `Insufficient stock for material ${projectmaterial.warehousematerial.materialId}. ` +
+            `Required: ${projectmaterial.quantity}, Available: ${projectmaterial.warehousematerial.quantity}`
           );
         }
 
         // Deduct from warehouse stock
-        const updatedWarehouseMaterial = await tx.warehouseMaterial.update({
-          where: { id: projectMaterial.warehouseMaterialId },
+        const updatedWarehouseMaterial = await tx.warehousematerial.update({
+          where: { id: projectmaterial.warehouseMaterialId },
           data: {
             quantity: {
-              decrement: projectMaterial.quantity
+              decrement: projectmaterial.quantity
             }
           }
         });
 
         // Mark as consumed
-        await tx.projectMaterial.update({
-          where: { id: projectMaterial.id },
+        await tx.projectmaterial.update({
+          where: { id: projectmaterial.id },
           data: {
             status: 'CONSUMED',
             consumedAt: new Date()
@@ -316,8 +320,8 @@ export async function consumeProjectMaterials(
         });
 
         consumedMaterials.push({
-          materialId: projectMaterial.warehouseMaterial.materialId,
-          quantity: projectMaterial.quantity,
+          materialId: projectmaterial.warehousematerial.materialId,
+          quantity: projectmaterial.quantity,
           remainingStock: updatedWarehouseMaterial.quantity
         });
       }
@@ -350,17 +354,17 @@ export async function returnProjectMaterials(
 ): Promise<MaterialConsumptionResult> {
   try {
     // Get project materials
-    const projectMaterials = await prisma.projectMaterial.findMany({
+    const projectmaterials = await prisma.projectmaterial.findMany({
       where: {
         projectId: projectId,
         status: { in: ['RESERVED', 'CONSUMED'] }
       },
       include: {
-        warehouseMaterial: true
+        warehousematerial: true
       }
     });
 
-    if (projectMaterials.length === 0) {
+    if (projectmaterials.length === 0) {
       return {
         success: true,
         message: "No materials to return for project"
@@ -371,16 +375,16 @@ export async function returnProjectMaterials(
     const result = await prisma.$transaction(async (tx) => {
       const returnedMaterials: MaterialConsumptionResult['consumedMaterials'] = [];
       
-      for (const projectMaterial of projectMaterials) {
+      for (const projectmaterial of projectmaterials) {
         let newStatus: 'RETURNED' | 'CANCELLED' = 'RETURNED';
         
         // If materials were consumed, return them to warehouse
-        if (projectMaterial.status === 'CONSUMED') {
-          await tx.warehouseMaterial.update({
-            where: { id: projectMaterial.warehouseMaterialId },
+        if (projectmaterial.status === 'CONSUMED') {
+          await tx.warehousematerial.update({
+            where: { id: projectmaterial.warehouseMaterialId },
             data: {
               quantity: {
-                increment: projectMaterial.quantity
+                increment: projectmaterial.quantity
               }
             }
           });
@@ -390,8 +394,8 @@ export async function returnProjectMaterials(
         }
 
         // Update project material status
-        await tx.projectMaterial.update({
-          where: { id: projectMaterial.id },
+        await tx.projectmaterial.update({
+          where: { id: projectmaterial.id },
           data: {
             status: newStatus,
             returnedAt: new Date(),
@@ -400,13 +404,13 @@ export async function returnProjectMaterials(
         });
 
         // Get updated warehouse material quantity
-        const updatedWarehouseMaterial = await tx.warehouseMaterial.findUnique({
-          where: { id: projectMaterial.warehouseMaterialId }
+        const updatedWarehouseMaterial = await tx.warehousematerial.findUnique({
+          where: { id: projectmaterial.warehouseMaterialId }
         });
 
         returnedMaterials.push({
-          materialId: projectMaterial.warehouseMaterial.materialId,
-          quantity: projectMaterial.quantity,
+          materialId: projectmaterial.warehousematerial.materialId,
+          quantity: projectmaterial.quantity,
           remainingStock: updatedWarehouseMaterial?.quantity || 0
         });
       }
@@ -443,27 +447,27 @@ export async function returnProjectMaterials(
  * Get material consumption summary for a project
  */
 export async function getProjectMaterialSummary(projectId: string) {
-  const projectMaterials = await prisma.projectMaterial.findMany({
+  const projectmaterials = await prisma.projectmaterial.findMany({
     where: { projectId },
     include: {
-      warehouseMaterial: {
+      warehousematerial: {
         include: {
-          pricingConfig: true
+          pricingconfig: true
         }
       }
     }
   });
 
   const summary = {
-    totalMaterials: projectMaterials.length,
-    reservedMaterials: projectMaterials.filter(pm => pm.status === 'RESERVED').length,
-    consumedMaterials: projectMaterials.filter(pm => pm.status === 'CONSUMED').length,
-    returnedMaterials: projectMaterials.filter(pm => pm.status === 'RETURNED').length,
-    cancelledMaterials: projectMaterials.filter(pm => pm.status === 'CANCELLED').length,
-    materials: projectMaterials.map(pm => ({
+    totalMaterials: projectmaterials.length,
+    reservedMaterials: projectmaterials.filter(pm => pm.status === 'RESERVED').length,
+    consumedMaterials: projectmaterials.filter(pm => pm.status === 'CONSUMED').length,
+    returnedMaterials: projectmaterials.filter(pm => pm.status === 'RETURNED').length,
+    cancelledMaterials: projectmaterials.filter(pm => pm.status === 'CANCELLED').length,
+    materials: projectmaterials.map(pm => ({
       id: pm.id,
-      materialName: pm.warehouseMaterial.pricingConfig.label,
-      category: pm.warehouseMaterial.pricingConfig.category,
+      materialName: pm.warehousematerial.pricingconfig.label,
+      category: pm.warehousematerial.pricingconfig.category,
       quantity: pm.quantity,
       status: pm.status,
       reservedAt: pm.reservedAt,

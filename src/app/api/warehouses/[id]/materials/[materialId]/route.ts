@@ -43,10 +43,10 @@ export async function PUT(
     const validatedData = UpdateWarehouseMaterialSchema.parse(body);
 
     // Verify warehouse material exists
-    const existingWarehouseMaterial = await prisma.warehouseMaterial.findUnique({
+    const existingWarehouseMaterial = await prisma.warehousematerial.findUnique({
       where: { id: materialId },
       include: {
-        pricingConfig: true,
+        pricingconfig: true,
       },
     });
 
@@ -66,7 +66,7 @@ export async function PUT(
     }
 
     // Update warehouse material
-    const updatedWarehouseMaterial = await prisma.warehouseMaterial.update({
+    const updatedWarehouseMaterial = await prisma.warehousematerial.update({
       where: { id: materialId },
       data: {
         ...(validatedData.quantity !== undefined && { quantity: validatedData.quantity }),
@@ -75,7 +75,7 @@ export async function PUT(
         updated_at: new Date(),
       },
       include: {
-        pricingConfig: true,
+        pricingconfig: true,
       },
     });
 
@@ -85,7 +85,7 @@ export async function PUT(
       // Simple threshold heuristic based on category like in warnings component
       let warningThreshold = 10;
       let criticalThreshold = 5;
-      const category = updatedWarehouseMaterial.pricingConfig.category;
+      const category = updatedWarehouseMaterial.pricingconfig.category;
       if (category === 'Labor') {
         warningThreshold = 1;
         criticalThreshold = 0;
@@ -111,7 +111,7 @@ export async function PUT(
             toUserName,
             toUserEmail,
             warehouseName: (await prisma.warehouse.findUnique({ where: { id: warehouseId }, select: { name: true } }))?.name || 'Warehouse',
-            materialName: updatedWarehouseMaterial.pricingConfig.label || updatedWarehouseMaterial.pricingConfig.name,
+            materialName: updatedWarehouseMaterial.pricingconfig.label || updatedWarehouseMaterial.pricingconfig.name,
             currentStock: newQty,
             threshold: criticalThreshold,
           });
@@ -131,17 +131,17 @@ export async function PUT(
       createdAt: updatedWarehouseMaterial.created_at,
       updatedAt: updatedWarehouseMaterial.updated_at,
       material: {
-        id: updatedWarehouseMaterial.pricingConfig.id,
-        name: updatedWarehouseMaterial.pricingConfig.name,
-        label: updatedWarehouseMaterial.pricingConfig.label,
-        description: updatedWarehouseMaterial.pricingConfig.description,
-        price: Number(updatedWarehouseMaterial.pricingConfig.price),
-        unit: updatedWarehouseMaterial.pricingConfig.unit,
-        category: updatedWarehouseMaterial.pricingConfig.category,
-        length: updatedWarehouseMaterial.pricingConfig.length ? Number(updatedWarehouseMaterial.pricingConfig.length) : undefined,
-        width: updatedWarehouseMaterial.pricingConfig.width ? Number(updatedWarehouseMaterial.pricingConfig.width) : undefined,
-        height: updatedWarehouseMaterial.pricingConfig.height ? Number(updatedWarehouseMaterial.pricingConfig.height) : undefined,
-        volume: updatedWarehouseMaterial.pricingConfig.volume ? Number(updatedWarehouseMaterial.pricingConfig.volume) : undefined,
+        id: updatedWarehouseMaterial.pricingconfig.id,
+        name: updatedWarehouseMaterial.pricingconfig.name,
+        label: updatedWarehouseMaterial.pricingconfig.label,
+        description: updatedWarehouseMaterial.pricingconfig.description,
+        price: Number(updatedWarehouseMaterial.pricingconfig.price),
+        unit: updatedWarehouseMaterial.pricingconfig.unit,
+        category: updatedWarehouseMaterial.pricingconfig.category,
+        length: updatedWarehouseMaterial.pricingconfig.length ? Number(updatedWarehouseMaterial.pricingconfig.length) : undefined,
+        width: updatedWarehouseMaterial.pricingconfig.width ? Number(updatedWarehouseMaterial.pricingconfig.width) : undefined,
+        height: updatedWarehouseMaterial.pricingconfig.height ? Number(updatedWarehouseMaterial.pricingconfig.height) : undefined,
+        volume: updatedWarehouseMaterial.pricingconfig.volume ? Number(updatedWarehouseMaterial.pricingconfig.volume) : undefined,
       },
     };
 
@@ -203,7 +203,7 @@ export async function DELETE(
     const { id: warehouseId, materialId } = await params;
 
     // Verify warehouse material exists
-    const existingWarehouseMaterial = await prisma.warehouseMaterial.findUnique({
+    const existingWarehouseMaterial = await prisma.warehousematerial.findUnique({
       where: { id: materialId },
     });
 
@@ -223,7 +223,7 @@ export async function DELETE(
     }
 
     // Soft delete by setting isActive to false
-    await prisma.warehouseMaterial.update({
+    await prisma.warehousematerial.update({
       where: { id: materialId },
       data: { 
         isActive: false,

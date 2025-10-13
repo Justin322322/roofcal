@@ -50,7 +50,7 @@ export async function calculateProjectMaterials(project: Project | ProjectWithDe
   let totalCost = 0;
 
   // Get all active materials from pricing config
-  const pricingConfigs = await prisma.pricingConfig.findMany({
+  const pricingconfigs = await prisma.pricingconfig.findMany({
     where: { isActive: true },
     orderBy: { category: 'asc' }
   });
@@ -61,7 +61,7 @@ export async function calculateProjectMaterials(project: Project | ProjectWithDe
   const ridgeLength = Number(project.ridgeLength || 0);
 
   // 1. Main roofing material
-  const mainMaterial = pricingConfigs.find(pc => 
+  const mainMaterial = pricingconfigs.find(pc => 
     pc.category === 'material' && 
     pc.name.toLowerCase().includes(project.material.toLowerCase())
   );
@@ -85,7 +85,7 @@ export async function calculateProjectMaterials(project: Project | ProjectWithDe
 
   // 2. Gutter materials
   if (gutterLength > 0) {
-    const gutterMaterial = pricingConfigs.find(pc => 
+    const gutterMaterial = pricingconfigs.find(pc => 
       pc.category === 'gutter' && 
       pc.name.toLowerCase().includes(project.gutterSize.toLowerCase())
     );
@@ -110,7 +110,7 @@ export async function calculateProjectMaterials(project: Project | ProjectWithDe
 
   // 3. Ridge materials
   if (ridgeLength > 0) {
-    const ridgeMaterial = pricingConfigs.find(pc => 
+    const ridgeMaterial = pricingconfigs.find(pc => 
       pc.category === 'ridge' && 
       pc.name.toLowerCase().includes(project.ridgeType.toLowerCase())
     );
@@ -134,7 +134,7 @@ export async function calculateProjectMaterials(project: Project | ProjectWithDe
   }
 
   // 4. Screws/fasteners
-  const screwMaterial = pricingConfigs.find(pc => 
+  const screwMaterial = pricingconfigs.find(pc => 
     pc.category === 'screws'
   );
   
@@ -158,7 +158,7 @@ export async function calculateProjectMaterials(project: Project | ProjectWithDe
 
   // 5. Insulation
   if (project.insulationThickness && project.insulationThickness !== 'none') {
-    const insulationMaterial = pricingConfigs.find(pc => 
+    const insulationMaterial = pricingconfigs.find(pc => 
       pc.category === 'insulation' && 
       pc.name.toLowerCase().includes(project.insulationThickness.toLowerCase())
     );
@@ -183,7 +183,7 @@ export async function calculateProjectMaterials(project: Project | ProjectWithDe
 
   // 6. Ventilation
   if (project.ventilationPieces > 0) {
-    const ventilationMaterial = pricingConfigs.find(pc => 
+    const ventilationMaterial = pricingconfigs.find(pc => 
       pc.category === 'ventilation'
     );
     
@@ -206,7 +206,7 @@ export async function calculateProjectMaterials(project: Project | ProjectWithDe
   }
 
   // 7. Labor
-  const laborMaterial = pricingConfigs.find(pc => 
+  const laborMaterial = pricingconfigs.find(pc => 
     pc.category === 'labor'
   );
   
@@ -266,7 +266,7 @@ export async function findBestWarehouseForProject(project: Project | ProjectWith
       materials: {
         where: { isActive: true },
         include: {
-          pricingConfig: true
+          pricingconfig: true
         }
       }
     }
