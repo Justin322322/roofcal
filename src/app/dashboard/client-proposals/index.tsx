@@ -158,7 +158,8 @@ export function ClientProposalsPage() {
     });
   };
 
-  const { pendingProposals, acceptedProposals, rejectedProposals, completedProposals } = useMemo(() => ({
+  const { draftProposals, pendingProposals, acceptedProposals, rejectedProposals, completedProposals } = useMemo(() => ({
+    draftProposals: proposals.filter(p => p.proposalStatus === "DRAFT"),
     pendingProposals: proposals.filter(p => p.proposalStatus === "SENT"),
     acceptedProposals: proposals.filter(p => p.proposalStatus === "ACCEPTED"),
     rejectedProposals: proposals.filter(p => p.proposalStatus === "REJECTED"),
@@ -206,12 +207,15 @@ export function ClientProposalsPage() {
         <Alert>
           <AlertCircleIcon className="h-4 w-4" />
           <AlertDescription>
-            No proposals have been received yet. Create a project request and request quotes from contractors to receive proposals here.
+            No projects found. Create a project using the Roof Calculator to get started, or wait for proposals from contractors.
           </AlertDescription>
         </Alert>
         ) : (
-        <Tabs defaultValue="pending" className="space-y-6">
+        <Tabs defaultValue="draft" className="space-y-6">
           <TabsList>
+            <TabsTrigger value="draft">
+              Draft ({draftProposals.length})
+            </TabsTrigger>
             <TabsTrigger value="pending">
               Pending ({pendingProposals.length})
             </TabsTrigger>
@@ -225,6 +229,25 @@ export function ClientProposalsPage() {
               Completed ({completedProposals.length})
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="draft" className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {draftProposals.map((project) => (
+                <ProposalCard
+                  key={project.id}
+                  project={project}
+                  onViewProposal={() => {
+                    setSelectedProject(project);
+                    setShowViewer(true);
+                  }}
+                  formatCurrency={formatCurrency}
+                  formatDate={formatDate}
+                  getStatusColor={getStatusColor}
+                  getStatusIcon={getStatusIcon}
+                />
+              ))}
+            </div>
+          </TabsContent>
 
           <TabsContent value="pending" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -358,7 +381,7 @@ function ProposalCard({
             <CardDescription>
               <div className="flex items-center gap-2">
                 <UserIcon className="h-4 w-4" />
-                {project.contractor.firstName} {project.contractor.lastName}
+                {status === "DRAFT" ? "Not assigned" : `${project.contractor.firstName} ${project.contractor.lastName}`}
               </div>
             </CardDescription>
           </div>
@@ -392,7 +415,7 @@ function ProposalCard({
         </div>
 
         <Button onClick={onViewProposal} className="w-full">
-          {status === "SENT" ? "Review Proposal" : "View Proposal"}
+          {status === "SENT" ? "Review Proposal" : status === "DRAFT" ? "View Project Details" : "View Proposal"}
         </Button>
       </CardContent>
     </Card>
