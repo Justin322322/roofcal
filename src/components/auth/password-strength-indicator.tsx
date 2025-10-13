@@ -1,4 +1,5 @@
 import { PasswordValidation } from "@/lib/password-validator";
+import { CheckIcon, CircleIcon } from "lucide-react";
 
 interface PasswordStrengthIndicatorProps {
   password: string;
@@ -30,7 +31,11 @@ export default function PasswordStrengthIndicator({
               isValid ? "text-green-600" : "text-muted-foreground"
             }`}
           >
-            <span>{isValid ? "✓" : "○"}</span>
+            {isValid ? (
+              <CheckIcon className="h-3 w-3" />
+            ) : (
+              <CircleIcon className="h-3 w-3" />
+            )}
             <span>{criterion.label}</span>
           </div>
         );

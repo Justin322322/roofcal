@@ -6,12 +6,42 @@ import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
-  AlertCircleIcon
+  AlertCircleIcon,
+  RefreshCwIcon,
+  DownloadIcon,
+  MoreVerticalIcon,
+  SearchIcon,
+  FileTextIcon,
+  MessageSquareIcon,
+  CheckCircleIcon,
+  ClockIcon,
 } from "lucide-react";
 import type { Project } from "@/types/project";
 import { ProposalViewer } from "../proposals/proposal-viewer";
@@ -97,9 +127,42 @@ function useProposalsData() {
 
 export function ClientProposalsPage() {
   const { data: session } = useSession();
-  const { proposals, loading } = useProposalsData();
+  const { proposals, loading, fetchProposals } = useProposalsData();
   const [selectedProject, setSelectedProject] = useState<ProposalProject | null>(null);
   const [showViewer, setShowViewer] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  const handleSendToContractor = async (project: ProposalProject) => {
+    try {
+      // For now, we'll update the project status to indicate it's ready for contractor assignment
+      // This will make it visible to contractors in their project management dashboard
+      const response = await fetch(`/api/projects/${project.id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: "CLIENT_PENDING",
+          // This will make the project available for contractors to claim
+        }),
+      });
+
+      if (response.ok) {
+        toast.success("Project is now available for contractors to bid on");
+        fetchProposals(); // Refresh the proposals list
+      } else {
+        const errorData = await response.json();
+        toast.error("Failed to make project available for bidding", {
+          description: errorData.error || "An error occurred",
+        });
+      }
+    } catch {
+      toast.error("Failed to send project to contractors", {
+        description: "Network error occurred",
+      });
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -136,13 +199,67 @@ export function ClientProposalsPage() {
     });
   };
 
-  const { draftProposals, pendingProposals, acceptedProposals, rejectedProposals, completedProposals } = useMemo(() => ({
+  const exportToCSV = async () => {
+    try {
+      const csvContent = [
+        ['Project Name', 'Contractor', 'Status', 'Total Cost', 'Area (m²)', 'Material', 'Date Sent'],
+        ...proposals.map((project) => [
+          project.projectName,
+          project.contractor ? `${project.contractor.firstName} ${project.contractor.lastName}` : 'Not assigned',
+          project.proposalStatus || 'DRAFT',
+          formatCurrency(project.totalCost),
+          project.area.toFixed(1),
+          project.material,
+          formatDate(project.proposalSent || null),
+        ]),
+      ]
+        .map((row) => row.map((cell) => `"${cell}"`).join(','))
+        .join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `client-proposals-${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success('Export completed', {
+        description: 'Client proposals exported successfully',
+      });
+    } catch (error) {
+      console.error('Export failed:', error);
+      toast.error('Export failed', {
+        description: 'Failed to export client proposals',
+      });
+    }
+  };
+
+  const { draftProposals, pendingProposals, acceptedProposals } = useMemo(() => ({
     draftProposals: proposals.filter(p => p.proposalStatus === "DRAFT"),
     pendingProposals: proposals.filter(p => p.proposalStatus === "SENT"),
     acceptedProposals: proposals.filter(p => p.proposalStatus === "ACCEPTED"),
-    rejectedProposals: proposals.filter(p => p.proposalStatus === "REJECTED"),
-    completedProposals: proposals.filter(p => p.proposalStatus === "COMPLETED" || (p.proposalStatus === "ACCEPTED" && p.status === "COMPLETED")),
   }), [proposals]);
+
+  // Filter data based on selected filters
+  const filteredData = proposals.filter((project) => {
+    const matchesSearch = !searchTerm ||
+      project.projectName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (project.contractor && `${project.contractor.firstName} ${project.contractor.lastName}`.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      project.material.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" ||
+      project.proposalStatus === statusFilter ||
+      (statusFilter === "COMPLETED" && (project.proposalStatus === "COMPLETED" || (project.proposalStatus === "ACCEPTED" && project.status === "COMPLETED")));
+
+    return matchesSearch && matchesStatus;
+  });
+
+  const totalProposals = proposals.length;
+  const draftCount = draftProposals.length;
+  const pendingCount = pendingProposals.length;
+  const acceptedCount = acceptedProposals.length;
 
   if (session?.user?.role !== "CLIENT") {
     return (
@@ -181,124 +298,201 @@ export function ClientProposalsPage() {
 
   return (
     <div className="px-4 lg:px-6">
-      {proposals.length === 0 ? (
-        <Alert>
-          <AlertCircleIcon className="h-4 w-4" />
-          <AlertDescription>
-            No projects found. Create a project using the Roof Calculator to get started, or wait for proposals from contractors.
-          </AlertDescription>
-        </Alert>
-        ) : (
-        <Tabs defaultValue="draft" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="draft">
-              Draft ({draftProposals.length})
-            </TabsTrigger>
-            <TabsTrigger value="pending">
-              Pending ({pendingProposals.length})
-            </TabsTrigger>
-            <TabsTrigger value="accepted">
-              Accepted ({acceptedProposals.length})
-            </TabsTrigger>
-            <TabsTrigger value="rejected">
-              Rejected ({rejectedProposals.length})
-            </TabsTrigger>
-            <TabsTrigger value="completed">
-              Completed ({completedProposals.length})
-            </TabsTrigger>
-          </TabsList>
+      <div className="mb-6">
+        <p className="text-muted-foreground">
+          Manage and track your roofing project proposals from contractors
+        </p>
+      </div>
 
-          <TabsContent value="draft" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {draftProposals.map((project) => (
-                <ProposalCard
-                  key={project.id}
-                  project={project}
-                  onViewProposal={() => {
-                    setSelectedProject(project);
-                    setShowViewer(true);
-                  }}
-                  formatCurrency={formatCurrency}
-                  formatDate={formatDate}
-                  getStatusColor={getStatusColor}
-                />
-              ))}
-            </div>
-          </TabsContent>
+      {/* Action Buttons */}
+      <div className="mb-4 flex justify-end">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={fetchProposals} disabled={loading}>
+            <RefreshCwIcon className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button variant="outline" onClick={exportToCSV}>
+            <DownloadIcon className="h-4 w-4 mr-2" />
+            Export CSV
+          </Button>
+        </div>
+      </div>
 
-          <TabsContent value="pending" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {pendingProposals.map((project) => (
-                <ProposalCard
-                  key={project.id}
-                  project={project}
-                  onViewProposal={() => {
-                    setSelectedProject(project);
-                    setShowViewer(true);
-                  }}
-                  formatCurrency={formatCurrency}
-                  formatDate={formatDate}
-                  getStatusColor={getStatusColor}
-                />
-              ))}
-            </div>
-          </TabsContent>
+      {/* Stats Cards */}
+      <div className="mb-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Proposals</CardTitle>
+              <FileTextIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalProposals}</div>
+              <p className="text-xs text-muted-foreground">All proposals</p>
+            </CardContent>
+          </Card>
 
-          <TabsContent value="accepted" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {acceptedProposals.map((project) => (
-                <ProposalCard
-                  key={project.id}
-                  project={project}
-                  onViewProposal={() => {
-                    setSelectedProject(project);
-                    setShowViewer(true);
-                  }}
-                  formatCurrency={formatCurrency}
-                  formatDate={formatDate}
-                  getStatusColor={getStatusColor}
-                />
-              ))}
-            </div>
-          </TabsContent>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Draft Proposals</CardTitle>
+              <MessageSquareIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{draftCount}</div>
+              <p className="text-xs text-muted-foreground">Not sent to contractors</p>
+            </CardContent>
+          </Card>
 
-          <TabsContent value="rejected" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {rejectedProposals.map((project) => (
-                <ProposalCard
-                  key={project.id}
-                  project={project}
-                  onViewProposal={() => {
-                    setSelectedProject(project);
-                    setShowViewer(true);
-                  }}
-                  formatCurrency={formatCurrency}
-                  formatDate={formatDate}
-                  getStatusColor={getStatusColor}
-                />
-              ))}
-            </div>
-          </TabsContent>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pending Proposals</CardTitle>
+              <ClockIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{pendingCount}</div>
+              <p className="text-xs text-muted-foreground">Waiting for review</p>
+            </CardContent>
+          </Card>
 
-          <TabsContent value="completed" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {completedProposals.map((project) => (
-                <ProposalCard
-                  key={project.id}
-                  project={project}
-                  onViewProposal={() => {
-                    setSelectedProject(project);
-                    setShowViewer(true);
-                  }}
-                  formatCurrency={formatCurrency}
-                  formatDate={formatDate}
-                  getStatusColor={getStatusColor}
-                />
-              ))}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Accepted Proposals</CardTitle>
+              <CheckCircleIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{acceptedCount}</div>
+              <p className="text-xs text-muted-foreground">Approved by client</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Client Proposals</CardTitle>
+              <CardDescription>
+                Review and manage proposals for your roofing projects
+              </CardDescription>
             </div>
-          </TabsContent>
-        </Tabs>
-        )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Filter Controls */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="flex-1">
+              <div className="relative">
+                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search projects..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="All Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="DRAFT">Draft</SelectItem>
+                  <SelectItem value="SENT">Pending</SelectItem>
+                  <SelectItem value="ACCEPTED">Accepted</SelectItem>
+                  <SelectItem value="REJECTED">Rejected</SelectItem>
+                  <SelectItem value="COMPLETED">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Data Table */}
+          {filteredData.length === 0 ? (
+            <div className="text-center py-12">
+              <FileTextIcon className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No Proposals Found</h3>
+              <p className="text-muted-foreground">
+                {searchTerm || statusFilter !== "all"
+                  ? "Try adjusting your filters to see more results."
+                  : "Create a project using the Roof Calculator to get started, or wait for proposals from contractors."
+                }
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Project Name</TableHead>
+                    <TableHead>Contractor</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Total Cost</TableHead>
+                    <TableHead>Area</TableHead>
+                    <TableHead>Material</TableHead>
+                    <TableHead>Date Sent</TableHead>
+                    <TableHead className="w-[100px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredData.map((project) => {
+                    const status = project.proposalStatus || "DRAFT";
+                    return (
+                      <TableRow key={project.id}>
+                        <TableCell className="font-medium">{project.projectName}</TableCell>
+                        <TableCell>
+                          {status === "DRAFT" ? (
+                            <span className="text-muted-foreground">Not assigned</span>
+                          ) : (
+                            project.contractor ? `${project.contractor.firstName} ${project.contractor.lastName}` : 'Unknown'
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={`${getStatusColor(status)} px-2 py-1 text-xs font-medium`}>
+                            {status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-medium">{formatCurrency(project.totalCost)}</TableCell>
+                        <TableCell>{project.area.toFixed(1)} m²</TableCell>
+                        <TableCell>{project.material}</TableCell>
+                        <TableCell>{formatDate(project.proposalSent || null)}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreVerticalIcon className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => {
+                                setSelectedProject(project);
+                                setShowViewer(true);
+                              }}>
+                                View Proposal
+                              </DropdownMenuItem>
+                              {status === "DRAFT" && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => handleSendToContractor(project)}>
+                                    Send to Contractor
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Proposal Viewer Modal */}
       <Dialog open={showViewer} onOpenChange={(open) => {
@@ -326,65 +520,3 @@ export function ClientProposalsPage() {
   );
 }
 
-interface ProposalCardProps {
-  project: ProposalProject;
-  onViewProposal: () => void;
-  formatCurrency: (amount: number) => string;
-  formatDate: (date: Date | string | null) => string;
-  getStatusColor: (status: string) => string;
-}
-
-function ProposalCard({
-  project,
-  onViewProposal,
-  formatCurrency,
-  formatDate,
-  getStatusColor,
-}: ProposalCardProps) {
-  const status = project.proposalStatus || "DRAFT";
-
-  return (
-    <Card className="hover:shadow-lg transition-all duration-200 border-border/50">
-      <CardHeader className="pb-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-2 flex-1">
-            <CardTitle className="text-xl font-semibold leading-tight">{project.projectName}</CardTitle>
-            <CardDescription className="text-base">
-              {status === "DRAFT" ? "Not assigned to contractor" : `Contractor: ${project.contractor.firstName} ${project.contractor.lastName}`}
-            </CardDescription>
-          </div>
-          <Badge className={`${getStatusColor(status)} px-3 py-1 text-xs font-medium`}>
-            {status}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="grid grid-cols-2 gap-6">
-          <div className="space-y-1">
-            <div className="text-sm font-medium text-muted-foreground">Total Cost</div>
-            <div className="text-lg font-semibold">{formatCurrency(project.totalCost)}</div>
-          </div>
-          <div className="space-y-1">
-            <div className="text-sm font-medium text-muted-foreground">Sent Date</div>
-            <div className="text-sm">{formatDate(project.proposalSent || null)}</div>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-6 pt-2 border-t border-border/50">
-          <div className="space-y-1">
-            <div className="text-sm font-medium text-muted-foreground">Material</div>
-            <div className="text-sm">{project.material}</div>
-          </div>
-          <div className="space-y-1">
-            <div className="text-sm font-medium text-muted-foreground">Area</div>
-            <div className="text-sm">{project.area.toFixed(1)} m²</div>
-          </div>
-        </div>
-
-        <Button onClick={onViewProposal} className="w-full h-11 text-sm font-medium">
-          {status === "SENT" ? "Review Proposal" : status === "DRAFT" ? "View Project Details" : "View Proposal"}
-        </Button>
-      </CardContent>
-    </Card>
-  );
-}

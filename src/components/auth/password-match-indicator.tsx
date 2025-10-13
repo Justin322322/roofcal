@@ -1,3 +1,5 @@
+import { CheckIcon, XIcon } from "lucide-react";
+
 export const messages = {
   match: "Passwords match",
   noMatch: "Passwords don't match",
@@ -20,12 +22,12 @@ export default function PasswordMatchIndicator({
     <div className="text-xs">
       {passwordsMatch ? (
         <div className="flex items-center gap-2 text-green-600">
-          <span>✓</span>
+          <CheckIcon className="h-3 w-3" />
           <span>{messages.match}</span>
         </div>
       ) : (
         <div className="flex items-center gap-2 text-red-600">
-          <span>○</span>
+          <XIcon className="h-3 w-3" />
           <span>{messages.noMatch}</span>
         </div>
       )}

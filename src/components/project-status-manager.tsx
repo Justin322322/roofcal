@@ -17,7 +17,8 @@ import {
   ChevronDownIcon, 
   ClockIcon,
   AlertCircleIcon,
-  InfoIcon
+  InfoIcon,
+  type LucideIcon
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import type { Project, ProjectStatus } from "@/types/project";
@@ -107,7 +108,7 @@ export function ProjectStatusManager({
     return (
       <div className="flex items-center gap-2">
         <Badge className={`${currentStatusInfo.color} flex items-center gap-1`}>
-          <span>{currentStatusInfo.icon}</span>
+          <currentStatusInfo.icon className="h-3 w-3" />
           {currentStatusInfo.label}
         </Badge>
         {availableTransitions.length > 0 && (
@@ -124,7 +125,12 @@ export function ProjectStatusManager({
                   onClick={() => handleStatusChange(transition.to)}
                   disabled={updatingStatus === transition.to}
                 >
-                  <span className="mr-2">{getStatusDisplayInfo(transition.to).icon}</span>
+                  <span className="mr-2">
+                    {(() => {
+                      const IconComponent = getStatusDisplayInfo(transition.to).icon;
+                      return <IconComponent className="h-3 w-3" />;
+                    })()}
+                  </span>
                   {transition.description}
                 </DropdownMenuItem>
               ))}
@@ -139,7 +145,7 @@ export function ProjectStatusManager({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <span>{currentStatusInfo.icon}</span>
+          <currentStatusInfo.icon className="h-4 w-4" />
           Project Status
         </CardTitle>
         <CardDescription>{currentStatusInfo.description}</CardDescription>
@@ -148,7 +154,7 @@ export function ProjectStatusManager({
         {/* Current Status */}
         <div className="flex items-center justify-between">
           <Badge className={`${currentStatusInfo.color} flex items-center gap-1`}>
-            <span>{currentStatusInfo.icon}</span>
+            <currentStatusInfo.icon className="h-3 w-3" />
             {currentStatusInfo.label}
           </Badge>
           
@@ -167,7 +173,12 @@ export function ProjectStatusManager({
                     onClick={() => handleStatusChange(transition.to)}
                     disabled={updatingStatus === transition.to}
                   >
-                    <span className="mr-2">{getStatusDisplayInfo(transition.to).icon}</span>
+                    <span className="mr-2">
+                    {(() => {
+                      const IconComponent = getStatusDisplayInfo(transition.to).icon;
+                      return <IconComponent className="h-3 w-3" />;
+                    })()}
+                  </span>
                     {transition.description}
                   </DropdownMenuItem>
                 ))}

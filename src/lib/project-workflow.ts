@@ -1,5 +1,17 @@
 import type { Project, ProjectStatus, ProposalStatus } from "@/types/project";
 import { UserRole } from "@/types/user-role";
+import {
+  FileEditIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  SearchIcon,
+  SendIcon,
+  ConstructionIcon,
+  CheckCircle2Icon,
+  XCircleIcon,
+  ArchiveIcon,
+  type LucideIcon,
+} from "lucide-react";
 
 export interface WorkflowTransition {
   from: ProjectStatus;
@@ -196,61 +208,61 @@ export function getStatusDisplayInfo(status: ProjectStatus) {
       label: "Draft",
       description: "Project is being prepared",
       color: "bg-gray-100 text-gray-800",
-      icon: "📝",
+      icon: FileEditIcon,
     },
     ACTIVE: {
       label: "Active",
       description: "Project is active for personal use",
       color: "bg-blue-100 text-blue-800",
-      icon: "✅",
+      icon: CheckCircleIcon,
     },
     CLIENT_PENDING: {
       label: "Pending Review",
       description: "Waiting for contractor to review",
       color: "bg-yellow-100 text-yellow-800",
-      icon: "⏳",
+      icon: ClockIcon,
     },
     CONTRACTOR_REVIEWING: {
       label: "Under Review",
       description: "Contractor is reviewing project",
       color: "bg-orange-100 text-orange-800",
-      icon: "🔍",
+      icon: SearchIcon,
     },
     PROPOSAL_SENT: {
       label: "Proposal Sent",
       description: "Waiting for client response",
       color: "bg-blue-100 text-blue-800",
-      icon: "📤",
+      icon: SendIcon,
     },
     ACCEPTED: {
       label: "Accepted",
       description: "Proposal accepted, ready to start",
       color: "bg-green-100 text-green-800",
-      icon: "✅",
+      icon: CheckCircleIcon,
     },
     IN_PROGRESS: {
       label: "In Progress",
       description: "Work is currently underway",
       color: "bg-blue-100 text-blue-800",
-      icon: "🚧",
+      icon: ConstructionIcon,
     },
     COMPLETED: {
       label: "Completed",
       description: "Project has been completed",
       color: "bg-green-100 text-green-800",
-      icon: "🎉",
+      icon: CheckCircle2Icon,
     },
     REJECTED: {
       label: "Rejected",
       description: "Proposal was rejected",
       color: "bg-red-100 text-red-800",
-      icon: "❌",
+      icon: XCircleIcon,
     },
     ARCHIVED: {
       label: "Archived",
       description: "Project has been archived",
       color: "bg-gray-100 text-gray-800",
-      icon: "📁",
+      icon: ArchiveIcon,
     },
   };
 
