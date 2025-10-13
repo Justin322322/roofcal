@@ -43,20 +43,48 @@ export async function GET(
     }
 
     // Get current warehouse materials with low stock warnings
-    const warehouseMaterials = await prisma.warehousematerial.findMany({
-      where: { 
-        warehouseId,
-        isActive: true
-      },
-      include: {
-        pricingconfig: true
-      }
-    });
+    let warehouseMaterials;
+    try {
+      warehouseMaterials = await prisma.warehousematerial.findMany({
+        where: { 
+          warehouseId,
+          isActive: true
+        },
+        include: {
+          pricingconfig: true,
+          projectmaterial: {
+            where: {
+              status: 'RESERVED'
+            },
+            include: {
+              project: {
+                select: {
+                  id: true,
+                  projectName: true
+                }
+              }
+            }
+          }
+        }
+      });
+    } catch (error) {
+      console.warn('ProjectMaterial table not available, falling back to simplified mode:', error);
+      // Fallback to simplified mode without project reservations
+      warehouseMaterials = await prisma.warehousematerial.findMany({
+        where: { 
+          warehouseId,
+          isActive: true
+        },
+        include: {
+          pricingconfig: true
+        }
+      });
+    }
 
     // Transform to warnings format
     const warnings = warehouseMaterials.map(wm => {
       const currentStock = wm.quantity;
-      const reservedForProjects = 0; // Simplified - no project reservations for now
+      const reservedForProjects = wm.projectmaterial ? wm.projectmaterial.reduce((sum, pm) => sum + pm.quantity, 0) : 0;
       const projectedStock = currentStock - reservedForProjects;
       
       // Determine if this is a warning (low stock)
@@ -84,7 +112,11 @@ export async function GET(
         reservedForProjects,
         projectedStock,
         criticalLevel: criticalLevel || warningLevel,
-        projectsUsing: [] // Simplified - no project usage for now
+        projectsUsing: wm.projectmaterial ? wm.projectmaterial.map(pm => ({
+          projectId: pm.project.id,
+          projectName: pm.project.projectName,
+          quantity: pm.quantity
+        })) : []
       };
     }).filter(w => w.criticalLevel); // Only include items with warnings
 
