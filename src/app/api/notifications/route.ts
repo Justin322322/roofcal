@@ -20,7 +20,10 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get("offset") || "0");
     const unreadOnly = searchParams.get("unreadOnly") === "true";
 
-    const whereClause: any = {
+    const whereClause: {
+      userId: string;
+      read?: boolean;
+    } = {
       userId: session.user.id,
     };
 
