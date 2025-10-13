@@ -46,9 +46,12 @@ export async function GET(request: NextRequest) {
           ]
         };
       } else {
-        // Default to all client projects (including DRAFT ones they created)
+        // Default to all client projects (including DRAFT ones they created and assigned ones)
         whereClause = { 
-          clientId: session.user.id
+          OR: [
+            { userId: session.user.id }, // Projects they created
+            { clientId: session.user.id } // Projects assigned to them
+          ]
         };
       }
     }
