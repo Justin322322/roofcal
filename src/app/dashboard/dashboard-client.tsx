@@ -12,22 +12,17 @@ import { useSessionLoading } from "@/hooks/use-session-loading";
 import AccountManagementContent from "./(sections)/account-management";
 import SystemMaintenanceContent from "./(sections)/system-maintenance";
 import { RoofCalculatorContent } from "./roof-calculator";
-import { AssignedProjectsContent } from "./assigned-projects";
-import { ProposalsPage } from "./proposals";
 import WarehouseManagementSection from "./(sections)/warehouse-management";
 import DeliverySettingsPage from "./settings/delivery-settings/page";
-import DeliveryTestPage from "./delivery-test/page";
+import { ContractorProjectsContent } from "./(sections)/contractor-projects";
 
 type DashboardSection =
   | "roof-calculator"
-  | "assigned-projects"
-  | "project-management"
-  | "proposals"
+  | "contractor-projects"
   | "account-management"
   | "system-maintenance"
   | "warehouse-management"
   | "delivery-settings"
-  | "delivery-test";
 
 function DashboardSkeleton() {
   return (
@@ -107,12 +102,10 @@ export default function DashboardClient() {
   const hasPermission = (section: string, userRole: string | undefined) => {
     switch (section) {
       case "roof-calculator":
-      case "proposals":
-        return true; // Both admin and client can access proposals
-      case "assigned-projects":
-      case "project-management":
+        return userRole === UserRole.CLIENT; // Only clients can access roof calculator
+      case "contractor-projects":
+        return userRole === UserRole.ADMIN; // Only contractors (admins) can access project management
       case "delivery-settings":
-      case "delivery-test":
       case "account-management":
       case "system-maintenance":
       case "warehouse-management":
@@ -125,7 +118,7 @@ export default function DashboardClient() {
   // Set default tab based on user role when no tab is specified
   useEffect(() => {
     if (!isLoading && session?.user?.role && !activeSection) {
-      const defaultSection = session.user.role === UserRole.CLIENT ? "roof-calculator" : "project-management";
+      const defaultSection = session.user.role === UserRole.CLIENT ? "roof-calculator" : "contractor-projects";
       setActiveSection(defaultSection);
     }
   }, [isLoading, session?.user?.role, activeSection, setActiveSection]);
@@ -134,7 +127,7 @@ export default function DashboardClient() {
   useEffect(() => {
     if (!isLoading && session?.user?.role && activeSection) {
       if (!hasPermission(activeSection, session.user.role)) {
-        const defaultSection = session.user.role === UserRole.CLIENT ? "roof-calculator" : "project-management";
+        const defaultSection = session.user.role === UserRole.CLIENT ? "roof-calculator" : "contractor-projects";
         // Only redirect if we're not already on the correct section
         if (activeSection !== defaultSection) {
           setActiveSection(defaultSection);
@@ -173,11 +166,8 @@ export default function DashboardClient() {
     switch (activeSection) {
       case "roof-calculator":
         return <RoofCalculatorContent />;
-      case "assigned-projects":
-      case "project-management":
-        return <AssignedProjectsContent />;
-      case "proposals":
-        return <ProposalsPage />;
+      case "contractor-projects":
+        return <ContractorProjectsContent />;
       case "account-management":
         return <AccountManagementContent />;
       case "system-maintenance":
@@ -186,11 +176,9 @@ export default function DashboardClient() {
         return <WarehouseManagementSection />;
       case "delivery-settings":
         return <DeliverySettingsPage />;
-      case "delivery-test":
-        return <DeliveryTestPage />;
       case null: // Default based on user role
       default:
-        return userRole === UserRole.CLIENT ? <RoofCalculatorContent /> : <AssignedProjectsContent />;
+        return userRole === UserRole.CLIENT ? <RoofCalculatorContent /> : <ContractorProjectsContent />;
     }
   };
 

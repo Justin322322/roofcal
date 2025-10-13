@@ -2,214 +2,43 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
-import { UserRole } from "@/types/user-role";
 import { notifyProposalSent } from "@/lib/notifications";
+import { UserRole } from "@/types/user-role";
 
-// GET /api/proposals - Get proposals for current user (contractor or client)
-export async function GET(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
-
-    const { searchParams } = new URL(request.url);
-    const type = searchParams.get("type"); // "sent" or "received"
-    const status = searchParams.get("status");
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let whereClause: any = {};
-
-    if (session.user.role === UserRole.ADMIN) {
-      // Contractor view
-      if (type === "sent") {
-        whereClause = { contractorId: session.user.id };
-      } else {
-        // Default to received proposals (projects assigned to this contractor)
-        whereClause = { 
-          contractorId: session.user.id,
-          proposalStatus: { not: null }
-        };
-      }
-    } else {
-      // Client view - show ALL projects where client is involved
-      if (type === "received") {
-        // Show all projects where client is involved (either as recipient or creator)
-        whereClause = { 
-          OR: [
-            { clientId: session.user.id },
-            { userId: session.user.id }
-          ]
-        };
-      } else {
-        // Default to all client projects (including DRAFT ones they created and assigned ones)
-        whereClause = { 
-          OR: [
-            { userId: session.user.id }, // Projects they created
-            { clientId: session.user.id } // Projects assigned to them
-          ]
-        };
-      }
-    }
-
-    // Apply status filter if specified
-    if (status && status !== "ALL") {
-      // If we have an OR clause, we need to handle it differently
-      if (whereClause.OR) {
-        whereClause = {
-          AND: [
-            whereClause,
-            { proposalStatus: status as "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "REVISED" | "COMPLETED" }
-          ]
-        };
-      } else {
-        whereClause.proposalStatus = status as "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "REVISED" | "COMPLETED";
-      }
-    }
-
-    const projects = await prisma.project.findMany({
-      where: whereClause,
-      include: {
-        contractor: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-        client: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-      },
-      orderBy: {
-        proposalSent: "desc",
-      },
-    });
-
-
-    // Transform the data
-    const proposals = projects.map((project) => ({
-      ...project,
-      // Convert Decimal to number for JSON response
-      length: Number(project.length),
-      width: Number(project.width),
-      pitch: Number(project.pitch),
-      budgetAmount: project.budgetAmount ? Number(project.budgetAmount) : undefined,
-      gutterLengthA: project.gutterLengthA ? Number(project.gutterLengthA) : undefined,
-      gutterSlope: project.gutterSlope ? Number(project.gutterSlope) : undefined,
-      gutterLengthC: project.gutterLengthC ? Number(project.gutterLengthC) : undefined,
-      area: Number(project.area),
-      materialCost: Number(project.materialCost),
-      gutterCost: Number(project.gutterCost),
-      ridgeCost: Number(project.ridgeCost),
-      screwsCost: Number(project.screwsCost),
-      insulationCost: Number(project.insulationCost),
-      ventilationCost: Number(project.ventilationCost),
-      totalMaterialsCost: Number(project.totalMaterialsCost),
-      laborCost: Number(project.laborCost),
-      removalCost: Number(project.removalCost),
-      totalCost: Number(project.totalCost),
-      ridgeLength: Number(project.ridgeLength),
-      contractor: project.contractor || {
-        id: "unknown",
-        firstName: "Unknown",
-        lastName: "Contractor",
-        email: "unknown@example.com"
-      },
-      client: project.client || {
-        id: "unknown",
-        firstName: "Unknown",
-        lastName: "Client",
-        email: "unknown@example.com"
-      },
-    }));
-
-    return NextResponse.json({ proposals });
-  } catch (error) {
-    console.error("Error fetching proposals:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch proposals" },
-      { status: 500 }
-    );
-  }
-}
-
-// POST /api/proposals - Send a proposal
+// POST /api/proposals - Create or update proposal for a project
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
-
-    // Only contractors can send proposals
-    if (session.user.role !== UserRole.ADMIN) {
-      return NextResponse.json(
-        { error: "Only contractors can send proposals" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }
 
     const body = await request.json();
-    const { 
-      projectId, 
-      proposalText, 
-      customPricing,
-      proposalStatus = "SENT"
+    const {
+      projectId,
+      customMaterialCost,
+      customLaborCost,
+      customDeliveryCost,
+      additionalLineItems,
+      totalAmount,
+      validityDays,
+      notes,
+      status = "DRAFT",
     } = body;
 
-    if (!projectId) {
+    if (!projectId || !totalAmount) {
       return NextResponse.json(
-        { error: "Project ID is required" },
+        { error: "Project ID and total amount are required" },
         { status: 400 }
       );
     }
 
-    // Verify the project exists and is assigned to this contractor
+    // Get the project with client information
     const project = await prisma.project.findFirst({
       where: {
         id: projectId,
-        contractorId: session.user.id,
-      },
-    });
-
-    if (!project) {
-      return NextResponse.json(
-        { error: "Project not found or access denied" },
-        { status: 404 }
-      );
-    }
-
-    // Update the project with proposal details
-    const updatedProject = await prisma.project.update({
-      where: { id: projectId },
-      data: {
-        proposalSent: new Date(),
-        proposalStatus: proposalStatus,
-        status: "PROPOSAL_SENT",
-        notes: proposalText || project.notes, // Store proposal text in notes for now
-        // Store custom pricing in notes as JSON for now (we could create a separate table later)
-        ...(customPricing && {
-          notes: JSON.stringify({
-            proposalText,
-            customPricing,
-            originalNotes: project.notes
-          })
-        }),
+        contractorId: session.user.id, // Only the assigned contractor can create proposals
       },
       include: {
         client: {
@@ -230,49 +59,194 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Send notification to client
-    if (updatedProject.client) {
+    if (!project) {
+      return NextResponse.json(
+        { error: "Project not found or access denied" },
+        { status: 404 }
+      );
+    }
+
+    // Validate project status
+    if (project.status !== "CONTRACTOR_REVIEWING") {
+      return NextResponse.json(
+        { error: "Project must be in CONTRACTOR_REVIEWING status to create proposals" },
+        { status: 400 }
+      );
+    }
+
+    // Calculate validity date
+    const validUntil = new Date();
+    validUntil.setDate(validUntil.getDate() + (validityDays || 30));
+
+    // Store proposal data in project fields (we'll use existing fields for now)
+    // In a more complex system, you might want a separate Proposal table
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateData: any = {
+      proposalStatus: status,
+      notes: notes || project.notes, // Store proposal notes in project notes for now
+    };
+
+    // If sending the proposal, update status and timestamp
+    if (status === "SENT") {
+      updateData.proposalSent = new Date();
+      updateData.status = "PROPOSAL_SENT";
+    }
+
+    // Update the project with proposal information
+    await prisma.project.update({
+      where: { id: projectId },
+      data: updateData,
+    });
+
+    // Send notification if proposal is being sent
+    if (status === "SENT" && project.client) {
       await notifyProposalSent(
         projectId,
-        updatedProject.projectName,
+        project.projectName,
         session.user.id,
-        session.user.name || "Contractor",
-        updatedProject.client.id,
-        `${updatedProject.client.firstName} ${updatedProject.client.lastName}`,
-        updatedProject.client.email
+        session.user.name || session.user.email!,
+        project.client.id,
+        `${project.client.firstName} ${project.client.lastName}`,
+        project.client.email
       );
     }
 
     return NextResponse.json({
-      message: "Proposal sent successfully",
-      project: {
-        ...updatedProject,
-        // Convert Decimal to number for JSON response
-        length: Number(updatedProject.length),
-        width: Number(updatedProject.width),
-        pitch: Number(updatedProject.pitch),
-        budgetAmount: updatedProject.budgetAmount ? Number(updatedProject.budgetAmount) : undefined,
-        gutterLengthA: updatedProject.gutterLengthA ? Number(updatedProject.gutterLengthA) : undefined,
-        gutterSlope: updatedProject.gutterSlope ? Number(updatedProject.gutterSlope) : undefined,
-        gutterLengthC: updatedProject.gutterLengthC ? Number(updatedProject.gutterLengthC) : undefined,
-        area: Number(updatedProject.area),
-        materialCost: Number(updatedProject.materialCost),
-        gutterCost: Number(updatedProject.gutterCost),
-        ridgeCost: Number(updatedProject.ridgeCost),
-        screwsCost: Number(updatedProject.screwsCost),
-        insulationCost: Number(updatedProject.insulationCost),
-        ventilationCost: Number(updatedProject.ventilationCost),
-        totalMaterialsCost: Number(updatedProject.totalMaterialsCost),
-        laborCost: Number(updatedProject.laborCost),
-        removalCost: Number(updatedProject.removalCost),
-        totalCost: Number(updatedProject.totalCost),
-        ridgeLength: Number(updatedProject.ridgeLength),
+      success: true,
+      message: status === "SENT" ? "Proposal sent successfully" : "Proposal saved as draft",
+      proposal: {
+        id: projectId,
+        status,
+        totalAmount,
+        validUntil: validUntil.toISOString(),
+        customMaterialCost,
+        customLaborCost,
+        customDeliveryCost,
+        additionalLineItems,
+        notes,
       },
     });
   } catch (error) {
-    console.error("Error sending proposal:", error);
+    console.error("Error creating proposal:", error);
     return NextResponse.json(
-      { error: "Failed to send proposal" },
+      { error: "Failed to create proposal" },
+      { status: 500 }
+    );
+  }
+}
+
+// GET /api/proposals - Get proposals for a contractor or client
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const projectId = searchParams.get("projectId");
+    searchParams.get("role");
+
+    let projects;
+
+    if (projectId) {
+      // Get specific project proposal
+      projects = await prisma.project.findFirst({
+        where: {
+          id: projectId,
+          OR: [
+            { userId: session.user.id },
+            { contractorId: session.user.id },
+            { clientId: session.user.id },
+          ],
+        },
+        include: {
+          contractor: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+          client: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+      if (!projects) {
+        return NextResponse.json(
+          { error: "Project not found or access denied" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        project: projects,
+      });
+    } else {
+      // Get all projects with proposals based on user role
+      if (session.user.role === UserRole.ADMIN) {
+        // Contractor view - get projects assigned to them
+        projects = await prisma.project.findMany({
+          where: {
+            contractorId: session.user.id,
+            proposalStatus: { not: null },
+          },
+          include: {
+            client: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+          orderBy: {
+            proposalSent: "desc",
+          },
+        });
+      } else {
+        // Client view - get their projects with proposals
+        projects = await prisma.project.findMany({
+          where: {
+            clientId: session.user.id,
+            proposalStatus: { not: null },
+          },
+          include: {
+            contractor: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+          orderBy: {
+            proposalSent: "desc",
+          },
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        projects,
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching proposals:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch proposals" },
       { status: 500 }
     );
   }

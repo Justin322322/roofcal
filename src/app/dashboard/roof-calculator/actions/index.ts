@@ -116,7 +116,7 @@ export async function saveProject(
 
     // No notification sent here - projects remain in DRAFT until explicitly assigned
 
-    revalidatePath("/dashboard?tab=proposals");
+    revalidatePath("/dashboard?tab=roof-calculator");
 
     return { success: true, projectId: project.id };
   } catch (error) {
@@ -243,7 +243,7 @@ export async function updateProject(
       data: updateData,
     });
 
-    revalidatePath("/dashboard?tab=proposals");
+    revalidatePath("/dashboard?tab=roof-calculator");
     revalidatePath(`/dashboard/roof-calculator`);
 
     return { success: true };
@@ -389,7 +389,7 @@ export async function duplicateProject(
       },
     });
 
-    revalidatePath("/dashboard?tab=proposals");
+    revalidatePath("/dashboard?tab=roof-calculator");
 
     return { success: true, newProjectId: duplicateProject.id };
   } catch (error) {

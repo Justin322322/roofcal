@@ -39,12 +39,7 @@ export async function POST() {
 
     // Seed material prices
     const materials = [
-      { name: 'asphalt', label: 'Asphalt Shingles', price: 450, description: 'Cost-effective and durable, 15-30 year lifespan' },
-      { name: 'metal', label: 'Metal Roofing', price: 1200, description: 'Long-lasting, energy efficient, 40-70 year lifespan' },
       { name: 'corrugated', label: 'Long Span', price: 800, description: 'Lightweight, weather-resistant, 30-50 year lifespan' },
-      { name: 'tile', label: 'Clay/Concrete Tile', price: 1800, description: 'Premium durability, 50+ year lifespan' },
-      { name: 'slate', label: 'Slate', price: 2500, description: 'Highest quality, 100+ year lifespan' },
-      { name: 'wood', label: 'Wood Shakes', price: 900, description: 'Natural aesthetic, 20-40 year lifespan' },
     ];
 
     for (const material of materials) {
@@ -67,20 +62,13 @@ export async function POST() {
       { category: 'gutters', name: 'large', label: 'Large Gutter (6 inch)', price: 450, unit: 'per_piece' },
       
       // Ridge caps
-      { category: 'ridges', name: 'asphalt', label: 'Asphalt Ridge Cap', price: 150, unit: 'per_meter' },
-      { category: 'ridges', name: 'metal', label: 'Metal Ridge Cap', price: 200, unit: 'per_meter' },
       { category: 'ridges', name: 'corrugated', label: 'Corrugated Ridge Cap', price: 180, unit: 'per_meter' },
-      { category: 'ridges', name: 'tile', label: 'Tile Ridge Cap', price: 250, unit: 'per_meter' },
-      { category: 'ridges', name: 'slate', label: 'Slate Ridge Cap', price: 300, unit: 'per_meter' },
-      { category: 'ridges', name: 'wood', label: 'Wood Ridge Cap', price: 180, unit: 'per_meter' },
+      { category: 'ridges', name: 'standard', label: 'Standard Ridge Cap', price: 180, unit: 'per_meter' },
+      { category: 'ridges', name: 'ventilated', label: 'Ventilated Ridge Cap', price: 220, unit: 'per_meter' },
       
       // Screws
-      { category: 'screws', name: 'asphalt', label: 'Asphalt Screws', price: 15, unit: 'per_sqm' },
-      { category: 'screws', name: 'metal', label: 'Metal Screws', price: 25, unit: 'per_sqm' },
       { category: 'screws', name: 'corrugated', label: 'Corrugated Screws', price: 20, unit: 'per_sqm' },
-      { category: 'screws', name: 'tile', label: 'Tile Screws', price: 20, unit: 'per_sqm' },
-      { category: 'screws', name: 'slate', label: 'Slate Screws', price: 20, unit: 'per_sqm' },
-      { category: 'screws', name: 'wood', label: 'Wood Screws', price: 18, unit: 'per_sqm' },
+      // Removed tile and concrete screws per requirement
       
       // Insulation
       { category: 'insulation', name: '5mm', label: '5mm Insulation', price: 80, unit: 'per_sqm' },

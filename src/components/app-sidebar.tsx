@@ -7,7 +7,6 @@ import {
   FileTextIcon,
   UsersIcon,
   CalculatorIcon,
-  ClipboardCheckIcon,
   WrenchIcon,
   SettingsIcon,
   WarehouseIcon,
@@ -36,29 +35,24 @@ const data = {
   },
   navMain: [
     {
-      title: "Roof Estimator",
-      url: "/dashboard/roof-calculator",
+      title: "Roof Calculator",
+      url: "/dashboard?tab=roof-calculator",
       icon: CalculatorIcon,
     },
     {
-      title: "Assigned Projects",
-      url: "/dashboard/assigned-projects",
-      icon: ClipboardCheckIcon,
-    },
-    {
-      title: "Proposals",
-      url: "/dashboard/proposals",
+      title: "My Projects",
+      url: "/dashboard?tab=roof-calculator",
       icon: FileTextIcon,
     },
     {
-      title: "Delivery Settings",
-      url: "/dashboard/settings/delivery-settings",
-      icon: SettingsIcon,
+      title: "Contractor Projects",
+      url: "/dashboard?tab=contractor-projects",
+      icon: UsersIcon,
     },
     {
-      title: "Delivery Test",
-      url: "/dashboard/delivery-test",
-      icon: WrenchIcon,
+      title: "Delivery Settings",
+      url: "/dashboard?tab=delivery-settings",
+      icon: SettingsIcon,
     },
   ],
   navClouds: [
@@ -152,20 +146,14 @@ export function AppSidebar({
         icon: CalculatorIcon,
         roles: [UserRole.CLIENT],
       },
-      {
-        title: "Proposals",
-        url: "proposals",
-        icon: FileTextIcon,
-        roles: [UserRole.CLIENT],
-      },
     ];
 
     // Admin (Contractor) navigation items
     const adminNavItems = [
       {
-        title: "Project Management",
-        url: "project-management",
-        icon: ClipboardCheckIcon,
+        title: "Contractor Projects",
+        url: "contractor-projects",
+        icon: UsersIcon,
         roles: [UserRole.ADMIN],
       },
     ];

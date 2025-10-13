@@ -1,16 +1,20 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/auth-utils";
+import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { UserRole } from "@/types/user-role";
 
 // GET /api/contractors - Get list of available contractors (ADMIN users)
 export async function GET() {
   try {
-    const { error } = await requireAdmin();
+    const { error } = await requireAuth();
 
     if (error) {
       return error;
     }
+
+    // Allow both CLIENT and ADMIN to view contractors
+    // CLIENT can see contractors to request quotes
+    // ADMIN can see other contractors for management
 
     // Get all ADMIN users (contractors)
     const contractors = await prisma.user.findMany({
@@ -50,6 +54,7 @@ export async function GET() {
     }));
 
     return NextResponse.json({
+      success: true,
       contractors: contractorList,
     });
   } catch (error) {

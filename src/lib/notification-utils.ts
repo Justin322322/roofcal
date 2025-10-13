@@ -28,13 +28,13 @@ export const getNotificationUrl = (notification: NotificationData): string => {
     case "proposal_sent":
     case "proposal_accepted":
     case "proposal_rejected":
-      return "/dashboard?tab=proposals";
+      return "/dashboard?tab=roof-calculator";
     case "status_change":
     case "project_assigned":
-      // For project-related notifications, navigate to assigned-projects tab
-      return "/dashboard?tab=assigned-projects";
+      // For project-related notifications, navigate to roof-calculator tab
+      return "/dashboard?tab=roof-calculator";
     default:
-      return "/dashboard?tab=proposals";
+      return "/dashboard?tab=roof-calculator";
   }
 };
 

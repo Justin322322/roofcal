@@ -30,7 +30,7 @@ export function BudgetValidator({
   const minCostPerSqm =
     CONSTANTS.MIN_COST_PER_SQM[
       selectedMaterial as keyof typeof CONSTANTS.MIN_COST_PER_SQM
-    ] || CONSTANTS.MIN_COST_PER_SQM.asphalt;
+    ] || CONSTANTS.MIN_COST_PER_SQM.corrugated;
   const minimumBudget = Math.round(roofArea * minCostPerSqm);
 
   const isBudgetSufficient = budget >= minimumBudget;

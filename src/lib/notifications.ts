@@ -2,7 +2,7 @@ import { sendCustomEmail, type EmailTemplateData } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 
 export interface NotificationData {
-  type: "status_change" | "proposal_sent" | "proposal_accepted" | "proposal_rejected" | "project_assigned";
+  type: "status_change" | "proposal_sent" | "proposal_accepted" | "proposal_rejected" | "project_assigned" | "quote_requested";
   projectId: string;
   projectName: string;
   fromUserId: string;
@@ -35,7 +35,7 @@ export async function sendProjectNotification(notification: NotificationData) {
         message: generateInAppMessage(notification),
         projectId: notification.projectId,
         projectName: notification.projectName,
-        actionUrl: `/dashboard?tab=proposals`,
+        actionUrl: `/dashboard?tab=roof-calculator`,
       },
     });
 
@@ -59,6 +59,8 @@ function generateInAppMessage(notification: NotificationData): string {
       return `Your proposal for "${notification.projectName}" was not accepted by ${notification.fromUserName}`;
     case "project_assigned":
       return `Project "${notification.projectName}" ready for review from ${notification.fromUserName}`;
+    case "quote_requested":
+      return `New quote request for "${notification.projectName}" from ${notification.fromUserName}`;
     default:
       return `Update for project "${notification.projectName}"`;
   }
@@ -70,7 +72,7 @@ function generateEmailContent(notification: NotificationData): {
   text: string;
 } {
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-  const projectUrl = `${baseUrl}/dashboard?tab=proposals`;
+  const projectUrl = `${baseUrl}/dashboard?tab=roof-calculator`;
   
   switch (notification.type) {
     case "status_change":
@@ -166,6 +168,25 @@ function generateEmailContent(notification: NotificationData): {
           securityNotice: "Access the project details in your contractor dashboard to begin your review and create a proposal.",
         },
         text: `Project Ready for Review\n\nHello ${notification.toUserName},\n\nA new project "${notification.projectName}" is ready for your review. The client ${notification.fromUserName} has submitted their project details and is requesting a proposal.\n\nPlease review the project specifications and prepare a detailed proposal for the client.\n\nReview project: ${projectUrl}\n\nAccess the project details in your contractor dashboard to begin your review and create a proposal.`,
+      };
+
+    case "quote_requested":
+      return {
+        subject: `New Quote Request: ${notification.projectName}`,
+        templateData: {
+          title: "New Quote Request",
+          heading: "New Quote Request",
+          content: `Hello ${notification.toUserName},<br/><br/>You have received a new quote request for the project <strong>"${notification.projectName}"</strong> from ${notification.fromUserName}.<br/>Please review the project details and create a custom proposal for the client.`,
+          actionContent: `
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${projectUrl}" style="display: inline-block; background: linear-gradient(135deg, #4a7c7e, #2d5a5c); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                Review & Create Proposal
+              </a>
+            </div>
+          `,
+          securityNotice: "Please respond to this quote request within 48 hours to maintain good client relationships.",
+        },
+        text: `New Quote Request\n\nHello ${notification.toUserName},\n\nYou have received a new quote request for the project "${notification.projectName}" from ${notification.fromUserName}.\n\nPlease review the project details and create a custom proposal for the client.\n\nReview project: ${projectUrl}\n\nPlease respond to this quote request within 48 hours to maintain good client relationships.`,
       };
 
     default:
@@ -272,6 +293,27 @@ export async function notifyProjectAssigned(
 ) {
   return sendProjectNotification({
     type: "project_assigned",
+    projectId,
+    projectName,
+    fromUserId,
+    fromUserName,
+    toUserId,
+    toUserName,
+    toUserEmail,
+  });
+}
+
+export async function notifyQuoteRequested(
+  projectId: string,
+  projectName: string,
+  fromUserId: string,
+  fromUserName: string,
+  toUserId: string,
+  toUserName: string,
+  toUserEmail: string
+) {
+  return sendProjectNotification({
+    type: "quote_requested",
     projectId,
     projectName,
     fromUserId,

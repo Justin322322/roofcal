@@ -4,11 +4,6 @@
 
 // Fallback constants for backwards compatibility when database is unavailable
 const FALLBACK_MATERIAL_PRICES = {
-  asphalt: 450,
-  metal: 1200,
-  tile: 1800,
-  slate: 2500,
-  wood: 900,
   corrugated: 800,
 } as const;
 
@@ -18,20 +13,12 @@ const FALLBACK_GUTTER_PRICES = {
 } as const;
 
 const FALLBACK_RIDGE_PRICES = {
-  asphalt: 150,
-  metal: 200,
-  tile: 250,
-  slate: 300,
-  wood: 180,
   corrugated: 180,
+  standard: 180,
+  ventilated: 220,
 } as const;
 
 const FALLBACK_SCREWS_PRICE_PER_SQM = {
-  asphalt: 15,
-  metal: 25,
-  tile: 20,
-  slate: 20,
-  wood: 18,
   corrugated: 20,
 } as const;
 
@@ -97,11 +84,6 @@ export function resetPricingConstants() {
 
 // Budget validation (minimum cost per square meter)
 export const MIN_COST_PER_SQM = {
-  asphalt: 800, // Material + labor + minimal extras
-  metal: 1500,
-  tile: 2200,
-  slate: 3000,
-  wood: 1200,
   corrugated: 1100,
 } as const;
 

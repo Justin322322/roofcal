@@ -20,8 +20,8 @@ export function useRoofCalculator() {
     pitch: "30",
     roofType: "gable",
     floors: "1",
-    materialThickness: "standard",
-    ridgeType: "standard",
+    materialThickness: "0.4",
+    ridgeType: "corrugated",
     gutterSize: "standard",
     budgetLevel: "low",
     budgetAmount: "",
@@ -33,7 +33,7 @@ export function useRoofCalculator() {
     ventilationPieces: "0",
   });
 
-  const [material, setMaterial] = useState("asphalt");
+  const [material, setMaterial] = useState("corrugated");
   const [isLoadingPricing, setIsLoadingPricing] = useState(true);
   const [pricingError, setPricingError] = useState<string | null>(null);
 
@@ -60,7 +60,7 @@ export function useRoofCalculator() {
     roofType: measurements.roofType,
     pitch: parseFloat(measurements.pitch) || 30,
     area: 0, // Will be updated when measurements are entered
-    material: "asphalt", // Current material
+    material: "corrugated", // Current material
     floors: parseFloat(measurements.floors) || 1,
     materialThickness: measurements.materialThickness,
     ridgeType: measurements.ridgeType,
@@ -187,8 +187,7 @@ export function useRoofCalculator() {
 
     // 2. Calculate roof material cost
     const selectedMaterial = materials.find((m) => m.value === material);
-    const pricePerSqm =
-      selectedMaterial?.price || CONSTANTS.MATERIAL_PRICES.asphalt;
+    const pricePerSqm = selectedMaterial?.price || CONSTANTS.MATERIAL_PRICES.corrugated;
     const materialCost = Math.round(totalArea * pricePerSqm);
 
     // 3. Calculate gutter cost
@@ -213,14 +212,14 @@ export function useRoofCalculator() {
     const ridgeLength = length; // Ridge follows the length of the roof
     const ridgePricePerMeter =
       CONSTANTS.RIDGE_PRICES[material as keyof typeof CONSTANTS.RIDGE_PRICES] ||
-      CONSTANTS.RIDGE_PRICES.asphalt;
+      CONSTANTS.RIDGE_PRICES.corrugated;
     const ridgeCost = Math.round(ridgeLength * ridgePricePerMeter);
 
     // 5. Calculate screws cost and quantity
     const screwsPricePerSqm =
       CONSTANTS.SCREWS_PRICE_PER_SQM[
         material as keyof typeof CONSTANTS.SCREWS_PRICE_PER_SQM
-      ] || CONSTANTS.SCREWS_PRICE_PER_SQM.asphalt;
+      ] || CONSTANTS.SCREWS_PRICE_PER_SQM.corrugated;
     const screwsCost = Math.round(totalArea * screwsPricePerSqm);
     
     // Calculate screws quantity (assuming ~10 screws per sq.m for most materials)
@@ -314,10 +313,10 @@ export function useRoofCalculator() {
       pitch: "30",
       roofType: "gable",
       floors: "1",
-      materialThickness: "standard",
-      ridgeType: "standard",
+      materialThickness: "0.4",
+      ridgeType: "corrugated",
       gutterSize: "standard",
-      budgetLevel: "medium",
+      budgetLevel: "low",
       budgetAmount: "",
       constructionMode: "new",
       gutterLengthA: "",
@@ -326,7 +325,7 @@ export function useRoofCalculator() {
       insulationThickness: "10mm",
       ventilationPieces: "0",
     });
-    setMaterial("asphalt");
+    setMaterial("corrugated");
     setResults({
       area: 0,
       materialCost: 0,
@@ -346,7 +345,7 @@ export function useRoofCalculator() {
     });
     setDecisionTree({
       materialRecommendation: {
-        recommendedMaterial: "asphalt",
+        recommendedMaterial: "corrugated",
         reason: "Enter measurements to get recommendations",
         isOptimal: true,
       },
@@ -423,18 +422,13 @@ export function useRoofCalculator() {
       // Small/medium areas: Keep current material if it's tile/slate
     }
 
-    // 3. OPTIMIZE MATERIAL THICKNESS - Reduce complexity
-    if (
-      measurements.materialThickness === "premium" ||
-      measurements.materialThickness === "heavy"
-    ) {
-      // Only keep premium/heavy if high budget and small area
-      if (measurements.budgetLevel === "high" && totalArea < 100) {
-        // Keep premium for small, high-budget projects
-      } else {
-        optimizations.materialThickness = "standard"; // Reduce complexity
-        changesCount++;
-      }
+    // 3. OPTIMIZE MATERIAL THICKNESS - Align with budget (low->0.4, high->0.5)
+    if (measurements.budgetLevel === "low") {
+      optimizations.materialThickness = "0.4";
+      changesCount++;
+    } else if (measurements.budgetLevel === "high") {
+      optimizations.materialThickness = "0.5";
+      changesCount++;
     }
 
     // 4. OPTIMIZE RIDGE TYPE - Reduce complexity

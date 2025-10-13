@@ -14,8 +14,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
-import { SaveIcon, Loader2Icon } from "lucide-react";
+import { SaveIcon, Loader2Icon, SendIcon, UsersIcon } from "lucide-react";
 import { saveProject, updateProject, getProjectDetails } from "../actions";
 import { AddressInput } from "@/components/map/address-input";
 import { WarehouseSelector } from "@/components/map/warehouse-selector";
@@ -42,6 +49,15 @@ interface ProjectActionsProps {
   onAddressChange?: (address: { coordinates: { latitude: number; longitude: number } }) => void;
 }
 
+interface Contractor {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  companyName: string;
+  completedProjects: number;
+}
+
 export function ProjectActions({
   measurements,
   results,
@@ -62,6 +78,14 @@ export function ProjectActions({
   const [projectName, setProjectName] = useState("");
   const [clientName, setClientName] = useState("");
   const [notes, setNotes] = useState("");
+
+  // Quote request form state
+  const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
+  const [selectedContractorId, setSelectedContractorId] = useState("");
+  const [quoteNote, setQuoteNote] = useState("");
+  const [contractors, setContractors] = useState<Contractor[]>([]);
+  const [isLoadingContractors, setIsLoadingContractors] = useState(false);
+  const [isSendingQuote, setIsSendingQuote] = useState(false);
   
   // Address and warehouse state
   const [address, setAddress] = useState({
@@ -95,6 +119,30 @@ export function ProjectActions({
       fetchWarehouses();
     }
   }, [saveDialogOpen]);
+
+  // Fetch contractors when quote dialog opens
+  useEffect(() => {
+    if (quoteDialogOpen) {
+      const fetchContractors = async () => {
+        setIsLoadingContractors(true);
+        try {
+          const response = await fetch('/api/contractors');
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.contractors) {
+              setContractors(result.contractors);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch contractors:", error);
+          toast.error("Failed to load contractors");
+        } finally {
+          setIsLoadingContractors(false);
+        }
+      };
+      fetchContractors();
+    }
+  }, [quoteDialogOpen]);
 
   // Load project data when dialog opens and we have a currentProjectId
   useEffect(() => {
@@ -217,10 +265,154 @@ export function ProjectActions({
     }
   };
 
+  const handleRequestQuote = async () => {
+    if (!currentProjectId) {
+      toast.error("Please save the project first before requesting a quote");
+      return;
+    }
+
+    if (!selectedContractorId) {
+      toast.error("Please select a contractor");
+      return;
+    }
+
+    setIsSendingQuote(true);
+    try {
+      const response = await fetch(`/api/projects/${currentProjectId}/send-to-contractor`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contractorId: selectedContractorId,
+          note: quoteNote.trim() || undefined,
+        }),
+      });
+
+      if (response.ok) {
+        toast.success("Quote request sent successfully", {
+          description: "The contractor has been notified and will review your project",
+        });
+        setQuoteDialogOpen(false);
+        setSelectedContractorId("");
+        setQuoteNote("");
+      } else {
+        const error = await response.json();
+        toast.error("Failed to send quote request", {
+          description: error.error || "An unexpected error occurred",
+        });
+      }
+    } catch (error) {
+      console.error("Error sending quote request:", error);
+      toast.error("Failed to send quote request", {
+        description: "An unexpected error occurred",
+      });
+    } finally {
+      setIsSendingQuote(false);
+    }
+  };
+
   const canSave = (results.totalCost > 0 || saveEnabled) && projectName.trim() && isValidated && selectedWarehouseId;
+  const canRequestQuote = currentProjectId && results.totalCost > 0;
 
   return (
     <>
+      {/* Request Quote */}
+      <Dialog
+        open={quoteDialogOpen}
+        onOpenChange={setQuoteDialogOpen}
+      >
+        <DialogTrigger asChild>
+          <Button
+            variant="default"
+            size="sm"
+            disabled={!canRequestQuote}
+            className="bg-primary hover:bg-primary/90"
+          >
+            <SendIcon className="h-4 w-4 mr-2" />
+            Request Quote
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UsersIcon className="h-5 w-5" />
+              Request Quote from Contractor
+            </DialogTitle>
+            <DialogDescription>
+              Select a contractor to review your project and provide a custom proposal.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="contractor">Select Contractor *</Label>
+              <Select
+                value={selectedContractorId}
+                onValueChange={setSelectedContractorId}
+                disabled={isLoadingContractors}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder={
+                    isLoadingContractors ? "Loading contractors..." : "Choose a contractor"
+                  } />
+                </SelectTrigger>
+                <SelectContent>
+                  {contractors.map((contractor) => (
+                    <SelectItem key={contractor.id} value={contractor.id}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{contractor.companyName}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {contractor.completedProjects} completed projects
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="quoteNote">Message to Contractor (Optional)</Label>
+              <Textarea
+                id="quoteNote"
+                value={quoteNote}
+                onChange={(e) => setQuoteNote(e.target.value)}
+                placeholder="Add any specific requirements or questions for the contractor..."
+                className="mt-1"
+                rows={3}
+              />
+            </div>
+            
+            <div className="bg-muted p-3 rounded-lg">
+              <div className="text-sm font-medium">Project Summary</div>
+              <div className="text-sm text-muted-foreground mt-1">
+                <div>Material: {material}</div>
+                <div>Total Area: {results.area.toFixed(2)} m²</div>
+                <div>Estimated Cost: ₱{results.totalCost.toFixed(2)}</div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setQuoteDialogOpen(false)}
+              disabled={isSendingQuote}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRequestQuote}
+              disabled={!selectedContractorId || isSendingQuote}
+            >
+              {isSendingQuote && (
+                <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+              )}
+              Send Quote Request
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Save Project */}
       <Dialog
         open={saveDialogOpen || false}

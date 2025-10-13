@@ -85,6 +85,12 @@ export const WORKFLOW_TRANSITIONS: WorkflowTransition[] = [
   // Revision workflow
   {
     from: "REJECTED",
+    to: "DRAFT",
+    allowedRoles: [UserRole.CLIENT],
+    description: "Reset project to request new quotes",
+  },
+  {
+    from: "REJECTED",
     to: "CONTRACTOR_REVIEWING",
     allowedRoles: [UserRole.ADMIN],
     description: "Revise proposal based on feedback",

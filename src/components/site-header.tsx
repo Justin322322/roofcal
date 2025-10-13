@@ -10,10 +10,6 @@ export function SiteHeader({ currentSection }: SiteHeaderProps) {
     switch (section) {
       case "roof-calculator":
         return "Project Request";
-      case "assigned-projects":
-        return "Assigned Projects";
-      case "proposals":
-        return "Proposals";
       case "account-management":
         return "Account Management";
       case "system-maintenance":

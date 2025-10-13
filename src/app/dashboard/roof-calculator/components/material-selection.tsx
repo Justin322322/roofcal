@@ -134,7 +134,9 @@ export function MaterialSelection({
                 price: wm.material.price * (1 + wm.locationAdjustment / 100),
                 description: wm.material.description || '',
               }));
-            setMaterials(warehouseMaterials);
+            // Business rule: Restrict selection to Long Span (corrugated) only
+            const restricted = warehouseMaterials.filter((m: Material) => m.value === "corrugated");
+            setMaterials(restricted.length > 0 ? restricted : warehouseMaterials.filter(() => false));
           } else {
             throw new Error('Invalid API response format');
           }
@@ -156,14 +158,18 @@ export function MaterialSelection({
               price: material.price,
               description: material.description || '',
             }));
-            setMaterials(dbMaterials);
+            // Business rule: Restrict selection to Long Span (corrugated) only
+            const restricted = dbMaterials.filter((m: Material) => m.value === "corrugated");
+            setMaterials(restricted.length > 0 ? restricted : dbMaterials.filter(() => false));
           } else {
             throw new Error('Invalid API response format');
           }
         }
       } catch (error) {
         console.error('Failed to load materials from API, using fallback:', error);
-        setMaterials(fallbackMaterials);
+        // Fallback but restricted to corrugated only
+        const restricted = fallbackMaterials.filter((m) => m.value === "corrugated");
+        setMaterials(restricted);
       } finally {
         setIsLoadingMaterials(false);
       }
@@ -173,6 +179,19 @@ export function MaterialSelection({
   }, [selectedWarehouseId]);
 
   const selectedMaterial = materials.find((m) => m.value === material);
+
+  // Ensure currently selected material is valid under restriction; default to corrugated
+  useEffect(() => {
+    if (!isLoadingMaterials) {
+      const exists = materials.some((m) => m.value === material);
+      if (!exists && materials.length > 0) {
+        onMaterialChange(materials[0].value);
+        if (materials[0].value === "corrugated" && onRidgeTypeChange) {
+          onRidgeTypeChange("corrugated");
+        }
+      }
+    }
+  }, [isLoadingMaterials, materials, material, onMaterialChange, onRidgeTypeChange]);
 
   const handleMaterialChange = (newMaterial: string) => {
     onMaterialChange(newMaterial);

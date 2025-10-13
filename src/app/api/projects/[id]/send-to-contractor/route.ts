@@ -4,7 +4,7 @@ import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
 import { generateHandoffToken } from "@/lib/handoff-token";
 import { sendCustomEmail } from "@/lib/email";
-import { notifyProjectAssigned } from "@/lib/notifications";
+import { notifyQuoteRequested } from "@/lib/notifications";
 
 export async function POST(
   request: NextRequest,
@@ -71,7 +71,7 @@ export async function POST(
     );
 
     // In-app notification
-    await notifyProjectAssigned(
+    await notifyQuoteRequested(
       updated.id,
       updated.projectName,
       session.user.id,

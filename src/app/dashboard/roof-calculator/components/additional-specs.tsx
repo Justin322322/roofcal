@@ -19,13 +19,11 @@ interface Measurements {
 interface AdditionalSpecsProps {
   measurements: Measurements;
   onMeasurementsChange: (measurements: Partial<Measurements>) => void;
-  currentMaterial?: string;
 }
 
 export function AdditionalSpecs({
   measurements,
   onMeasurementsChange,
-  currentMaterial = "asphalt",
 }: AdditionalSpecsProps) {
   const handleChange = (field: string, value: string) => {
     onMeasurementsChange({
@@ -40,19 +38,21 @@ export function AdditionalSpecs({
         <Label htmlFor="budgetLevel">Budget Level</Label>
         <Select
           value={measurements.budgetLevel}
-          onValueChange={(value) => handleChange("budgetLevel", value)}
+          onValueChange={(value) => {
+            // Map budget to thickness: low -> 0.4mm, high -> 0.5mm
+            handleChange("budgetLevel", value);
+            handleChange(
+              "materialThickness",
+              value === "high" ? "0.5" : "0.4"
+            );
+          }}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select budget level" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="low">Low - Cost-effective solutions</SelectItem>
-            <SelectItem value="medium">
-              Medium - Balanced quality & cost
-            </SelectItem>
-            <SelectItem value="high">
-              High - Premium materials & longevity
-            </SelectItem>
+            <SelectItem value="low">Low</SelectItem>
+            <SelectItem value="high">High</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -68,13 +68,8 @@ export function AdditionalSpecs({
             <SelectValue placeholder="Select thickness" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="standard">Standard - Good durability</SelectItem>
-            <SelectItem value="premium">
-              Premium - Enhanced durability
-            </SelectItem>
-            <SelectItem value="heavy">
-              Heavy Duty - Maximum durability
-            </SelectItem>
+            <SelectItem value="0.4">0.4 mm (Low)</SelectItem>
+            <SelectItem value="0.5">0.5 mm (High)</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -91,18 +86,10 @@ export function AdditionalSpecs({
               <SelectValue placeholder="Select ridge type" />
             </SelectTrigger>
             <SelectContent>
-              {currentMaterial === "corrugated" ? (
-                <>
-                  <SelectItem value="corrugated">Long Span Ridge Cap</SelectItem>
-                  <SelectItem value="standard">Standard Ridge Cap</SelectItem>
-                  <SelectItem value="ventilated">Ventilated Ridge Cap</SelectItem>
-                </>
-              ) : (
-                <>
-                  <SelectItem value="standard">Standard Ridge Cap</SelectItem>
-                  <SelectItem value="ventilated">Ventilated Ridge Cap</SelectItem>
-                </>
-              )}
+              {/* Business rule: when only corrugated is allowed, keep ridge types aligned */}
+              <SelectItem value="corrugated">Long Span Ridge Cap</SelectItem>
+              <SelectItem value="standard">Standard Ridge Cap</SelectItem>
+              <SelectItem value="ventilated">Ventilated Ridge Cap</SelectItem>
             </SelectContent>
           </Select>
         </div>

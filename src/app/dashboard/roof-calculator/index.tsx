@@ -36,6 +36,8 @@ import { useRoofCalculator } from "./hooks";
 import { materials } from "./components/material-selection";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ProjectList } from "./components/project-list";
 import type { Measurements } from "./types";
 
 export function RoofCalculatorContent() {
@@ -114,57 +116,64 @@ export function RoofCalculatorContent() {
 
   return (
     <div className="px-4 lg:px-6">
-      {/* Action Buttons */}
-      <div className="mb-4 flex justify-end">
-        <div className="flex items-center gap-2">
-          <ProjectActions
-            measurements={measurements}
-            results={results}
-            decisionTree={decisionTree}
-            material={material}
-            currentProjectId={currentProjectId}
-            saveDialogOpen={saveDialogOpen}
-            onSaveDialogChange={setSaveDialogOpen}
-            saveEnabled={saveEnabled}
-            selectedWarehouseId={selectedWarehouseId}
-            onWarehouseChange={setSelectedWarehouseId}
-            projectAddress={projectAddress}
-            onAddressChange={setProjectAddress}
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={isResetting}
-            onClick={async () => {
-              setIsResetting(true);
-              try {
-                // Add a small delay to show the loading state
-                await new Promise((resolve) => setTimeout(resolve, 500));
-                handleReset();
-                setCurrentProjectId(undefined); // Clear current project on reset
-                setSaveEnabled(false); // Reset save enabled state
-                toast.success("Calculator reset successfully", {
-                  description:
-                    "All measurements and selections have been cleared",
-                  duration: 3000,
-                });
-              } finally {
-                setIsResetting(false);
-              }
-            }}
-          >
-            {isResetting ? (
-              <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <RotateCcwIcon className="h-4 w-4 mr-2" />
-            )}
-            {isResetting ? "Resetting..." : "Reset"}
-          </Button>
-        </div>
-      </div>
+      <Tabs defaultValue="calculator" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="calculator">Calculator</TabsTrigger>
+          <TabsTrigger value="projects">My Projects</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="calculator" className="space-y-6">
+          {/* Action Buttons */}
+          <div className="mb-4 flex justify-end">
+            <div className="flex items-center gap-2">
+              <ProjectActions
+                measurements={measurements}
+                results={results}
+                decisionTree={decisionTree}
+                material={material}
+                currentProjectId={currentProjectId}
+                saveDialogOpen={saveDialogOpen}
+                onSaveDialogChange={setSaveDialogOpen}
+                saveEnabled={saveEnabled}
+                selectedWarehouseId={selectedWarehouseId}
+                onWarehouseChange={setSelectedWarehouseId}
+                projectAddress={projectAddress}
+                onAddressChange={setProjectAddress}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isResetting}
+                onClick={async () => {
+                  setIsResetting(true);
+                  try {
+                    // Add a small delay to show the loading state
+                    await new Promise((resolve) => setTimeout(resolve, 500));
+                    handleReset();
+                    setCurrentProjectId(undefined); // Clear current project on reset
+                    setSaveEnabled(false); // Reset save enabled state
+                    toast.success("Calculator reset successfully", {
+                      description:
+                        "All measurements and selections have been cleared",
+                      duration: 3000,
+                    });
+                  } finally {
+                    setIsResetting(false);
+                  }
+                }}
+              >
+                {isResetting ? (
+                  <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <RotateCcwIcon className="h-4 w-4 mr-2" />
+                )}
+                {isResetting ? "Resetting..." : "Reset"}
+              </Button>
+            </div>
+          </div>
 
       {/* Stats Cards */}
-      <div className="mb-6">
+      <div className="mb-8">
         <RoofStatsCards
           area={results.area}
           complexity={decisionTree.complexity}
@@ -244,6 +253,55 @@ export function RoofCalculatorContent() {
               </CardContent>
             </Card>
 
+            {/* Material Recommendation with Budget (Low/High) */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Material Recommendation</CardTitle>
+                <CardDescription>
+                  Select budget level (maps to thickness 0.4mm/0.5mm) and choose material
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Budget Level</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        variant={measurements.budgetLevel === "low" ? "default" : "outline"}
+                        onClick={() => {
+                          setMeasurements({ ...measurements, budgetLevel: "low", materialThickness: "0.4" });
+                        }}
+                      >
+                        Low (0.4 mm)
+                      </Button>
+                      <Button
+                        variant={measurements.budgetLevel === "high" ? "default" : "outline"}
+                        onClick={() => {
+                          setMeasurements({ ...measurements, budgetLevel: "high", materialThickness: "0.5" });
+                        }}
+                      >
+                        High (0.5 mm)
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Materials</label>
+                    <div className="grid grid-cols-1 gap-2">
+                      {/* List all available materials from selection (already restricted) */}
+                      {/* Button to keep consistent UI and allow re-selecting corrugated */}
+                      <Button
+                        variant={material === "corrugated" ? "default" : "outline"}
+                        onClick={() => setMaterial("corrugated")}
+                      >
+                        Long Span (Corrugated)
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>Material Selection</CardTitle>
@@ -306,7 +364,6 @@ export function RoofCalculatorContent() {
                         onMeasurementsChange={(updates) =>
                           setMeasurements({ ...measurements, ...updates })
                         }
-                        currentMaterial={material}
                       />
 
                       <Separator />
@@ -407,6 +464,12 @@ export function RoofCalculatorContent() {
           </div>
         </div>
       </div>
+        </TabsContent>
+        
+        <TabsContent value="projects">
+          <ProjectList onProjectLoaded={handleProjectLoaded} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
