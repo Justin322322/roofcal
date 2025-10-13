@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
+import { findBestWarehouseForProject } from "@/lib/material-calculator";
 import type {
   CreateProjectInput,
   ProjectFilters,
@@ -94,6 +95,23 @@ export async function POST(request: NextRequest) {
         notes: body.notes,
       },
     });
+
+    // Calculate and assign best warehouse if not already assigned
+    if (!project.warehouseId && project.status !== "DRAFT") {
+      try {
+        const bestWarehouseId = await findBestWarehouseForProject(project);
+        if (bestWarehouseId) {
+          await prisma.project.update({
+            where: { id: project.id },
+            data: { warehouseId: bestWarehouseId }
+          });
+          project.warehouseId = bestWarehouseId;
+        }
+      } catch (error) {
+        console.error("Error assigning warehouse to project:", error);
+        // Don't fail project creation if warehouse assignment fails
+      }
+    }
 
     return NextResponse.json(project, { status: 201 });
   } catch (error) {

@@ -131,10 +131,15 @@ model project {
   deliveryDistance    Decimal?          @db.Decimal(8, 2)
   warehouseId         String?
   
+  // Material Consumption Tracking
+  materialsConsumed   Boolean           @default(false)
+  materialsConsumedAt DateTime?
+  
   client              user?             @relation("ClientProjects", fields: [clientId], references: [id])
   contractor          user?             @relation("ContractorProjects", fields: [contractorId], references: [id])
   user                user              @relation("ProjectOwner", fields: [userId], references: [id], onDelete: Cascade)
   warehouse           warehouse?        @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
+  projectMaterials    ProjectMaterial[]
 
   @@index([userId], map: "Project_userId_idx")
   @@index([contractorId], map: "Project_contractorId_idx")
@@ -255,9 +260,41 @@ model WarehouseMaterial {
   // Relationships
   warehouse     warehouse      @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
   pricingConfig PricingConfig  @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  projectMaterials ProjectMaterial[]
   
   @@unique([warehouseId, materialId])
   @@index([warehouseId])
   @@index([materialId])
   @@index([isActive])
+}
+
+enum material_consumption_status {
+  RESERVED
+  CONSUMED
+  RETURNED
+  CANCELLED
+}
+
+model ProjectMaterial {
+  id                  String   @id @default(uuid())
+  projectId           String
+  warehouseMaterialId String
+  quantity            Int      @default(0)
+  status              material_consumption_status @default(RESERVED)
+  reservedAt          DateTime @default(now())
+  consumedAt          DateTime?
+  returnedAt          DateTime?
+  notes               String?  @db.LongText
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+  
+  // Relationships
+  project           project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  warehouseMaterial WarehouseMaterial @relation(fields: [warehouseMaterialId], references: [id], onDelete: Cascade)
+  
+  @@unique([projectId, warehouseMaterialId])
+  @@index([projectId])
+  @@index([warehouseMaterialId])
+  @@index([status])
+  @@index([consumedAt])
 }
