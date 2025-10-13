@@ -38,6 +38,17 @@ import { ProjectList } from "./components/project-list";
 import type { Measurements } from "./types";
 import { RecommendedSelections } from "./components/recommended-selections";
 
+// Helper function to get material name with fallback for thickness variants
+function getMaterialName(materialValue: string): string {
+  // Handle corrugated thickness variants
+  if (materialValue === "corrugated-0.4") return "Long Span (0.4mm)";
+  if (materialValue === "corrugated-0.5") return "Long Span (0.5mm)";
+  
+  // Find in materials array
+  const material = materials.find((m) => m.value === materialValue);
+  return material?.name || materialValue;
+}
+
 export function RoofCalculatorContent() {
   const {
     measurements,
@@ -294,7 +305,7 @@ export function RoofCalculatorContent() {
                 <div className="mt-6">
                   <RecommendedSelections
                     measurements={measurements}
-                    materialName={materials.find((m) => m.value === material)?.name || ""}
+                    materialName={getMaterialName(material)}
                   />
                 </div>
               </CardContent>
@@ -359,7 +370,7 @@ export function RoofCalculatorContent() {
               ridgeLength={results.ridgeLength}
               materialQuantity={results.materialQuantity}
               screwsQuantity={results.screwsQuantity}
-              material={materials.find((m) => m.value === material)?.name || ""}
+              material={getMaterialName(material)}
               constructionMode={measurements.constructionMode}
               budgetAmount={parseFloat(measurements.budgetAmount) || 0}
               onAutoOptimize={handleAutoOptimize}
