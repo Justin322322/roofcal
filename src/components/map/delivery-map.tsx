@@ -144,8 +144,6 @@ export function DeliveryMap({
             <Popup>
               <div className="text-sm">
                 <div className="font-semibold text-blue-600">Origin</div>
-                <div>Lat: {origin.latitude.toFixed(6)}</div>
-                <div>Lng: {origin.longitude.toFixed(6)}</div>
               </div>
             </Popup>
           </Marker>
@@ -157,8 +155,6 @@ export function DeliveryMap({
             <Popup>
               <div className="text-sm">
                 <div className="font-semibold text-green-600">Destination</div>
-                <div>Lat: {destination.latitude.toFixed(6)}</div>
-                <div>Lng: {destination.longitude.toFixed(6)}</div>
               </div>
             </Popup>
           </Marker>

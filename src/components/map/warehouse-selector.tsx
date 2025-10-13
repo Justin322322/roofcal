@@ -97,7 +97,7 @@ export function WarehouseSelector({
         </CardHeader>
         <CardContent>
           {warehouses.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-muted-foreground">
               <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>No warehouses available</p>
               <p className="text-sm">Contact administrator to add warehouse locations</p>
@@ -114,15 +114,15 @@ export function WarehouseSelector({
                     key={warehouse.id}
                     className={`p-4 border rounded-lg cursor-pointer transition-all ${
                       isSelected
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                        ? "border-primary bg-card shadow-sm"
+                        : "border-border bg-card hover:border-primary/50 hover:shadow-sm"
                     }`}
                     onClick={() => onWarehouseSelect(warehouse.id)}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-gray-900">
+                          <h3 className="font-semibold text-card-foreground">
                             {warehouse.name}
                           </h3>
                           {isDefault && (
@@ -137,13 +137,13 @@ export function WarehouseSelector({
                           )}
                         </div>
                         
-                        <div className="text-sm text-gray-600 mb-2">
+                        <div className="text-sm text-muted-foreground mb-2">
                           <div>{warehouse.address}</div>
                           <div>{warehouse.city}, {warehouse.state} {warehouse.zipCode}</div>
                         </div>
 
                         {destination && (
-                          <div className="flex items-center gap-1 text-sm text-gray-500">
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
                             <Navigation className="h-3 w-3" />
                             {warehouse.distance} km
                           </div>
@@ -152,7 +152,7 @@ export function WarehouseSelector({
 
                       <div className="flex items-center gap-2">
                         {isSelected && (
-                          <Check className="h-5 w-5 text-blue-500" />
+                          <Check className="h-5 w-5 text-primary" />
                         )}
                         <Button
                           size="sm"
@@ -205,12 +205,6 @@ export function WarehouseSelector({
               <div>
                 <div className="font-medium text-gray-900">Name</div>
                 <div className="text-gray-600">{selectedWarehouse.name}</div>
-              </div>
-              <div>
-                <div className="font-medium text-gray-900">Coordinates</div>
-                <div className="text-gray-600">
-                  {selectedWarehouse.latitude.toFixed(6)}, {selectedWarehouse.longitude.toFixed(6)}
-                </div>
               </div>
               <div className="col-span-2">
                 <div className="font-medium text-gray-900">Address</div>

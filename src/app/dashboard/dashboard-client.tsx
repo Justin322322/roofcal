@@ -124,6 +124,14 @@ export default function DashboardClient() {
     }
   };
 
+  // Set default tab based on user role when no tab is specified
+  useEffect(() => {
+    if (!isLoading && session?.user?.role && !activeSection) {
+      const defaultSection = session.user.role === UserRole.CLIENT ? "roof-calculator" : "assigned-projects";
+      setActiveSection(defaultSection);
+    }
+  }, [isLoading, session?.user?.role, activeSection, setActiveSection]);
+
   // Handle permission-based section redirection in useEffect to prevent infinite re-renders
   useEffect(() => {
     if (!isLoading && session?.user?.role && activeSection) {
@@ -142,13 +150,13 @@ export default function DashboardClient() {
       <SidebarProvider>
         <AppSidebar
           variant="inset"
-          activeSection="roof-calculator"
+          activeSection={activeSection || "roof-calculator"}
           onSectionChange={(section) =>
             setActiveSection(section as DashboardSection)
           }
         />
         <SidebarInset>
-          <SiteHeader currentSection="roof-calculator" />
+          <SiteHeader currentSection={activeSection || "roof-calculator"} />
           <div className="flex flex-1 flex-col">
             <div className="@container/main flex flex-1 flex-col gap-2">
               <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
@@ -166,8 +174,7 @@ export default function DashboardClient() {
 
     switch (activeSection) {
       case "roof-calculator":
-      case null: // Default based on user role
-        return userRole === UserRole.CLIENT ? <RoofCalculatorContent /> : <AssignedProjectsContent />;
+        return <RoofCalculatorContent />;
       case "assigned-projects":
         return <AssignedProjectsContent />;
       case "proposals":
@@ -184,6 +191,7 @@ export default function DashboardClient() {
         return <DeliverySettingsPage />;
       case "delivery-test":
         return <DeliveryTestPage />;
+      case null: // Default based on user role
       default:
         return userRole === UserRole.CLIENT ? <RoofCalculatorContent /> : <AssignedProjectsContent />;
     }
