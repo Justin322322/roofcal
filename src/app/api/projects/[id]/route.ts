@@ -163,7 +163,7 @@ export async function PUT(
         ...(body.projectName && { projectName: body.projectName }),
         ...(body.clientName !== undefined && { clientName: body.clientName }),
         ...(body.status && { status: body.status }),
-        ...(body.currentStage && { currentStage: body.currentStage as Prisma.ProjectStage }),
+        ...(body.currentStage && { currentStage: body.currentStage as Prisma.$Enums.ProjectStage }),
         ...(body.stageProgress && { stageProgress: body.stageProgress as Prisma.InputJsonValue }),
 
         // Measurements
