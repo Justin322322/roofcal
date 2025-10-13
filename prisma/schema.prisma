@@ -32,12 +32,12 @@ model user {
   created_at         DateTime           @default(now())
   updated_at         DateTime           @updatedAt
   activity           activity[]
+  notification       notification[]
   clientProjects     project[]          @relation("ClientProjects")
   contractorProjects project[]          @relation("ContractorProjects")
   projects           project[]          @relation("ProjectOwner")
   verificationcode   verificationcode[]
   warehouses         warehouse[]        @relation("WarehouseOwner")
-  notifications      Notification[]
 
   @@index([email], map: "User_email_idx")
 }
@@ -78,14 +78,6 @@ model project {
   projectName         String
   clientName          String?
   status              project_status    @default(DRAFT)
-  // Order of the project within its current status column (Kanban ordering)
-  boardPosition       Int               @default(0)
-  // Simple single-page processing fields
-  currentStage        ProjectStage      @default(INSPECTION)
-  stageProgress       Json?
-  sentToContractorAt  DateTime?
-  contractorStatus    String?
-  handoffNote         String?
   length              Decimal           @db.Decimal(10, 2)
   width               Decimal           @db.Decimal(10, 2)
   pitch               Decimal           @db.Decimal(5, 2)
@@ -123,34 +115,34 @@ model project {
   notes               String?           @db.LongText
   created_at          DateTime          @default(now())
   updated_at          DateTime          @updatedAt
+  address             String?
   assignedAt          DateTime?
+  city                String?
   clientId            String?
   contractorId        String?
-  proposalSent        DateTime?
-  proposalStatus      ProposalStatus?   @default(DRAFT)
-  // Order of the proposal within its current proposalStatus column
-  proposalPosition    Int               @default(0)
-  
-  // Delivery and Location
-  address             String?
-  city                String?
-  state               String?
-  zipCode             String?
-  latitude            Decimal?          @db.Decimal(10, 8)
-  longitude           Decimal?          @db.Decimal(11, 8)
   deliveryCost        Decimal?          @db.Decimal(12, 2)
   deliveryDistance    Decimal?          @db.Decimal(8, 2)
+  latitude            Decimal?          @db.Decimal(10, 8)
+  longitude           Decimal?          @db.Decimal(11, 8)
+  proposalSent        DateTime?
+  proposalStatus      ProposalStatus?   @default(DRAFT)
+  state               String?
   warehouseId         String?
-  
-  // Material Consumption Tracking
+  zipCode             String?
   materialsConsumed   Boolean           @default(false)
   materialsConsumedAt DateTime?
-  
+  boardPosition       Int               @default(0)
+  proposalPosition    Int               @default(0)
+  currentStage        ProjectStage      @default(INSPECTION)
+  stageProgress       String?           @db.LongText
+  sentToContractorAt  DateTime?         @db.DateTime(0)
+  contractorStatus    String?
+  handoffNote         String?           @db.LongText
   client              user?             @relation("ClientProjects", fields: [clientId], references: [id])
   contractor          user?             @relation("ContractorProjects", fields: [contractorId], references: [id])
   user                user              @relation("ProjectOwner", fields: [userId], references: [id], onDelete: Cascade)
-  warehouse           warehouse?        @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
-  projectMaterials    ProjectMaterial[]
+  warehouse           warehouse?        @relation(fields: [warehouseId], references: [id])
+  projectmaterial     projectmaterial[]
 
   @@index([userId], map: "Project_userId_idx")
   @@index([contractorId], map: "Project_contractorId_idx")
@@ -158,9 +150,116 @@ model project {
   @@index([status], map: "Project_status_idx")
   @@index([created_at], map: "Project_created_at_idx")
   @@index([projectName], map: "Project_name_idx")
+  @@index([warehouseId], map: "project_warehouseId_fkey")
 }
 
-// New simple project processing stages for single-page workflow
+model warehouse {
+  id                String              @id @default(uuid())
+  name              String
+  address           String
+  city              String
+  state             String
+  zipCode           String
+  latitude          Decimal             @db.Decimal(10, 8)
+  longitude         Decimal             @db.Decimal(11, 8)
+  isDefault         Boolean             @default(false)
+  created_by        String
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+  capacity          Decimal?            @db.Decimal(12, 2)
+  height            Decimal?            @db.Decimal(8, 2)
+  length            Decimal?            @db.Decimal(8, 2)
+  width             Decimal?            @db.Decimal(8, 2)
+  projects          project[]
+  creator           user                @relation("WarehouseOwner", fields: [created_by], references: [id], onDelete: Cascade)
+  warehousematerial warehousematerial[]
+
+  @@index([created_by], map: "Warehouse_created_by_idx")
+}
+
+model notification {
+  id          String   @id
+  userId      String
+  type        String
+  title       String
+  message     String   @db.Text
+  projectId   String?
+  projectName String?
+  actionUrl   String?
+  read        Boolean  @default(false)
+  created_at  DateTime @default(now())
+  user        user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Notification_userId_fkey")
+
+  @@index([created_at], map: "Notification_created_at_idx")
+  @@index([read], map: "Notification_read_idx")
+  @@index([userId], map: "Notification_userId_idx")
+}
+
+model pricingconfig {
+  id                String              @id
+  category          String
+  name              String
+  label             String
+  description       String?
+  price             Decimal             @db.Decimal(10, 2)
+  unit              String
+  isActive          Boolean             @default(true)
+  metadata          String?             @db.LongText
+  created_at        DateTime            @default(now())
+  updated_at        DateTime
+  height            Decimal?            @db.Decimal(8, 2)
+  length            Decimal?            @db.Decimal(8, 2)
+  volume            Decimal?            @db.Decimal(10, 4)
+  width             Decimal?            @db.Decimal(8, 2)
+  warehousematerial warehousematerial[]
+
+  @@unique([category, name], map: "PricingConfig_category_name_key")
+  @@index([category], map: "PricingConfig_category_idx")
+  @@index([isActive], map: "PricingConfig_isActive_idx")
+  @@map("PricingConfig")
+}
+
+model projectmaterial {
+  id                  String                 @id
+  projectId           String
+  warehouseMaterialId String
+  quantity            Int                    @default(0)
+  status              projectmaterial_status @default(RESERVED)
+  reservedAt          DateTime               @default(now())
+  consumedAt          DateTime?
+  returnedAt          DateTime?
+  notes               String?                @db.LongText
+  created_at          DateTime               @default(now())
+  updated_at          DateTime
+  project             project                @relation(fields: [projectId], references: [id], onDelete: Cascade, map: "ProjectMaterial_projectId_fkey")
+  warehousematerial   warehousematerial      @relation(fields: [warehouseMaterialId], references: [id], onDelete: Cascade, map: "ProjectMaterial_warehouseMaterialId_fkey")
+
+  @@unique([projectId, warehouseMaterialId], map: "ProjectMaterial_projectId_warehouseMaterialId_key")
+  @@index([consumedAt], map: "ProjectMaterial_consumedAt_idx")
+  @@index([projectId], map: "ProjectMaterial_projectId_idx")
+  @@index([status], map: "ProjectMaterial_status_idx")
+  @@index([warehouseMaterialId], map: "ProjectMaterial_warehouseMaterialId_idx")
+}
+
+model warehousematerial {
+  id                 String            @id
+  warehouseId        String
+  materialId         String
+  quantity           Int               @default(0)
+  locationAdjustment Decimal           @default(0.00) @db.Decimal(5, 2)
+  isActive           Boolean           @default(true)
+  created_at         DateTime          @default(now())
+  updated_at         DateTime
+  projectmaterial    projectmaterial[]
+  pricingconfig      pricingconfig     @relation(fields: [materialId], references: [id], onDelete: Cascade, map: "WarehouseMaterial_materialId_fkey")
+  warehouse          warehouse         @relation(fields: [warehouseId], references: [id], onDelete: Cascade, map: "WarehouseMaterial_warehouseId_fkey")
+
+  @@unique([warehouseId, materialId], map: "WarehouseMaterial_warehouseId_materialId_key")
+  @@index([isActive], map: "WarehouseMaterial_isActive_idx")
+  @@index([materialId], map: "WarehouseMaterial_materialId_idx")
+  @@index([warehouseId], map: "WarehouseMaterial_warehouseId_idx")
+}
+
 enum ProjectStage {
   INSPECTION
   ESTIMATE
@@ -213,128 +312,9 @@ enum user_role {
   ADMIN
 }
 
-model warehouse {
-  id          String    @id @default(uuid())
-  name        String
-  address     String
-  city        String
-  state       String
-  zipCode     String
-  latitude    Decimal   @db.Decimal(10, 8)
-  longitude   Decimal   @db.Decimal(11, 8)
-  isDefault   Boolean   @default(false)
-  // Warehouse dimensions in meters
-  length      Decimal?  @db.Decimal(8, 2)
-  width       Decimal?  @db.Decimal(8, 2)
-  height      Decimal?  @db.Decimal(8, 2)
-  // Calculated capacity in cubic meters (Length × Width × Height)
-  capacity    Decimal?  @db.Decimal(12, 2)
-  created_by  String
-  created_at  DateTime  @default(now())
-  updated_at  DateTime  @updatedAt
-  
-  // Relationships
-  creator     user      @relation("WarehouseOwner", fields: [created_by], references: [id], onDelete: Cascade)
-  projects    project[]
-  materials   WarehouseMaterial[]
-  
-  @@index([created_by], map: "Warehouse_created_by_idx")
-}
-
-model PricingConfig {
-  id          String   @id @default(uuid())
-  category    String   // e.g., "material", "gutter", "ridge", "screws", "insulation", "ventilation", "labor"
-  name        String   // e.g., "asphalt", "metal", "standard", "large", "5mm", "10mm"
-  label       String   // Display name
-  description String?
-  price       Decimal  @db.Decimal(10, 2)
-  unit        String   // e.g., "per_sqm", "per_piece", "per_meter", "percentage"
-  // Material dimensions in meters
-  length      Decimal? @db.Decimal(8, 2)
-  width       Decimal? @db.Decimal(8, 2)
-  height      Decimal? @db.Decimal(8, 2)
-  // Calculated volume in cubic meters (Length × Width × Height)
-  volume      Decimal? @db.Decimal(10, 4)
-  isActive    Boolean  @default(true)
-  metadata    String?  @db.LongText // JSON for additional config
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-  
-  // Relationships
-  warehouseMaterials WarehouseMaterial[]
-  
-  @@unique([category, name])
-  @@index([category])
-  @@index([isActive])
-}
-
-model WarehouseMaterial {
-  id                  String   @id @default(uuid())
-  warehouseId         String
-  materialId          String
-  quantity            Int      @default(0)
-  locationAdjustment  Decimal  @default(0) @db.Decimal(5, 2) // Percentage adjustment for location-specific pricing
-  isActive            Boolean  @default(true)
-  created_at          DateTime @default(now())
-  updated_at          DateTime @updatedAt
-  
-  // Relationships
-  warehouse     warehouse      @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
-  pricingConfig PricingConfig  @relation(fields: [materialId], references: [id], onDelete: Cascade)
-  projectMaterials ProjectMaterial[]
-  
-  @@unique([warehouseId, materialId])
-  @@index([warehouseId])
-  @@index([materialId])
-  @@index([isActive])
-}
-
-enum material_consumption_status {
+enum projectmaterial_status {
   RESERVED
   CONSUMED
   RETURNED
   CANCELLED
-}
-
-model ProjectMaterial {
-  id                  String   @id @default(uuid())
-  projectId           String
-  warehouseMaterialId String
-  quantity            Int      @default(0)
-  status              material_consumption_status @default(RESERVED)
-  reservedAt          DateTime @default(now())
-  consumedAt          DateTime?
-  returnedAt          DateTime?
-  notes               String?  @db.LongText
-  created_at          DateTime @default(now())
-  updated_at          DateTime @updatedAt
-  
-  // Relationships
-  project           project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  warehouseMaterial WarehouseMaterial @relation(fields: [warehouseMaterialId], references: [id], onDelete: Cascade)
-  
-  @@unique([projectId, warehouseMaterialId])
-  @@index([projectId])
-  @@index([warehouseMaterialId])
-  @@index([status])
-  @@index([consumedAt])
-}
-
-model Notification {
-  id          String   @id @default(uuid())
-  userId      String
-  type        String   // "proposal_sent", "project_assigned", etc.
-  title       String
-  message     String   @db.Text
-  projectId   String?
-  projectName String?
-  actionUrl   String?
-  read        Boolean  @default(false)
-  created_at  DateTime @default(now())
-  
-  user        user     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@index([userId])
-  @@index([read])
-  @@index([created_at])
 }

@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Validate category if provided
-    if (category && !["materials", "gutters", "ridges", "screws", "insulation", "ventilation", "labor"].includes(category)) {
+    if (category && !["materials", "gutters", "ridges", "screws", "screw_types", "insulation", "ventilation", "labor"].includes(category)) {
       return NextResponse.json(
         { error: "Invalid category parameter" },
         { status: 400 }

@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { randomUUID } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -7,28 +8,35 @@ async function seedPricingData() {
 
   try {
     // Clear existing pricing data
-    await prisma.pricingConfig.deleteMany({});
+    await prisma.pricingconfig.deleteMany({});
     console.log('✅ Cleared existing pricing data');
 
-    // Seed material prices
+    // Seed material prices with thickness variants
     const materials = [
+      // Corrugated materials (main focus since it's the only allowed material)
+      { name: 'corrugated-0.4', label: 'Long Span (0.4mm)', price: 650, description: 'Lightweight, weather-resistant, 30-50 year lifespan - Low budget option' },
+      { name: 'corrugated-0.5', label: 'Long Span (0.5mm)', price: 800, description: 'Lightweight, weather-resistant, 30-50 year lifespan - High budget option' },
+      
+      // Other materials for reference (though currently restricted)
       { name: 'asphalt', label: 'Asphalt Shingles', price: 450, description: 'Cost-effective and durable, 15-30 year lifespan' },
       { name: 'metal', label: 'Metal Roofing', price: 1200, description: 'Long-lasting, energy efficient, 40-70 year lifespan' },
-      { name: 'corrugated', label: 'Long Span', price: 800, description: 'Lightweight, weather-resistant, 30-50 year lifespan' },
+      { name: 'corrugated', label: 'Long Span (Default)', price: 800, description: 'Lightweight, weather-resistant, 30-50 year lifespan' },
       { name: 'tile', label: 'Clay/Concrete Tile', price: 1800, description: 'Premium durability, 50+ year lifespan' },
       { name: 'slate', label: 'Slate', price: 2500, description: 'Highest quality, 100+ year lifespan' },
       { name: 'wood', label: 'Wood Shakes', price: 900, description: 'Natural aesthetic, 20-40 year lifespan' },
     ];
 
     for (const material of materials) {
-      await prisma.pricingConfig.create({
+      await prisma.pricingconfig.create({
         data: {
+          id: randomUUID(),
           category: 'materials',
           name: material.name,
           label: material.label,
           description: material.description,
           price: material.price,
           unit: 'per_sqm',
+          updated_at: new Date(),
         },
       });
     }
@@ -41,14 +49,16 @@ async function seedPricingData() {
     ];
 
     for (const gutter of gutters) {
-      await prisma.pricingConfig.create({
+      await prisma.pricingconfig.create({
         data: {
+          id: randomUUID(),
           category: 'gutters',
           name: gutter.name,
           label: gutter.label,
           description: gutter.description,
           price: gutter.price,
           unit: 'per_piece',
+          updated_at: new Date(),
         },
       });
     }
@@ -65,14 +75,16 @@ async function seedPricingData() {
     ];
 
     for (const ridge of ridges) {
-      await prisma.pricingConfig.create({
+      await prisma.pricingconfig.create({
         data: {
+          id: randomUUID(),
           category: 'ridges',
           name: ridge.name,
           label: ridge.label,
           description: ridge.description,
           price: ridge.price,
           unit: 'per_meter',
+          updated_at: new Date(),
         },
       });
     }
@@ -89,18 +101,46 @@ async function seedPricingData() {
     ];
 
     for (const screw of screws) {
-      await prisma.pricingConfig.create({
+      await prisma.pricingconfig.create({
         data: {
+          id: randomUUID(),
           category: 'screws',
           name: screw.name,
           label: screw.label,
           description: screw.description,
           price: screw.price,
           unit: 'per_sqm',
+          updated_at: new Date(),
         },
       });
     }
     console.log('✅ Seeded screws prices');
+
+    // Seed screw types (individual screw prices)
+    const screwTypes = [
+      { name: 'self-drilling-hex', label: 'Self-Drilling Hex Head', price: 5.00, description: 'Self-drilling hex head screw for metal roofing' },
+      { name: 'self-tapping-hex', label: 'Self-Tapping Hex Head', price: 6.00, description: 'Self-tapping hex head screw for various materials' },
+      { name: 'roofing-with-washer', label: 'Roofing Screw with Washer', price: 4.50, description: 'Standard roofing screw with washer for corrugated metal' },
+      { name: 'tek-screw', label: 'TEK Screw', price: 7.00, description: 'TEK screw for high-strength applications' },
+      { name: 'concrete-screw', label: 'Concrete Screw', price: 8.00, description: 'Concrete screw for masonry applications' },
+      { name: 'tile-screw', label: 'Tile Screw', price: 6.50, description: 'Specialized screw for tile roofing applications' },
+    ];
+
+    for (const screwType of screwTypes) {
+      await prisma.pricingconfig.create({
+        data: {
+          id: randomUUID(),
+          category: 'screw_types',
+          name: screwType.name,
+          label: screwType.label,
+          description: screwType.description,
+          price: screwType.price,
+          unit: 'per_piece',
+          updated_at: new Date(),
+        },
+      });
+    }
+    console.log('✅ Seeded screw types');
 
     // Seed insulation prices (by thickness)
     const insulation = [
@@ -112,28 +152,32 @@ async function seedPricingData() {
     ];
 
     for (const ins of insulation) {
-      await prisma.pricingConfig.create({
+      await prisma.pricingconfig.create({
         data: {
+          id: crypto.randomUUID(),
           category: 'insulation',
           name: ins.name,
           label: ins.label,
           description: ins.description,
           price: ins.price,
           unit: 'per_sqm',
+          updated_at: new Date(),
         },
       });
     }
     console.log('✅ Seeded insulation prices');
 
     // Seed ventilation price
-    await prisma.pricingConfig.create({
+    await prisma.pricingconfig.create({
       data: {
+        id: randomUUID(),
         category: 'ventilation',
         name: 'standard',
         label: 'Standard Ventilation',
         description: 'Standard roof ventilation per piece',
         price: 850,
         unit: 'per_piece',
+        updated_at: new Date(),
       },
     });
     console.log('✅ Seeded ventilation price');
@@ -145,14 +189,16 @@ async function seedPricingData() {
     ];
 
     for (const labor of laborRates) {
-      await prisma.pricingConfig.create({
+      await prisma.pricingconfig.create({
         data: {
+          id: randomUUID(),
           category: 'labor',
           name: labor.name,
           label: labor.label,
           description: labor.description,
           price: labor.price,
           unit: 'percentage',
+          updated_at: new Date(),
         },
       });
     }

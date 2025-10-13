@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -15,16 +14,14 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { MeasurementForm } from "./components/measurement-form";
-import { MaterialSelection } from "./components/material-selection";
 import { CalculationResults } from "./components/calculation-results";
 import { RoofStatsCards } from "./components/stats-cards";
 import { DecisionInsights } from "./components/decision-insights";
-import { AdditionalSpecs } from "./components/additional-specs";
 import { ConstructionModeSelector } from "./components/construction-mode-selector";
-import { GutterCalculator } from "./components/gutter-calculator";
-import { InsulationVentilation } from "./components/insulation-ventilation";
+import { ConsolidatedAdditionalSpecs } from "./components/consolidated-additional-specs";
 import { BudgetValidator } from "./components/budget-validator";
 import { ProjectActions } from "./components/project-actions";
+import { ConsolidatedMaterialSelection } from "./components/consolidated-material-selection";
 import {
   CalculatorIcon,
   RotateCcwIcon,
@@ -247,70 +244,22 @@ export function RoofCalculatorContent() {
               <CardContent>
                 <MeasurementForm
                   measurements={measurements}
-                  onMeasurementsChange={setMeasurements}
+                  onMeasurementsChange={(newMeasurements) => setMeasurements(newMeasurements)}
                   currentMaterial={material}
                 />
               </CardContent>
             </Card>
 
-            {/* Material Recommendation with Budget (Low/High) */}
+            {/* Consolidated Material & Screw Selection */}
             <Card>
               <CardHeader>
-                <CardTitle>Material Recommendation</CardTitle>
+                <CardTitle>Material & Hardware Selection</CardTitle>
                 <CardDescription>
-                  Select budget level (maps to thickness 0.4mm/0.5mm) and choose material
+                  Choose your budget level, roofing material, and screw type
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Budget Level</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button
-                        variant={measurements.budgetLevel === "low" ? "default" : "outline"}
-                        onClick={() => {
-                          setMeasurements({ ...measurements, budgetLevel: "low", materialThickness: "0.4" });
-                        }}
-                      >
-                        Low (0.4 mm)
-                      </Button>
-                      <Button
-                        variant={measurements.budgetLevel === "high" ? "default" : "outline"}
-                        onClick={() => {
-                          setMeasurements({ ...measurements, budgetLevel: "high", materialThickness: "0.5" });
-                        }}
-                      >
-                        High (0.5 mm)
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Materials</label>
-                    <div className="grid grid-cols-1 gap-2">
-                      {/* List all available materials from selection (already restricted) */}
-                      {/* Button to keep consistent UI and allow re-selecting corrugated */}
-                      <Button
-                        variant={material === "corrugated" ? "default" : "outline"}
-                        onClick={() => setMaterial("corrugated")}
-                      >
-                        Long Span (Corrugated)
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Material Selection</CardTitle>
-                <CardDescription>
-                  Choose your preferred roofing material
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <MaterialSelection
+                <ConsolidatedMaterialSelection
                   material={material}
                   onMaterialChange={(newMaterial) => {
                     setMaterial(newMaterial);
@@ -325,9 +274,18 @@ export function RoofCalculatorContent() {
                       });
                     }
                   }}
-                  onRidgeTypeChange={(ridgeType: string) =>
-                    setMeasurements({ ...measurements, ridgeType })
+                  screwType={measurements.screwType}
+                  onScrewTypeChange={(screwType) =>
+                    setMeasurements({ ...measurements, screwType })
                   }
+                  budgetLevel={measurements.budgetLevel}
+                  onBudgetLevelChange={(budgetLevel, materialThickness) => {
+                    setMeasurements({ ...measurements, budgetLevel, materialThickness });
+                    
+                    // Auto-select the correct material variant based on budget level
+                    const materialVariant = budgetLevel === "low" ? "corrugated-0.4" : "corrugated-0.5";
+                    setMaterial(materialVariant);
+                  }}
                   selectedWarehouseId={selectedWarehouseId}
                 />
               </CardContent>
@@ -352,55 +310,21 @@ export function RoofCalculatorContent() {
                       />
                     </CardTitle>
                     <CardDescription>
-                      Budget, thickness, ridge & gutter specifications
+                      Thickness, ridge, gutter, insulation & ventilation specifications
                     </CardDescription>
                   </CardHeader>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <CardContent>
-                    <div ref={additionalSpecsRef} className="space-y-6">
-                      <AdditionalSpecs
+                    <div ref={additionalSpecsRef}>
+                      <ConsolidatedAdditionalSpecs
                         measurements={measurements}
                         onMeasurementsChange={(updates) =>
                           setMeasurements({ ...measurements, ...updates })
                         }
+                        roofArea={results.area}
+                        calculatedGutterPieces={results.gutterPieces}
                       />
-
-                      <Separator />
-
-                      {/* Gutter Calculator */}
-                      <div>
-                        <h4 className="text-sm font-semibold mb-3">
-                          Gutter Specifications
-                        </h4>
-                        <GutterCalculator
-                          gutterLengthA={measurements.gutterLengthA}
-                          gutterSlope={measurements.gutterSlope}
-                          gutterLengthC={measurements.gutterLengthC}
-                          gutterSize={measurements.gutterSize}
-                          onGutterChange={(field, value) =>
-                            setMeasurements({ ...measurements, [field]: value })
-                          }
-                          calculatedPieces={results.gutterPieces}
-                        />
-                      </div>
-
-                      <Separator />
-
-                      {/* Insulation & Ventilation */}
-                      <div>
-                        <h4 className="text-sm font-semibold mb-3">
-                          Insulation & Ventilation
-                        </h4>
-                        <InsulationVentilation
-                          insulationThickness={measurements.insulationThickness}
-                          ventilationPieces={measurements.ventilationPieces}
-                          onChange={(field, value) =>
-                            setMeasurements({ ...measurements, [field]: value })
-                          }
-                          roofArea={results.area}
-                        />
-                      </div>
                     </div>
                   </CardContent>
                 </CollapsibleContent>
@@ -467,7 +391,7 @@ export function RoofCalculatorContent() {
         </TabsContent>
         
         <TabsContent value="projects">
-          <ProjectList onProjectLoaded={handleProjectLoaded} />
+          <ProjectList />
         </TabsContent>
       </Tabs>
     </div>

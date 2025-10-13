@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { 
   WarehouseIcon, 
   AlertTriangleIcon, 
@@ -204,11 +206,18 @@ export function WarehouseMaterialWarnings({
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <WarehouseIcon className="h-5 w-5" />
-            Warehouse Inventory Warnings
-          </CardTitle>
-          <CardDescription>Loading inventory warnings...</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <WarehouseIcon className="h-5 w-5" />
+                Stock Level Warnings
+              </CardTitle>
+              <CardDescription>Monitor material inventory levels and get alerts for low stock or critical shortages</CardDescription>
+            </div>
+            <Button variant="outline" disabled>
+              Loading
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-2">
@@ -228,11 +237,18 @@ export function WarehouseMaterialWarnings({
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <WarehouseIcon className="h-5 w-5" />
-            Warehouse Inventory Warnings
-          </CardTitle>
-          <CardDescription>No inventory warnings at this time</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <WarehouseIcon className="h-5 w-5" />
+                Stock Level Warnings
+              </CardTitle>
+              <CardDescription>Monitor material inventory levels and get alerts for low stock or critical shortages</CardDescription>
+            </div>
+            <Button variant="outline" onClick={fetchWarnings}>
+              Refresh Warnings
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <Alert>
@@ -251,86 +267,92 @@ export function WarehouseMaterialWarnings({
       {filteredWarnings.map((warehouse) => (
         <Card key={warehouse.warehouseId}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <WarehouseIcon className="h-5 w-5" />
-              {warehouse.warehouseName}
-            </CardTitle>
-            <CardDescription>
-              {warehouse.warnings.length} material warning{warehouse.warnings.length !== 1 ? 's' : ''} detected
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <WarehouseIcon className="h-5 w-5" />
+                  {warehouse.warehouseName}
+                </CardTitle>
+                <CardDescription>
+                  {warehouse.warnings.length} material warning{warehouse.warnings.length !== 1 ? 's' : ''} detected
+                </CardDescription>
+              </div>
+              <Button variant="outline" onClick={fetchWarnings}>
+                Refresh Warnings
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {warehouse.warnings.map((warning) => {
-              const warningLevel = getWarningLevel(warning);
-              return (
-                <div
-                  key={warning.materialId}
-                  className={`p-4 border rounded-lg ${getWarningColor(warningLevel)}`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-3">
-                      {getWarningIcon(warningLevel)}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h4 className="font-medium text-gray-900">{warning.materialName}</h4>
+          <CardContent>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Material</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Current</TableHead>
+                    <TableHead>Reserved</TableHead>
+                    <TableHead>Projected</TableHead>
+                    <TableHead>Projects</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {warehouse.warnings.map((warning) => {
+                    const warningLevel = getWarningLevel(warning);
+                    return (
+                      <TableRow key={warning.materialId}>
+                        <TableCell className="font-medium flex items-center gap-2">
+                          {getWarningIcon(warningLevel)}
+                          {warning.materialName}
+                        </TableCell>
+                        <TableCell>
                           <Badge variant={warningLevel === 'critical' ? 'destructive' : 'secondary'}>
                             {warningLevel.toUpperCase()}
                           </Badge>
-                        </div>
-                        
-                        <div className="grid grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <div className="text-gray-600">Current Stock</div>
-                            <div className="font-medium">{warning.currentStock} units</div>
-                          </div>
-                          <div>
-                            <div className="text-gray-600">Reserved</div>
-                            <div className="font-medium text-yellow-600">{warning.reservedForProjects} units</div>
-                          </div>
-                          <div>
-                            <div className="text-gray-600">Projected</div>
-                            <div className={`font-medium ${
-                              warning.projectedStock <= 0 ? 'text-red-600' : 
-                              warning.projectedStock < warning.currentStock * 0.2 ? 'text-yellow-600' : 
-                              'text-green-600'
-                            }`}>
-                              {warning.projectedStock} units
-                            </div>
-                          </div>
-                        </div>
-
-                        {warning.projectsUsing.length > 0 && (
-                          <div className="mt-3">
-                            <div className="text-sm text-gray-600 mb-2 flex items-center gap-1">
-                              <UsersIcon className="h-3 w-3" />
-                              Reserved for projects:
-                            </div>
+                        </TableCell>
+                        <TableCell>{warning.currentStock} units</TableCell>
+                        <TableCell>
+                          <span className="text-yellow-600">{warning.reservedForProjects} units</span>
+                        </TableCell>
+                        <TableCell>
+                          <span className={`${
+                            warning.projectedStock <= 0 ? 'text-red-600' : 
+                            warning.projectedStock < warning.currentStock * 0.2 ? 'text-yellow-600' : 
+                            'text-green-600'
+                          }`}>
+                            {warning.projectedStock} units
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          {warning.projectsUsing.length > 0 ? (
                             <div className="space-y-1">
                               {warning.projectsUsing.map((project) => (
-                                <div key={project.projectId} className="text-xs bg-white/50 px-2 py-1 rounded">
+                                <div key={project.projectId} className="text-xs">
                                   <span className="font-medium">{project.projectName}</span>
-                                  <span className="text-gray-500 ml-2">({project.quantity} units)</span>
+                                  <span className="text-muted-foreground ml-2">({project.quantity})</span>
                                 </div>
                               ))}
                             </div>
-                          </div>
-                        )}
-
-                        {warningLevel === 'critical' && (
-                          <Alert className="mt-3">
-                            <AlertTriangleIcon className="h-4 w-4" />
-                            <AlertDescription>
-                              Critical stock level! Projected inventory will be exhausted. 
-                              Consider restocking or redistributing materials from other warehouses.
-                            </AlertDescription>
-                          </Alert>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                          ) : (
+                            <span className="text-muted-foreground text-sm">—</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+            {/* Critical warning callouts under table for visibility */}
+            {warehouse.warnings.some(w => getWarningLevel(w) === 'critical') && (
+              <div className="mt-4">
+                <Alert>
+                  <AlertTriangleIcon className="h-4 w-4" />
+                  <AlertDescription>
+                    One or more materials are at critical stock levels. Consider restocking or redistributing materials from other warehouses.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
           </CardContent>
         </Card>
       ))}

@@ -31,9 +31,10 @@ export function useRoofCalculator() {
     gutterLengthC: "",
     insulationThickness: "10mm",
     ventilationPieces: "0",
+    screwType: "roofing-with-washer",
   });
 
-  const [material, setMaterial] = useState("corrugated");
+  const [material, setMaterial] = useState("corrugated-0.4"); // Default to low budget variant
   const [isLoadingPricing, setIsLoadingPricing] = useState(true);
   const [pricingError, setPricingError] = useState<string | null>(null);
 
@@ -216,15 +217,13 @@ export function useRoofCalculator() {
     const ridgeCost = Math.round(ridgeLength * ridgePricePerMeter);
 
     // 5. Calculate screws cost and quantity
-    const screwsPricePerSqm =
-      CONSTANTS.SCREWS_PRICE_PER_SQM[
-        material as keyof typeof CONSTANTS.SCREWS_PRICE_PER_SQM
-      ] || CONSTANTS.SCREWS_PRICE_PER_SQM.corrugated;
-    const screwsCost = Math.round(totalArea * screwsPricePerSqm);
-    
-    // Calculate screws quantity (assuming ~10 screws per sq.m for most materials)
     const screwsPerSqm = 10; // Base screws per square meter
     const screwsQuantity = Math.ceil(totalArea * screwsPerSqm);
+    
+    // Get price per screw from selected screw type
+    // For now, use fallback pricing until we implement dynamic loading
+    const selectedScrewPrice = CONSTANTS.SCREW_TYPES[measurements.screwType as keyof typeof CONSTANTS.SCREW_TYPES]?.price || CONSTANTS.SCREW_TYPES["roofing-with-washer"].price;
+    const screwsCost = Math.round(screwsQuantity * selectedScrewPrice);
 
     // 6. Calculate insulation cost (100% coverage)
     const insulationPricePerSqm =
@@ -324,8 +323,9 @@ export function useRoofCalculator() {
       gutterLengthC: "",
       insulationThickness: "10mm",
       ventilationPieces: "0",
+      screwType: "roofing-with-washer",
     });
-    setMaterial("corrugated");
+    setMaterial("corrugated-0.4"); // Reset to low budget variant
     setResults({
       area: 0,
       materialCost: 0,

@@ -27,6 +27,8 @@ export interface Measurements {
   insulationThickness: string;
   // Ventilation
   ventilationPieces: string;
+  // Screw selection
+  screwType: string;
 }
 
 export interface CalculationResults {

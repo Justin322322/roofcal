@@ -4,7 +4,6 @@ import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
 import { reserveProjectMaterials, consumeProjectMaterials, returnProjectMaterials } from "@/lib/material-consumption";
 import type { UpdateProjectInput } from "@/types/project";
-import { Prisma } from "@prisma/client";
 
 // GET /api/projects/[id] - Get single project
 export async function GET(
@@ -164,7 +163,9 @@ export async function PUT(
         ...(body.clientName !== undefined && { clientName: body.clientName }),
         ...(body.status && { status: body.status }),
         ...(body.currentStage && { currentStage: body.currentStage }),
-        ...(body.stageProgress && { stageProgress: body.stageProgress as Prisma.InputJsonValue }),
+        ...(body.stageProgress !== undefined && {
+          stageProgress: JSON.stringify(body.stageProgress),
+        }),
 
         // Measurements
         ...(body.length && { length: body.length }),
@@ -230,9 +231,19 @@ export async function PUT(
           optimizationTips: body.optimizationTips,
         }),
 
-        // Contractor-Client relationship fields
-        ...(body.contractorId !== undefined && { contractorId: body.contractorId }),
-        ...(body.clientId !== undefined && { clientId: body.clientId }),
+        // Contractor-Client relationship fields (use checked relation updates)
+        ...(body.contractorId !== undefined && {
+          contractor:
+            body.contractorId === null
+              ? { disconnect: true }
+              : { connect: { id: body.contractorId } },
+        }),
+        ...(body.clientId !== undefined && {
+          client:
+            body.clientId === null
+              ? { disconnect: true }
+              : { connect: { id: body.clientId } },
+        }),
         ...(body.assignedAt !== undefined && { assignedAt: body.assignedAt }),
         ...(body.proposalSent !== undefined && { proposalSent: body.proposalSent }),
         ...(body.proposalStatus !== undefined && { proposalStatus: body.proposalStatus }),

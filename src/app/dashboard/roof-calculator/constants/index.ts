@@ -22,6 +22,15 @@ const FALLBACK_SCREWS_PRICE_PER_SQM = {
   corrugated: 20,
 } as const;
 
+const FALLBACK_SCREW_TYPES = {
+  "self-drilling-hex": { name: "Self-Drilling Hex Head", price: 5.00 },
+  "self-tapping-hex": { name: "Self-Tapping Hex Head", price: 6.00 },
+  "roofing-with-washer": { name: "Roofing Screw with Washer", price: 4.50 },
+  "tek-screw": { name: "TEK Screw", price: 7.00 },
+  "concrete-screw": { name: "Concrete Screw", price: 8.00 },
+  "tile-screw": { name: "Tile Screw", price: 6.50 },
+} as const;
+
 const FALLBACK_INSULATION_PRICES = {
   "5mm": 80,
   "10mm": 120,
@@ -40,6 +49,7 @@ export let MATERIAL_PRICES = FALLBACK_MATERIAL_PRICES;
 export let GUTTER_PRICES = FALLBACK_GUTTER_PRICES;
 export let RIDGE_PRICES = FALLBACK_RIDGE_PRICES;
 export let SCREWS_PRICE_PER_SQM = FALLBACK_SCREWS_PRICE_PER_SQM;
+export let SCREW_TYPES = FALLBACK_SCREW_TYPES;
 export let INSULATION_PRICES = FALLBACK_INSULATION_PRICES;
 export let VENTILATION_PRICE_PER_PIECE = FALLBACK_VENTILATION_PRICE_PER_PIECE;
 export let LABOR_COST_NEW_CONSTRUCTION = FALLBACK_LABOR_COST_NEW_CONSTRUCTION;
@@ -53,6 +63,7 @@ export function updatePricingConstants(pricingData: {
   GUTTER_PRICES: Record<string, number>;
   RIDGE_PRICES: Record<string, number>;
   SCREWS_PRICE_PER_SQM: Record<string, number>;
+  SCREW_TYPES?: Record<string, { name: string; price: number }>;
   INSULATION_PRICES: Record<string, number>;
   VENTILATION_PRICE_PER_PIECE: number;
   LABOR_COST_NEW_CONSTRUCTION: number;
@@ -62,6 +73,7 @@ export function updatePricingConstants(pricingData: {
   GUTTER_PRICES = { ...FALLBACK_GUTTER_PRICES, ...pricingData.GUTTER_PRICES };
   RIDGE_PRICES = { ...FALLBACK_RIDGE_PRICES, ...pricingData.RIDGE_PRICES };
   SCREWS_PRICE_PER_SQM = { ...FALLBACK_SCREWS_PRICE_PER_SQM, ...pricingData.SCREWS_PRICE_PER_SQM };
+  SCREW_TYPES = { ...FALLBACK_SCREW_TYPES, ...pricingData.SCREW_TYPES };
   INSULATION_PRICES = { ...FALLBACK_INSULATION_PRICES, ...pricingData.INSULATION_PRICES };
   VENTILATION_PRICE_PER_PIECE = pricingData.VENTILATION_PRICE_PER_PIECE || FALLBACK_VENTILATION_PRICE_PER_PIECE;
   LABOR_COST_NEW_CONSTRUCTION = pricingData.LABOR_COST_NEW_CONSTRUCTION || FALLBACK_LABOR_COST_NEW_CONSTRUCTION;
@@ -76,6 +88,7 @@ export function resetPricingConstants() {
   GUTTER_PRICES = FALLBACK_GUTTER_PRICES;
   RIDGE_PRICES = FALLBACK_RIDGE_PRICES;
   SCREWS_PRICE_PER_SQM = FALLBACK_SCREWS_PRICE_PER_SQM;
+  SCREW_TYPES = FALLBACK_SCREW_TYPES;
   INSULATION_PRICES = FALLBACK_INSULATION_PRICES;
   VENTILATION_PRICE_PER_PIECE = FALLBACK_VENTILATION_PRICE_PER_PIECE;
   LABOR_COST_NEW_CONSTRUCTION = FALLBACK_LABOR_COST_NEW_CONSTRUCTION;

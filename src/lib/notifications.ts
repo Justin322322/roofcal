@@ -1,8 +1,9 @@
 import { sendCustomEmail, type EmailTemplateData } from "@/lib/email";
+import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 
 export interface NotificationData {
-  type: "status_change" | "proposal_sent" | "proposal_accepted" | "proposal_rejected" | "project_assigned" | "quote_requested";
+  type: "status_change" | "proposal_sent" | "proposal_accepted" | "proposal_rejected" | "project_assigned" | "quote_requested" | "low_stock";
   projectId: string;
   projectName: string;
   fromUserId: string;
@@ -12,6 +13,10 @@ export interface NotificationData {
   toUserEmail: string;
   status?: string;
   message?: string;
+  warehouseName?: string;
+  materialName?: string;
+  currentStock?: number;
+  threshold?: number;
 }
 
 export async function sendProjectNotification(notification: NotificationData) {
@@ -29,6 +34,7 @@ export async function sendProjectNotification(notification: NotificationData) {
     // Create in-app notification in database
     await prisma.notification.create({
       data: {
+        id: randomUUID(),
         userId: notification.toUserId,
         type: notification.type,
         title: emailContent.subject,
@@ -61,6 +67,8 @@ function generateInAppMessage(notification: NotificationData): string {
       return `Project "${notification.projectName}" ready for review from ${notification.fromUserName}`;
     case "quote_requested":
       return `New quote request for "${notification.projectName}" from ${notification.fromUserName}`;
+    case "low_stock":
+      return `Low stock: ${notification.materialName} at ${notification.warehouseName} (current: ${notification.currentStock})`;
     default:
       return `Update for project "${notification.projectName}"`;
   }
@@ -188,6 +196,28 @@ function generateEmailContent(notification: NotificationData): {
         },
         text: `New Quote Request\n\nHello ${notification.toUserName},\n\nYou have received a new quote request for the project "${notification.projectName}" from ${notification.fromUserName}.\n\nPlease review the project details and create a custom proposal for the client.\n\nReview project: ${projectUrl}\n\nPlease respond to this quote request within 48 hours to maintain good client relationships.`,
       };
+
+    case "low_stock": {
+      const title = `Low Stock Alert: ${notification.materialName}`;
+      const contentHtml = `Hello ${notification.toUserName},<br/><br/>Material <strong>${notification.materialName}</strong> at warehouse <strong>${notification.warehouseName}</strong> is below threshold.<br/><br/><strong>Current stock:</strong> ${notification.currentStock} (threshold: ${notification.threshold}).`;
+      return {
+        subject: title,
+        templateData: {
+          title,
+          heading: title,
+          content: contentHtml,
+          actionContent: `
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${projectUrl}" style="display: inline-block; background: linear-gradient(135deg, #4a7c7e, #2d5a5c); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                View Dashboard
+              </a>
+            </div>
+          `,
+          securityNotice: "Consider restocking or reallocating materials to avoid project delays.",
+        },
+        text: `Low Stock Alert\n\nMaterial ${notification.materialName} at warehouse ${notification.warehouseName} is below threshold.\nCurrent stock: ${notification.currentStock} (threshold: ${notification.threshold}).\n\nOpen dashboard: ${projectUrl}`,
+      };
+    }
 
     default:
       throw new Error(`Unknown notification type: ${notification.type}`);
@@ -321,5 +351,49 @@ export async function notifyQuoteRequested(
     toUserId,
     toUserName,
     toUserEmail,
+  });
+}
+
+// Helper: notify low stock (warehouse/material scoped, not tied to a specific project)
+export async function notifyLowStock(
+  {
+    projectId = "system",
+    projectName = "Inventory",
+    fromUserId,
+    fromUserName,
+    toUserId,
+    toUserName,
+    toUserEmail,
+    warehouseName,
+    materialName,
+    currentStock,
+    threshold,
+  }: {
+    projectId?: string;
+    projectName?: string;
+    fromUserId: string;
+    fromUserName: string;
+    toUserId: string;
+    toUserName: string;
+    toUserEmail: string;
+    warehouseName: string;
+    materialName: string;
+    currentStock: number;
+    threshold: number;
+  }
+) {
+  return sendProjectNotification({
+    type: "low_stock",
+    projectId,
+    projectName,
+    fromUserId,
+    fromUserName,
+    toUserId,
+    toUserName,
+    toUserEmail,
+    warehouseName,
+    materialName,
+    currentStock,
+    threshold,
   });
 }

@@ -24,8 +24,9 @@ import {
   MapPinIcon,
   RefreshCwIcon,
 } from "lucide-react";
-import { loadProject } from "../actions";
 import { ProposalViewer } from "./proposal-viewer";
+import { useSession } from "next-auth/react";
+import { UserRole } from "@/types/user-role";
 
 interface Project {
   id: string;
@@ -52,22 +53,14 @@ interface Project {
   } | null;
 }
 
-interface ProjectListProps {
-  onProjectLoaded?: (data: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    measurements: any;
-    material: string;
-    projectId?: string;
-  }) => void;
-}
-
-export function ProjectList({ onProjectLoaded }: ProjectListProps) {
+export function ProjectList() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [proposalDialogOpen, setProposalDialogOpen] = useState(false);
+  const { data: session } = useSession();
 
   useEffect(() => {
     fetchProjects();
@@ -113,23 +106,6 @@ export function ProjectList({ onProjectLoaded }: ProjectListProps) {
     }
   };
 
-  const handleLoadProject = async (projectId: string) => {
-    try {
-      const result = await loadProject(projectId);
-      if (result.success && result.data && onProjectLoaded) {
-        onProjectLoaded(result.data);
-        toast.success("Project loaded successfully");
-      } else {
-        toast.error("Failed to load project", {
-          description: result.error,
-        });
-      }
-    } catch {
-      toast.error("Failed to load project", {
-        description: "An unexpected error occurred",
-      });
-    }
-  };
 
   const getStatusBadge = (status: string, proposalStatus: string | null) => {
     if (proposalStatus === "SENT") {
@@ -173,7 +149,6 @@ export function ProjectList({ onProjectLoaded }: ProjectListProps) {
 
   const canRequestQuote = (project: Project) => project.status === "DRAFT";
   const canViewProposal = (project: Project) => project.proposalStatus === "SENT";
-  const canLoadProject = (project: Project) => project.status !== "COMPLETED";
 
   if (isLoading) {
     return (
@@ -289,25 +264,15 @@ export function ProjectList({ onProjectLoaded }: ProjectListProps) {
                 {project.contractor && (
                   <div className="flex items-center gap-2 text-sm">
                     <UserIcon className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-muted-foreground">Contractor:</span>
+                    <span className="text-muted-foreground">
+                      {session?.user?.role === UserRole.ADMIN ? "Client:" : "Contractor:"}
+                    </span>
                     <span>{project.contractor.firstName} {project.contractor.lastName}</span>
                   </div>
                 )}
 
                 {/* Actions */}
                 <div className="flex flex-wrap gap-2 pt-2">
-                  {canLoadProject(project) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleLoadProject(project.id)}
-                      className="flex-1"
-                    >
-                      <FileTextIcon className="h-3 w-3 mr-1" />
-                      Load
-                    </Button>
-                  )}
-                  
                   {canRequestQuote(project) && (
                     <Button
                       variant="default"

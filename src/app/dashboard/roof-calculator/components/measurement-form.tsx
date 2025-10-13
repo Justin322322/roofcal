@@ -9,25 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-interface Measurements {
-  length: string;
-  width: string;
-  pitch: string;
-  roofType: string;
-  floors: string;
-  materialThickness: string;
-  ridgeType: string;
-  gutterSize: string;
-  budgetLevel: string;
-  budgetAmount: string;
-  constructionMode: "new" | "repair";
-  gutterLengthA: string;
-  gutterSlope: string;
-  gutterLengthC: string;
-  insulationThickness: string;
-  ventilationPieces: string;
-}
+import type { Measurements } from "../types";
 
 interface MeasurementFormProps {
   measurements: Measurements;

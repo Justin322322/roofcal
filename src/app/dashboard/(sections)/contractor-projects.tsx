@@ -225,17 +225,18 @@ export function ContractorProjectsContent() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <Card className="relative overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
             <FileTextIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{projects.length}</div>
+            <p className="text-xs text-muted-foreground">All projects</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="relative overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending Review</CardTitle>
             <ClockIcon className="h-4 w-4 text-muted-foreground" />
@@ -244,9 +245,10 @@ export function ContractorProjectsContent() {
             <div className="text-2xl font-bold">
               {projects.filter(p => p.status === "CLIENT_PENDING").length}
             </div>
+            <p className="text-xs text-muted-foreground">Awaiting review</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="relative overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Proposals Sent</CardTitle>
             <SendIcon className="h-4 w-4 text-muted-foreground" />
@@ -255,9 +257,10 @@ export function ContractorProjectsContent() {
             <div className="text-2xl font-bold">
               {projects.filter(p => p.proposalStatus === "SENT").length}
             </div>
+            <p className="text-xs text-muted-foreground">Sent to clients</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="relative overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Completed</CardTitle>
             <CheckCircleIcon className="h-4 w-4 text-muted-foreground" />
@@ -266,12 +269,14 @@ export function ContractorProjectsContent() {
             <div className="text-2xl font-bold">
               {projects.filter(p => p.status === "COMPLETED").length}
             </div>
+            <p className="text-xs text-muted-foreground">Finished projects</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Kanban Board */}
-      <Card>
+      <div className="mt-2">
+        <Card>
         <CardHeader>
           <CardTitle>Project Pipeline</CardTitle>
           <CardDescription>
@@ -367,7 +372,8 @@ export function ContractorProjectsContent() {
             ))}
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
 
       {/* Proposal Builder Dialog */}
       <Dialog open={proposalDialogOpen} onOpenChange={setProposalDialogOpen}>

@@ -7,6 +7,7 @@ export const PRICING_CATEGORIES = [
   "gutters", 
   "ridges",
   "screws",
+  "screw_types",
   "insulation",
   "ventilation",
   "labor"

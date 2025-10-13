@@ -4,6 +4,7 @@ import { authOptions } from "@/auth/config";
 import { UserRole } from "@/types/user-role";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { notifyLowStock } from "@/lib/notifications";
 
 // Validation schema for updating warehouse material
 const UpdateWarehouseMaterialSchema = z.object({
@@ -77,6 +78,48 @@ export async function PUT(
         pricingConfig: true,
       },
     });
+
+    // If quantity was updated, evaluate thresholds and notify if low
+    if (validatedData.quantity !== undefined) {
+      const newQty = updatedWarehouseMaterial.quantity;
+      // Simple threshold heuristic based on category like in warnings component
+      let warningThreshold = 10;
+      let criticalThreshold = 5;
+      const category = updatedWarehouseMaterial.pricingConfig.category;
+      if (category === 'Labor') {
+        warningThreshold = 1;
+        criticalThreshold = 0;
+      } else if (category === 'Insulation' || category === 'Ventilation') {
+        warningThreshold = 5;
+        criticalThreshold = 2;
+      } else if (category === 'Gutter') {
+        warningThreshold = 15;
+        criticalThreshold = 8;
+      }
+
+      if (newQty <= warningThreshold) {
+        try {
+          // Determine recipients: notify the updating admin and optionally an admin inbox
+          const toUserId = session.user.id;
+          const toUserName = session.user.name || 'Admin';
+          const toUserEmail = session.user.email || '';
+
+          await notifyLowStock({
+            fromUserId: session.user.id,
+            fromUserName: session.user.name || 'System',
+            toUserId,
+            toUserName,
+            toUserEmail,
+            warehouseName: (await prisma.warehouse.findUnique({ where: { id: warehouseId }, select: { name: true } }))?.name || 'Warehouse',
+            materialName: updatedWarehouseMaterial.pricingConfig.label || updatedWarehouseMaterial.pricingConfig.name,
+            currentStock: newQty,
+            threshold: criticalThreshold,
+          });
+        } catch (e) {
+          console.error('Failed to send low stock notification', e);
+        }
+      }
+    }
 
     const formattedMaterial = {
       id: updatedWarehouseMaterial.id,
