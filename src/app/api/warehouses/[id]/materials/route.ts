@@ -115,8 +115,8 @@ export async function POST(
       );
     }
 
-    // Only ADMIN can add materials to warehouses
-    if (session.user.role !== UserRole.ADMIN) {
+    // Allow both ADMIN and CLIENT to add materials to warehouses
+    if (session.user.role !== UserRole.ADMIN && session.user.role !== UserRole.CLIENT) {
       return NextResponse.json(
         { error: "Access denied" },
         { status: 403 }

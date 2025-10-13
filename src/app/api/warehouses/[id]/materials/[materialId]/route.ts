@@ -27,8 +27,8 @@ export async function PUT(
       );
     }
 
-    // Only ADMIN can update materials in warehouses
-    if (session.user.role !== UserRole.ADMIN) {
+    // Allow both ADMIN and CLIENT to update materials in warehouses
+    if (session.user.role !== UserRole.ADMIN && session.user.role !== UserRole.CLIENT) {
       return NextResponse.json(
         { error: "Access denied" },
         { status: 403 }
@@ -156,8 +156,8 @@ export async function DELETE(
       );
     }
 
-    // Only ADMIN can remove materials from warehouses
-    if (session.user.role !== UserRole.ADMIN) {
+    // Allow both ADMIN and CLIENT to remove materials from warehouses
+    if (session.user.role !== UserRole.ADMIN && session.user.role !== UserRole.CLIENT) {
       return NextResponse.json(
         { error: "Access denied" },
         { status: 403 }
