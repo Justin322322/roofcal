@@ -1345,15 +1345,96 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
 
               <div>
                 <label className="block text-sm font-medium mb-2">Stock Quantity</label>
-                <Input
-                  type="number"
-                  min="0"
-                  value={editingWarehouseMaterial.quantity}
-                  onChange={(e) => setEditingWarehouseMaterial({
-                    ...editingWarehouseMaterial,
-                    quantity: parseInt(e.target.value) || 0
-                  })}
-                />
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min="0"
+                    value={editingWarehouseMaterial.quantity}
+                    onChange={(e) => setEditingWarehouseMaterial({
+                      ...editingWarehouseMaterial,
+                      quantity: parseInt(e.target.value) || 0
+                    })}
+                    className="flex-1"
+                  />
+                  <div className="flex flex-col gap-1">
+                    <div className="flex gap-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingWarehouseMaterial({
+                          ...editingWarehouseMaterial,
+                          quantity: Math.max(0, editingWarehouseMaterial.quantity + 10)
+                        })}
+                        className="h-6 w-8 px-1 text-xs"
+                      >
+                        +10
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingWarehouseMaterial({
+                          ...editingWarehouseMaterial,
+                          quantity: Math.max(0, editingWarehouseMaterial.quantity + 100)
+                        })}
+                        className="h-6 w-10 px-1 text-xs"
+                      >
+                        +100
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingWarehouseMaterial({
+                          ...editingWarehouseMaterial,
+                          quantity: Math.max(0, editingWarehouseMaterial.quantity + 1000)
+                        })}
+                        className="h-6 w-12 px-1 text-xs"
+                      >
+                        +1K
+                      </Button>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingWarehouseMaterial({
+                          ...editingWarehouseMaterial,
+                          quantity: Math.max(0, editingWarehouseMaterial.quantity - 10)
+                        })}
+                        className="h-6 w-8 px-1 text-xs"
+                      >
+                        -10
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingWarehouseMaterial({
+                          ...editingWarehouseMaterial,
+                          quantity: Math.max(0, editingWarehouseMaterial.quantity - 100)
+                        })}
+                        className="h-6 w-10 px-1 text-xs"
+                      >
+                        -100
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingWarehouseMaterial({
+                          ...editingWarehouseMaterial,
+                          quantity: Math.max(0, editingWarehouseMaterial.quantity - 1000)
+                        })}
+                        className="h-6 w-12 px-1 text-xs"
+                      >
+                        -1K
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div>
