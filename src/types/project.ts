@@ -10,6 +10,7 @@ import type {
 
 export type ProjectStatus = "DRAFT" | "ACTIVE" | "CLIENT_PENDING" | "CONTRACTOR_REVIEWING" | "PROPOSAL_SENT" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "ARCHIVED" | "REJECTED";
 export type ConstructionMode = "NEW" | "REPAIR";
+export type ProjectStage = "INSPECTION" | "ESTIMATE" | "MATERIALS" | "INSTALL" | "FINALIZE";
 export type ProposalStatus = "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "REVISED" | "COMPLETED";
 
 export interface Project {
@@ -18,6 +19,12 @@ export interface Project {
   projectName: string;
   clientName?: string | null;
   status: ProjectStatus;
+  // Simple single-page processing
+  currentStage: ProjectStage;
+  stageProgress?: Record<ProjectStage, boolean> | null;
+  sentToContractorAt?: Date | null;
+  contractorStatus?: string | null; // "pending" | "accepted" | "declined"
+  handoffNote?: string | null;
   
   // Contractor-Client relationship fields
   contractorId?: string | null;
@@ -158,6 +165,8 @@ export interface UpdateProjectInput {
   projectName?: string;
   clientName?: string | null;
   status?: ProjectStatus;
+  currentStage?: ProjectStage;
+  stageProgress?: Partial<Record<ProjectStage, boolean>>;
   
   // Contractor-Client relationship fields
   contractorId?: string | null;
@@ -218,6 +227,15 @@ export interface UpdateProjectInput {
   optimizationTips?: string | null;
 
   notes?: string | null;
+}
+
+export interface SendToContractorPayload {
+  contractorId: string;
+  note?: string;
+}
+
+export interface ContractorResponsePayload {
+  action: "accept" | "decline";
 }
 
 export interface ProjectFilters {

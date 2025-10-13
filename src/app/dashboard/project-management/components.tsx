@@ -11,12 +11,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { 
-  CalendarIcon, 
-  MapPinIcon, 
-  DollarSignIcon, 
-  UserIcon,
-  MoreVerticalIcon,
-  MailIcon
+  MoreVerticalIcon
 } from "lucide-react";
 import { ProjectStatusManager } from "@/components/project-status-manager";
 import type { Project } from "@/types/project";
@@ -99,7 +94,7 @@ export function ProjectCard({
             <CardTitle className="text-lg">{project.projectName}</CardTitle>
             <CardDescription>
               <div className="flex items-center gap-2">
-                <UserIcon className="h-4 w-4" />
+                <span className="text-sm text-muted-foreground">Client:</span>
                 {project.client ? `${project.client.firstName} ${project.client.lastName}` : 'Unknown Client'}
               </div>
             </CardDescription>
@@ -150,18 +145,18 @@ export function ProjectCard({
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">Cost:</span>
             <span className="font-medium">{formatCurrency(project.totalCost)}</span>
           </div>
           <div className="flex items-center gap-2">
-            <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">Date:</span>
             <span>{formatDate(project.assignedAt || project.created_at)}</span>
           </div>
         </div>
         
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm">
-            <MapPinIcon className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">Roof:</span>
             <span>{project.roofType} roof, {project.length}m × {project.width}m</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
@@ -228,7 +223,7 @@ export function ClientCard({ client, onViewDetails, formatCurrency }: ClientCard
     <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={onViewDetails}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <UserIcon className="h-5 w-5" />
+          <span className="text-sm text-muted-foreground">Client:</span>
           {client.firstName} {client.lastName}
         </CardTitle>
         <CardDescription>{client.email}</CardDescription>
@@ -284,7 +279,7 @@ export function ClientDetailsContent({
           <h4 className="font-medium mb-2">Contact Information</h4>
           <div className="space-y-1 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <MailIcon className="h-4 w-4" />
+              <span className="text-sm text-muted-foreground">Email:</span>
               {client.email}
             </div>
           </div>

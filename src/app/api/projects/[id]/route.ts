@@ -155,13 +155,15 @@ export async function PUT(
       }
     }
 
-    // Update project
+    // Update project, including stage fields for single-page workflow
     const project = await prisma.project.update({
       where: { id },
       data: {
         ...(body.projectName && { projectName: body.projectName }),
         ...(body.clientName !== undefined && { clientName: body.clientName }),
         ...(body.status && { status: body.status }),
+        ...(body.currentStage && { currentStage: body.currentStage as any }),
+        ...(body.stageProgress && { stageProgress: body.stageProgress as any }),
 
         // Measurements
         ...(body.length && { length: body.length }),

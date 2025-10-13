@@ -5,41 +5,20 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Progress } from "@/components/ui/progress";
-import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { 
-  DollarSignIcon, 
-  UserIcon,
-  CheckCircleIcon,
   AlertCircleIcon,
-  UsersIcon,
-  TrendingUpIcon,
-  FileTextIcon,
-  BarChart3Icon,
   SearchIcon,
   RefreshCwIcon,
-  DownloadIcon
+  SendIcon,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-import type { Project } from "@/types/project";
-import { ProposalBuilder } from "../proposals/proposal-builder";
-import { ProposalViewer } from "../proposals/proposal-viewer";
-import { getStatusDisplayInfo } from "@/lib/project-workflow";
-import { KanbanBoardComponent } from "@/components/kanban/kanban-board";
-import { useKanban } from "@/hooks/use-kanban";
-import { ProjectCard, ClientCard, ClientDetailsContent } from "./components";
+import type { Project, ProjectStage } from "@/types/project";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface AssignedProject extends Project {
   client?: {
@@ -223,111 +202,76 @@ export function ProjectManagementPage() {
   const { projects, clients, projectSummary, loading, fetchProjects } = useProjectManagementData();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<AssignedProject | null>(null);
-  const [showProposalBuilder, setShowProposalBuilder] = useState(false);
-  const [showProposalViewer, setShowProposalViewer] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<ClientData | null>(null);
-  const [showClientDetails, setShowClientDetails] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-
-  // Kanban setup
-  const projectColumns = [
-    "DRAFT",
-    "CLIENT_PENDING",
-    "CONTRACTOR_REVIEWING",
-    "PROPOSAL_SENT",
-    "ACCEPTED",
-    "IN_PROGRESS",
-    "COMPLETED",
-    "REJECTED",
-  ] as const;
-
-  const kanbanItems = useMemo(
-    () =>
-      projects.map((p) => ({
-        id: p.id,
-        title: p.projectName,
-        status: p.status as string,
-        position: (p as unknown as { boardPosition?: number }).boardPosition ?? 0,
-        meta: (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>{p.material}</span>
-              <span>{(p.area as number).toFixed(1)} m²</span>
-            </div>
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>{p.roofType}</span>
-              <span className="font-semibold text-primary">
-                {new Intl.NumberFormat('en-PH', {
-                  style: 'currency',
-                  currency: 'PHP',
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                }).format(p.totalCost)}
-              </span>
-            </div>
-            {p.client && (
-              <div className="text-xs text-muted-foreground">
-                Client: {p.client.firstName} {p.client.lastName}
-              </div>
-            )}
-          </div>
-        ),
-      })),
-    [projects]
-  );
-
-  const { itemsByColumn, moveItem } = useKanban(kanbanItems, {
-    columns: (projectColumns as unknown as string[]),
-    onReorder: async (items) => {
-      await fetch("/api/projects/reorder", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items }),
-      });
-      await fetchProjects();
-    },
-    canMove: (item, toStatus) => {
-      const from = item.status;
-      const forward: Record<string, string[]> = {
-        DRAFT: ["CLIENT_PENDING"],
-        CLIENT_PENDING: ["CONTRACTOR_REVIEWING"],
-        CONTRACTOR_REVIEWING: ["PROPOSAL_SENT"],
-        PROPOSAL_SENT: [], // accept/reject happens by client
-        ACCEPTED: ["IN_PROGRESS"],
-        IN_PROGRESS: ["COMPLETED"],
-        COMPLETED: [],
-        REJECTED: [],
-      };
-      if (toStatus === from) return true; // reorder within column
-      return forward[from]?.includes(toStatus) ?? false;
-    },
+  const [stageProgress, setStageProgress] = useState<Record<ProjectStage, boolean>>({
+    INSPECTION: false,
+    ESTIMATE: false,
+    MATERIALS: false,
+    INSTALL: false,
+    FINALIZE: false,
   });
+  const [currentStage, setCurrentStage] = useState<ProjectStage>("INSPECTION");
+  const [handoffOpen, setHandoffOpen] = useState(false);
+  const [handoffContractorId, setHandoffContractorId] = useState<string>("");
+  const [handoffNote, setHandoffNote] = useState<string>("");
 
-  const handleStatusUpdate = async (projectId: string, newStatus: Project["status"]) => {
-    setActionLoading(projectId);
-    try {
-      const response = await fetch(`/api/projects/${projectId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: newStatus }),
+  useEffect(() => {
+    if (selectedProject) {
+      setCurrentStage(selectedProject.currentStage);
+      setStageProgress({
+        INSPECTION: selectedProject.stageProgress?.INSPECTION ?? false,
+        ESTIMATE: selectedProject.stageProgress?.ESTIMATE ?? false,
+        MATERIALS: selectedProject.stageProgress?.MATERIALS ?? false,
+        INSTALL: selectedProject.stageProgress?.INSTALL ?? false,
+        FINALIZE: selectedProject.stageProgress?.FINALIZE ?? false,
       });
+    }
+  }, [selectedProject]);
 
-      if (response.ok) {
+  const handleSaveChecklist = async () => {
+    if (!selectedProject) return;
+    setActionLoading(selectedProject.id);
+    try {
+      const res = await fetch(`/api/projects/${selectedProject.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentStage, stageProgress }),
+      });
+      if (res.ok) {
+        toast.success("Checklist saved");
         await fetchProjects();
-        toast.success("Project status updated successfully");
       } else {
-        const errorData = await response.json();
-        toast.error("Failed to update project status", {
-          description: errorData.error || "An error occurred",
-        });
+        const err = await res.json();
+        toast.error("Failed to save", { description: err.error || "" });
       }
     } catch {
-      toast.error("Failed to update project status", {
-        description: "Network error occurred",
+      toast.error("Failed to save", { description: "Network error" });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleSendToContractor = async () => {
+    if (!selectedProject || !handoffContractorId) return;
+    setActionLoading(selectedProject.id);
+    try {
+      const res = await fetch(`/api/projects/${selectedProject.id}/send-to-contractor`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contractorId: handoffContractorId, note: handoffNote }),
       });
+      if (res.ok) {
+        toast.success("Sent to contractor");
+        setHandoffOpen(false);
+        setHandoffContractorId("");
+        setHandoffNote("");
+        await fetchProjects();
+      } else {
+        const err = await res.json();
+        toast.error("Failed to send", { description: err.error || "" });
+      }
+    } catch {
+      toast.error("Failed to send", { description: "Network error" });
     } finally {
       setActionLoading(null);
     }
@@ -433,47 +377,7 @@ export function ProjectManagementPage() {
   if (loading) {
     return (
       <div className="px-4 lg:px-6">
-        <div className="mb-6">
-          <Skeleton className="h-4 w-96" />
-        </div>
-        <div className="mb-4 flex justify-end">
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-9 w-20" />
-            <Skeleton className="h-9 w-24" />
-          </div>
-        </div>
-        <div className="mb-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-4" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-7 w-20 mb-1" />
-                  <Skeleton className="h-3 w-32" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-        <Card>
-          <CardContent className="p-6">
-            <Skeleton className="h-8 w-32 mb-4" />
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center space-x-4">
-                  <Skeleton className="h-12 w-12 rounded" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[160px]" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <p className="text-sm text-muted-foreground">Loading projects…</p>
       </div>
     );
   }
@@ -482,83 +386,18 @@ export function ProjectManagementPage() {
     <div className="px-4 lg:px-6">
       <div className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Project Management</h1>
-        <p className="text-muted-foreground">
-          Manage all your assigned projects and client relationships
-        </p>
+        <p className="text-muted-foreground">Single-page processing with checklist and contractor handoff</p>
       </div>
-
-      {/* Action Buttons */}
-      <div className="mb-4 flex justify-end">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={fetchProjects} disabled={loading}>
-            <RefreshCwIcon className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-          <Button variant="outline" onClick={exportToCSV}>
-            <DownloadIcon className="h-4 w-4 mr-2" />
-            Export CSV
-          </Button>
+      <div className="mb-4 flex items-center gap-2">
+        <div className="relative w-full max-w-md">
+          <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Search projects..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
         </div>
+        <Button variant="outline" onClick={fetchProjects} disabled={loading}>
+          <RefreshCwIcon className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </div>
-
-      {/* Summary Stats Cards */}
-      {projectSummary && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
-              <FileTextIcon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{projectSummary.total}</div>
-              <p className="text-xs text-muted-foreground">
-                Across {clients.length} clients
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Value</CardTitle>
-              <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(projectSummary.totalValue)}</div>
-              <p className="text-xs text-muted-foreground">
-                Avg: {formatCurrency(projectSummary.averageValue)}
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
-              <TrendingUpIcon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {(projectSummary.byStatus["IN_PROGRESS"] || 0) + (projectSummary.byStatus["ACCEPTED"] || 0)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                In progress or accepted
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed</CardTitle>
-              <CheckCircleIcon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{projectSummary.byStatus["COMPLETED"] || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                Successfully delivered
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {projects.length === 0 ? (
         <Alert>
@@ -568,322 +407,137 @@ export function ProjectManagementPage() {
           </AlertDescription>
         </Alert>
       ) : (
-        <Tabs defaultValue="clients" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="clients">
-              Clients ({clients.length})
-            </TabsTrigger>
-            <TabsTrigger value="status-board">
-              Status Board ({pendingProjects.length + activeProjects.length + draftProjects.length})
-            </TabsTrigger>
-            <TabsTrigger value="all-projects">
-              All Projects ({projects.length})
-            </TabsTrigger>
-            <TabsTrigger value="analytics">
-              Analytics
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Clients Tab */}
-          <TabsContent value="clients" className="space-y-4">
-            {/* Search and Filter Controls */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search clients..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {filteredClients.length === 0 ? (
-              <Alert>
-                <AlertCircleIcon className="h-4 w-4" />
-                <AlertDescription>
-                  {searchTerm ? "No clients found matching your search." : "No clients found."}
-                </AlertDescription>
-              </Alert>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {filteredClients.map((client) => (
-                  <ClientCard
-                    key={client.id}
-                    client={client}
-                    onViewDetails={() => {
-                      setSelectedClient(client);
-                      setShowClientDetails(true);
-                    }}
-                    formatCurrency={formatCurrency}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Status Board Tab */}
-          <TabsContent value="status-board" className="space-y-4">
-            <KanbanBoardComponent
-              columns={projectColumns as unknown as string[]}
-              itemsByColumn={itemsByColumn as unknown as Record<string, { id: string; status: string; position: number; title: string; meta?: React.ReactNode }[]>}
-              onMove={moveItem}
-            />
-          </TabsContent>
-
-          {/* All Projects Tab */}
-          <TabsContent value="all-projects" className="space-y-4">
-            {/* Search and Filter Controls */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search projects..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="DRAFT">Draft</SelectItem>
-                  <SelectItem value="CLIENT_PENDING">Client Pending</SelectItem>
-                  <SelectItem value="CONTRACTOR_REVIEWING">Contractor Reviewing</SelectItem>
-                  <SelectItem value="PROPOSAL_SENT">Proposal Sent</SelectItem>
-                  <SelectItem value="ACCEPTED">Accepted</SelectItem>
-                  <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                  <SelectItem value="COMPLETED">Completed</SelectItem>
-                  <SelectItem value="REJECTED">Rejected</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {filteredData.length === 0 ? (
-              <Alert>
-                <AlertCircleIcon className="h-4 w-4" />
-                <AlertDescription>
-                  {searchTerm || statusFilter !== "all"
-                    ? "No projects found matching your filters."
-                    : "No projects found."}
-                </AlertDescription>
-              </Alert>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {filteredData.map((project) => (
-                  <ProjectCard
-                    key={project.id}
-                    project={project}
-                    onStatusUpdate={handleStatusUpdate}
-                    onShowProposalBuilder={() => {
-                      setSelectedProject(project);
-                      setShowProposalBuilder(true);
-                    }}
-                    onShowProposalViewer={() => {
-                      setSelectedProject(project);
-                      setShowProposalViewer(true);
-                    }}
-                    actionLoading={actionLoading}
-                    formatCurrency={formatCurrency}
-                    formatDate={formatDate}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Analytics Tab */}
-          <TabsContent value="analytics" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Projects ({projects.length})</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {projects
+                  .filter((p) => !searchTerm || p.projectName.toLowerCase().includes(searchTerm.toLowerCase()))
+                  .map((p) => (
+                    <button
+                      key={p.id}
+                      className={`w-full text-left border rounded px-3 py-2 hover:bg-accent ${selectedProject?.id === p.id ? 'bg-accent/50' : ''}`}
+                      onClick={() => setSelectedProject(p)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="font-medium">{p.projectName}</div>
+                        <span className="text-xs text-muted-foreground">{p.status}</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate">{p.material} • {(p.area as number).toFixed(1)} m²</div>
+                    </button>
+                  ))}
+              </CardContent>
+            </Card>
+          </div>
+          <div className="lg:col-span-2">
+            {selectedProject ? (
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3Icon className="h-5 w-5" />
-                    Project Status Distribution
-                  </CardTitle>
+                <CardHeader className="flex flex-col gap-1">
+                  <CardTitle>{selectedProject.projectName}</CardTitle>
+                  <CardDescription>Manage checklist, stage, and handoff</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  {projectSummary && (
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={Object.entries(projectSummary.byStatus).map(([statusKey, count], idx) => ({
-                                name: getStatusDisplayInfo(statusKey as Project["status"]).label,
-                                value: count,
-                                status: statusKey as Project["status"],
-                                color: `var(--chart-${(idx % 5) + 1})`,
-                              }))}
-                              dataKey="value"
-                              nameKey="name"
-                              cx="50%"
-                              cy="50%"
-                              innerRadius={50}
-                              outerRadius={90}
-                              paddingAngle={2}
-                            >
-                              {Object.entries(projectSummary.byStatus).map(([,], idx) => (
-                                <Cell key={`cell-${idx}`} fill={`var(--chart-${(idx % 5) + 1})`} />
-                              ))}
-                            </Pie>
-                            <RechartsTooltip formatter={(val: number, _name, { payload }) => {
-                              const value = val as number;
-                              const pct = projectSummary.total > 0 ? (value / projectSummary.total) * 100 : 0;
-                              return [`${value} (${pct.toFixed(1)}%)`, payload.name];
-                            }} />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </div>
-                      <div className="flex flex-col justify-center gap-3">
-                        {Object.entries(projectSummary.byStatus).map(([statusKey, count], idx) => {
-                          const status = statusKey as Project["status"];
-                          const percentage = projectSummary.total > 0 ? (count / projectSummary.total) * 100 : 0;
-                          return (
-                            <div key={statusKey} className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <span
-                                  className="inline-block h-3 w-3 rounded-sm"
-                                  style={{ backgroundColor: `var(--chart-${(idx % 5) + 1})` }}
-                                  aria-hidden
-                                />
-                                <span className={getStatusDisplayInfo(status).color}>
-                                  {getStatusDisplayInfo(status).label}
-                                </span>
-                              </div>
-                              <span className="text-sm text-muted-foreground">{count} ({percentage.toFixed(1)}%)</span>
-                            </div>
-                          );
-                        })}
-                      </div>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="mb-2 block">Current Stage</Label>
+                      <Select value={currentStage} onValueChange={(v) => setCurrentStage(v as ProjectStage)}>
+                        <SelectTrigger><SelectValue placeholder="Select stage" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="INSPECTION">Inspection</SelectItem>
+                          <SelectItem value="ESTIMATE">Estimate</SelectItem>
+                          <SelectItem value="MATERIALS">Materials</SelectItem>
+                          <SelectItem value="INSTALL">Install</SelectItem>
+                          <SelectItem value="FINALIZE">Finalize</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
+                    <div className="flex items-end gap-2">
+                      <Button onClick={handleSaveChecklist} disabled={actionLoading === selectedProject.id}>Save</Button>
+                      <Button variant="outline" onClick={() => setHandoffOpen(true)}>
+                        <SendIcon className="h-4 w-4 mr-2" /> Send to Contractor
+                      </Button>
+                    </div>
+                  </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <UsersIcon className="h-5 w-5" />
-                    Client Performance
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
                   <div className="space-y-3">
-                    {clients.map((client) => {
-                      const completionRate = client.projects.length > 0 
-                        ? (client.completedProjects / client.projects.length) * 100 
-                        : 0;
-                      
-                      return (
-                        <div key={client.id} className="space-y-1">
-                          <div className="flex justify-between text-sm">
-                            <span>{client.firstName} {client.lastName}</span>
-                            <span>{completionRate.toFixed(0)}% completion</span>
-                          </div>
-                          <Progress value={completionRate} className="h-2" />
-                          <div className="text-xs text-muted-foreground">
-                            {client.completedProjects}/{client.projects.length} completed • {formatCurrency(client.totalValue)}
-                          </div>
-                        </div>
-                      );
-                    })}
+                    <Label>Checklist</Label>
+                    {(["INSPECTION","ESTIMATE","MATERIALS","INSTALL","FINALIZE"] as ProjectStage[]).map((stage) => (
+                      <label key={stage} className="flex items-center gap-2 text-sm">
+                        <Checkbox
+                          checked={!!stageProgress[stage]}
+                          onCheckedChange={(checked) => setStageProgress((prev) => ({ ...prev, [stage]: !!checked }))}
+                        />
+                        <span>{stage.charAt(0) + stage.slice(1).toLowerCase()}</span>
+                      </label>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="mb-1 block">Material</Label>
+                      <p className="text-sm text-muted-foreground">{selectedProject.material}</p>
+                    </div>
+                    <div>
+                      <Label className="mb-1 block">Area</Label>
+                      <p className="text-sm text-muted-foreground">{(selectedProject.area as number).toFixed(1)} m²</p>
+                    </div>
+                    <div>
+                      <Label className="mb-1 block">Status</Label>
+                      <p className="text-sm text-muted-foreground">{selectedProject.status}</p>
+                    </div>
+                    <div>
+                      <Label className="mb-1 block">Client</Label>
+                      <p className="text-sm text-muted-foreground">{selectedProject.clientName || '—'}</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
-      )}
-
-      {/* Proposal Builder Modal */}
-      {showProposalBuilder && selectedProject && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <CardHeader>
-              <CardTitle>Create Proposal</CardTitle>
-              <CardDescription>
-                Send a proposal for {selectedProject.projectName}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ProposalBuilder
-                project={selectedProject}
-                onProposalSent={() => {
-                  fetchProjects();
-                  setShowProposalBuilder(false);
-                  setSelectedProject(null);
-                }}
-                onClose={() => {
-                  setShowProposalBuilder(false);
-                  setSelectedProject(null);
-                }}
-              />
-            </CardContent>
-          </Card>
+            ) : (
+              <Alert>
+                <AlertCircleIcon className="h-4 w-4" />
+                <AlertDescription>Select a project to manage</AlertDescription>
+              </Alert>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Proposal Viewer Modal */}
-      <Dialog open={showProposalViewer} onOpenChange={(open) => {
-        if (!open) {
-          setShowProposalViewer(false);
-          setSelectedProject(null);
-        }
-      }}>
-        <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-4 border-b">
-            <DialogTitle className="text-xl font-semibold leading-none tracking-tight">
-              View Proposal
-            </DialogTitle>
+      {/* Send to Contractor Modal */}
+      <Dialog open={handoffOpen} onOpenChange={setHandoffOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send to Contractor</DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-y-auto p-6">
-            {selectedProject && (
-              <ProposalViewer
-                project={selectedProject}
-                onClose={() => {
-                  setShowProposalViewer(false);
-                  setSelectedProject(null);
-                }}
-              />
-            )}
+          <div className="space-y-4">
+            <div>
+              <Label className="mb-2 block">Contractor</Label>
+              <Select value={handoffContractorId} onValueChange={setHandoffContractorId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select contractor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {/* Expect /api/contractors to return a list; we fetch on open via simple trick */}
+                  {(clients as any[]) /* reuse client structure as placeholder if no contractor list is available */
+                    .map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.firstName} {c.lastName}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="mb-2 block">Note</Label>
+              <Input placeholder="Optional note" value={handoffNote} onChange={(e) => setHandoffNote(e.target.value)} />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setHandoffOpen(false)}>Cancel</Button>
+              <Button onClick={handleSendToContractor} disabled={!handoffContractorId}>Send</Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Client Details Modal */}
-      {showClientDetails && selectedClient && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UserIcon className="h-5 w-5" />
-                {selectedClient.firstName} {selectedClient.lastName}
-              </CardTitle>
-              <CardDescription>Client Details & Project History</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ClientDetailsContent
-                client={selectedClient}
-                onClose={() => {
-                  setShowClientDetails(false);
-                  setSelectedClient(null);
-                }}
-                formatCurrency={formatCurrency}
-                onStatusUpdate={handleStatusUpdate}
-              />
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   );
 }

@@ -80,6 +80,12 @@ model project {
   status              project_status    @default(DRAFT)
   // Order of the project within its current status column (Kanban ordering)
   boardPosition       Int               @default(0)
+  // Simple single-page processing fields
+  currentStage        ProjectStage      @default(INSPECTION)
+  stageProgress       Json?
+  sentToContractorAt  DateTime?
+  contractorStatus    String?
+  handoffNote         String?
   length              Decimal           @db.Decimal(10, 2)
   width               Decimal           @db.Decimal(10, 2)
   pitch               Decimal           @db.Decimal(5, 2)
@@ -152,6 +158,15 @@ model project {
   @@index([status], map: "Project_status_idx")
   @@index([created_at], map: "Project_created_at_idx")
   @@index([projectName], map: "Project_name_idx")
+}
+
+// New simple project processing stages for single-page workflow
+enum ProjectStage {
+  INSPECTION
+  ESTIMATE
+  MATERIALS
+  INSTALL
+  FINALIZE
 }
 
 enum activity_type {
