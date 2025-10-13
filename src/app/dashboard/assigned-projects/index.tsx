@@ -27,7 +27,7 @@ import type { Project } from "@/types/project";
 import { ProposalBuilder } from "../proposals/proposal-builder";
 import { ProjectStatusManager } from "@/components/project-status-manager";
 import { getStatusDisplayInfo } from "@/lib/project-workflow";
-import { KanbanBoard } from "@/components/kanban/kanban-board";
+import { KanbanBoardComponent } from "@/components/kanban/kanban-board";
 import { useKanban } from "@/hooks/use-kanban";
 
 interface AssignedProject extends Project {
@@ -662,7 +662,7 @@ export function AssignedProjectsContent() {
 
           {/* Board Tab */}
           <TabsContent value="board" className="space-y-4">
-            <KanbanBoard
+            <KanbanBoardComponent
               columns={projectColumns as unknown as string[]}
               itemsByColumn={itemsByColumn as unknown as Record<string, { id: string; status: string; position: number; title: string; meta?: React.ReactNode }[]>}
               onMove={moveItem}

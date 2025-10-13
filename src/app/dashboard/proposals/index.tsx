@@ -45,7 +45,7 @@ import {
 import type { Project } from "@/types/project";
 import { ProposalBuilder } from "./proposal-builder";
 import { ProposalViewer } from "./proposal-viewer";
-import { KanbanBoard } from "@/components/kanban/kanban-board";
+import { KanbanBoardComponent } from "@/components/kanban/kanban-board";
 import { useKanban } from "@/hooks/use-kanban";
 
 interface ProposalProject extends Project {
@@ -653,7 +653,7 @@ export function ProposalsPage() {
         </TabsContent>
 
         <TabsContent value="board">
-          <KanbanBoard
+          <KanbanBoardComponent
             columns={proposalColumns as unknown as string[]}
             itemsByColumn={itemsByColumn as unknown as Record<string, { id: string; status: string; position: number; title: string; meta?: React.ReactNode }[]>}
             onMove={moveItem}

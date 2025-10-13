@@ -43,6 +43,8 @@ export function useKanban(items: KanbanItem[], options: UseKanbanOptions) {
       if (options.canMove && !options.canMove(sourceItem, toStatus, toIndex)) {
         return; // disallowed by guard
       }
+      
+      // Update local state immediately for better UX
       setLocalItems((prev) => {
         const next = [...prev];
         const idx = next.findIndex((i) => i.id === id);
@@ -76,12 +78,31 @@ export function useKanban(items: KanbanItem[], options: UseKanbanOptions) {
         return [...recomposed, ...targetWithMoved];
       });
 
-      // Persist
+      // Persist changes to server
       try {
         setIsSaving(true);
-        const payload = localItems
-          .filter((i) => i.status === toStatus || i.id === id)
-          .map((i) => ({ id: i.id, status: i.status, position: i.position }));
+        const updatedItems = localItems.map(item => {
+          if (item.id === id) {
+            return { ...item, status: toStatus, position: toIndex };
+          }
+          return item;
+        });
+        
+        // Recalculate positions for the target column
+        const targetColumnItems = updatedItems
+          .filter(i => i.status === toStatus)
+          .sort((a, b) => a.position - b.position);
+        
+        targetColumnItems.forEach((item, index) => {
+          item.position = index;
+        });
+
+        const payload = updatedItems.map((i) => ({ 
+          id: i.id, 
+          status: i.status, 
+          position: i.position 
+        }));
+        
         await options.onReorder(payload);
       } finally {
         setIsSaving(false);

@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export function KanbanColumn({
@@ -22,17 +21,17 @@ export function KanbanColumn({
       <div className="space-y-3">
         {items.map((item, index) => (
           <div key={`${columnId}:${index}`} id={`${columnId}:${index}`} className="cursor-grab">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">{item.title}</CardTitle>
-              </CardHeader>
-              <CardContent>{item.meta}</CardContent>
-            </Card>
+            <div className="rounded-md border bg-card p-3 shadow-sm">
+              <h4 className="text-sm font-medium">{item.title}</h4>
+              {item.meta && (
+                <div className="mt-2 text-xs text-muted-foreground">
+                  {item.meta}
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>
     </div>
   );
 }
-
-
