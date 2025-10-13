@@ -314,25 +314,27 @@ export function ProjectActions({
 
   const canSave = (results.totalCost > 0 || saveEnabled) && projectName.trim() && isValidated && selectedWarehouseId;
   const canRequestQuote = currentProjectId && results.totalCost > 0;
+  const showRequestQuote = currentProjectId && results.totalCost > 0;
 
   return (
     <>
-      {/* Request Quote */}
-      <Dialog
-        open={quoteDialogOpen}
-        onOpenChange={setQuoteDialogOpen}
-      >
-        <DialogTrigger asChild>
-          <Button
-            variant="default"
-            size="sm"
-            disabled={!canRequestQuote}
-            className="bg-primary hover:bg-primary/90"
-          >
-            <SendIcon className="h-4 w-4 mr-2" />
-            Request Quote
-          </Button>
-        </DialogTrigger>
+      {/* Request Quote - Only show if project is saved and has calculations */}
+      {showRequestQuote && (
+        <Dialog
+          open={quoteDialogOpen}
+          onOpenChange={setQuoteDialogOpen}
+        >
+          <DialogTrigger asChild>
+            <Button
+              variant="default"
+              size="sm"
+              disabled={!canRequestQuote}
+              className="bg-primary hover:bg-primary/90"
+            >
+              <SendIcon className="h-4 w-4 mr-2" />
+              Request Quote
+            </Button>
+          </DialogTrigger>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -411,7 +413,8 @@ export function ProjectActions({
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+        </Dialog>
+      )}
 
       {/* Save Project */}
       <Dialog

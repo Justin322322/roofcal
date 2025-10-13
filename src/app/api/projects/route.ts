@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: "Authentication required" },
+        { success: false, error: "Authentication required" },
         { status: 401 }
       );
     }
@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
     if (!body.projectName || !body.length || !body.width || !body.material) {
       return NextResponse.json(
         {
+          success: false,
           error:
             "Missing required fields: projectName, length, width, material",
         },
@@ -113,11 +114,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json(project, { status: 201 });
+    return NextResponse.json({ success: true, project }, { status: 201 });
   } catch (error) {
     console.error("Error creating project:", error);
     return NextResponse.json(
-      { error: "Failed to create project" },
+      { success: false, error: "Failed to create project" },
       { status: 500 }
     );
   }
@@ -130,7 +131,7 @@ export async function GET(request: NextRequest) {
 
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: "Authentication required" },
+        { success: false, error: "Authentication required" },
         { status: 401 }
       );
     }
@@ -287,7 +288,7 @@ export async function GET(request: NextRequest) {
       totalPages,
     };
 
-    return NextResponse.json(response);
+    return NextResponse.json({ success: true, ...response });
   } catch (error) {
     console.error("Error fetching projects:", error);
     
@@ -305,7 +306,7 @@ export async function GET(request: NextRequest) {
     }
     
     return NextResponse.json(
-      { error: "Failed to fetch projects" },
+      { success: false, error: "Failed to fetch projects" },
       { status: 500 }
     );
   }

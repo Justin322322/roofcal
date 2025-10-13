@@ -22,6 +22,7 @@ import {
   UserIcon,
   DollarSignIcon,
   MapPinIcon,
+  RefreshCwIcon,
 } from "lucide-react";
 import { loadProject } from "../actions";
 import { ProposalViewer } from "./proposal-viewer";
@@ -76,21 +77,36 @@ export function ProjectList({ onProjectLoaded }: ProjectListProps) {
     setIsLoading(true);
     try {
       const response = await fetch('/api/projects');
+      console.log('Projects API response status:', response.status);
+      
       if (response.ok) {
         const result = await response.json();
+        console.log('Projects API result:', result);
+        
         if (result.success && result.projects) {
           // Convert Decimal fields to numbers for display
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const formattedProjects = result.projects.map((p: any) => ({
             ...p,
             totalCost: Number(p.totalCost),
-            created_at: new Date(p.created_at as string),
+            createdAt: new Date(p.createdAt as string),
           }));
+          console.log('Formatted projects:', formattedProjects);
           setProjects(formattedProjects);
+          
+          if (formattedProjects.length === 0) {
+            toast.info("No projects found", {
+              description: "You haven't created any projects yet. Use the roof calculator to get started.",
+            });
+          }
+        } else {
+          console.log('No projects found or API returned error:', result);
         }
+      } else {
+        console.error('API response not ok:', response.status, response.statusText);
       }
-    } catch {
-      console.error("Failed to fetch projects");
+    } catch (error) {
+      console.error("Failed to fetch projects:", error);
       toast.error("Failed to load projects");
     } finally {
       setIsLoading(false);
@@ -180,21 +196,33 @@ export function ProjectList({ onProjectLoaded }: ProjectListProps) {
             className="w-full"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Projects</SelectItem>
-            <SelectItem value="DRAFT">Draft</SelectItem>
-            <SelectItem value="CLIENT_PENDING">Pending Contractor</SelectItem>
-            <SelectItem value="CONTRACTOR_REVIEWING">Under Review</SelectItem>
-            <SelectItem value="proposal">Proposal Sent</SelectItem>
-            <SelectItem value="ACCEPTED">Accepted</SelectItem>
-            <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-            <SelectItem value="COMPLETED">Completed</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchProjects}
+            disabled={isLoading}
+            className="flex items-center gap-2"
+          >
+            <RefreshCwIcon className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full sm:w-48">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Projects</SelectItem>
+              <SelectItem value="DRAFT">Draft</SelectItem>
+              <SelectItem value="CLIENT_PENDING">Pending Contractor</SelectItem>
+              <SelectItem value="CONTRACTOR_REVIEWING">Under Review</SelectItem>
+              <SelectItem value="proposal">Proposal Sent</SelectItem>
+              <SelectItem value="ACCEPTED">Accepted</SelectItem>
+              <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+              <SelectItem value="COMPLETED">Completed</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Projects Grid */}
