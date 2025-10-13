@@ -334,5 +334,4 @@ export function ClientDetailsContent({
   );
 }
 
-// Export the components
-export { ProjectCard, ClientCard, ClientDetailsContent };
+// Components are already exported above with their function declarations
