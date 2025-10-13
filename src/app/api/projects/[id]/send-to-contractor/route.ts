@@ -75,7 +75,7 @@ export async function POST(
       updated.id,
       updated.projectName,
       session.user.id,
-      `${session.user.firstName || ""} ${session.user.lastName || ""}`.trim() || session.user.email!,
+      session.user.name || session.user.email!,
       contractor.id,
       `${contractor.firstName || ""} ${contractor.lastName || ""}`.trim() || contractor.email,
       contractor.email

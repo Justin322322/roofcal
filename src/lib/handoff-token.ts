@@ -20,12 +20,14 @@ export function generateHandoffToken(projectId: string, contractorId: string, ex
     projectId,
     contractorId,
   };
-  return jwt.sign(payload, JWT_SECRET!, { expiresIn });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (jwt as any).sign(payload, JWT_SECRET!, { expiresIn });
 }
 
 export function verifyHandoffToken(token: string): HandoffTokenPayload | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET!) as HandoffTokenPayload;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const decoded = (jwt as any).verify(token, JWT_SECRET!) as HandoffTokenPayload;
     if (decoded.type !== "handoff") return null;
     return decoded;
   } catch {

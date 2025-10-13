@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -199,7 +199,7 @@ function useProjectManagementData() {
 
 export function ProjectManagementPage() {
   const { data: session } = useSession();
-  const { projects, clients, projectSummary, loading, fetchProjects } = useProjectManagementData();
+  const { projects, clients, loading, fetchProjects } = useProjectManagementData();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<AssignedProject | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -277,89 +277,9 @@ export function ProjectManagementPage() {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-PH', {
-      style: 'currency',
-      currency: 'PHP',
-    }).format(amount);
-  };
 
-  const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
 
-  // Filter data based on search and status
-  const filteredData = projects.filter((project) => {
-    const matchesSearch = !searchTerm ||
-      project.projectName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (project.client && `${project.client.firstName} ${project.client.lastName}`.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      project.material.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === "all" ||
-      project.status === statusFilter;
 
-    return matchesSearch && matchesStatus;
-  });
-
-  // Filter clients based on search
-  const filteredClients = clients.filter((client) => {
-    if (!searchTerm) return true;
-    return `${client.firstName} ${client.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           client.email.toLowerCase().includes(searchTerm.toLowerCase());
-  });
-
-  const { pendingProjects, activeProjects, draftProjects } = useMemo(() => ({
-    draftProjects: projects.filter(p => p.status === "DRAFT"),
-    pendingProjects: projects.filter(p => 
-      ["CLIENT_PENDING", "CONTRACTOR_REVIEWING"].includes(p.status)
-    ),
-    activeProjects: projects.filter(p => 
-      ["PROPOSAL_SENT", "ACCEPTED", "IN_PROGRESS"].includes(p.status)
-    ),
-  }), [projects]);
-
-  const exportToCSV = async () => {
-    try {
-      const csvContent = [
-        ['Project Name', 'Client', 'Status', 'Proposal Status', 'Total Cost', 'Area (m²)', 'Material', 'Date Assigned'],
-        ...projects.map((project) => [
-          project.projectName,
-          project.client ? `${project.client.firstName} ${project.client.lastName}` : 'Unknown',
-          project.status,
-          project.proposalStatus || 'N/A',
-          formatCurrency(project.totalCost),
-          project.area.toFixed(1),
-          project.material,
-          formatDate(project.assignedAt || project.created_at),
-        ]),
-      ]
-        .map((row) => row.map((cell) => `"${cell}"`).join(','))
-        .join('\n');
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `project-management-${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      toast.success('Export completed', {
-        description: 'Project data exported successfully',
-      });
-    } catch (error) {
-      console.error('Export failed:', error);
-      toast.error('Export failed', {
-        description: 'Failed to export project data',
-      });
-    }
-  };
 
   if (session?.user?.role !== "ADMIN") {
     return (

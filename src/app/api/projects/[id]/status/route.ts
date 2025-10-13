@@ -80,6 +80,8 @@ export async function PATCH(
     // Convert Decimal fields to numbers for validation
     const projectForValidation = {
       ...project,
+      // Exclude stageProgress as it has JsonValue type from Prisma but needs Record<ProjectStage, boolean>
+      stageProgress: undefined,
       length: Number(project.length),
       width: Number(project.width),
       pitch: Number(project.pitch),

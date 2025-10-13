@@ -241,6 +241,8 @@ export async function GET(request: NextRequest) {
     const response: ProjectListResponse = {
       projects: projects.map((project) => ({
         ...project,
+        // Exclude stageProgress as it has JsonValue type from Prisma but needs Record<ProjectStage, boolean>
+        stageProgress: undefined,
         clientName: project.clientName || undefined,
         recommendedMaterial: project.recommendedMaterial || undefined,
         optimizationTips: project.optimizationTips || undefined,

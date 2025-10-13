@@ -425,6 +425,8 @@ export async function exportProject(
     // Convert Decimal to number for JSON response
     const projectData: Project = {
       ...project,
+      // Exclude stageProgress as it has JsonValue type from Prisma but needs Record<ProjectStage, boolean>
+      stageProgress: undefined,
       clientName: project.clientName || undefined,
       recommendedMaterial: project.recommendedMaterial || undefined,
       optimizationTips: project.optimizationTips || undefined,
