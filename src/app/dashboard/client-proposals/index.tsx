@@ -118,6 +118,8 @@ export function ClientProposalsPage() {
         return "bg-green-100 text-green-800";
       case "REJECTED":
         return "bg-red-100 text-red-800";
+      case "COMPLETED":
+        return "bg-purple-100 text-purple-800";
       case "DRAFT":
         return "bg-gray-100 text-gray-800";
       default:
@@ -133,6 +135,8 @@ export function ClientProposalsPage() {
         return <CheckCircleIcon className="h-4 w-4" />;
       case "REJECTED":
         return <XCircleIcon className="h-4 w-4" />;
+      case "COMPLETED":
+        return <CheckCircleIcon className="h-4 w-4" />;
       case "DRAFT":
         return <FileTextIcon className="h-4 w-4" />;
       default:
@@ -156,10 +160,11 @@ export function ClientProposalsPage() {
     });
   };
 
-  const { pendingProposals, acceptedProposals, rejectedProposals } = useMemo(() => ({
+  const { pendingProposals, acceptedProposals, rejectedProposals, completedProposals } = useMemo(() => ({
     pendingProposals: proposals.filter(p => p.proposalStatus === "SENT"),
     acceptedProposals: proposals.filter(p => p.proposalStatus === "ACCEPTED"),
     rejectedProposals: proposals.filter(p => p.proposalStatus === "REJECTED"),
+    completedProposals: proposals.filter(p => p.proposalStatus === "COMPLETED" || (p.proposalStatus === "ACCEPTED" && p.status === "COMPLETED")),
   }), [proposals]);
 
   if (session?.user?.role !== "CLIENT") {
@@ -218,6 +223,9 @@ export function ClientProposalsPage() {
             <TabsTrigger value="rejected">
               Rejected ({rejectedProposals.length})
             </TabsTrigger>
+            <TabsTrigger value="completed">
+              Completed ({completedProposals.length})
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="pending" className="space-y-4">
@@ -261,6 +269,25 @@ export function ClientProposalsPage() {
           <TabsContent value="rejected" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {rejectedProposals.map((project) => (
+                <ProposalCard
+                  key={project.id}
+                  project={project}
+                  onViewProposal={() => {
+                    setSelectedProject(project);
+                    setShowViewer(true);
+                  }}
+                  formatCurrency={formatCurrency}
+                  formatDate={formatDate}
+                  getStatusColor={getStatusColor}
+                  getStatusIcon={getStatusIcon}
+                />
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="completed" className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {completedProposals.map((project) => (
                 <ProposalCard
                   key={project.id}
                   project={project}

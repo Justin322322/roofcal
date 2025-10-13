@@ -10,7 +10,7 @@ import type {
 
 export type ProjectStatus = "DRAFT" | "ACTIVE" | "CLIENT_PENDING" | "CONTRACTOR_REVIEWING" | "PROPOSAL_SENT" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "ARCHIVED" | "REJECTED";
 export type ConstructionMode = "NEW" | "REPAIR";
-export type ProposalStatus = "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "REVISED";
+export type ProposalStatus = "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "REVISED" | "COMPLETED";
 
 export interface Project {
   id: string;

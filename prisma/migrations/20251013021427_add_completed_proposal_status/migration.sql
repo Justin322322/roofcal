@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `project` MODIFY `proposalStatus` ENUM('DRAFT', 'SENT', 'ACCEPTED', 'REJECTED', 'REVISED', 'COMPLETED') NULL DEFAULT 'DRAFT';

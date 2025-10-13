@@ -36,27 +36,22 @@ export async function GET(request: NextRequest) {
         };
       }
     } else {
-      // Client view
+      // Client view - show ALL projects where client is involved
       if (type === "received") {
-        // Include projects where client is the recipient OR where client is the creator with DRAFT status
+        // Show all projects where client is the recipient or creator
         whereClause = { 
           OR: [
-            { 
-              clientId: session.user.id,
-              proposalStatus: { not: null }
-            },
+            { clientId: session.user.id },
             { 
               userId: session.user.id,
-              clientId: session.user.id,
-              proposalStatus: "DRAFT"
+              clientId: session.user.id
             }
           ]
         };
       } else {
-        // Default to sent proposals (projects this client has requested quotes for)
+        // Default to all client projects (including DRAFT ones they created)
         whereClause = { 
-          clientId: session.user.id,
-          proposalStatus: { not: null }
+          clientId: session.user.id
         };
       }
     }
@@ -68,11 +63,11 @@ export async function GET(request: NextRequest) {
         whereClause = {
           AND: [
             whereClause,
-            { proposalStatus: status as "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "REVISED" }
+            { proposalStatus: status as "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "REVISED" | "COMPLETED" }
           ]
         };
       } else {
-        whereClause.proposalStatus = status as "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "REVISED";
+        whereClause.proposalStatus = status as "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "REVISED" | "COMPLETED";
       }
     }
 

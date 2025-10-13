@@ -148,6 +148,11 @@ export async function PUT(
           // Don't fail the status update, just log the error
         }
       }
+
+      // When project is completed, automatically update proposalStatus to COMPLETED if it was ACCEPTED
+      if (newStatus === "COMPLETED" && existingProject.proposalStatus === "ACCEPTED") {
+        body.proposalStatus = "COMPLETED";
+      }
     }
 
     // Update project
