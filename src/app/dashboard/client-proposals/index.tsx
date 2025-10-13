@@ -57,7 +57,8 @@ function useProposalsData() {
     setLoading(true);
     
     try {
-      const response = await fetch("/api/proposals?type=received");
+      // Add timestamp to prevent caching
+      const response = await fetch(`/api/proposals?type=received&_t=${Date.now()}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -82,15 +83,11 @@ function useProposalsData() {
 
   useEffect(() => {
     if (session?.user?.id && session.user.role === "CLIENT") {
-      if (!hasFetched.current) {
-        hasFetched.current = true;
-        globalHasFetched = true;
-        fetchProposals();
-      } else if (globalProposalsCache) {
-        // Use cached data if available
-        setProposals(globalProposalsCache);
-        setLoading(false);
-      }
+      // Always fetch fresh data to ensure we get the latest projects
+      globalProposalsCache = null;
+      globalHasFetched = false;
+      hasFetched.current = false;
+      fetchProposals();
     } else if (session === null) {
       // Reset cache on logout
       globalProposalsCache = null;

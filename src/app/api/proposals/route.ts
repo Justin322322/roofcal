@@ -38,14 +38,11 @@ export async function GET(request: NextRequest) {
     } else {
       // Client view - show ALL projects where client is involved
       if (type === "received") {
-        // Show all projects where client is the recipient or creator
+        // Show all projects where client is involved (either as recipient or creator)
         whereClause = { 
           OR: [
             { clientId: session.user.id },
-            { 
-              userId: session.user.id,
-              clientId: session.user.id
-            }
+            { userId: session.user.id }
           ]
         };
       } else {
@@ -94,6 +91,18 @@ export async function GET(request: NextRequest) {
       orderBy: {
         proposalSent: "desc",
       },
+    });
+
+    // Debug logging
+    console.log("Proposals API Debug:", {
+      userId: session.user.id,
+      userRole: session.user.role,
+      type,
+      status,
+      whereClause,
+      projectsFound: projects.length,
+      projectIds: projects.map(p => p.id),
+      projectStatuses: projects.map(p => ({ id: p.id, status: p.status, proposalStatus: p.proposalStatus, clientId: p.clientId, userId: p.userId }))
     });
 
     // Transform the data
