@@ -4,6 +4,7 @@ import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
 import { reserveProjectMaterials, consumeProjectMaterials, returnProjectMaterials } from "@/lib/material-consumption";
 import type { UpdateProjectInput } from "@/types/project";
+import { Prisma } from "@prisma/client";
 
 // GET /api/projects/[id] - Get single project
 export async function GET(
@@ -162,8 +163,8 @@ export async function PUT(
         ...(body.projectName && { projectName: body.projectName }),
         ...(body.clientName !== undefined && { clientName: body.clientName }),
         ...(body.status && { status: body.status }),
-        ...(body.currentStage && { currentStage: body.currentStage as any }),
-        ...(body.stageProgress && { stageProgress: body.stageProgress as any }),
+        ...(body.currentStage && { currentStage: body.currentStage as Prisma.ProjectStage }),
+        ...(body.stageProgress && { stageProgress: body.stageProgress as Prisma.InputJsonValue }),
 
         // Measurements
         ...(body.length && { length: body.length }),

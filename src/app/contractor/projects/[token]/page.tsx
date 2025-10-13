@@ -49,7 +49,7 @@ export default async function ContractorProjectHandoffPage(props: PageProps) {
   if (action === "accept") {
     await prisma.project.update({
       where: { id: project.id },
-      data: { contractorStatus: "accepted", status: "CONTRACTOR_REVIEWING", currentStage: "ESTIMATE" as any },
+      data: { contractorStatus: "accepted", status: "CONTRACTOR_REVIEWING", currentStage: "ESTIMATE" },
     });
     message = "You have accepted this project. It is now marked for review.";
   } else if (action === "decline") {

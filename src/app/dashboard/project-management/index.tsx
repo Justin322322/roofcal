@@ -519,11 +519,10 @@ export function ProjectManagementPage() {
                   <SelectValue placeholder="Select contractor" />
                 </SelectTrigger>
                 <SelectContent>
-                  {/* Expect /api/contractors to return a list; we fetch on open via simple trick */}
-                  {(clients as any[]) /* reuse client structure as placeholder if no contractor list is available */
-                    .map((c) => (
+                  {/* TODO: wire to /api/contractors; using clients as placeholder list */}
+                  {clients.map((c) => (
                       <SelectItem key={c.id} value={c.id}>{c.firstName} {c.lastName}</SelectItem>
-                    ))}
+                  ))}
                 </SelectContent>
               </Select>
             </div>
