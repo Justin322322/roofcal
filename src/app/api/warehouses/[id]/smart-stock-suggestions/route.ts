@@ -49,27 +49,14 @@ export async function GET(
         isActive: true
       },
       include: {
-        pricingconfig: true,
-        projectmaterial: {
-          where: {
-            status: 'RESERVED'
-          },
-          include: {
-            project: {
-              select: {
-                id: true,
-                projectName: true
-              }
-            }
-          }
-        }
+        pricingconfig: true
       }
     });
 
     // Transform to warnings format
     const warnings = warehouseMaterials.map(wm => {
       const currentStock = wm.quantity;
-      const reservedForProjects = wm.projectmaterial.reduce((sum, pm) => sum + pm.quantity, 0);
+      const reservedForProjects = 0; // Simplified - no project reservations for now
       const projectedStock = currentStock - reservedForProjects;
       
       // Determine if this is a warning (low stock)
@@ -97,11 +84,7 @@ export async function GET(
         reservedForProjects,
         projectedStock,
         criticalLevel: criticalLevel || warningLevel,
-        projectsUsing: wm.projectmaterial.map(pm => ({
-          projectId: pm.project.id,
-          projectName: pm.project.projectName,
-          quantity: pm.quantity
-        }))
+        projectsUsing: [] // Simplified - no project usage for now
       };
     }).filter(w => w.criticalLevel); // Only include items with warnings
 

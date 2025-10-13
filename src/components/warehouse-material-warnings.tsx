@@ -353,14 +353,35 @@ export function WarehouseMaterialWarnings({
       {filteredWarnings.map((warehouse) => (
         <Card key={warehouse.warehouseId}>
           <CardHeader>
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <WarehouseIcon className="h-5 w-5" />
-                {warehouse.warehouseName}
-              </CardTitle>
-              <CardDescription>
-                {warehouse.warnings.length} material warning{warehouse.warnings.length !== 1 ? 's' : ''} detected
-              </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <WarehouseIcon className="h-5 w-5" />
+                  {warehouse.warehouseName}
+                </CardTitle>
+                <CardDescription>
+                  {warehouse.warnings.length} material warning{warehouse.warnings.length !== 1 ? 's' : ''} detected
+                </CardDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => generateSmartStockPlan(warehouse.warehouseId)}
+                disabled={isGeneratingPlan}
+                className="flex items-center gap-2"
+              >
+                {isGeneratingPlan ? (
+                  <>
+                    <Loader2Icon className="h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <BrainIcon className="h-4 w-4" />
+                    Generate Plan
+                  </>
+                )}
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -435,139 +456,7 @@ export function WarehouseMaterialWarnings({
               </div>
             )}
 
-            {/* Smart Stock Planning Section */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <BrainIcon className="h-5 w-5 text-blue-600" />
-                  <h3 className="text-lg font-semibold text-blue-900">Smart Stock Planning</h3>
-                </div>
-                <div className="flex gap-2">
-                  {!smartStockPlans[warehouse.warehouseId] ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => generateSmartStockPlan(warehouse.warehouseId)}
-                      disabled={isGeneratingPlan}
-                    >
-                      {isGeneratingPlan ? (
-                        <>
-                          <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <BrainIcon className="h-4 w-4 mr-2" />
-                          Generate Plan
-                        </>
-                      )}
-                    </Button>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => applySmartStockPlan(warehouse.warehouseId)}
-                        disabled={isApplyingPlan}
-                      >
-                        {isApplyingPlan ? (
-                          <>
-                            <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
-                            Applying...
-                          </>
-                        ) : (
-                          <>
-                            <CheckIcon className="h-4 w-4 mr-2" />
-                            Apply Plan
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSmartStockPlans(prev => {
-                          const updated = { ...prev };
-                          delete updated[warehouse.warehouseId];
-                          return updated;
-                        })}
-                      >
-                        <XIcon className="h-4 w-4 mr-2" />
-                        Cancel
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
 
-              {smartStockPlans[warehouse.warehouseId] && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-blue-700">
-                      <strong>{smartStockPlans[warehouse.warehouseId].totalSuggestions}</strong> suggestions generated
-                    </span>
-                    <span className="text-blue-700">
-                      Total stock to add: <strong>{smartStockPlans[warehouse.warehouseId].totalStockToAdd}</strong> units
-                    </span>
-                  </div>
-
-                  <div className="grid gap-3 max-h-60 overflow-y-auto">
-                    {smartStockPlans[warehouse.warehouseId].suggestions.map((suggestion) => (
-                      <div key={suggestion.materialId} className="bg-white p-3 rounded border">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <Badge variant={suggestion.priority === 'critical' ? 'destructive' : 'secondary'}>
-                              {suggestion.priority.toUpperCase()}
-                            </Badge>
-                            <span className="font-medium">{suggestion.materialName}</span>
-                          </div>
-                          <div className="text-right text-sm">
-                            <div className="text-muted-foreground">
-                              {suggestion.currentStock} → <span className="text-green-600 font-semibold">{suggestion.suggestedStock}</span>
-                            </div>
-                            <div className="text-blue-600 font-medium">
-                              +{suggestion.stockToAdd} units
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {suggestion.reason}
-                        </div>
-                        <div className="mt-1">
-                          <div className="flex items-center gap-1">
-                            <div className="text-xs text-muted-foreground">Confidence:</div>
-                            <div className="flex-1 bg-gray-200 rounded-full h-1.5">
-                              <div 
-                                className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
-                                style={{ width: `${suggestion.confidence * 100}%` }}
-                              />
-                            </div>
-                            <div className="text-xs text-muted-foreground ml-2">
-                              {Math.round(suggestion.confidence * 100)}%
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Alert>
-                    <BrainIcon className="h-4 w-4" />
-                    <AlertDescription>
-                      This plan considers your warehouse capacity, current demand patterns, and project requirements to suggest optimal stock levels.
-                    </AlertDescription>
-                  </Alert>
-                </div>
-              )}
-
-              {!smartStockPlans[warehouse.warehouseId] && (
-                <div className="text-center py-4">
-                  <BrainIcon className="h-8 w-8 text-blue-400 mx-auto mb-2" />
-                  <p className="text-sm text-blue-700">
-                    Generate an intelligent stock plan that considers warehouse capacity, demand patterns, and project requirements.
-                  </p>
-                </div>
-              )}
-            </div>
           </CardContent>
         </Card>
       ))}
