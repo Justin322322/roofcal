@@ -102,6 +102,7 @@ export async function saveProject(
         userId: session.user.id,
         clientId: session.user.role === UserRole.CLIENT ? session.user.id : null,
         status: session.user.role === UserRole.CLIENT ? "CLIENT_PENDING" : "DRAFT",
+        proposalStatus: session.user.role === UserRole.CLIENT ? "DRAFT" : "DRAFT",
         ...projectData,
       },
     });

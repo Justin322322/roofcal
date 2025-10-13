@@ -21,11 +21,8 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get("type"); // "sent" or "received"
     const status = searchParams.get("status");
 
-    let whereClause: {
-      contractorId?: string;
-      clientId?: string;
-      proposalStatus?: { not: null } | "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "REVISED";
-    } = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let whereClause: any = {};
 
     if (session.user.role === UserRole.ADMIN) {
       // Contractor view
@@ -41,7 +38,20 @@ export async function GET(request: NextRequest) {
     } else {
       // Client view
       if (type === "received") {
-        whereClause = { clientId: session.user.id };
+        // Include projects where client is the recipient OR where client is the creator with DRAFT status
+        whereClause = { 
+          OR: [
+            { 
+              clientId: session.user.id,
+              proposalStatus: { not: null }
+            },
+            { 
+              userId: session.user.id,
+              clientId: session.user.id,
+              proposalStatus: "DRAFT"
+            }
+          ]
+        };
       } else {
         // Default to sent proposals (projects this client has requested quotes for)
         whereClause = { 
@@ -51,8 +61,19 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Apply status filter if specified
     if (status && status !== "ALL") {
-      whereClause.proposalStatus = status as "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "REVISED";
+      // If we have an OR clause, we need to handle it differently
+      if (whereClause.OR) {
+        whereClause = {
+          AND: [
+            whereClause,
+            { proposalStatus: status as "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "REVISED" }
+          ]
+        };
+      } else {
+        whereClause.proposalStatus = status as "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "REVISED";
+      }
     }
 
     const projects = await prisma.project.findMany({

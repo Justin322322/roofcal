@@ -200,19 +200,32 @@ export function WarehouseSelector({
           <CardHeader>
             <CardTitle className="text-sm">Selected Warehouse Details</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <div className="font-medium text-gray-900">Name</div>
-                <div className="text-gray-600">{selectedWarehouse.name}</div>
+                <div className="font-medium text-card-foreground">Name</div>
+                <div className="text-muted-foreground">{selectedWarehouse.name}</div>
               </div>
               <div className="col-span-2">
-                <div className="font-medium text-gray-900">Address</div>
-                <div className="text-gray-600">
+                <div className="font-medium text-card-foreground">Address</div>
+                <div className="text-muted-foreground">
                   {selectedWarehouse.address}<br />
                   {selectedWarehouse.city}, {selectedWarehouse.state} {selectedWarehouse.zipCode}
                 </div>
               </div>
+            </div>
+            
+            {/* Warehouse Location Map */}
+            <div className="mt-4">
+              <div className="text-sm font-medium text-card-foreground mb-2">Location</div>
+              <DeliveryMap
+                origin={{
+                  latitude: selectedWarehouse.latitude,
+                  longitude: selectedWarehouse.longitude,
+                }}
+                height="200px"
+                showControls={false}
+              />
             </div>
           </CardContent>
         </Card>
