@@ -28,13 +28,11 @@ export const getNotificationUrl = (notification: NotificationData): string => {
     case "proposal_sent":
     case "proposal_accepted":
     case "proposal_rejected":
-      return "/dashboard/proposals";
+      return "/dashboard?tab=proposals";
     case "status_change":
     case "project_assigned":
-      if (notification.projectId) {
-        return `/dashboard/project-management?projectId=${notification.projectId}`;
-      }
-      return "/dashboard/project-management";
+      // For project-related notifications, navigate to assigned-projects tab
+      return "/dashboard?tab=assigned-projects";
     default:
       return "/dashboard";
   }

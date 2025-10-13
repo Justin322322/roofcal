@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 import { 
   CalendarIcon, 
   MapPinIcon, 
@@ -510,23 +511,61 @@ export function AssignedProjectsContent() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {projectSummary && Object.entries(projectSummary.byStatus).map(([statusKey, count]) => {
-                      const percentage = (count / projectSummary.total) * 100;
-                      const status = statusKey as Project["status"];
-                      return (
-                        <div key={statusKey} className="space-y-1">
-                          <div className="flex justify-between text-sm">
-                            <span className={getStatusDisplayInfo(status).color}>
-                              {getStatusDisplayInfo(status).label}
-                            </span>
-                            <span>{count} ({percentage.toFixed(1)}%)</span>
-                          </div>
-                          <Progress value={percentage} className="h-2" />
-                        </div>
-                      );
-                    })}
-                  </div>
+                  {projectSummary && (
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={Object.entries(projectSummary.byStatus).map(([statusKey, count], idx) => ({
+                                name: getStatusDisplayInfo(statusKey as Project["status"]).label,
+                                value: count,
+                                status: statusKey as Project["status"],
+                                color: `var(--chart-${(idx % 5) + 1})`,
+                              }))}
+                              dataKey="value"
+                              nameKey="name"
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={50}
+                              outerRadius={90}
+                              paddingAngle={2}
+                            >
+                              {Object.entries(projectSummary.byStatus).map(([,], idx) => (
+                                <Cell key={`cell-${idx}`} fill={`var(--chart-${(idx % 5) + 1})`} />
+                              ))}
+                            </Pie>
+                            <RechartsTooltip formatter={(val: number, _name, { payload }) => {
+                              const value = val as number;
+                              const pct = projectSummary.total > 0 ? (value / projectSummary.total) * 100 : 0;
+                              return [`${value} (${pct.toFixed(1)}%)`, payload.name];
+                            }} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="flex flex-col justify-center gap-3">
+                        {Object.entries(projectSummary.byStatus).map(([statusKey, count], idx) => {
+                          const status = statusKey as Project["status"];
+                          const percentage = projectSummary.total > 0 ? (count / projectSummary.total) * 100 : 0;
+                          return (
+                            <div key={statusKey} className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className="inline-block h-3 w-3 rounded-sm"
+                                  style={{ backgroundColor: `var(--chart-${(idx % 5) + 1})` }}
+                                  aria-hidden
+                                />
+                                <span className={getStatusDisplayInfo(status).color}>
+                                  {getStatusDisplayInfo(status).label}
+                                </span>
+                              </div>
+                              <span className="text-sm text-muted-foreground">{count} ({percentage.toFixed(1)}%)</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
