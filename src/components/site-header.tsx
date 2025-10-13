@@ -14,8 +14,6 @@ export function SiteHeader({ currentSection }: SiteHeaderProps) {
         return "Assigned Projects";
       case "proposals":
         return "Proposals";
-      case "client-management":
-        return "Client Management";
       case "client-proposals":
         return "My Proposals";
       case "account-management":

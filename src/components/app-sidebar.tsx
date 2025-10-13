@@ -58,11 +58,6 @@ const data = {
       icon: FileTextIcon,
     },
     {
-      title: "Client Management",
-      url: "/dashboard/client-management",
-      icon: UsersIcon,
-    },
-    {
       title: "My Proposals",
       url: "/dashboard/client-proposals",
       icon: MessageSquareIcon,
@@ -183,12 +178,6 @@ export function AppSidebar({
         title: "Assigned Projects",
         url: "assigned-projects",
         icon: ClipboardCheckIcon,
-        roles: [UserRole.ADMIN],
-      },
-      {
-        title: "Client Management",
-        url: "client-management",
-        icon: UsersIcon,
         roles: [UserRole.ADMIN],
       },
       {

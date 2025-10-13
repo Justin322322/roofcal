@@ -17,12 +17,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { SaveIcon, Loader2Icon } from "lucide-react";
 import { saveProject, updateProject, getProjectDetails } from "../actions";
+import { AddressInput } from "@/components/map/address-input";
+import { WarehouseSelector } from "@/components/map/warehouse-selector";
 import type {
   Measurements,
   CalculationResults,
   DecisionTreeResult,
 } from "../types";
 import type { ProjectFromCalculator } from "@/types/project";
+import type { Warehouse, Coordinates } from "@/types/location";
 
 interface ProjectActionsProps {
   measurements: Measurements;
@@ -33,6 +36,10 @@ interface ProjectActionsProps {
   saveDialogOpen?: boolean;
   onSaveDialogChange?: (open: boolean) => void;
   saveEnabled?: boolean;
+  selectedWarehouseId?: string;
+  onWarehouseChange?: (warehouseId: string) => void;
+  projectAddress?: { coordinates: { latitude: number; longitude: number } } | null;
+  onAddressChange?: (address: { coordinates: { latitude: number; longitude: number } }) => void;
 }
 
 export function ProjectActions({
@@ -44,6 +51,10 @@ export function ProjectActions({
   saveDialogOpen,
   onSaveDialogChange,
   saveEnabled,
+  selectedWarehouseId,
+  onWarehouseChange,
+  projectAddress,
+  onAddressChange,
 }: ProjectActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -51,6 +62,39 @@ export function ProjectActions({
   const [projectName, setProjectName] = useState("");
   const [clientName, setClientName] = useState("");
   const [notes, setNotes] = useState("");
+  
+  // Address and warehouse state
+  const [address, setAddress] = useState({
+    street: "",
+    city: "",
+    state: "",
+    zipCode: "",
+  });
+  const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [isValidated, setIsValidated] = useState(false);
+  const [deliveryCost, setDeliveryCost] = useState<number | null>(null);
+  const [deliveryDistance, setDeliveryDistance] = useState<number | null>(null);
+
+  // Fetch warehouses when dialog opens
+  useEffect(() => {
+    if (saveDialogOpen) {
+      const fetchWarehouses = async () => {
+        try {
+          const response = await fetch('/api/warehouses');
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data) {
+              setWarehouses(result.data);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch warehouses:", error);
+        }
+      };
+      fetchWarehouses();
+    }
+  }, [saveDialogOpen]);
 
   // Load project data when dialog opens and we have a currentProjectId
   useEffect(() => {
@@ -62,6 +106,25 @@ export function ProjectActions({
             setProjectName(result.project.projectName);
             setClientName(result.project.clientName || "");
             setNotes(result.project.notes || "");
+            // Load address and warehouse if available
+            if (result.project.address) {
+              setAddress({
+                street: result.project.address,
+                city: result.project.city || "",
+                state: result.project.state || "",
+                zipCode: result.project.zipCode || "",
+              });
+              if (result.project.latitude && result.project.longitude) {
+                setCoordinates({
+                  latitude: result.project.latitude,
+                  longitude: result.project.longitude,
+                });
+                setIsValidated(true);
+              }
+              if (result.project.warehouseId) {
+                onWarehouseChange?.(result.project.warehouseId);
+              }
+            }
           }
         } catch (error) {
           console.error("Failed to load project data:", error);
@@ -73,12 +136,27 @@ export function ProjectActions({
       setProjectName("");
       setClientName("");
       setNotes("");
+      setAddress({ street: "", city: "", state: "", zipCode: "" });
+      setCoordinates(null);
+      setIsValidated(false);
+      setDeliveryCost(null);
+      setDeliveryDistance(null);
     }
-  }, [saveDialogOpen, currentProjectId]);
+  }, [saveDialogOpen, currentProjectId, onWarehouseChange]);
 
   const handleSaveProject = async () => {
     if (!projectName.trim()) {
       toast.error("Project name is required");
+      return;
+    }
+
+    if (!isValidated || !coordinates) {
+      toast.error("Please validate the delivery address");
+      return;
+    }
+
+    if (!selectedWarehouseId) {
+      toast.error("Please select a warehouse");
       return;
     }
 
@@ -92,6 +170,15 @@ export function ProjectActions({
         projectName: projectName.trim(),
         clientName: clientName.trim() || undefined,
         notes: notes.trim() || undefined,
+        address: address.street,
+        city: address.city,
+        state: address.state,
+        zipCode: address.zipCode,
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+        warehouseId: selectedWarehouseId,
+        deliveryCost: deliveryCost || undefined,
+        deliveryDistance: deliveryDistance || undefined,
       };
 
       // If we have a currentProjectId, update the existing project
@@ -109,6 +196,11 @@ export function ProjectActions({
         setProjectName("");
         setClientName("");
         setNotes("");
+        setAddress({ street: "", city: "", state: "", zipCode: "" });
+        setCoordinates(null);
+        setIsValidated(false);
+        setDeliveryCost(null);
+        setDeliveryDistance(null);
       } else {
         const action = currentProjectId ? "update" : "save";
         toast.error(`Failed to ${action} project`, {
@@ -125,7 +217,7 @@ export function ProjectActions({
     }
   };
 
-  const canSave = (results.totalCost > 0 || saveEnabled) && projectName.trim();
+  const canSave = (results.totalCost > 0 || saveEnabled) && projectName.trim() && isValidated && selectedWarehouseId;
 
   return (
     <>
@@ -144,7 +236,7 @@ export function ProjectActions({
             {currentProjectId ? "Update Project" : "Save Project"}
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {currentProjectId ? "Update Project" : "Save Project"}
@@ -155,7 +247,7 @@ export function ProjectActions({
                 : `Save your current roof calculation as a ${measurements.constructionMode === "repair" ? "repair" : "new construction"} project for future reference.`}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
               <Label htmlFor="projectName">Project Name *</Label>
               <Input
@@ -166,6 +258,97 @@ export function ProjectActions({
                 className="mt-1"
               />
             </div>
+
+            {/* Delivery Address */}
+            <div>
+              <Label>Delivery Address *</Label>
+              <AddressInput
+                initialAddress={address}
+                initialCoordinates={coordinates || undefined}
+                onAddressChange={(geocodedAddress) => {
+                  setAddress({
+                    street: geocodedAddress.street || "",
+                    city: geocodedAddress.city || "",
+                    state: geocodedAddress.state || "",
+                    zipCode: geocodedAddress.zipCode || "",
+                  });
+                  setCoordinates(geocodedAddress.coordinates);
+                  setIsValidated(true);
+                  onAddressChange?.(geocodedAddress);
+                }}
+                onCoordinatesChange={(coords) => {
+                  setCoordinates(coords);
+                  setIsValidated(true);
+                }}
+                className="mt-1"
+                required
+              />
+            </div>
+
+            {/* Warehouse Selection */}
+            {isValidated && coordinates && (
+              <div>
+                <Label>Warehouse Selection *</Label>
+                <WarehouseSelector
+                  warehouses={warehouses}
+                  selectedWarehouseId={selectedWarehouseId}
+                  destination={coordinates}
+                  onWarehouseSelect={(warehouseId) => {
+                    onWarehouseChange?.(warehouseId);
+                    
+                    // Calculate delivery cost when warehouse is selected
+                    if (coordinates) {
+                      const selectedWarehouse = warehouses.find(w => w.id === warehouseId);
+                      if (selectedWarehouse) {
+                        const calculateDelivery = async () => {
+                          try {
+                            const response = await fetch('/api/delivery/calculate', {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify({
+                                origin: {
+                                  latitude: selectedWarehouse.latitude,
+                                  longitude: selectedWarehouse.longitude,
+                                },
+                                destination: coordinates,
+                                pricing: {
+                                  baseRate: 50,
+                                  perKmRate: 10,
+                                }
+                              }),
+                            });
+                            
+                            if (response.ok) {
+                              const result = await response.json();
+                              if (result.success && result.data) {
+                                setDeliveryCost(result.data.delivery.totalCost);
+                                setDeliveryDistance(result.data.route.distance);
+                              }
+                            }
+                          } catch (error) {
+                            console.error('Failed to calculate delivery cost:', error);
+                          }
+                        };
+                        calculateDelivery();
+                      }
+                    }
+                  }}
+                  className="mt-1"
+                  showMap={false}
+                />
+                {deliveryCost && deliveryDistance && (
+                  <div className="mt-2 p-3 bg-muted rounded-lg">
+                    <div className="text-sm font-medium">Delivery Estimate</div>
+                    <div className="text-sm text-muted-foreground">
+                      Distance: {deliveryDistance.toFixed(1)} km • Cost: ₱{deliveryCost.toFixed(2)}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div>
               <Label htmlFor="clientName">Client Name</Label>
               <Input

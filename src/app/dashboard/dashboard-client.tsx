@@ -14,7 +14,6 @@ import SystemMaintenanceContent from "./(sections)/system-maintenance";
 import { RoofCalculatorContent } from "./roof-calculator";
 import { AssignedProjectsContent } from "./assigned-projects";
 import { ProposalsPage } from "./proposals";
-import { ClientManagementPage } from "./client-management";
 import { ClientProposalsPage } from "./client-proposals";
 import WarehouseManagementSection from "./(sections)/warehouse-management";
 import DeliverySettingsPage from "./settings/delivery-settings/page";
@@ -24,7 +23,6 @@ type DashboardSection =
   | "roof-calculator"
   | "assigned-projects"
   | "proposals"
-  | "client-management"
   | "client-proposals"
   | "account-management"
   | "system-maintenance"
@@ -113,7 +111,6 @@ export default function DashboardClient() {
       case "client-proposals":
         return userRole === UserRole.CLIENT;
       case "assigned-projects":
-      case "client-management":
       case "proposals":
         return userRole === UserRole.ADMIN;
       case "delivery-settings":
@@ -175,8 +172,6 @@ export default function DashboardClient() {
         return <AssignedProjectsContent />;
       case "proposals":
         return <ProposalsPage />;
-      case "client-management":
-        return <ClientManagementPage />;
       case "client-proposals":
         return <ClientProposalsPage />;
       case "account-management":

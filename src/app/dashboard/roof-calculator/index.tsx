@@ -57,6 +57,8 @@ export function RoofCalculatorContent() {
   >();
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [saveEnabled, setSaveEnabled] = useState(false);
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | undefined>();
+  const [projectAddress, setProjectAddress] = useState<{ coordinates: { latitude: number; longitude: number } } | null>(null);
   const additionalSpecsRef = useRef<HTMLDivElement>(null);
 
   // Scroll to the end of Additional Specifications when expanded
@@ -124,6 +126,10 @@ export function RoofCalculatorContent() {
             saveDialogOpen={saveDialogOpen}
             onSaveDialogChange={setSaveDialogOpen}
             saveEnabled={saveEnabled}
+            selectedWarehouseId={selectedWarehouseId}
+            onWarehouseChange={setSelectedWarehouseId}
+            projectAddress={projectAddress}
+            onAddressChange={setProjectAddress}
           />
           <Button
             variant="outline"
@@ -264,6 +270,7 @@ export function RoofCalculatorContent() {
                   onRidgeTypeChange={(ridgeType: string) =>
                     setMeasurements({ ...measurements, ridgeType })
                   }
+                  selectedWarehouseId={selectedWarehouseId}
                 />
               </CardContent>
             </Card>

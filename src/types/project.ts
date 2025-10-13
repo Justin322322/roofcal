@@ -256,6 +256,16 @@ export interface ProjectFromCalculator {
   projectName: string;
   clientName?: string | null;
   notes?: string | null;
+  // Delivery address fields
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  latitude?: number;
+  longitude?: number;
+  warehouseId: string;
+  deliveryCost?: number;
+  deliveryDistance?: number;
 }
 
 // Helper type for converting project data back to calculator format

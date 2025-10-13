@@ -11,6 +11,7 @@ import type {
   ProjectFromCalculator,
   ProjectToCalculator,
 } from "@/types/project";
+import { UserRole } from "@/types/user-role";
 
 /**
  * Save current calculator data as a new project
@@ -25,11 +26,27 @@ export async function saveProject(
       return { success: false, error: "Authentication required" };
     }
 
+    // Validate required fields
+    if (!data.warehouseId) {
+      return { success: false, error: "Warehouse selection is required" };
+    }
+
     // Convert calculator data to project format
     const projectData: CreateProjectInput = {
       projectName: data.projectName,
       clientName: data.clientName,
       status: "DRAFT",
+
+      // Delivery and Location
+      address: data.address,
+      city: data.city,
+      state: data.state,
+      zipCode: data.zipCode,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      deliveryCost: data.deliveryCost,
+      deliveryDistance: data.deliveryDistance,
+      warehouseId: data.warehouseId,
 
       // Measurements
       length: parseFloat(data.measurements.length) || 0,
@@ -83,11 +100,14 @@ export async function saveProject(
     const project = await prisma.project.create({
       data: {
         userId: session.user.id,
+        clientId: session.user.role === UserRole.CLIENT ? session.user.id : null,
+        status: session.user.role === UserRole.CLIENT ? "CLIENT_PENDING" : "DRAFT",
         ...projectData,
       },
     });
 
     revalidatePath("/dashboard/project-management");
+    revalidatePath("/dashboard?tab=client-proposals");
 
     return { success: true, projectId: project.id };
   } catch (error) {
@@ -128,6 +148,17 @@ export async function updateProject(
     if (data.projectName) updateData.projectName = data.projectName;
     if (data.clientName !== undefined) updateData.clientName = data.clientName;
     if (data.notes !== undefined) updateData.notes = data.notes;
+
+    // Update delivery fields if provided
+    if (data.address !== undefined) updateData.address = data.address;
+    if (data.city !== undefined) updateData.city = data.city;
+    if (data.state !== undefined) updateData.state = data.state;
+    if (data.zipCode !== undefined) updateData.zipCode = data.zipCode;
+    if (data.latitude !== undefined) updateData.latitude = data.latitude;
+    if (data.longitude !== undefined) updateData.longitude = data.longitude;
+    if (data.warehouseId !== undefined) updateData.warehouseId = data.warehouseId;
+    if (data.deliveryCost !== undefined) updateData.deliveryCost = data.deliveryCost;
+    if (data.deliveryDistance !== undefined) updateData.deliveryDistance = data.deliveryDistance;
 
     // Update measurements if provided
     if (data.measurements) {
@@ -437,7 +468,18 @@ export async function getProjectDetails(
   projectId: string
 ): Promise<{
   success: boolean;
-  project?: { projectName: string; clientName?: string; notes?: string };
+  project?: { 
+    projectName: string; 
+    clientName?: string; 
+    notes?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    latitude?: number;
+    longitude?: number;
+    warehouseId?: string;
+  };
   error?: string;
 }> {
   try {
@@ -456,6 +498,13 @@ export async function getProjectDetails(
         projectName: true,
         clientName: true,
         notes: true,
+        address: true,
+        city: true,
+        state: true,
+        zipCode: true,
+        latitude: true,
+        longitude: true,
+        warehouseId: true,
       },
     });
 
@@ -469,6 +518,13 @@ export async function getProjectDetails(
         projectName: project.projectName,
         clientName: project.clientName || undefined,
         notes: project.notes || undefined,
+        address: project.address || undefined,
+        city: project.city || undefined,
+        state: project.state || undefined,
+        zipCode: project.zipCode || undefined,
+        latitude: project.latitude ? Number(project.latitude) : undefined,
+        longitude: project.longitude ? Number(project.longitude) : undefined,
+        warehouseId: project.warehouseId || undefined,
       },
     };
   } catch (error) {
