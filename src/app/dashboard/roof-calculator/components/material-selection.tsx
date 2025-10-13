@@ -134,9 +134,8 @@ export function MaterialSelection({
                 price: wm.material.price * (1 + wm.locationAdjustment / 100),
                 description: wm.material.description || '',
               }));
-            // Business rule: Restrict selection to Long Span (corrugated) only
-            const restricted = warehouseMaterials.filter((m: Material) => m.value === "corrugated");
-            setMaterials(restricted.length > 0 ? restricted : warehouseMaterials.filter(() => false));
+            // Show all available materials from warehouse
+            setMaterials(warehouseMaterials);
           } else {
             throw new Error('Invalid API response format');
           }
@@ -158,18 +157,16 @@ export function MaterialSelection({
               price: material.price,
               description: material.description || '',
             }));
-            // Business rule: Restrict selection to Long Span (corrugated) only
-            const restricted = dbMaterials.filter((m: Material) => m.value === "corrugated");
-            setMaterials(restricted.length > 0 ? restricted : dbMaterials.filter(() => false));
+            // Show all available materials from database
+            setMaterials(dbMaterials);
           } else {
             throw new Error('Invalid API response format');
           }
         }
       } catch (error) {
         console.error('Failed to load materials from API, using fallback:', error);
-        // Fallback but restricted to corrugated only
-        const restricted = fallbackMaterials.filter((m) => m.value === "corrugated");
-        setMaterials(restricted);
+        // Use all fallback materials
+        setMaterials(fallbackMaterials);
       } finally {
         setIsLoadingMaterials(false);
       }
@@ -180,7 +177,7 @@ export function MaterialSelection({
 
   const selectedMaterial = materials.find((m) => m.value === material);
 
-  // Ensure currently selected material is valid under restriction; default to corrugated
+  // Ensure currently selected material is valid; default to first available material
   useEffect(() => {
     if (!isLoadingMaterials) {
       const exists = materials.some((m) => m.value === material);

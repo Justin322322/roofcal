@@ -77,6 +77,36 @@ const fallbackMaterials: Material[] = [
     price: 800,
     description: "Lightweight, weather-resistant, 30-50 year lifespan",
   },
+  {
+    value: "asphalt",
+    name: "Asphalt Shingles",
+    price: 450,
+    description: "Cost-effective and durable, 15-30 year lifespan",
+  },
+  {
+    value: "metal",
+    name: "Metal Roofing",
+    price: 1200,
+    description: "Long-lasting, energy efficient, 40-70 year lifespan",
+  },
+  {
+    value: "tile",
+    name: "Clay/Concrete Tile",
+    price: 1800,
+    description: "Premium durability, 50+ year lifespan",
+  },
+  {
+    value: "slate",
+    name: "Slate",
+    price: 2500,
+    description: "Highest quality, 100+ year lifespan",
+  },
+  {
+    value: "wood",
+    name: "Wood Shakes",
+    price: 900,
+    description: "Natural aesthetic, 20-40 year lifespan",
+  },
 ];
 
 // Convert SCREW_TYPES constant to array format as fallback
@@ -137,11 +167,8 @@ export function ConsolidatedMaterialSelection({
                 price: wm.material.price * (1 + wm.locationAdjustment / 100),
                 description: wm.material.description || '',
               }));
-            // Business rule: Restrict selection to Long Span (corrugated) variants only
-            const restricted = warehouseMaterials.filter((m: Material) => 
-              m.value === "corrugated" || m.value === "corrugated-0.4" || m.value === "corrugated-0.5"
-            );
-            setMaterials(restricted.length > 0 ? restricted : warehouseMaterials.filter(() => false));
+            // Show all available materials from warehouse
+            setMaterials(warehouseMaterials);
           } else {
             throw new Error('Invalid API response format');
           }
@@ -163,22 +190,16 @@ export function ConsolidatedMaterialSelection({
               price: material.price,
               description: material.description || '',
             }));
-            // Business rule: Restrict selection to Long Span (corrugated) variants only
-            const restricted = dbMaterials.filter((m: Material) => 
-              m.value === "corrugated" || m.value === "corrugated-0.4" || m.value === "corrugated-0.5"
-            );
-            setMaterials(restricted.length > 0 ? restricted : dbMaterials.filter(() => false));
+            // Show all available materials from database
+            setMaterials(dbMaterials);
           } else {
             throw new Error('Invalid API response format');
           }
         }
       } catch (error) {
         console.error('Failed to load materials from API, using fallback:', error);
-        // Fallback but restricted to corrugated variants only
-        const restricted = fallbackMaterials.filter((m) => 
-          m.value === "corrugated" || m.value === "corrugated-0.4" || m.value === "corrugated-0.5"
-        );
-        setMaterials(restricted);
+        // Use all fallback materials
+        setMaterials(fallbackMaterials);
       } finally {
         setIsLoadingMaterials(false);
       }
