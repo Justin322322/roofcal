@@ -258,6 +258,7 @@ model warehousematerial {
   @@index([isActive], map: "WarehouseMaterial_isActive_idx")
   @@index([materialId], map: "WarehouseMaterial_materialId_idx")
   @@index([warehouseId], map: "WarehouseMaterial_warehouseId_idx")
+  @@map("WarehouseMaterial")
 }
 
 enum ProjectStage {
