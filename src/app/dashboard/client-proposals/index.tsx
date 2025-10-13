@@ -89,6 +89,8 @@ function useProposalsData() {
         
         setProposals(fetchedProposals);
         globalProposalsCache = fetchedProposals;
+        globalHasFetched = true;
+        hasFetched.current = true;
       } else {
         const errorData = await response.json();
         toast.error("Failed to fetch proposals", {
@@ -107,11 +109,10 @@ function useProposalsData() {
 
   useEffect(() => {
     if (session?.user?.id && session.user.role === "CLIENT") {
-      // Always fetch fresh data to ensure we get the latest projects
-      globalProposalsCache = null;
-      globalHasFetched = false;
-      hasFetched.current = false;
-      fetchProposals();
+      // Only fetch if we haven't fetched before or if cache is empty
+      if (!hasFetched.current || !globalProposalsCache) {
+        fetchProposals();
+      }
     } else if (session === null) {
       // Reset cache on logout
       globalProposalsCache = null;
@@ -276,22 +277,91 @@ export function ClientProposalsPage() {
 
   if (loading) {
     return (
-      <div className="px-4 lg:px-6 space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-5 w-48" />
-                <Skeleton className="h-4 w-32" />
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-8 w-24" />
-              </CardContent>
-            </Card>
-          ))}
+      <div className="px-4 lg:px-6">
+        <div className="mb-6">
+          <Skeleton className="h-4 w-96" />
         </div>
+
+        {/* Action Buttons Skeleton */}
+        <div className="mb-4 flex justify-end">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-9 w-20" />
+            <Skeleton className="h-9 w-24" />
+          </div>
+        </div>
+
+        {/* Stats Cards Skeleton */}
+        <div className="mb-6">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-4" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-7 w-20 mb-1" />
+                  <Skeleton className="h-3 w-32" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Content Skeleton */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <Skeleton className="h-6 w-32 mb-2" />
+                <Skeleton className="h-4 w-64" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {/* Filter Controls Skeleton */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+              <div className="flex-1">
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="flex gap-2">
+                <Skeleton className="h-10 w-[200px]" />
+              </div>
+            </div>
+
+            {/* Table Skeleton */}
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead><Skeleton className="h-4 w-24" /></TableHead>
+                    <TableHead><Skeleton className="h-4 w-20" /></TableHead>
+                    <TableHead><Skeleton className="h-4 w-16" /></TableHead>
+                    <TableHead><Skeleton className="h-4 w-20" /></TableHead>
+                    <TableHead><Skeleton className="h-4 w-12" /></TableHead>
+                    <TableHead><Skeleton className="h-4 w-16" /></TableHead>
+                    <TableHead><Skeleton className="h-4 w-20" /></TableHead>
+                    <TableHead><Skeleton className="h-4 w-16" /></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                      <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -501,19 +571,23 @@ export function ClientProposalsPage() {
           setSelectedProject(null);
         }
       }}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>View Proposal</DialogTitle>
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-4 border-b">
+            <DialogTitle className="text-xl font-semibold leading-none tracking-tight">
+              View Proposal
+            </DialogTitle>
           </DialogHeader>
-          {selectedProject && (
-            <ProposalViewer
-              project={selectedProject}
-              onClose={() => {
-                setShowViewer(false);
-                setSelectedProject(null);
-              }}
-            />
-          )}
+          <div className="flex-1 overflow-y-auto p-6">
+            {selectedProject && (
+              <ProposalViewer
+                project={selectedProject}
+                onClose={() => {
+                  setShowViewer(false);
+                  setSelectedProject(null);
+                }}
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
