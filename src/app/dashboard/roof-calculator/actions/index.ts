@@ -12,6 +12,7 @@ import type {
   ProjectFromCalculator,
   ProjectToCalculator,
 } from "@/types/project";
+import type { Prisma } from "@prisma/client";
 import { UserRole } from "@/types/user-role";
 
 /**
@@ -151,8 +152,8 @@ export async function updateProject(
       return { success: false, error: "Project not found" };
     }
 
-    // Build update data
-    const updateData: UpdateProjectInput = {};
+    // Build update data using Prisma's unchecked input to allow scalar FK updates
+    const updateData: Prisma.projectUncheckedUpdateInput = {};
 
     if (data.projectName) updateData.projectName = data.projectName;
     if (data.clientName !== undefined) updateData.clientName = data.clientName;
