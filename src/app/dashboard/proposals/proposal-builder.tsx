@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Loader2Icon, SendIcon, DollarSignIcon, FileTextIcon } from "lucide-react";
+import { Loader2Icon } from "lucide-react";
 import type { Project } from "@/types/project";
 
 interface ProposalBuilderProps {
@@ -115,81 +115,77 @@ export function ProposalBuilder({ project, onProposalSent, onClose, mode = "crea
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Project Summary */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileTextIcon className="h-5 w-5" />
-            Project Summary
-          </CardTitle>
-          <CardDescription>{project.projectName}</CardDescription>
+        <CardHeader className="pb-6">
+          <CardTitle className="text-xl font-semibold">Project Summary</CardTitle>
+          <CardDescription className="text-base">{project.projectName}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-muted-foreground">Client:</span>
-              <span className="ml-2 font-medium">{project.clientName || "Unknown"}</span>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-2 gap-8">
+            <div className="space-y-1">
+              <div className="text-sm font-medium text-muted-foreground">Client</div>
+              <div className="text-base font-medium">{project.clientName || "Unknown"}</div>
             </div>
-            <div>
-              <span className="text-muted-foreground">Roof Area:</span>
-              <span className="ml-2 font-medium">{project.area.toFixed(1)} m²</span>
+            <div className="space-y-1">
+              <div className="text-sm font-medium text-muted-foreground">Roof Area</div>
+              <div className="text-base font-medium">{project.area.toFixed(1)} m²</div>
             </div>
-            <div>
-              <span className="text-muted-foreground">Material:</span>
-              <span className="ml-2 font-medium">{project.material}</span>
+            <div className="space-y-1">
+              <div className="text-sm font-medium text-muted-foreground">Material</div>
+              <div className="text-base font-medium">{project.material}</div>
             </div>
-            <div>
-              <span className="text-muted-foreground">Roof Type:</span>
-              <span className="ml-2 font-medium">{project.roofType}</span>
+            <div className="space-y-1">
+              <div className="text-sm font-medium text-muted-foreground">Roof Type</div>
+              <div className="text-base font-medium">{project.roofType}</div>
             </div>
           </div>
-          <Separator />
-          <div className="text-sm">
-            <span className="text-muted-foreground">Dimensions:</span>
-            <span className="ml-2">{project.length}m × {project.width}m × {project.pitch}° pitch</span>
+          <Separator className="my-6" />
+          <div className="space-y-1">
+            <div className="text-sm font-medium text-muted-foreground">Dimensions</div>
+            <div className="text-base">{project.length}m × {project.width}m × {project.pitch}° pitch</div>
           </div>
         </CardContent>
       </Card>
 
       {/* Current Pricing */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSignIcon className="h-5 w-5" />
-            Current Pricing Breakdown
-          </CardTitle>
-          <CardDescription>Base estimate from the roof calculator</CardDescription>
+        <CardHeader className="pb-6">
+          <CardTitle className="text-xl font-semibold">Current Pricing Breakdown</CardTitle>
+          <CardDescription className="text-base">Base estimate from the roof calculator</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex justify-between text-sm">
-            <span>Materials:</span>
-            <span>{formatCurrency(project.materialCost)}</span>
+        <CardContent className="space-y-4">
+          <div className="space-y-4">
+            <div className="flex justify-between items-center py-2">
+              <span className="text-base">Materials</span>
+              <span className="text-base font-medium">{formatCurrency(project.materialCost)}</span>
+            </div>
+            <div className="flex justify-between items-center py-2">
+              <span className="text-base">Labor</span>
+              <span className="text-base font-medium">{formatCurrency(project.laborCost)}</span>
+            </div>
           </div>
-          <div className="flex justify-between text-sm">
-            <span>Labor:</span>
-            <span>{formatCurrency(project.laborCost)}</span>
-          </div>
-          <Separator />
-          <div className="flex justify-between font-medium">
-            <span>Total:</span>
-            <span>{formatCurrency(project.totalCost)}</span>
+          <Separator className="my-6" />
+          <div className="flex justify-between items-center py-3 bg-muted/50 rounded-lg px-4">
+            <span className="text-lg font-semibold">Total</span>
+            <span className="text-xl font-bold">{formatCurrency(project.totalCost)}</span>
           </div>
         </CardContent>
       </Card>
 
       {/* Custom Pricing (Optional) */}
       <Card>
-        <CardHeader>
-          <CardTitle>Custom Pricing (Optional)</CardTitle>
-          <CardDescription>
+        <CardHeader className="pb-6">
+          <CardTitle className="text-xl font-semibold">Custom Pricing (Optional)</CardTitle>
+          <CardDescription className="text-base">
             Adjust pricing if needed for this specific project
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="materialCost">Material Cost</Label>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="materialCost" className="text-sm font-medium">Material Cost</Label>
               <Input
                 id="materialCost"
                 type="number"
@@ -199,10 +195,11 @@ export function ProposalBuilder({ project, onProposalSent, onClose, mode = "crea
                   materialCost: parseFloat(e.target.value) || 0
                 }))}
                 placeholder="0"
+                className="h-11"
               />
             </div>
-            <div>
-              <Label htmlFor="laborCost">Labor Cost</Label>
+            <div className="space-y-2">
+              <Label htmlFor="laborCost" className="text-sm font-medium">Labor Cost</Label>
               <Input
                 id="laborCost"
                 type="number"
@@ -212,11 +209,12 @@ export function ProposalBuilder({ project, onProposalSent, onClose, mode = "crea
                   laborCost: parseFloat(e.target.value) || 0
                 }))}
                 placeholder="0"
+                className="h-11"
               />
             </div>
           </div>
-          <div>
-            <Label htmlFor="additionalFees">Additional Fees</Label>
+          <div className="space-y-2">
+            <Label htmlFor="additionalFees" className="text-sm font-medium">Additional Fees</Label>
             <Input
               id="additionalFees"
               type="number"
@@ -226,17 +224,18 @@ export function ProposalBuilder({ project, onProposalSent, onClose, mode = "crea
                 additionalFees: parseFloat(e.target.value) || 0
               }))}
               placeholder="0"
+              className="h-11"
             />
           </div>
-          <Separator />
-          <div className="flex justify-between font-medium">
-            <span>Proposed Total:</span>
-            <span>{formatCurrency(calculateTotal())}</span>
+          <Separator className="my-6" />
+          <div className="flex justify-between items-center py-3 bg-muted/50 rounded-lg px-4">
+            <span className="text-lg font-semibold">Proposed Total</span>
+            <span className="text-xl font-bold">{formatCurrency(calculateTotal())}</span>
           </div>
           {calculateTotal() !== project.totalCost && (
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span>Difference from estimate:</span>
-              <span className={calculateTotal() > project.totalCost ? "text-red-600" : "text-green-600"}>
+            <div className="flex justify-between items-center py-2 text-sm">
+              <span className="text-muted-foreground">Difference from estimate</span>
+              <span className={`font-medium ${calculateTotal() > project.totalCost ? "text-red-600" : "text-green-600"}`}>
                 {calculateTotal() > project.totalCost ? "+" : ""}{formatCurrency(calculateTotal() - project.totalCost)}
               </span>
             </div>
@@ -246,63 +245,67 @@ export function ProposalBuilder({ project, onProposalSent, onClose, mode = "crea
 
       {/* Proposal Message */}
       <Card>
-        <CardHeader>
-          <CardTitle>Proposal Message</CardTitle>
-          <CardDescription>
+        <CardHeader className="pb-6">
+          <CardTitle className="text-xl font-semibold">Proposal Message</CardTitle>
+          <CardDescription className="text-base">
             Write a detailed message explaining your proposal to the client
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="proposalText">Message to Client</Label>
-              <Textarea
-                id="proposalText"
-                placeholder="Dear [Client Name],&#10;&#10;Thank you for requesting a quote for your roof project. Based on the specifications provided, I'm pleased to present the following proposal:&#10;&#10;[Your detailed proposal message here]&#10;&#10;Please feel free to contact me if you have any questions.&#10;&#10;Best regards,&#10;[Your Name]"
-                value={proposalText}
-                onChange={(e) => setProposalText(e.target.value)}
-                className="min-h-[200px]"
-              />
-            </div>
-            
-            {/* Proposal Summary */}
-            {proposalText && (
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-medium mb-2">Proposal Summary</h4>
-                <div className="text-sm space-y-1">
-                  <div>• Project: {project.projectName}</div>
-                  <div>• Proposed Cost: {formatCurrency(calculateTotal())}</div>
-                  <div>• Status: <Badge variant={mode === "revise" ? "secondary" : "outline"}>
-                    {mode === "revise" ? "REVISED" : "SENT"}
-                  </Badge></div>
-                  {mode === "revise" && (
-                    <div className="text-xs text-muted-foreground mt-2">
-                      This is a revision of your previous proposal
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="proposalText" className="text-sm font-medium">Message to Client</Label>
+            <Textarea
+              id="proposalText"
+              placeholder="Dear [Client Name],&#10;&#10;Thank you for requesting a quote for your roof project. Based on the specifications provided, I'm pleased to present the following proposal:&#10;&#10;[Your detailed proposal message here]&#10;&#10;Please feel free to contact me if you have any questions.&#10;&#10;Best regards,&#10;[Your Name]"
+              value={proposalText}
+              onChange={(e) => setProposalText(e.target.value)}
+              className="min-h-[200px] text-base"
+            />
           </div>
+          
+          {/* Proposal Summary */}
+          {proposalText && (
+            <div className="p-6 bg-muted/50 rounded-lg">
+              <h4 className="font-semibold mb-4 text-base">Proposal Summary</h4>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-muted-foreground">Project</span>
+                  <span className="text-sm">{project.projectName}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-muted-foreground">Proposed Cost</span>
+                  <span className="text-sm font-medium">{formatCurrency(calculateTotal())}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-muted-foreground">Status</span>
+                  <Badge variant={mode === "revise" ? "secondary" : "outline"} className="text-xs">
+                    {mode === "revise" ? "REVISED" : "SENT"}
+                  </Badge>
+                </div>
+                {mode === "revise" && (
+                  <div className="text-xs text-muted-foreground mt-3 pt-3 border-t border-border/50">
+                    This is a revision of your previous proposal
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
       {/* Actions */}
-      <div className="flex justify-end gap-3">
-        <Button variant="outline" onClick={onClose}>
+      <div className="flex justify-end gap-4 pt-4">
+        <Button variant="outline" onClick={onClose} className="px-6">
           Cancel
         </Button>
-        <Button onClick={handleSubmit} disabled={loading || !proposalText.trim()}>
+        <Button onClick={handleSubmit} disabled={loading || !proposalText.trim()} className="px-6">
           {loading ? (
             <>
               <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
               {mode === "revise" ? "Revising..." : "Sending..."}
             </>
           ) : (
-            <>
-              <SendIcon className="mr-2 h-4 w-4" />
-              {mode === "revise" ? "Send Revised Proposal" : "Send Proposal"}
-            </>
+            mode === "revise" ? "Send Revised Proposal" : "Send Proposal"
           )}
         </Button>
       </div>

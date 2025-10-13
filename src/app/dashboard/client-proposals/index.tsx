@@ -9,16 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
-  CalendarIcon, 
-  DollarSignIcon, 
-  UserIcon,
-  ClockIcon,
-  CheckCircleIcon,
-  AlertCircleIcon,
-  XCircleIcon,
-  FileTextIcon,
-  MessageSquareIcon
+  AlertCircleIcon
 } from "lucide-react";
 import type { Project } from "@/types/project";
 import { ProposalViewer } from "../proposals/proposal-viewer";
@@ -125,22 +118,7 @@ export function ClientProposalsPage() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "SENT":
-        return <MessageSquareIcon className="h-4 w-4" />;
-      case "ACCEPTED":
-        return <CheckCircleIcon className="h-4 w-4" />;
-      case "REJECTED":
-        return <XCircleIcon className="h-4 w-4" />;
-      case "COMPLETED":
-        return <CheckCircleIcon className="h-4 w-4" />;
-      case "DRAFT":
-        return <FileTextIcon className="h-4 w-4" />;
-      default:
-        return <ClockIcon className="h-4 w-4" />;
-    }
-  };
+  // Removed getStatusIcon function - using text-only badges
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-PH', {
@@ -243,7 +221,6 @@ export function ClientProposalsPage() {
                   formatCurrency={formatCurrency}
                   formatDate={formatDate}
                   getStatusColor={getStatusColor}
-                  getStatusIcon={getStatusIcon}
                 />
               ))}
             </div>
@@ -262,7 +239,6 @@ export function ClientProposalsPage() {
                   formatCurrency={formatCurrency}
                   formatDate={formatDate}
                   getStatusColor={getStatusColor}
-                  getStatusIcon={getStatusIcon}
                 />
               ))}
             </div>
@@ -281,7 +257,6 @@ export function ClientProposalsPage() {
                   formatCurrency={formatCurrency}
                   formatDate={formatDate}
                   getStatusColor={getStatusColor}
-                  getStatusIcon={getStatusIcon}
                 />
               ))}
             </div>
@@ -300,7 +275,6 @@ export function ClientProposalsPage() {
                   formatCurrency={formatCurrency}
                   formatDate={formatDate}
                   getStatusColor={getStatusColor}
-                  getStatusIcon={getStatusIcon}
                 />
               ))}
             </div>
@@ -319,7 +293,6 @@ export function ClientProposalsPage() {
                   formatCurrency={formatCurrency}
                   formatDate={formatDate}
                   getStatusColor={getStatusColor}
-                  getStatusIcon={getStatusIcon}
                 />
               ))}
             </div>
@@ -328,27 +301,27 @@ export function ClientProposalsPage() {
         )}
 
       {/* Proposal Viewer Modal */}
-      {showViewer && selectedProject && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <CardHeader>
-              <CardTitle>View Proposal</CardTitle>
-              <CardDescription>
-                Proposal details for {selectedProject.projectName}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ProposalViewer
-                project={selectedProject}
-                onClose={() => {
-                  setShowViewer(false);
-                  setSelectedProject(null);
-                }}
-              />
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      <Dialog open={showViewer} onOpenChange={(open) => {
+        if (!open) {
+          setShowViewer(false);
+          setSelectedProject(null);
+        }
+      }}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>View Proposal</DialogTitle>
+          </DialogHeader>
+          {selectedProject && (
+            <ProposalViewer
+              project={selectedProject}
+              onClose={() => {
+                setShowViewer(false);
+                setSelectedProject(null);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -359,7 +332,6 @@ interface ProposalCardProps {
   formatCurrency: (amount: number) => string;
   formatDate: (date: Date | string | null) => string;
   getStatusColor: (status: string) => string;
-  getStatusIcon: (status: string) => React.ReactNode;
 }
 
 function ProposalCard({
@@ -368,53 +340,48 @@ function ProposalCard({
   formatCurrency,
   formatDate,
   getStatusColor,
-  getStatusIcon,
 }: ProposalCardProps) {
   const status = project.proposalStatus || "DRAFT";
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <CardTitle className="text-lg">{project.projectName}</CardTitle>
-            <CardDescription>
-              <div className="flex items-center gap-2">
-                <UserIcon className="h-4 w-4" />
-                {status === "DRAFT" ? "Not assigned" : `${project.contractor.firstName} ${project.contractor.lastName}`}
-              </div>
+    <Card className="hover:shadow-lg transition-all duration-200 border-border/50">
+      <CardHeader className="pb-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-2 flex-1">
+            <CardTitle className="text-xl font-semibold leading-tight">{project.projectName}</CardTitle>
+            <CardDescription className="text-base">
+              {status === "DRAFT" ? "Not assigned to contractor" : `Contractor: ${project.contractor.firstName} ${project.contractor.lastName}`}
             </CardDescription>
           </div>
-          <Badge className={`${getStatusColor(status)} flex items-center gap-1`}>
-            {getStatusIcon(status)}
+          <Badge className={`${getStatusColor(status)} px-3 py-1 text-xs font-medium`}>
             {status}
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">{formatCurrency(project.totalCost)}</span>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-2 gap-6">
+          <div className="space-y-1">
+            <div className="text-sm font-medium text-muted-foreground">Total Cost</div>
+            <div className="text-lg font-semibold">{formatCurrency(project.totalCost)}</div>
           </div>
-          <div className="flex items-center gap-2">
-            <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-            <span>{formatDate(project.proposalSent || null)}</span>
+          <div className="space-y-1">
+            <div className="text-sm font-medium text-muted-foreground">Sent Date</div>
+            <div className="text-sm">{formatDate(project.proposalSent || null)}</div>
           </div>
         </div>
         
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Material:</span>
-            <span>{project.material}</span>
+        <div className="grid grid-cols-2 gap-6 pt-2 border-t border-border/50">
+          <div className="space-y-1">
+            <div className="text-sm font-medium text-muted-foreground">Material</div>
+            <div className="text-sm">{project.material}</div>
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Area:</span>
-            <span>{project.area.toFixed(1)} m²</span>
+          <div className="space-y-1">
+            <div className="text-sm font-medium text-muted-foreground">Area</div>
+            <div className="text-sm">{project.area.toFixed(1)} m²</div>
           </div>
         </div>
 
-        <Button onClick={onViewProposal} className="w-full">
+        <Button onClick={onViewProposal} className="w-full h-11 text-sm font-medium">
           {status === "SENT" ? "Review Proposal" : status === "DRAFT" ? "View Project Details" : "View Proposal"}
         </Button>
       </CardContent>
