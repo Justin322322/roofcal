@@ -7,7 +7,6 @@ import { prisma } from "@/lib/prisma";
 // Removed unused import: notifyProjectAssigned is no longer used in project creation
 import type {
   CreateProjectInput,
-  UpdateProjectInput,
   Project,
   ProjectFromCalculator,
   ProjectToCalculator,
@@ -299,6 +298,7 @@ export async function loadProject(
         gutterLengthC: project.gutterLengthC?.toString() || "",
         insulationThickness: project.insulationThickness,
         ventilationPieces: project.ventilationPieces.toString(),
+        screwType: "",
       },
       material: project.material,
       projectId: project.id,
