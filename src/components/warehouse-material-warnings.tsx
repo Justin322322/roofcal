@@ -9,8 +9,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { 
   WarehouseIcon, 
   AlertTriangleIcon, 
-  PackageIcon
+  PackageIcon,
+  BrainIcon,
+  CheckIcon,
+  XIcon,
+  Loader2Icon
 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 interface WarehouseMaterialWarning {
   warehouseId: string;
@@ -77,6 +83,25 @@ interface Warehouse {
   };
 }
 
+interface StockSuggestion {
+  materialId: string;
+  materialName: string;
+  currentStock: number;
+  suggestedStock: number;
+  stockToAdd: number;
+  reason: string;
+  priority: 'critical' | 'warning' | 'optimization';
+  confidence: number;
+}
+
+interface SmartStockPlan {
+  warehouseId: string;
+  warehouseName: string;
+  suggestions: StockSuggestion[];
+  totalSuggestions: number;
+  totalStockToAdd: number;
+}
+
 interface WarehouseMaterialWarningsProps {
   warehouseId?: string;
   warehouses?: Warehouse[];
@@ -92,6 +117,9 @@ export function WarehouseMaterialWarnings({
 }: WarehouseMaterialWarningsProps) {
   const [warnings, setWarnings] = useState<WarehouseMaterialWarning[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [smartStockPlans, setSmartStockPlans] = useState<Record<string, SmartStockPlan>>({});
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  const [isApplyingPlan, setIsApplyingPlan] = useState(false);
 
   const fetchWarnings = useCallback(async () => {
     try {
@@ -176,6 +204,76 @@ export function WarehouseMaterialWarnings({
       return 'warning';
     } else {
       return 'info';
+    }
+  };
+
+  const generateSmartStockPlan = async (warehouseId: string) => {
+    try {
+      setIsGeneratingPlan(true);
+      
+      const response = await fetch(`/api/warehouses/${warehouseId}/smart-stock-suggestions`);
+      if (!response.ok) {
+        throw new Error('Failed to generate smart stock plan');
+      }
+      
+      const result = await response.json();
+      if (result.success) {
+        setSmartStockPlans(prev => ({
+          ...prev,
+          [warehouseId]: result.data
+        }));
+        toast.success(`Generated smart stock plan with ${result.data.totalSuggestions} suggestions`);
+      } else {
+        throw new Error(result.error || 'Failed to generate smart stock plan');
+      }
+    } catch (error) {
+      console.error('Error generating smart stock plan:', error);
+      toast.error('Failed to generate smart stock plan');
+    } finally {
+      setIsGeneratingPlan(false);
+    }
+  };
+
+  const applySmartStockPlan = async (warehouseId: string) => {
+    const plan = smartStockPlans[warehouseId];
+    if (!plan || plan.suggestions.length === 0) return;
+
+    try {
+      setIsApplyingPlan(true);
+      
+      const response = await fetch(`/api/warehouses/${warehouseId}/smart-stock-suggestions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          suggestions: plan.suggestions
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to apply smart stock plan');
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        toast.success(result.message);
+        // Clear the plan after successful application
+        setSmartStockPlans(prev => {
+          const updated = { ...prev };
+          delete updated[warehouseId];
+          return updated;
+        });
+        // Refresh warnings to show updated stock levels
+        fetchWarnings();
+      } else {
+        throw new Error(result.error || 'Failed to apply smart stock plan');
+      }
+    } catch (error) {
+      console.error('Error applying smart stock plan:', error);
+      toast.error('Failed to apply smart stock plan');
+    } finally {
+      setIsApplyingPlan(false);
     }
   };
 
@@ -337,6 +435,140 @@ export function WarehouseMaterialWarnings({
                 </Alert>
               </div>
             )}
+
+            {/* Smart Stock Planning Section */}
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <BrainIcon className="h-5 w-5 text-blue-600" />
+                  <h3 className="text-lg font-semibold text-blue-900">Smart Stock Planning</h3>
+                </div>
+                <div className="flex gap-2">
+                  {!smartStockPlans[warehouse.warehouseId] ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => generateSmartStockPlan(warehouse.warehouseId)}
+                      disabled={isGeneratingPlan}
+                    >
+                      {isGeneratingPlan ? (
+                        <>
+                          <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <BrainIcon className="h-4 w-4 mr-2" />
+                          Generate Plan
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => applySmartStockPlan(warehouse.warehouseId)}
+                        disabled={isApplyingPlan}
+                      >
+                        {isApplyingPlan ? (
+                          <>
+                            <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+                            Applying...
+                          </>
+                        ) : (
+                          <>
+                            <CheckIcon className="h-4 w-4 mr-2" />
+                            Apply Plan
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSmartStockPlans(prev => {
+                          const updated = { ...prev };
+                          delete updated[warehouse.warehouseId];
+                          return updated;
+                        })}
+                      >
+                        <XIcon className="h-4 w-4 mr-2" />
+                        Cancel
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {smartStockPlans[warehouse.warehouseId] && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-blue-700">
+                      <strong>{smartStockPlans[warehouse.warehouseId].totalSuggestions}</strong> suggestions generated
+                    </span>
+                    <span className="text-blue-700">
+                      Total stock to add: <strong>{smartStockPlans[warehouse.warehouseId].totalStockToAdd}</strong> units
+                    </span>
+                  </div>
+
+                  <div className="grid gap-3 max-h-60 overflow-y-auto">
+                    {smartStockPlans[warehouse.warehouseId].suggestions.map((suggestion, index) => (
+                      <div key={suggestion.materialId} className="bg-white p-3 rounded border">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Badge variant={suggestion.priority === 'critical' ? 'destructive' : 'secondary'}>
+                              {suggestion.priority.toUpperCase()}
+                            </Badge>
+                            <span className="font-medium">{suggestion.materialName}</span>
+                          </div>
+                          <div className="text-right text-sm">
+                            <div className="text-muted-foreground">
+                              {suggestion.currentStock} → <span className="text-green-600 font-semibold">{suggestion.suggestedStock}</span>
+                            </div>
+                            <div className="text-blue-600 font-medium">
+                              +{suggestion.stockToAdd} units
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {suggestion.reason}
+                        </div>
+                        <div className="mt-1">
+                          <div className="flex items-center gap-1">
+                            <div className="text-xs text-muted-foreground">Confidence:</div>
+                            <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                              <div 
+                                className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
+                                style={{ width: `${suggestion.confidence * 100}%` }}
+                              />
+                            </div>
+                            <div className="text-xs text-muted-foreground ml-2">
+                              {Math.round(suggestion.confidence * 100)}%
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Alert>
+                    <BrainIcon className="h-4 w-4" />
+                    <AlertDescription>
+                      This plan considers your warehouse capacity, current demand patterns, and project requirements to suggest optimal stock levels.
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              )}
+
+              {!smartStockPlans[warehouse.warehouseId] && (
+                <div className="text-center py-4">
+                  <BrainIcon className="h-8 w-8 text-blue-400 mx-auto mb-2" />
+                  <p className="text-sm text-blue-700">
+                    Generate an intelligent stock plan that considers warehouse capacity, demand patterns, and project requirements.
+                  </p>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       ))}
