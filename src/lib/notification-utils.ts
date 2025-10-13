@@ -23,7 +23,7 @@ export const getNotificationUrl = (notification: NotificationData): string => {
     return notification.actionUrl;
   }
 
-  // Otherwise, generate URL based on type and projectId
+  // Otherwise, generate URL based on type
   switch (notification.type) {
     case "proposal_sent":
     case "proposal_accepted":
@@ -34,7 +34,7 @@ export const getNotificationUrl = (notification: NotificationData): string => {
       // For project-related notifications, navigate to assigned-projects tab
       return "/dashboard?tab=assigned-projects";
     default:
-      return "/dashboard";
+      return "/dashboard?tab=proposals";
   }
 };
 

@@ -154,8 +154,7 @@ export async function saveProject(
       }
     }
 
-    revalidatePath("/dashboard/project-management");
-    revalidatePath("/dashboard?tab=client-proposals");
+    revalidatePath("/dashboard?tab=proposals");
 
     return { success: true, projectId: project.id };
   } catch (error) {
@@ -282,7 +281,7 @@ export async function updateProject(
       data: updateData,
     });
 
-    revalidatePath("/dashboard/project-management");
+    revalidatePath("/dashboard?tab=proposals");
     revalidatePath(`/dashboard/roof-calculator`);
 
     return { success: true };
@@ -428,7 +427,7 @@ export async function duplicateProject(
       },
     });
 
-    revalidatePath("/dashboard/project-management");
+    revalidatePath("/dashboard?tab=proposals");
 
     return { success: true, newProjectId: duplicateProject.id };
   } catch (error) {

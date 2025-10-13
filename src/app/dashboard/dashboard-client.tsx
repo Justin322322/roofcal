@@ -14,7 +14,6 @@ import SystemMaintenanceContent from "./(sections)/system-maintenance";
 import { RoofCalculatorContent } from "./roof-calculator";
 import { AssignedProjectsContent } from "./assigned-projects";
 import { ProposalsPage } from "./proposals";
-import { ClientProposalsPage } from "./client-proposals";
 import WarehouseManagementSection from "./(sections)/warehouse-management";
 import DeliverySettingsPage from "./settings/delivery-settings/page";
 import DeliveryTestPage from "./delivery-test/page";
@@ -23,7 +22,6 @@ type DashboardSection =
   | "roof-calculator"
   | "assigned-projects"
   | "proposals"
-  | "client-proposals"
   | "account-management"
   | "system-maintenance"
   | "warehouse-management"
@@ -108,11 +106,9 @@ export default function DashboardClient() {
   const hasPermission = (section: string, userRole: string | undefined) => {
     switch (section) {
       case "roof-calculator":
-      case "client-proposals":
-        return userRole === UserRole.CLIENT;
-      case "assigned-projects":
       case "proposals":
-        return userRole === UserRole.ADMIN;
+        return true; // Both admin and client can access proposals
+      case "assigned-projects":
       case "delivery-settings":
       case "delivery-test":
       case "account-management":
@@ -179,8 +175,6 @@ export default function DashboardClient() {
         return <AssignedProjectsContent />;
       case "proposals":
         return <ProposalsPage />;
-      case "client-proposals":
-        return <ClientProposalsPage />;
       case "account-management":
         return <AccountManagementContent />;
       case "system-maintenance":

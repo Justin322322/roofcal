@@ -43,11 +43,6 @@ const data = {
       icon: CalculatorIcon,
     },
     {
-      title: "Project Management",
-      url: "/dashboard/project-management",
-      icon: KanbanSquareIcon,
-    },
-    {
       title: "Assigned Projects",
       url: "/dashboard/assigned-projects",
       icon: ClipboardCheckIcon,
@@ -56,11 +51,6 @@ const data = {
       title: "Proposals",
       url: "/dashboard/proposals",
       icon: FileTextIcon,
-    },
-    {
-      title: "My Proposals",
-      url: "/dashboard/client-proposals",
-      icon: MessageSquareIcon,
     },
     {
       title: "Delivery Settings",
@@ -165,9 +155,9 @@ export function AppSidebar({
         roles: [UserRole.CLIENT],
       },
       {
-        title: "My Proposals",
-        url: "client-proposals",
-        icon: MessageSquareIcon,
+        title: "Proposals",
+        url: "proposals",
+        icon: FileTextIcon,
         roles: [UserRole.CLIENT],
       },
     ];

@@ -1,4 +1,4 @@
-import { sendEmail } from "@/lib/email";
+import { sendCustomEmail, type EmailTemplateData } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 
 export interface NotificationData {
@@ -17,14 +17,14 @@ export interface NotificationData {
 export async function sendProjectNotification(notification: NotificationData) {
   try {
     const emailContent = generateEmailContent(notification);
-    
-    // Send email notification
-    await sendEmail({
-      to: notification.toUserEmail,
-      subject: emailContent.subject,
-      html: emailContent.html,
-      text: emailContent.text,
-    });
+
+    // Send email notification using branded template
+    await sendCustomEmail(
+      notification.toUserEmail,
+      emailContent.subject,
+      emailContent.templateData,
+      emailContent.text
+    );
 
     // Create in-app notification in database
     await prisma.notification.create({
@@ -35,7 +35,7 @@ export async function sendProjectNotification(notification: NotificationData) {
         message: generateInAppMessage(notification),
         projectId: notification.projectId,
         projectName: notification.projectName,
-        actionUrl: `/dashboard/project-management`,
+        actionUrl: `/dashboard?tab=proposals`,
       },
     });
 
@@ -64,109 +64,108 @@ function generateInAppMessage(notification: NotificationData): string {
   }
 }
 
-function generateEmailContent(notification: NotificationData) {
+function generateEmailContent(notification: NotificationData): {
+  subject: string;
+  templateData: EmailTemplateData;
+  text: string;
+} {
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-  const projectUrl = `${baseUrl}/dashboard/project-management`;
+  const projectUrl = `${baseUrl}/dashboard?tab=proposals`;
   
   switch (notification.type) {
     case "status_change":
       return {
         subject: `Project Status Updated: ${notification.projectName}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #333;">Project Status Update</h2>
-            <p>Hello ${notification.toUserName},</p>
-            <p>The status of your project <strong>"${notification.projectName}"</strong> has been updated to <strong>${notification.status}</strong>.</p>
-            <p>Updated by: ${notification.fromUserName}</p>
-            <div style="margin: 20px 0;">
-              <a href="${projectUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Project</a>
+        templateData: {
+          title: "Project Status Update",
+          heading: "Project Status Update",
+          content: `Hello ${notification.toUserName},<br/><br/>The status of your project <strong>"${notification.projectName}"</strong> has been updated to <strong>${notification.status}</strong>.<br/><br/><strong>Updated by:</strong> ${notification.fromUserName}.`,
+          actionContent: `
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${projectUrl}" style="display: inline-block; background: linear-gradient(135deg, #4a7c7e, #2d5a5c); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                View Project
+              </a>
             </div>
-            <p style="color: #666; font-size: 14px;">
-              If you have any questions, please contact your contractor.
-            </p>
-          </div>
-        `,
-        text: `Project Status Update\n\nHello ${notification.toUserName},\n\nThe status of your project "${notification.projectName}" has been updated to ${notification.status}.\n\nUpdated by: ${notification.fromUserName}\n\nView project: ${projectUrl}\n\nIf you have any questions, please contact your contractor.`
+          `,
+          securityNotice: "If you have any questions, please contact your contractor.",
+        },
+        text: `Project Status Update\n\nHello ${notification.toUserName},\n\nThe status of your project "${notification.projectName}" has been updated to ${notification.status}.\n\nUpdated by: ${notification.fromUserName}\n\nView project: ${projectUrl}\n\nIf you have any questions, please contact your contractor.`,
       };
 
     case "proposal_sent":
       return {
         subject: `New Proposal Received: ${notification.projectName}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #333;">New Proposal Received</h2>
-            <p>Hello ${notification.toUserName},</p>
-            <p>You have received a new proposal for your project <strong>"${notification.projectName}"</strong> from ${notification.fromUserName}.</p>
-            <p>Please review the proposal and accept or reject it at your earliest convenience.</p>
-            <div style="margin: 20px 0;">
-              <a href="${projectUrl}" style="background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Review Proposal</a>
+        templateData: {
+          title: "New Proposal Received",
+          heading: "New Proposal Received",
+          content: `Hello ${notification.toUserName},<br/><br/>You have received a new proposal for your project <strong>"${notification.projectName}"</strong> from ${notification.fromUserName}.<br/>Please review the proposal and accept or reject it at your earliest convenience.`,
+          actionContent: `
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${projectUrl}" style="display: inline-block; background: linear-gradient(135deg, #4a7c7e, #2d5a5c); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                Review Proposal
+              </a>
             </div>
-            <p style="color: #666; font-size: 14px;">
-              This proposal will remain valid for 30 days.
-            </p>
-          </div>
-        `,
-        text: `New Proposal Received\n\nHello ${notification.toUserName},\n\nYou have received a new proposal for your project "${notification.projectName}" from ${notification.fromUserName}.\n\nPlease review the proposal and accept or reject it at your earliest convenience.\n\nReview proposal: ${projectUrl}\n\nThis proposal will remain valid for 30 days.`
+          `,
+          securityNotice: "This proposal will remain valid for 30 days.",
+        },
+        text: `New Proposal Received\n\nHello ${notification.toUserName},\n\nYou have received a new proposal for your project "${notification.projectName}" from ${notification.fromUserName}.\n\nPlease review the proposal and accept or reject it at your earliest convenience.\n\nReview proposal: ${projectUrl}\n\nThis proposal will remain valid for 30 days.`,
       };
 
     case "proposal_accepted":
       return {
         subject: `Proposal Accepted: ${notification.projectName}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #28a745;">Proposal Accepted</h2>
-            <p>Hello ${notification.toUserName},</p>
-            <p>Great news! Your proposal for the project <strong>"${notification.projectName}"</strong> has been accepted by ${notification.fromUserName}.</p>
-            <p>The project is now ready to begin. Please contact the client to schedule the start date.</p>
-            <div style="margin: 20px 0;">
-              <a href="${projectUrl}" style="background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Project</a>
+        templateData: {
+          title: "Proposal Accepted",
+          heading: "Proposal Accepted",
+          content: `Hello ${notification.toUserName},<br/><br/>Great news! Your proposal for the project <strong>"${notification.projectName}"</strong> has been accepted by ${notification.fromUserName}.<br/>The project is now ready to begin. Please contact the client to schedule the start date.`,
+          actionContent: `
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${projectUrl}" style="display: inline-block; background: linear-gradient(135deg, #4a7c7e, #2d5a5c); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                View Project
+              </a>
             </div>
-            <p style="color: #666; font-size: 14px;">
-              Congratulations on securing this project!
-            </p>
-          </div>
-        `,
-        text: `Proposal Accepted\n\nHello ${notification.toUserName},\n\nGreat news! Your proposal for the project "${notification.projectName}" has been accepted by ${notification.fromUserName}.\n\nThe project is now ready to begin. Please contact the client to schedule the start date.\n\nView project: ${projectUrl}\n\nCongratulations on securing this project!`
+          `,
+          securityNotice: "Congratulations on securing this project!",
+        },
+        text: `Proposal Accepted\n\nHello ${notification.toUserName},\n\nGreat news! Your proposal for the project "${notification.projectName}" has been accepted by ${notification.fromUserName}.\n\nThe project is now ready to begin. Please contact the client to schedule the start date.\n\nView project: ${projectUrl}\n\nCongratulations on securing this project!`,
       };
 
     case "proposal_rejected":
       return {
         subject: `Proposal Update: ${notification.projectName}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #dc3545;">Proposal Update</h2>
-            <p>Hello ${notification.toUserName},</p>
-            <p>Your proposal for the project <strong>"${notification.projectName}"</strong> was not accepted by ${notification.fromUserName}.</p>
-            <p>You can review the project details and consider revising your proposal if needed.</p>
-            <div style="margin: 20px 0;">
-              <a href="${projectUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Project</a>
+        templateData: {
+          title: "Proposal Update",
+          heading: "Proposal Update",
+          content: `Hello ${notification.toUserName},<br/><br/>Your proposal for the project <strong>"${notification.projectName}"</strong> was not accepted by ${notification.fromUserName}.<br/>You can review the project details and consider revising your proposal if needed.`,
+          actionContent: `
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${projectUrl}" style="display: inline-block; background: linear-gradient(135deg, #4a7c7e, #2d5a5c); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                View Project
+              </a>
             </div>
-            <p style="color: #666; font-size: 14px;">
-              Feel free to contact the client for feedback or clarification.
-            </p>
-          </div>
-        `,
-        text: `Proposal Update\n\nHello ${notification.toUserName},\n\nYour proposal for the project "${notification.projectName}" was not accepted by ${notification.fromUserName}.\n\nYou can review the project details and consider revising your proposal if needed.\n\nView project: ${projectUrl}\n\nFeel free to contact the client for feedback or clarification.`
+          `,
+          securityNotice: "Feel free to contact the client for feedback or clarification.",
+        },
+        text: `Proposal Update\n\nHello ${notification.toUserName},\n\nYour proposal for the project "${notification.projectName}" was not accepted by ${notification.fromUserName}.\n\nYou can review the project details and consider revising your proposal if needed.\n\nView project: ${projectUrl}\n\nFeel free to contact the client for feedback or clarification.`,
       };
 
     case "project_assigned":
       return {
         subject: `New Project Assignment: ${notification.projectName}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #007bff;">New Project Assignment</h2>
-            <p>Hello ${notification.toUserName},</p>
-            <p>You have been assigned a new project <strong>"${notification.projectName}"</strong> by ${notification.fromUserName}.</p>
-            <p>Please review the project details and prepare a proposal for the client.</p>
-            <div style="margin: 20px 0;">
-              <a href="${projectUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Review Project</a>
+        templateData: {
+          title: "New Project Assignment",
+          heading: "New Project Assignment",
+          content: `Hello ${notification.toUserName},<br/><br/>You have been assigned a new project <strong>"${notification.projectName}"</strong> by ${notification.fromUserName}.<br/>Please review the project details and prepare a proposal for the client.`,
+          actionContent: `
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${projectUrl}" style="display: inline-block; background: linear-gradient(135deg, #4a7c7e, #2d5a5c); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                Review Project
+              </a>
             </div>
-            <p style="color: #666; font-size: 14px;">
-              You can access the project details in your contractor dashboard to begin your review.
-            </p>
-          </div>
-        `,
-        text: `New Project Assignment\n\nHello ${notification.toUserName},\n\nYou have been assigned a new project "${notification.projectName}" by ${notification.fromUserName}.\n\nPlease review the project details and prepare a proposal for the client.\n\nReview project: ${projectUrl}\n\nYou can access the project details in your contractor dashboard to begin your review.`
+          `,
+          securityNotice: "You can access the project details in your contractor dashboard to begin your review.",
+        },
+        text: `New Project Assignment\n\nHello ${notification.toUserName},\n\nYou have been assigned a new project "${notification.projectName}" by ${notification.fromUserName}.\n\nPlease review the project details and prepare a proposal for the client.\n\nReview project: ${projectUrl}\n\nYou can access the project details in your contractor dashboard to begin your review.`,
       };
 
     default:
