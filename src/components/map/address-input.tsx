@@ -83,17 +83,7 @@ export function AddressInput({
     }
   };
 
-  const handleCoordinatesChange = (field: keyof Coordinates, value: string) => {
-    const numValue = parseFloat(value);
-    if (!isNaN(numValue) && coordinates) {
-      const newCoords: Coordinates = { 
-        latitude: field === 'latitude' ? numValue : coordinates.latitude,
-        longitude: field === 'longitude' ? numValue : coordinates.longitude
-      };
-      setCoordinates(newCoords);
-      onCoordinatesChange?.(newCoords);
-    }
-  };
+  
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -190,38 +180,7 @@ export function AddressInput({
         </CardContent>
       </Card>
 
-      {/* Coordinates Display */}
-      {coordinates && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Coordinates</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="latitude">Latitude</Label>
-                <Input
-                  id="latitude"
-                  type="number"
-                  step="any"
-                  value={coordinates.latitude}
-                  onChange={(e) => coordinates && handleCoordinatesChange("latitude", e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="longitude">Longitude</Label>
-                <Input
-                  id="longitude"
-                  type="number"
-                  step="any"
-                  value={coordinates.longitude}
-                  onChange={(e) => coordinates && handleCoordinatesChange("longitude", e.target.value)}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      
     </div>
   );
 }
