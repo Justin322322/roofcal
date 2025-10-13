@@ -82,18 +82,7 @@ export function ProposalViewer({ project, onClose }: ProposalViewerProps) {
     }
   };
 
-  const parseProposalData = () => {
-    try {
-      if (project.notes && project.notes.startsWith('{')) {
-        return JSON.parse(project.notes);
-      }
-      return { proposalText: project.notes };
-    } catch {
-      return { proposalText: project.notes };
-    }
-  };
 
-  const proposalData = parseProposalData();
   const status = project.proposalStatus || "DRAFT";
 
   // Calculate slope multiplier based on pitch

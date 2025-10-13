@@ -163,15 +163,9 @@ export function AppSidebar({
     // Admin (Contractor) navigation items
     const adminNavItems = [
       {
-        title: "Assigned Projects",
-        url: "assigned-projects",
+        title: "Project Management",
+        url: "project-management",
         icon: ClipboardCheckIcon,
-        roles: [UserRole.ADMIN],
-      },
-      {
-        title: "Proposals",
-        url: "proposals",
-        icon: FileTextIcon,
         roles: [UserRole.ADMIN],
       },
     ];

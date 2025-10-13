@@ -52,6 +52,7 @@ const FullScreenMapModal = dynamic(() => import("./FullScreenMapModal"), {
 // Import types and components
 import { Warehouse } from "./types";
 import { MaterialDragDropManager } from "./MaterialDragDropManager";
+import { WarehouseMaterialWarnings } from "@/components/warehouse-material-warnings";
 
 interface WarehouseMaterial {
   id: string;
@@ -717,6 +718,37 @@ export function WarehouseManagementPage() {
     }
   }, [warehouses, activeTab, refreshAllWarehouseMaterials]);
 
+  // Calculate warning count for tab badge
+  const getWarningCount = () => {
+    let totalWarnings = 0;
+    warehouses.forEach(warehouse => {
+      const warehouseMaterials = allWarehouseMaterials[warehouse.id] || [];
+      const activeMaterials = warehouseMaterials.filter(m => m.isActive);
+      
+      activeMaterials.forEach(material => {
+        const currentStock = material.quantity;
+        let warningThreshold = 10;
+        let criticalThreshold = 5;
+        
+        if (material.material.category === 'Labor') {
+          warningThreshold = 1;
+          criticalThreshold = 0;
+        } else if (material.material.category === 'Insulation' || material.material.category === 'Ventilation') {
+          warningThreshold = 5;
+          criticalThreshold = 2;
+        } else if (material.material.category === 'Gutter') {
+          warningThreshold = 15;
+          criticalThreshold = 8;
+        }
+        
+        if (currentStock <= criticalThreshold || currentStock <= warningThreshold) {
+          totalWarnings++;
+        }
+      });
+    });
+    return totalWarnings;
+  };
+
   if (session?.user?.role !== "ADMIN" && session?.user?.role !== "CLIENT") {
     return (
       <div className="px-4 lg:px-6">
@@ -854,6 +886,17 @@ export function WarehouseManagementPage() {
               <TabsList>
                 <TabsTrigger value="overview">Locations</TabsTrigger>
                 <TabsTrigger value="inventory">Materials & Pricing</TabsTrigger>
+                <TabsTrigger value="warnings" className="relative">
+                  Stock Warnings
+                  {getWarningCount() > 0 && (
+                    <Badge 
+                      variant="destructive" 
+                      className="ml-2 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
+                    >
+                      {getWarningCount()}
+                    </Badge>
+                  )}
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
@@ -1100,6 +1143,32 @@ export function WarehouseManagementPage() {
                       )}
                     </div>
                   )}
+                </div>
+              )}
+
+              {activeTab === "warnings" && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold">Stock Level Warnings</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Monitor material inventory levels and get alerts for low stock or critical shortages
+                      </p>
+                    </div>
+                    <Button variant="outline" onClick={() => {
+                      fetchWarehouses();
+                      refreshAllWarehouseMaterials();
+                    }}>
+                      <RefreshCwIcon className="h-4 w-4 mr-2" />
+                      Refresh Warnings
+                    </Button>
+                  </div>
+                  
+                  <WarehouseMaterialWarnings 
+                    warehouses={warehouses}
+                    allWarehouseMaterials={allWarehouseMaterials}
+                    refreshTrigger={Object.keys(allWarehouseMaterials).length}
+                  />
                 </div>
               )}
             </>

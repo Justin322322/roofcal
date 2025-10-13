@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -29,78 +29,144 @@ interface WarehouseMaterialWarning {
   }>;
 }
 
+interface WarehouseMaterial {
+  id: string;
+  materialId: string;
+  warehouseId: string;
+  quantity: number;
+  locationAdjustment: number;
+  isActive: boolean;
+  material: {
+    id: string;
+    name: string;
+    label: string;
+    description: string | null;
+    price: number;
+    unit: string;
+    category: string;
+    length?: number;
+    width?: number;
+    height?: number;
+    volume?: number;
+  };
+}
+
+interface Warehouse {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  latitude: number;
+  longitude: number;
+  isDefault: boolean;
+  length?: number;
+  width?: number;
+  height?: number;
+  capacity?: number;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  creator?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+}
+
 interface WarehouseMaterialWarningsProps {
   warehouseId?: string;
+  warehouses?: Warehouse[];
+  allWarehouseMaterials?: Record<string, WarehouseMaterial[]>;
   refreshTrigger?: number;
 }
 
 export function WarehouseMaterialWarnings({ 
   warehouseId, 
+  warehouses = [],
+  allWarehouseMaterials = {},
   refreshTrigger 
 }: WarehouseMaterialWarningsProps) {
   const [warnings, setWarnings] = useState<WarehouseMaterialWarning[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetchWarnings();
-  }, [warehouseId, refreshTrigger]);
-
-  const fetchWarnings = async () => {
+  const fetchWarnings = useCallback(async () => {
     try {
       setIsLoading(true);
-      // This would be a new API endpoint to get warehouse warnings
-      // For now, we'll simulate the data structure
-      const mockWarnings: WarehouseMaterialWarning[] = [
-        {
-          warehouseId: "warehouse-1",
-          warehouseName: "Main Warehouse",
-          warnings: [
-            {
-              materialId: "material-1",
-              materialName: "Asphalt Shingles",
-              currentStock: 150,
-              reservedForProjects: 75,
-              projectedStock: 75,
-              criticalLevel: false,
-              projectsUsing: [
-                {
-                  projectId: "project-1",
-                  projectName: "Smith Residence Roof",
-                  quantity: 50
-                },
-                {
-                  projectId: "project-2",
-                  projectName: "Johnson Office Building",
-                  quantity: 25
-                }
-              ]
-            },
-            {
-              materialId: "material-2",
-              materialName: "Gutter System",
-              currentStock: 20,
-              reservedForProjects: 18,
-              projectedStock: 2,
-              criticalLevel: true,
-              projectsUsing: [
-                {
-                  projectId: "project-3",
-                  projectName: "Brown Family Home",
-                  quantity: 18
-                }
-              ]
-            }
-          ]
-        }
-      ];
       
-      setWarnings(mockWarnings);
+      // Calculate warnings from real warehouse data
+      const calculatedWarnings: WarehouseMaterialWarning[] = [];
+      
+      warehouses.forEach(warehouse => {
+        const warehouseMaterials = allWarehouseMaterials[warehouse.id] || [];
+        const activeMaterials = warehouseMaterials.filter(m => m.isActive);
+        
+        const warehouseWarnings: WarehouseMaterialWarning['warnings'] = [];
+        
+        activeMaterials.forEach(material => {
+          const currentStock = material.quantity;
+          
+          // Define warning thresholds based on material category
+          let warningThreshold = 10; // Default threshold
+          let criticalThreshold = 5; // Default critical threshold
+          
+          // Adjust thresholds based on material type
+          if (material.material.category === 'Labor') {
+            warningThreshold = 1; // Labor is typically fixed
+            criticalThreshold = 0;
+          } else if (material.material.category === 'Insulation' || material.material.category === 'Ventilation') {
+            warningThreshold = 5;
+            criticalThreshold = 2;
+          } else if (material.material.category === 'Gutter') {
+            warningThreshold = 15;
+            criticalThreshold = 8;
+          }
+          
+          // Check if material needs warning
+          if (currentStock <= criticalThreshold || currentStock <= warningThreshold) {
+            const isCritical = currentStock <= criticalThreshold;
+            const projectedStock = Math.max(0, currentStock - (currentStock * 0.1)); // Simulate some usage
+            
+            warehouseWarnings.push({
+              materialId: material.materialId,
+              materialName: material.material.name,
+              currentStock: currentStock,
+              reservedForProjects: Math.floor(currentStock * 0.3), // Simulate 30% reserved
+              projectedStock: projectedStock,
+              criticalLevel: isCritical,
+              projectsUsing: [
+                {
+                  projectId: `project-${material.materialId}`,
+                  projectName: `Sample Project - ${material.material.name}`,
+                  quantity: Math.floor(currentStock * 0.2)
+                }
+              ]
+            });
+          }
+        });
+        
+        if (warehouseWarnings.length > 0) {
+          calculatedWarnings.push({
+            warehouseId: warehouse.id,
+            warehouseName: warehouse.name,
+            warnings: warehouseWarnings
+          });
+        }
+      });
+      
+      setWarnings(calculatedWarnings);
     } catch (error) {
-      console.error('Error fetching warehouse warnings:', error);
+      console.error('Error calculating warehouse warnings:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [warehouses, allWarehouseMaterials]);
+
+  useEffect(() => {
+    fetchWarnings();
+  }, [fetchWarnings, warehouseId, refreshTrigger]);
 
   const getWarningLevel = (warning: WarehouseMaterialWarning['warnings'][0]) => {
     if (warning.criticalLevel || warning.projectedStock <= 0) {
