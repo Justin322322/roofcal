@@ -49,41 +49,63 @@
 ## System Context Diagram
 
 ```mermaid
-flowchart TB
-    subgraph "External Entities"
-        CLIENT[Client Users<br/>Residential Property Owners]
-        ADMIN[Admin Users<br/>Contractors & Project Managers]
-        DEVELOPER[Developer Users<br/>System Administrators]
-        EMAIL_SVC[Email Service<br/>SMTP Provider]
-    end
+flowchart TD
+    %% External Entities (Left Side)
+    CLIENT[Client Users<br/>Residential Property Owners]
+    ADMIN[Admin Users<br/>Contractors & Project Managers]
+    DEVELOPER[Developer Users<br/>System Administrators]
+    EMAIL_SVC[Email Service<br/>SMTP Provider]
 
-    subgraph "RoofCalc System Boundary"
-        SYSTEM[RoofCalc Application<br/>Roofing Estimation & Project Management]
-    end
+    %% System Boundary (Center)
+    SYSTEM[RoofCalc Application<br/>Roofing Estimation & Project Management]
 
-    %% Client interactions
-    CLIENT -.->|Create Projects<br/>Request Estimates<br/>Review Proposals| SYSTEM
-    SYSTEM -.->|Send Notifications<br/>Project Updates| CLIENT
+    %% Client Interactions (Top)
+    CLIENT -->|Authentication<br/>• Registration<br/>• Login<br/>• Password Reset| SYSTEM
+    CLIENT -->|Project Management<br/>• Create Projects<br/>• View Estimates<br/>• Track Progress| SYSTEM
+    CLIENT -->|Roof Calculator<br/>• Enter Specifications<br/>• Get Cost Estimates<br/>• Save Projects| SYSTEM
 
-    %% Admin interactions  
-    ADMIN -.->|Manage Projects<br/>Create Proposals<br/>User Management| SYSTEM
-    SYSTEM -.->|Send Notifications<br/>Project Alerts| ADMIN
+    SYSTEM -->|Client Communications<br/>• Registration Confirmation<br/>• Project Updates<br/>• Cost Estimates<br/>• Proposal Notifications| CLIENT
 
-    %% Developer interactions
-    DEVELOPER -.->|System Control<br/>Database Management<br/>Maintenance Mode| SYSTEM
-    SYSTEM -.->|System Status<br/>Error Reports| DEVELOPER
+    %% Admin Interactions (Right Side)
+    ADMIN -->|Project Operations<br/>• Review Projects<br/>• Create Proposals<br/>• Manage Workflow| SYSTEM
+    ADMIN -->|Account Management<br/>• User Administration<br/>• Enable/Disable Accounts<br/>• Monitor Activity| SYSTEM
+    ADMIN -->|System Administration<br/>• System Health Checks<br/>• Database Backups<br/>• Maintenance Tasks| SYSTEM
 
-    %% Email service interactions
-    SYSTEM -.->|Send Verification Codes<br/>Send Notifications<br/>Send Alerts| EMAIL_SVC
-    EMAIL_SVC -.->|Email Delivery Status| SYSTEM
+    SYSTEM -->|Admin Reports<br/>• Project Records<br/>• User Activity Logs<br/>• System Status<br/>• Management Data| ADMIN
 
-    %% Styling
-    style SYSTEM fill:#e1f5fe,stroke:#01579b,stroke-width:3px
-    style CLIENT fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    style ADMIN fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-    style DEVELOPER fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    style EMAIL_SVC fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    %% Developer Interactions (Bottom)
+    DEVELOPER -->|System Control<br/>• Database Management<br/>• System Configuration<br/>• Maintenance Mode| SYSTEM
+    DEVELOPER -->|Advanced Admin<br/>• Create Admin Accounts<br/>• System Monitoring<br/>• Error Log Access| SYSTEM
+
+    SYSTEM -->|Developer Reports<br/>• System Status<br/>• Error Logs<br/>• Database Health<br/>• Admin Creation Confirmations| DEVELOPER
+
+    %% Email Service (Bottom Right)
+    SYSTEM -->|Email Operations<br/>• Send Verification Codes<br/>• Send Notifications<br/>• Send Password Resets<br/>• Send Project Alerts| EMAIL_SVC
+
+    EMAIL_SVC -->|Email Status<br/>• Delivery Confirmations<br/>• Email Delivery Reports| SYSTEM
+
+    %% Visual Styling
+    classDef systemClass fill:#e1f5fe,stroke:#01579b,stroke-width:3px,color:#000
+    classDef clientClass fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000
+    classDef adminClass fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px,color:#000
+    classDef devClass fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+    classDef emailClass fill:#fce4ec,stroke:#880e4f,stroke-width:2px,color:#000
+
+    class SYSTEM systemClass
+    class CLIENT clientClass
+    class ADMIN adminClass
+    class DEVELOPER devClass
+    class EMAIL_SVC emailClass
 ```
+
+### Data Flow Summary
+
+| Entity | System Inputs | System Outputs |
+|--------|---------------|----------------|
+| **Client Users** | Registration, login, roof specs, project requests | Estimates, project updates, notifications |
+| **Admin Users** | Project management, account administration, system checks | Project data, user reports, system status |
+| **Developer Users** | System control, database management, configuration | Status reports, error logs, admin confirmations |
+| **Email Service** | Email delivery confirmations | Verification codes, notifications, alerts |
 
 ---
 

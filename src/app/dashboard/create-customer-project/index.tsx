@@ -8,7 +8,6 @@ import { Separator } from "@/components/ui/separator";
 import { useSession } from "next-auth/react";
 import { UserRole } from "@/types/user-role";
 import { CustomerSelector } from "./components/customer-selector";
-import { RoofCalculatorContent } from "@/app/dashboard/roof-calculator";
 import { toast } from "sonner";
 import { 
   ArrowLeftIcon, 
@@ -43,7 +42,7 @@ export default function CreateCustomerProjectPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Client | null>(null);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
   const [projectCreated, setProjectCreated] = useState(false);
-  const [createdProjectId, setCreatedProjectId] = useState<string>("");
+  const [, setCreatedProjectId] = useState<string>("");
 
   // Access control - only ADMIN users can access this page
   if (!session?.user || session.user.role !== UserRole.ADMIN) {
@@ -93,6 +92,8 @@ export default function CreateCustomerProjectPage() {
     }
   };
 
+  // This function will be used when the calculator integration is completed
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleProjectCreated = (projectId: string) => {
     setProjectCreated(true);
     setCreatedProjectId(projectId);
@@ -315,9 +316,9 @@ export default function CreateCustomerProjectPage() {
                 <p><strong>What happens next:</strong></p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>The customer will receive a notification about their new project</li>
-                  <li>They can view the project in their "My Projects" section</li>
+                  <li>They can view the project in their &ldquo;My Projects&rdquo; section</li>
                   <li>The customer can select a contractor and request a quote</li>
-                  <li>You can track the project progress in your "Assigned Projects" section</li>
+                  <li>You can track the project progress in your &ldquo;Assigned Projects&rdquo; section</li>
                 </ul>
               </div>
             </CardContent>
