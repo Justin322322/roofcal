@@ -1,10 +1,11 @@
 # RoofCalc - Professional Roofing Estimation & Project Management System
 
-> A comprehensive roofing cost estimation and project management platform with warehouse management, material tracking, and intelligent decision-making capabilities.
+> A comprehensive roofing cost estimation and project management platform with proposal management, pricing configuration, and intelligent decision-making capabilities.
 
 ## Table of Contents
 
 - [Overview](#overview)
+- [System Context Diagram](#system-context-diagram)
 - [System Architecture](#system-architecture)
 - [User Roles & Access Control](#user-roles--access-control)
 - [Core System Modules](#core-system-modules)
@@ -45,6 +46,47 @@
 
 ---
 
+## System Context Diagram
+
+```mermaid
+flowchart TB
+    subgraph "External Entities"
+        CLIENT[Client Users<br/>Residential Property Owners]
+        ADMIN[Admin Users<br/>Contractors & Project Managers]
+        DEVELOPER[Developer Users<br/>System Administrators]
+        EMAIL_SVC[Email Service<br/>SMTP Provider]
+    end
+
+    subgraph "RoofCalc System Boundary"
+        SYSTEM[RoofCalc Application<br/>Roofing Estimation & Project Management]
+    end
+
+    %% Client interactions
+    CLIENT -.->|Create Projects<br/>Request Estimates<br/>Review Proposals| SYSTEM
+    SYSTEM -.->|Send Notifications<br/>Project Updates| CLIENT
+
+    %% Admin interactions  
+    ADMIN -.->|Manage Projects<br/>Create Proposals<br/>User Management| SYSTEM
+    SYSTEM -.->|Send Notifications<br/>Project Alerts| ADMIN
+
+    %% Developer interactions
+    DEVELOPER -.->|System Control<br/>Database Management<br/>Maintenance Mode| SYSTEM
+    SYSTEM -.->|System Status<br/>Error Reports| DEVELOPER
+
+    %% Email service interactions
+    SYSTEM -.->|Send Verification Codes<br/>Send Notifications<br/>Send Alerts| EMAIL_SVC
+    EMAIL_SVC -.->|Email Delivery Status| SYSTEM
+
+    %% Styling
+    style SYSTEM fill:#e1f5fe,stroke:#01579b,stroke-width:3px
+    style CLIENT fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    style ADMIN fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    style DEVELOPER fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style EMAIL_SVC fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+```
+
+---
+
 ## System Architecture
 
 ```mermaid
@@ -61,6 +103,8 @@ flowchart TB
         PROJ[Project Management]
         NOTIF[Notification System]
         TUTORIAL[Tutorial System]
+        PRICING[Pricing Configuration]
+        ADMIN[Admin Management]
     end
 
     subgraph "Data Layer"
@@ -80,18 +124,22 @@ flowchart TB
     NEXT --> PROJ
     NEXT --> NOTIF
     NEXT --> TUTORIAL
+    NEXT --> PRICING
+    NEXT --> ADMIN
     
     AUTH --> PRISMA
     CALC --> PRISMA
     PROJ --> PRISMA
     NOTIF --> PRISMA
+    PRICING --> PRISMA
+    ADMIN --> PRISMA
     
     PRISMA --> DB
     
     AUTH --> EMAIL
     PROJ --> EMAIL
     NOTIF --> EMAIL
-    
+    ADMIN --> EMAIL
 
     style NEXT fill:#000,stroke:#fff,stroke-width:3px,color:#fff
     style DB fill:#4472C4,stroke:#fff,stroke-width:2px,color:#fff
@@ -120,7 +168,7 @@ flowchart TB
 
 **Restrictions:**
 - Cannot access account management
-- Cannot manage warehouses
+- Cannot manage pricing configuration
 - Cannot view other users' projects
 - Cannot access system controls
 
@@ -306,39 +354,43 @@ Intelligent roofing cost estimation with decision tree algorithms and complexity
 
 #### Features
 
-- **Simplified Area Calculation**: Direct width × length (no pitch factor)
-- **Material Selection**: 6 materials (Asphalt, Wood, Metal, Clay Tiles, Slate)
+- **Advanced Area Calculation**: Plan area with slope multiplier and roof type adjustments
+- **Material Selection**: Corrugated and Long-span materials with thickness options
 - **Construction Mode**: New (40% labor) vs Repair (20% labor + 10% removal)
 - **Budget Validation**: Real-time budget checking with smart alerts
 - **Gutter Calculator**: A-B-C formula with automatic piece calculation
-- **Ridge System**: Auto-matched to roof material
-- **Insulation**: 100% coverage with thickness selection
+- **Ridge System**: Auto-matched to roof material (corrugated/longspan)
+- **Insulation**: 100% coverage with thickness selection (5mm-25mm)
 - **Ventilation**: Smart recommendations based on roof area
 - **Decision Tree**: Intelligent material recommendations
 - **Complexity Scoring**: 1-10 scale with detailed factor analysis
 - **Optimization Engine**: Auto-adjust settings to reduce complexity
+- **Dynamic Pricing**: Real-time pricing from database configuration
 
 #### Calculation Formulas
 
 ```javascript
-// Area Calculation
-totalArea = length × width
+// Area Calculation with Slope and Roof Type Adjustments
+planArea = length × width
+slopeMultiplier = getSlopeMultiplier(pitch) // Based on pitch angle
+gableMultiplier = (roofType === "gable") ? 1.05 : 1.0 // +5% for gable roofs
+totalArea = planArea × slopeMultiplier × gableMultiplier
 
-// Material Costs
+// Material Costs (from PricingConfig database)
 roofMaterialCost = totalArea × pricePerSqm
 gutterPieces = Math.ceil(((gutterA + gutterB + gutterC) × 2) / 2.3)
 gutterCost = gutterPieces × gutterPricePerPiece
 ridgeCost = length × ridgePricePerMeter
 screwsCost = totalArea × screwsPricePerSqm
 insulationCost = totalArea × insulationPricePerSqm
-ventilationCost = ventilationPieces × 850
+ventilationCost = ventilationPieces × ventilationPricePerPiece
 
 // Labor Costs
-if (constructionMode === "new") {
-    laborCost = totalMaterialsCost × 0.4
-} else if (constructionMode === "repair") {
-    laborCost = totalMaterialsCost × 0.2
-    removalCost = totalMaterialsCost × 0.1
+if (constructionMode === "NEW") {
+    laborCost = totalMaterialsCost × 0.4 // 40% labor
+} else if (constructionMode === "REPAIR") {
+    laborCost = totalMaterialsCost × 0.2 // 20% labor
+    removalCost = totalMaterialsCost × 0.1 // 10% removal
 }
 
 // Total Cost
@@ -402,7 +454,8 @@ stateDiagram-v2
     CONTRACTOR_REVIEWING --> REJECTED: Withdraw
     PROPOSAL_SENT --> ACCEPTED: Client Accepts
     PROPOSAL_SENT --> REJECTED: Client Rejects
-    ACCEPTED --> COMPLETED: Finish Project
+    ACCEPTED --> IN_PROGRESS: Start Work
+    IN_PROGRESS --> COMPLETED: Finish Project
     COMPLETED --> ARCHIVED: Archive
     REJECTED --> DRAFT: Reset for New Quote
     REJECTED --> CONTRACTOR_REVIEWING: Revise Proposal
@@ -413,13 +466,15 @@ stateDiagram-v2
 #### Project Stages
 
 1. **DRAFT**: Project created and being prepared
-2. **CLIENT_PENDING**: Awaiting client quote request
-3. **CONTRACTOR_REVIEWING**: Admin reviewing project details
-4. **PROPOSAL_SENT**: Proposal sent to client
-5. **ACCEPTED**: Client accepted proposal
-6. **COMPLETED**: Project finished
-7. **REJECTED**: Project declined
-8. **ARCHIVED**: Project archived
+2. **ACTIVE**: Project is active for personal use
+3. **CLIENT_PENDING**: Awaiting client quote request
+4. **CONTRACTOR_REVIEWING**: Admin reviewing project details
+5. **PROPOSAL_SENT**: Proposal sent to client
+6. **ACCEPTED**: Client accepted proposal
+7. **IN_PROGRESS**: Work is currently underway
+8. **COMPLETED**: Project finished
+9. **REJECTED**: Project declined
+10. **ARCHIVED**: Project archived
 
 #### Project Management Features
 
@@ -524,7 +579,7 @@ flowchart LR
     end
 
     CLIENT -->|Project Requests, Estimates| SYSTEM
-    ADMIN -->|Project Management, Warehouse| SYSTEM
+    ADMIN -->|Project Management, Proposals| SYSTEM
     DEVELOPER -->|System Control, Database| SYSTEM
     SYSTEM -->|Verification Codes, Notifications| EMAIL_SVC
     EMAIL_SVC -->|Email Delivery| CLIENT
@@ -545,12 +600,14 @@ flowchart TB
         P2[2.0<br/>Roof Calculator]
         P3[3.0<br/>Project Management]
         P4[4.0<br/>Notifications]
+        P5[5.0<br/>Admin Management]
     end
 
     subgraph "Data Stores"
         D1[(D1: Users)]
         D2[(D2: Projects)]
         D3[(D3: Notifications)]
+        D4[(D4: PricingConfig)]
     end
 
     USER -->|Login/Signup| P1
@@ -559,6 +616,7 @@ flowchart TB
     
     USER -->|Calculate Estimate| P2
     P2 -->|Read/Write| D2
+    P2 -->|Read| D4
     
     USER -->|Manage Projects| P3
     P3 -->|Read/Write| D2
@@ -567,6 +625,10 @@ flowchart TB
     P3 -->|Send Alerts| P4
     P4 -->|Create| D3
     P4 -->|Send| EMAIL
+    
+    USER -->|Create Admin| P5
+    P5 -->|Create/Update| D1
+    P5 -->|Send| EMAIL
 ```
 
 ---
@@ -584,6 +646,7 @@ erDiagram
 
     PROJECT }o--|| USER : assigned_to_client
     PROJECT }o--|| USER : assigned_to_contractor
+    PRICINGCONFIG ||--o{ PRICINGCONFIG : has_materials
 
     USER {
         string id PK
@@ -614,6 +677,13 @@ erDiagram
         decimal area
         decimal totalCost
         string currentStage
+        string proposalStatus
+        int boardPosition
+        int proposalPosition
+        json stageProgress
+        datetime sentToContractorAt
+        string contractorStatus
+        text handoffNote
         datetime created_at
         datetime updated_at
     }
@@ -625,8 +695,64 @@ erDiagram
         string title
         string message
         string projectId FK
+        string projectName
+        string actionUrl
         boolean read
         datetime created_at
+    }
+
+    PRICINGCONFIG {
+        string id PK
+        string category
+        string name
+        string label
+        string description
+        decimal price
+        string unit
+        boolean isActive
+        string metadata
+        datetime created_at
+        datetime updated_at
+    }
+
+    ACTIVITY {
+        string id PK
+        string userId FK
+        enum type
+        string description
+        string metadata
+        datetime created_at
+    }
+
+    VERIFICATIONCODE {
+        string id PK
+        string code
+        string email
+        string type
+        datetime expiresAt
+        boolean used
+        datetime created_at
+    }
+
+    RATELIMIT {
+        string id PK
+        string email
+        string action
+        int attempts
+        datetime lastAttempt
+        datetime blockedUntil
+        datetime created_at
+        datetime updated_at
+    }
+
+    SYSTEMSETTINGS {
+        string id PK
+        boolean maintenanceMode
+        string maintenanceMessage
+        datetime maintenanceScheduledEnd
+        string maintenanceStartedBy
+        datetime maintenanceStartedAt
+        datetime updated_at
     }
 ```
 
@@ -645,13 +771,37 @@ erDiagram
 - **userId**: Project creator
 - **clientId**: Assigned client
 - **contractorId**: Assigned contractor
-- **status**: Project workflow status (DRAFT, CLIENT_PENDING, CONTRACTOR_REVIEWING, PROPOSAL_SENT, ACCEPTED, COMPLETED, REJECTED, ARCHIVED)
-- **currentStage**: Current project stage
+- **status**: Project workflow status (DRAFT, ACTIVE, CLIENT_PENDING, CONTRACTOR_REVIEWING, PROPOSAL_SENT, ACCEPTED, IN_PROGRESS, COMPLETED, REJECTED, ARCHIVED)
+- **currentStage**: Current project stage (INSPECTION, ESTIMATE, MATERIALS, INSTALL, FINALIZE)
+- **proposalStatus**: Proposal workflow status (DRAFT, SENT, ACCEPTED, REJECTED, REVISED, COMPLETED)
 - **materialCost**: Calculated material cost
 - **totalCost**: Total project cost
 - **boardPosition**: Integer for Kanban card ordering
 - **proposalPosition**: Integer for proposal view ordering
 - **stageProgress**: JSON field for stage completion tracking
+- **sentToContractorAt**: Timestamp when sent to contractor
+- **contractorStatus**: Contractor's status notes
+- **handoffNote**: Notes for project handoff
+
+#### PricingConfig Table
+- **id**: Unique identifier
+- **category**: Material category (materials, gutters, ridges, screws, insulation, ventilation, labor)
+- **name**: Material name identifier
+- **label**: Display label for UI
+- **price**: Price per unit
+- **unit**: Unit of measurement
+- **isActive**: Whether pricing is currently active
+
+#### Notification Table
+- **id**: Unique identifier
+- **userId**: Target user
+- **type**: Notification type (status_change, proposal_sent, etc.)
+- **title**: Notification title
+- **message**: Notification content
+- **projectId**: Related project (optional)
+- **projectName**: Project name for context
+- **actionUrl**: URL to navigate when clicked
+- **read**: Read status
 
 ---
 
@@ -729,8 +879,8 @@ Create new project.
   "width": 10,
   "pitch": 25,
   "roofType": "gable",
-  "material": "metal",
-  "constructionMode": "new"
+  "material": "corrugated-0.4",
+  "constructionMode": "NEW"
 }
 ```
 
@@ -746,14 +896,52 @@ Delete project.
 #### POST /api/projects/[id]/send-to-contractor
 Send project to contractor for review.
 
-#### POST /api/projects/[id]/approve
-Approve project proposal.
-
-#### POST /api/projects/[id]/decline
-Decline project proposal.
+#### POST /api/projects/[id]/start-contract
+Start project work (ACCEPTED → IN_PROGRESS).
 
 #### POST /api/projects/[id]/finish
-Mark project as completed.
+Mark project as completed (IN_PROGRESS → COMPLETED).
+
+#### POST /api/projects/[id]/approve
+Approve project proposal (PROPOSAL_SENT → ACCEPTED).
+
+#### POST /api/projects/[id]/decline
+Decline project proposal (PROPOSAL_SENT → REJECTED).
+
+#### GET /api/projects/[id]/status
+Get project status and available transitions.
+
+#### POST /api/projects/[id]/materials
+Get project material requirements.
+
+### Proposal Endpoints
+
+#### GET /api/proposals
+Get all proposals for current user.
+
+#### POST /api/proposals
+Create new proposal.
+
+#### GET /api/proposals/[id]
+Get proposal details.
+
+#### PUT /api/proposals/[id]
+Update proposal.
+
+### Pricing Configuration Endpoints
+
+#### GET /api/pricing
+Get pricing configuration by category.
+
+**Query Parameters:**
+- `category`: Filter by category (materials, gutters, ridges, screws, insulation, ventilation, labor)
+- `constants`: Get pricing constants
+
+#### POST /api/pricing
+Create new pricing configuration.
+
+#### PUT /api/pricing/[id]
+Update pricing configuration.
 
 ### Notification Endpoints
 
@@ -774,6 +962,26 @@ Get maintenance mode status.
 
 #### POST /api/system/maintenance
 Toggle maintenance mode.
+
+### Database Management Endpoints (Developer Only)
+
+#### GET /api/database/tables
+Get all database tables.
+
+#### GET /api/database/[table]
+Get table data with pagination and filtering.
+
+#### POST /api/database/[table]
+Create new record in table.
+
+#### PUT /api/database/[table]
+Update record in table.
+
+#### DELETE /api/database/[table]
+Delete record from table.
+
+#### GET /api/database/[table]/schema
+Get table schema information.
 
 ### Admin Management Endpoints
 
@@ -858,10 +1066,12 @@ Delete a user account (permanent removal).
 
 ### 2. Project Workflow Management
 
-- **Project Management**: Visual project management interface
-- **Status Transitions**: Enforced workflow with role-based permissions
-- **Stage Tracking**: 5-stage project lifecycle
-- **Proposal Management**: Complete proposal creation and approval flow
+- **Project Management**: Visual project management interface with Kanban boards
+- **Status Transitions**: Enforced workflow with role-based permissions (10 status states)
+- **Stage Tracking**: 5-stage project lifecycle (Inspection, Estimate, Materials, Install, Finalize)
+- **Proposal Management**: Complete proposal creation, sending, and approval flow
+- **Board Positioning**: Drag-and-drop Kanban board management
+- **Proposal Positioning**: Separate proposal view with ordering
 
 ### 3. User Account Management
 
@@ -878,7 +1088,15 @@ Delete a user account (permanent removal).
 - **In-App Notifications**: Real-time dashboard updates
 - **Read/Unread Tracking**: Notification management
 
-### 5. Dark Mode & Theming
+### 5. Pricing Configuration System
+
+- **Dynamic Pricing**: Real-time pricing updates from database
+- **Category Management**: Organized pricing by material categories
+- **Fallback System**: Graceful degradation when database unavailable
+- **Admin Control**: Pricing updates through admin interface
+- **Version Control**: Pricing history and change tracking
+
+### 6. Dark Mode & Theming
 
 - **Light/Dark Mode**: Complete theme system with smooth transitions
 - **System Preference**: Automatic detection of OS theme preference
@@ -886,7 +1104,7 @@ Delete a user account (permanent removal).
 - **Accessible Toggle**: Available on all pages (dashboard, auth, landing)
 - **CSS Variables**: Comprehensive design token system
 
-### 6. Dashboard Sections by Role
+### 7. Dashboard Sections by Role
 
 The application provides role-based dashboard sections with specific functionality:
 
@@ -920,7 +1138,9 @@ sequenceDiagram
     participant N as Notification
 
     C->>RC: Enter project details
-    RC->>RC: Calculate estimate
+    RC->>DB: Get pricing from PricingConfig
+    DB->>RC: Return material prices
+    RC->>RC: Calculate estimate with slope & gable adjustments
     RC->>C: Show cost breakdown
     C->>RC: Save project
     RC->>DB: Create project (DRAFT)
@@ -936,6 +1156,8 @@ sequenceDiagram
     C->>RC: Review proposal
     C->>RC: Accept proposal
     RC->>DB: Update status (ACCEPTED)
+    A->>DB: Update status (IN_PROGRESS)
+    A->>DB: Update status (COMPLETED)
 ```
 
 ### Journey 2: Admin Reviews and Executes Project
@@ -945,16 +1167,20 @@ sequenceDiagram
     participant A as Admin
     participant DB as Database
     participant C as Client
+    participant N as Notification
 
-    A->>DB: Get pending projects
+    A->>DB: Get pending projects (CLIENT_PENDING)
     A->>DB: Review project details
     A->>DB: Create proposal
     A->>DB: Update status (PROPOSAL_SENT)
-    A->>C: Send proposal
+    A->>N: Create notification
+    N->>C: Notify client of proposal
     C->>DB: Accept proposal
-    DB->>A: Notify acceptance
-    A->>DB: Update status (ACCEPTED)
-    A->>DB: Update status (COMPLETED)
+    DB->>A: Update status (ACCEPTED)
+    A->>DB: Start project work (IN_PROGRESS)
+    A->>DB: Complete project (COMPLETED)
+    A->>N: Create completion notification
+    N->>C: Notify client of completion
 ```
 
 
@@ -1011,7 +1237,7 @@ npm run prisma:generate
 # Run migrations
 npm run prisma:migrate
 
-# Seed pricing data
+# Seed pricing data (if available)
 npm run seed
 ```
 
