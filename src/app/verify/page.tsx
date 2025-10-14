@@ -4,11 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import RoofCalcLogo from "@/components/RoofCalcLogo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import VerifyCodeForm from "@/components/auth/verify-code-form";
 
 function VerifyPageSkeleton() {
   return (
     <div className="min-h-screen flex">
+      {/* Theme Toggle - Top Right */}
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
+
       {/* Left side - Form Skeleton */}
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-md space-y-8">
@@ -78,8 +84,14 @@ function VerifyPageSkeleton() {
 
 export default function VerifyPage() {
   return (
-    <Suspense fallback={<VerifyPageSkeleton />}>
-      <VerifyCodeForm />
-    </Suspense>
+    <>
+      {/* Theme Toggle - Top Right */}
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
+      <Suspense fallback={<VerifyPageSkeleton />}>
+        <VerifyCodeForm />
+      </Suspense>
+    </>
   );
 }

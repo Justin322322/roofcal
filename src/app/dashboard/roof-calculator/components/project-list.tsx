@@ -42,6 +42,7 @@ import {
   ArrowUpDownIcon,
   ArrowUpIcon,
   ArrowDownIcon,
+  SendIcon,
 } from "lucide-react";
 import { formatCurrency, formatArea } from "@/lib/utils";
 import { ProposalViewer } from "./proposal-viewer";
@@ -403,6 +404,29 @@ export function ProjectList() {
                           <EditIcon className="mr-2 h-4 w-4" />
                           Edit Project
                         </DropdownMenuItem>
+                        {project.status === "DRAFT" && (
+                          <DropdownMenuItem
+                            onClick={async () => {
+                              try {
+                                const response = await fetch(`/api/projects/${project.id}/send-to-contractor`, {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                });
+                                
+                                if (!response.ok) throw new Error("Failed to send to contractor");
+                                
+                                toast.success("Project sent to contractor successfully");
+                                fetchProjects();
+                              } catch (error) {
+                                console.error("Failed to send to contractor:", error);
+                                toast.error("Failed to send project to contractor");
+                              }
+                            }}
+                          >
+                            <SendIcon className="mr-2 h-4 w-4" />
+                            Send to Contractor
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem
                           onClick={() => {
                             toast.info("Archive functionality coming soon");

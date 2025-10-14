@@ -418,6 +418,66 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
     }
   };
 
+  // Calculate smart stock suggestion based on material type and warehouse capacity
+  const calculateSmartStockSuggestion = (material: Material): number => {
+    const category = material.category.toLowerCase();
+    
+    // Calculate material volume
+    let unitVolume = 1; // Default fallback
+    if (material.volume && material.volume > 0) {
+      unitVolume = material.volume;
+    } else if (material.length && material.width && material.height) {
+      unitVolume = material.length * material.width * material.height;
+    }
+    
+    // Get available warehouse capacity
+    const warehouseCapacity = warehouse.capacity || 0;
+    const currentUsedCapacity = warehouseMaterials.reduce((sum, wm) => {
+      let materialVolume = 1;
+      if (wm.material.volume && wm.material.volume > 0) {
+        materialVolume = wm.material.volume;
+      } else if (wm.material.length && wm.material.width && wm.material.height) {
+        materialVolume = wm.material.length * wm.material.width * wm.material.height;
+      }
+      return sum + (wm.quantity * materialVolume);
+    }, 0);
+    
+    const availableCapacity = warehouseCapacity - currentUsedCapacity;
+    
+    // Calculate suggested quantity based on material category
+    let suggestedQuantity = 1; // Default minimum
+    
+    if (category === 'labor') {
+      // Labor is always 1 unit (fixed)
+      suggestedQuantity = 1;
+    } else if (category === 'materials') {
+      // For roofing materials, suggest based on typical project needs
+      // Long span, asphalt, metal, etc. - suggest 50-100 units
+      suggestedQuantity = 50;
+    } else if (category === 'gutter') {
+      // Gutters - suggest 20-30 pieces
+      suggestedQuantity = 25;
+    } else if (category === 'insulation' || category === 'ventilation') {
+      // Insulation/Ventilation - suggest 10-20 units
+      suggestedQuantity = 15;
+    } else if (category === 'screws' || category === 'hardware') {
+      // Hardware items - suggest 100-200 units
+      suggestedQuantity = 150;
+    } else {
+      // Default for other materials
+      suggestedQuantity = 10;
+    }
+    
+    // Apply capacity constraints - don't overload warehouse
+    const maxQuantityByCapacity = Math.floor(availableCapacity / unitVolume);
+    
+    // Use 50% of available capacity for this material to leave room for other materials
+    const safeQuantity = Math.floor(maxQuantityByCapacity * 0.5);
+    
+    // Return the minimum of suggested quantity and safe capacity-based quantity
+    return Math.min(suggestedQuantity, Math.max(1, safeQuantity));
+  };
+
   const handleDragStart = () => {
     // Optional: Add visual feedback
   };
@@ -430,9 +490,9 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
         const draggedMaterial = materialsWithStatus.find(m => m.id === active.id);
         if (draggedMaterial && !draggedMaterial.isInWarehouse) {
           setSelectedMaterials(new Set([draggedMaterial.id]));
-          // Labor materials should always be quantity 1 (fixed)
-          const defaultQuantity = draggedMaterial.category.toLowerCase() === 'labor' ? 1 : 1;
-          setNewMaterialData({ quantity: defaultQuantity, locationAdjustment: 0 });
+          // Calculate smart stock suggestion based on material type and warehouse capacity
+          const suggestedQuantity = calculateSmartStockSuggestion(draggedMaterial);
+          setNewMaterialData({ quantity: suggestedQuantity, locationAdjustment: 0 });
           setShowAddDialog(true);
         }
       }
@@ -444,13 +504,15 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
       return;
     }
     
-    // Initialize bulk material data with default values
+    // Initialize bulk material data with smart stock suggestions
     const initialBulkData: Record<string, { quantity: number; locationAdjustment: number }> = {};
     selectedMaterials.forEach(materialId => {
       const material = materialsWithStatus.find(m => m.id === materialId);
-      // Labor materials should always be quantity 1 (fixed)
-      const defaultQuantity = material?.category.toLowerCase() === 'labor' ? 1 : 1;
-      initialBulkData[materialId] = { quantity: defaultQuantity, locationAdjustment: 0 };
+      if (material) {
+        // Calculate smart stock suggestion based on material type and warehouse capacity
+        const suggestedQuantity = calculateSmartStockSuggestion(material);
+        initialBulkData[materialId] = { quantity: suggestedQuantity, locationAdjustment: 0 };
+      }
     });
     setBulkMaterialData(initialBulkData);
     

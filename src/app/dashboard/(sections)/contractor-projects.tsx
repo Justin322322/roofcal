@@ -25,6 +25,8 @@ import {
   ClockIcon,
   CheckCircleIcon,
   AlertCircleIcon,
+  CheckIcon,
+  XIcon,
 } from "lucide-react";
 import { ProposalBuilder } from "./contractor-projects/proposal-builder";
 
@@ -95,7 +97,39 @@ export function ContractorProjectsContent() {
     }
   };
 
-  // Intentionally removed unused handleStatusUpdate to satisfy linter
+  const handleApproveProject = async (projectId: string) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) throw new Error("Failed to approve project");
+
+      toast.success("Project approved successfully");
+      fetchProjects();
+    } catch (error) {
+      console.error("Failed to approve project:", error);
+      toast.error("Failed to approve project");
+    }
+  };
+
+  const handleDeclineProject = async (projectId: string) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/decline`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) throw new Error("Failed to decline project");
+
+      toast.success("Project declined");
+      fetchProjects();
+    } catch (error) {
+      console.error("Failed to decline project:", error);
+      toast.error("Failed to decline project");
+    }
+  };
 
   const getStatusBadge = (status: string, proposalStatus: string | null) => {
     if (proposalStatus === "SENT") {
@@ -337,6 +371,28 @@ export function ContractorProjectsContent() {
                           </div>
 
                           <div className="flex gap-2 pt-2">
+                            {project.status === "CLIENT_PENDING" && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  className="flex-1 text-xs h-7"
+                                  onClick={() => handleApproveProject(project.id)}
+                                >
+                                  <CheckIcon className="h-3 w-3 mr-1" />
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  className="flex-1 text-xs h-7"
+                                  onClick={() => handleDeclineProject(project.id)}
+                                >
+                                  <XIcon className="h-3 w-3 mr-1" />
+                                  Decline
+                                </Button>
+                              </>
+                            )}
                             {canCreateProposal(project) && (
                               <Button
                                 size="sm"
@@ -352,7 +408,7 @@ export function ContractorProjectsContent() {
                               </Button>
                             )}
                             
-                            {canViewProject(project) && (
+                            {canViewProject(project) && project.status !== "CLIENT_PENDING" && (
                               <Button
                                 size="sm"
                                 variant="outline"

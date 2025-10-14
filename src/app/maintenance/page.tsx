@@ -1,5 +1,6 @@
 import { getMaintenanceStatus } from "@/lib/maintenance-utils";
 import RoofCalcLogo from "@/components/RoofCalcLogo";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default async function MaintenancePage() {
   const settings = await getMaintenanceStatus();
@@ -14,6 +15,11 @@ export default async function MaintenancePage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 px-4">
+      {/* Theme Toggle - Top Right */}
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
+
       <div className="max-w-2xl w-full">
         {/* Logo */}
         <div className="flex justify-center mb-8">

@@ -62,101 +62,148 @@ export function ProjectPrinter({ project, isOpen, onClose }: ProjectPrinterProps
             @media print {
               body { margin: 0; }
               .no-print { display: none; }
+              @page { margin: 1cm; }
+            }
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
             }
             body {
-              font-family: Arial, sans-serif;
-              max-width: 800px;
-              margin: 20px auto;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              max-width: 210mm;
+              margin: 0 auto;
               padding: 20px;
-              color: #333;
+              color: hsl(222.2 84% 4.9%);
+              background: white;
+              line-height: 1.6;
+            }
+            .print-container {
+              background: white;
+              border-radius: 8px;
+              overflow: hidden;
             }
             .header {
+              background: linear-gradient(135deg, hsl(221.2 83.2% 53.3%) 0%, hsl(221.2 83.2% 53.3%) 100%);
+              color: white;
+              padding: 24px;
               text-align: center;
-              border-bottom: 3px solid #0066cc;
-              padding-bottom: 20px;
-              margin-bottom: 30px;
+              margin-bottom: 24px;
             }
             .header h1 {
-              margin: 0;
-              color: #0066cc;
-              font-size: 28px;
+              font-size: 24px;
+              font-weight: 600;
+              margin-bottom: 8px;
             }
             .header p {
-              margin: 5px 0;
-              color: #666;
               font-size: 14px;
+              opacity: 0.9;
             }
-            .section {
-              margin-bottom: 30px;
+            .card {
+              background: white;
+              border: 1px solid hsl(214.3 31.8% 91.4%);
+              border-radius: 8px;
+              margin-bottom: 16px;
+              overflow: hidden;
             }
-            .section-title {
-              font-size: 18px;
-              font-weight: bold;
-              color: #0066cc;
-              border-bottom: 2px solid #e0e0e0;
-              padding-bottom: 8px;
-              margin-bottom: 15px;
+            .card-header {
+              background: hsl(210 40% 96.1%);
+              padding: 12px 16px;
+              border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+            }
+            .card-title {
+              font-size: 16px;
+              font-weight: 600;
+              color: hsl(222.2 84% 4.9%);
+            }
+            .card-content {
+              padding: 16px;
             }
             .info-grid {
               display: grid;
               grid-template-columns: 1fr 1fr;
-              gap: 15px;
-              margin-bottom: 15px;
+              gap: 16px;
             }
             .info-item {
               display: flex;
               justify-content: space-between;
               padding: 8px 0;
-              border-bottom: 1px solid #f0f0f0;
+              border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+            }
+            .info-item:last-child {
+              border-bottom: none;
             }
             .info-label {
-              font-weight: 600;
-              color: #666;
+              font-weight: 500;
+              color: hsl(215.4 16.3% 46.9%);
+              font-size: 14px;
             }
             .info-value {
-              color: #333;
+              color: hsl(222.2 84% 4.9%);
+              font-weight: 500;
+              font-size: 14px;
             }
             .cost-breakdown {
-              background: #f8f9fa;
-              padding: 15px;
-              border-radius: 5px;
-              margin-top: 15px;
+              background: hsl(210 40% 96.1%);
+              padding: 16px;
+              border-radius: 6px;
             }
             .cost-item {
               display: flex;
               justify-content: space-between;
               padding: 8px 0;
-              border-bottom: 1px solid #e0e0e0;
-            }
-            .cost-item:last-child {
-              border-bottom: none;
+              font-size: 14px;
             }
             .total-cost {
               display: flex;
               justify-content: space-between;
-              padding: 15px 0;
-              border-top: 2px solid #0066cc;
+              padding: 16px 0 0;
+              margin-top: 16px;
+              border-top: 2px solid hsl(221.2 83.2% 53.3%);
               font-size: 18px;
-              font-weight: bold;
-              color: #0066cc;
+              font-weight: 700;
+              color: hsl(221.2 83.2% 53.3%);
+            }
+            .badge {
+              display: inline-block;
+              padding: 4px 12px;
+              border-radius: 9999px;
+              font-size: 12px;
+              font-weight: 500;
+              background: hsl(210 40% 96.1%);
+              color: hsl(222.2 84% 4.9%);
+            }
+            .badge-primary {
+              background: hsl(221.2 83.2% 53.3%);
+              color: white;
+            }
+            .badge-success {
+              background: hsl(142.1 76.2% 36.3%);
+              color: white;
+            }
+            .badge-warning {
+              background: hsl(47.9 95.8% 53.1%);
+              color: hsl(222.2 84% 4.9%);
             }
             .notes {
-              background: #fff9e6;
-              padding: 15px;
-              border-left: 4px solid #ffc107;
-              margin-top: 15px;
-              border-radius: 5px;
+              background: hsl(47.9 95.8% 53.1% / 0.1);
+              padding: 16px;
+              border-left: 4px solid hsl(47.9 95.8% 53.1%);
+              border-radius: 6px;
+              font-size: 14px;
             }
             .footer {
-              margin-top: 40px;
-              padding-top: 20px;
-              border-top: 2px solid #e0e0e0;
+              margin-top: 32px;
+              padding-top: 16px;
+              border-top: 1px solid hsl(214.3 31.8% 91.4%);
               text-align: center;
-              color: #666;
+              color: hsl(215.4 16.3% 46.9%);
               font-size: 12px;
             }
-            @media print {
-              .no-print { display: none; }
+            .separator {
+              height: 1px;
+              background: hsl(214.3 31.8% 91.4%);
+              margin: 16px 0;
             }
           </style>
         </head>
@@ -175,116 +222,158 @@ export function ProjectPrinter({ project, isOpen, onClose }: ProjectPrinterProps
     }, 250);
   };
 
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case "COMPLETED":
+      case "ACCEPTED":
+        return "badge badge-success";
+      case "IN_PROGRESS":
+      case "CONTRACTOR_REVIEWING":
+        return "badge badge-warning";
+      case "DRAFT":
+      case "CLIENT_PENDING":
+        return "badge";
+      default:
+        return "badge";
+    }
+  };
+
   return (
     <>
       <div ref={printRef} style={{ display: 'none' }}>
-        <div className="header">
-          <h1>{project.projectName}</h1>
-          <p>Roofing Project Details</p>
-          <p>Generated: {new Date().toLocaleDateString()}</p>
-        </div>
-
-        <div className="section">
-          <div className="section-title">Project Information</div>
-          <div className="info-grid">
-            <div className="info-item">
-              <span className="info-label">Project Name:</span>
-              <span className="info-value">{project.projectName}</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Status:</span>
-              <span className="info-value">{project.status}</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Material:</span>
-              <span className="info-value capitalize">{project.material}</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Roof Area:</span>
-              <span className="info-value">{formatArea(project.area)}</span>
-            </div>
-            {project.address && (
-              <div className="info-item" style={{ gridColumn: '1 / -1' }}>
-                <span className="info-label">Address:</span>
-                <span className="info-value">{project.address}, {project.city}, {project.state}</span>
-              </div>
-            )}
-            <div className="info-item">
-              <span className="info-label">Created:</span>
-              <span className="info-value">
-                {project.createdAt instanceof Date && !isNaN(project.createdAt.getTime()) 
-                  ? project.createdAt.toLocaleDateString()
-                  : new Date(project.createdAt).toLocaleDateString()
-                }
-              </span>
-            </div>
-            {project.proposalSent && (
-              <div className="info-item">
-                <span className="info-label">Proposal Sent:</span>
-                <span className="info-value">
-                  {new Date(project.proposalSent).toLocaleDateString()}
-                </span>
-              </div>
-            )}
+        <div className="print-container">
+          <div className="header">
+            <h1>{project.projectName}</h1>
+            <p>Roofing Project Details</p>
+            <p style={{ fontSize: '12px', marginTop: '8px' }}>Generated: {new Date().toLocaleDateString()}</p>
           </div>
-        </div>
 
-        <div className="section">
-          <div className="section-title">Cost Breakdown</div>
-          <div className="cost-breakdown">
-            {project.materialCost !== undefined && (
-              <div className="cost-item">
-                <span>Material Cost:</span>
-                <span>{formatCurrency(project.materialCost)}</span>
-              </div>
-            )}
-            {project.laborCost !== undefined && (
-              <div className="cost-item">
-                <span>Labor Cost:</span>
-                <span>{formatCurrency(project.laborCost)}</span>
-              </div>
-            )}
-            {project.deliveryCost !== undefined && (
-              <div className="cost-item">
-                <span>Delivery Cost:</span>
-                <span>{formatCurrency(project.deliveryCost)}</span>
-              </div>
-            )}
-            <div className="total-cost">
-              <span>Total Cost:</span>
-              <span>{formatCurrency(project.totalCost)}</span>
+          <div className="card">
+            <div className="card-header">
+              <div className="card-title">Project Information</div>
             </div>
-          </div>
-        </div>
-
-        {project.contractor && (
-          <div className="section">
-            <div className="section-title">Contractor Information</div>
-            <div className="info-grid">
-              <div className="info-item">
-                <span className="info-label">Name:</span>
-                <span className="info-value">{project.contractor.firstName} {project.contractor.lastName}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Email:</span>
-                <span className="info-value">{project.contractor.email}</span>
+            <div className="card-content">
+              <div className="info-grid">
+                <div className="info-item">
+                  <span className="info-label">Project Name:</span>
+                  <span className="info-value">{project.projectName}</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">Status:</span>
+                  <span className="info-value">
+                    <span className={getStatusBadgeClass(project.status)}>{project.status}</span>
+                  </span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">Material:</span>
+                  <span className="info-value capitalize">{project.material}</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">Roof Area:</span>
+                  <span className="info-value">{formatArea(project.area)}</span>
+                </div>
+                {project.address && (
+                  <>
+                    <div className="info-item">
+                      <span className="info-label">Address:</span>
+                      <span className="info-value">{project.address}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">City/State:</span>
+                      <span className="info-value">{project.city}, {project.state}</span>
+                    </div>
+                  </>
+                )}
+                <div className="info-item">
+                  <span className="info-label">Created:</span>
+                  <span className="info-value">
+                    {project.createdAt instanceof Date && !isNaN(project.createdAt.getTime()) 
+                      ? project.createdAt.toLocaleDateString()
+                      : new Date(project.createdAt).toLocaleDateString()
+                    }
+                  </span>
+                </div>
+                {project.proposalSent && (
+                  <div className="info-item">
+                    <span className="info-label">Proposal Sent:</span>
+                    <span className="info-value">
+                      {new Date(project.proposalSent).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-        )}
 
-        {project.notes && (
-          <div className="section">
-            <div className="section-title">Notes</div>
-            <div className="notes">
-              {project.notes}
+          <div className="card">
+            <div className="card-header">
+              <div className="card-title">Cost Breakdown</div>
+            </div>
+            <div className="card-content">
+              <div className="cost-breakdown">
+                {project.materialCost !== undefined && (
+                  <div className="cost-item">
+                    <span>Material Cost:</span>
+                    <span>{formatCurrency(project.materialCost)}</span>
+                  </div>
+                )}
+                {project.laborCost !== undefined && (
+                  <div className="cost-item">
+                    <span>Labor Cost:</span>
+                    <span>{formatCurrency(project.laborCost)}</span>
+                  </div>
+                )}
+                {project.deliveryCost !== undefined && (
+                  <div className="cost-item">
+                    <span>Delivery Cost:</span>
+                    <span>{formatCurrency(project.deliveryCost)}</span>
+                  </div>
+                )}
+                <div className="total-cost">
+                  <span>Total Cost:</span>
+                  <span>{formatCurrency(project.totalCost)}</span>
+                </div>
+              </div>
             </div>
           </div>
-        )}
 
-        <div className="footer">
-          <p>This document was generated from RoofCalc Project Management System</p>
-          <p>© ${new Date().getFullYear()} RoofCalc. All rights reserved.</p>
+          {project.contractor && (
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">Contractor Information</div>
+              </div>
+              <div className="card-content">
+                <div className="info-grid">
+                  <div className="info-item">
+                    <span className="info-label">Name:</span>
+                    <span className="info-value">{project.contractor.firstName} {project.contractor.lastName}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Email:</span>
+                    <span className="info-value">{project.contractor.email}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {project.notes && (
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">Notes</div>
+              </div>
+              <div className="card-content">
+                <div className="notes">
+                  {project.notes}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="footer">
+            <p>This document was generated from RoofCalc Project Management System</p>
+            <p>© ${new Date().getFullYear()} RoofCalc. All rights reserved.</p>
+          </div>
         </div>
       </div>
 

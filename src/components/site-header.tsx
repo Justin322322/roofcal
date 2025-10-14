@@ -1,5 +1,6 @@
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface SiteHeaderProps {
   currentSection?: string;
@@ -44,6 +45,9 @@ export function SiteHeader({ currentSection }: SiteHeaderProps) {
         <h1 className="text-base font-medium">
           {getSectionTitle(currentSection)}
         </h1>
+        <div className="ml-auto">
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

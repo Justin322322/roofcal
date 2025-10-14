@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import RoofCalcLogo from "@/components/RoofCalcLogo";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -16,6 +17,11 @@ export default function AuthLayout({
 }: AuthLayoutProps) {
   return (
     <div className="min-h-screen flex">
+      {/* Theme Toggle - Top Right */}
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
+
       {/* Left side - Form */}
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
         {children}

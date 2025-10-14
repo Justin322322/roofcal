@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import RoofCalcLogo from "@/components/RoofCalcLogo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Menu, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -51,7 +52,8 @@ export default function Header() {
               About
             </a>
           </nav>
-          <div className="hidden md:flex gap-3">
+          <div className="hidden md:flex items-center gap-3">
+            <ThemeToggle />
             <Button variant="accent" size="sm" asChild>
               <Link href="/login">Login</Link>
             </Button>
@@ -60,7 +62,8 @@ export default function Header() {
             </Button>
           </div>
           {/* Mobile dropdown panel below navbar */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
             <Button
               variant="ghost"
               size="icon"
