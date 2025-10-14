@@ -8,7 +8,7 @@ async function seedPricingData() {
 
   try {
     // Clear existing pricing data
-    await prisma.pricingconfig.deleteMany({});
+    await prisma.pricingConfig.deleteMany({});
     console.log('✅ Cleared existing pricing data');
 
     // Seed material prices with thickness variants
@@ -27,7 +27,7 @@ async function seedPricingData() {
     ];
 
     for (const material of materials) {
-      await prisma.pricingconfig.create({
+      await prisma.pricingConfig.create({
         data: {
           id: randomUUID(),
           category: 'materials',
@@ -49,7 +49,7 @@ async function seedPricingData() {
     ];
 
     for (const gutter of gutters) {
-      await prisma.pricingconfig.create({
+      await prisma.pricingConfig.create({
         data: {
           id: randomUUID(),
           category: 'gutters',
@@ -75,7 +75,7 @@ async function seedPricingData() {
     ];
 
     for (const ridge of ridges) {
-      await prisma.pricingconfig.create({
+      await prisma.pricingConfig.create({
         data: {
           id: randomUUID(),
           category: 'ridges',
@@ -101,7 +101,7 @@ async function seedPricingData() {
     ];
 
     for (const screw of screws) {
-      await prisma.pricingconfig.create({
+      await prisma.pricingConfig.create({
         data: {
           id: randomUUID(),
           category: 'screws',
@@ -127,7 +127,7 @@ async function seedPricingData() {
     ];
 
     for (const screwType of screwTypes) {
-      await prisma.pricingconfig.create({
+      await prisma.pricingConfig.create({
         data: {
           id: randomUUID(),
           category: 'screw_types',
@@ -152,7 +152,7 @@ async function seedPricingData() {
     ];
 
     for (const ins of insulation) {
-      await prisma.pricingconfig.create({
+      await prisma.pricingConfig.create({
         data: {
           id: crypto.randomUUID(),
           category: 'insulation',
@@ -168,7 +168,7 @@ async function seedPricingData() {
     console.log('✅ Seeded insulation prices');
 
     // Seed ventilation price
-    await prisma.pricingconfig.create({
+    await prisma.pricingConfig.create({
       data: {
         id: randomUUID(),
         category: 'ventilation',
@@ -189,7 +189,7 @@ async function seedPricingData() {
     ];
 
     for (const labor of laborRates) {
-      await prisma.pricingconfig.create({
+      await prisma.pricingConfig.create({
         data: {
           id: randomUUID(),
           category: 'labor',

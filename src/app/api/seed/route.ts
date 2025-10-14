@@ -25,7 +25,7 @@ export async function POST() {
     }
 
     // Check if data already exists
-    const existingCount = await prisma.pricingconfig.count();
+    const existingCount = await prisma.pricingConfig.count();
     if (existingCount > 0) {
       return NextResponse.json(
         { 
@@ -43,7 +43,7 @@ export async function POST() {
     ];
 
     for (const material of materials) {
-      await prisma.pricingconfig.create({
+      await prisma.pricingConfig.create({
         data: {
           id: crypto.randomUUID(),
           category: 'materials',
@@ -88,7 +88,7 @@ export async function POST() {
     ];
 
     for (const item of seedData) {
-      await prisma.pricingconfig.create({
+      await prisma.pricingConfig.create({
         data: {
           id: crypto.randomUUID(),
           category: item.category,
@@ -101,7 +101,7 @@ export async function POST() {
       });
     }
 
-    const totalCount = await prisma.pricingconfig.count();
+    const totalCount = await prisma.pricingConfig.count();
 
     return NextResponse.json(
       { 
