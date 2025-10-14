@@ -192,7 +192,7 @@ export function ProjectDetailsViewer({ project, isOpen, onClose }: ProjectDetail
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Material</p>
-                <p className="text-sm font-medium">{project.material}</p>
+                <p className="text-sm font-medium capitalize">{project.material.replace(/-/g, ' ')}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Area</p>

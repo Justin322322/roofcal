@@ -37,8 +37,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import "leaflet/dist/leaflet.css";
-import { RadialBarChart, RadialBar, Cell } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 // Dynamic imports for Leaflet maps to avoid SSR issues
 const WarehouseCardMap = dynamic(() => import("./WarehouseCardMap"), {
@@ -56,6 +54,8 @@ const FullScreenMapModal = dynamic(() => import("./FullScreenMapModal"), {
 import { Warehouse } from "./types";
 import { MaterialDragDropManager } from "./MaterialDragDropManager";
 import { WarehouseMaterialWarnings } from "@/components/warehouse-material-warnings";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
 interface WarehouseMaterial {
   id: string;
@@ -1050,80 +1050,24 @@ export function WarehouseManagementPage() {
                               } else if (utilization >= 50) {
                                 statusText = 'Moderate';
                               }
-                              
-                              const chartData = [
-                                { name: "Used", value: utilization, fill: "hsl(var(--chart-1))" },
-                                { name: "Available", value: 100 - utilization, fill: "hsl(var(--muted))" },
-                              ];
-
-                              const chartConfig = {
-                                Used: {
-                                  label: "Used",
-                                  color: utilization >= 90 ? "hsl(0 84.2% 60.2%)" : 
-                                         utilization >= 75 ? "hsl(47.9 95.8% 53.1%)" : 
-                                         utilization >= 50 ? "hsl(24.6 95% 53.1%)" : 
-                                         "hsl(142.1 76.2% 36.3%)",
-                                },
-                                Available: {
-                                  label: "Available",
-                                  color: "hsl(var(--muted))",
-                                },
-                              };
 
                               return (
-                                <div className="mt-2 relative">
-                                  {/* Visual Chart */}
-                                  <ChartContainer config={chartConfig} className="h-32 sm:h-40">
-                                    <RadialBarChart
-                                      data={chartData}
-                                      innerRadius={60}
-                                      outerRadius={80}
-                                      startAngle={90}
-                                      endAngle={-270}
-                                    >
-                                      <RadialBar
-                                        dataKey="value"
-                                        cornerRadius={4}
-                                        fill="var(--color-Used)"
-                                      >
-                                        {chartData.map((entry, index) => (
-                                          <Cell key={`cell-${index}`} fill={entry.fill} />
-                                        ))}
-                                      </RadialBar>
-                                      <ChartTooltip
-                                        content={
-                                          <ChartTooltipContent
-                                            formatter={(value) => `${Number(value).toFixed(1)}%`}
-                                          />
-                                        }
-                                      />
-                                    </RadialBarChart>
-                                  </ChartContainer>
-                                  
-                                  {/* Center Text Overlay */}
-                                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                    <span className="text-lg sm:text-2xl font-bold text-foreground">
-                                      {utilization.toFixed(1)}%
-                                    </span>
-                                    <span className="text-[10px] sm:text-xs text-muted-foreground">
-                                      {statusText}
-                                    </span>
+                                <div className="mt-2 space-y-1.5 sm:space-y-2">
+                                  <div className="flex justify-between items-center text-xs">
+                                    <span className="text-muted-foreground">Used:</span>
+                                    <span className="font-medium">{totalVolumeUsed.toFixed(2)} m³</span>
                                   </div>
-                                  
-                                  {/* Stats */}
-                                  <div className="mt-2 sm:mt-3 space-y-1.5 sm:space-y-2">
-                                    <div className="flex justify-between items-center text-[11px] sm:text-xs">
-                                      <span className="text-muted-foreground">Used:</span>
-                                      <span className="font-medium">{totalVolumeUsed.toFixed(2)} m³</span>
-                                    </div>
-                                    <div className="flex justify-between items-center text-[11px] sm:text-xs">
-                                      <span className="text-muted-foreground">Available:</span>
-                                      <span className="font-medium">{available.toFixed(2)} m³</span>
-                                    </div>
-                                    <div className="flex justify-between items-center text-[11px] sm:text-xs">
-                                      <span className="text-muted-foreground">Total Capacity:</span>
-                                      <span className="font-medium">{warehouse.capacity.toFixed(2)} m³</span>
-                                    </div>
+                                  <div className="flex justify-between items-center text-xs">
+                                    <span className="text-muted-foreground">Available:</span>
+                                    <span className="font-medium">{available.toFixed(2)} m³</span>
+                                  </div>
+                                  <div className="flex justify-between items-center text-xs">
+                                    <span className="text-muted-foreground">Total Capacity:</span>
+                                    <span className="font-medium">{warehouse.capacity.toFixed(2)} m³</span>
+                                  </div>
+                                  <div className="flex justify-between items-center text-xs">
+                                    <span className="text-muted-foreground">Utilization:</span>
+                                    <span className="font-medium">{utilization.toFixed(1)}% - {statusText}</span>
                                   </div>
                                 </div>
                               );
@@ -1137,6 +1081,99 @@ export function WarehouseManagementPage() {
                             </p>
                           </div>
                         )}
+
+                        {/* Capacity Chart */}
+                        {warehouse.capacity && warehouse.capacity > 0 && activeMaterials.length > 0 && (() => {
+                          // Calculate total volume used based on material dimensions
+                          const totalVolumeUsed = activeMaterials.reduce((sum, m) => {
+                            let unitVolume = 1;
+                            if (m.material.volume && m.material.volume > 0) {
+                              unitVolume = m.material.volume;
+                            } else if (m.material.length && m.material.width && m.material.height) {
+                              unitVolume = m.material.length * m.material.width * m.material.height;
+                            }
+                            return sum + (m.quantity * unitVolume);
+                          }, 0);
+                          
+                          const available = Math.max(warehouse.capacity - totalVolumeUsed, 0);
+                          const utilization = Math.min((totalVolumeUsed / warehouse.capacity) * 100, 100);
+                          
+                          // Create chart data
+                          const chartData = [
+                            {
+                              name: "Used",
+                              value: totalVolumeUsed,
+                              fill: "hsl(var(--chart-1))",
+                            },
+                            {
+                              name: "Available",
+                              value: available,
+                              fill: "hsl(var(--chart-2))",
+                            },
+                          ];
+                          
+                          return (
+                            <div className="mt-4">
+                              <span className="font-medium text-sm">Capacity Overview:</span>
+                              <ChartContainer
+                                config={{
+                                  value: {
+                                    label: "Volume",
+                                  },
+                                }}
+                                className="h-[120px] w-full mt-2"
+                              >
+                                <AreaChart data={chartData}>
+                                  <defs>
+                                    <linearGradient id="fillUsed" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/>
+                                      <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.1}/>
+                                    </linearGradient>
+                                    <linearGradient id="fillAvailable" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.8}/>
+                                      <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0.1}/>
+                                    </linearGradient>
+                                  </defs>
+                                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                                  <XAxis 
+                                    dataKey="name" 
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickMargin={8}
+                                    className="text-xs"
+                                  />
+                                  <ChartTooltip 
+                                    content={<ChartTooltipContent />}
+                                  />
+                                  <Area 
+                                    type="monotone" 
+                                    dataKey="value" 
+                                    stroke="hsl(var(--chart-1))" 
+                                    fill="url(#fillUsed)"
+                                    stackId="1"
+                                  />
+                                  <Area 
+                                    type="monotone" 
+                                    dataKey="value" 
+                                    stroke="hsl(var(--chart-2))" 
+                                    fill="url(#fillAvailable)"
+                                    stackId="1"
+                                  />
+                                </AreaChart>
+                              </ChartContainer>
+                              <div className="flex items-center justify-center gap-4 mt-2 text-xs">
+                                <div className="flex items-center gap-1.5">
+                                  <div className="w-3 h-3 rounded-sm bg-[hsl(var(--chart-1))]"></div>
+                                  <span className="text-muted-foreground">Used: {totalVolumeUsed.toFixed(2)} m³ ({utilization.toFixed(1)}%)</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <div className="w-3 h-3 rounded-sm bg-[hsl(var(--chart-2))]"></div>
+                                  <span className="text-muted-foreground">Available: {available.toFixed(2)} m³</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
 
                         <div className="flex flex-col sm:flex-row gap-2">
                           <Button 

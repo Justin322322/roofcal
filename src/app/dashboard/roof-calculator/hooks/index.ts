@@ -45,11 +45,11 @@ export function useRoofCalculator() {
 
   // Auto-match ridge type with material selection
   useEffect(() => {
-    // Extract base material name (e.g., "corrugated-0.4" -> "corrugated")
+    // Extract base material name (e.g., "corrugated-0.4" -> "corrugated", "longspan-0.4" -> "longspan")
     const baseMaterial = material.split("-")[0];
     
     // Auto-match ridge for corrugated and long-span materials
-    if (baseMaterial === "corrugated" || baseMaterial === "long-span") {
+    if (baseMaterial === "corrugated" || baseMaterial === "longspan") {
       setMeasurements((prev) => ({
         ...prev,
         ridgeType: "corrugated",

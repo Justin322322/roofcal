@@ -178,7 +178,7 @@ export function CalculationResults({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
-              Roof Material ({materialQuantity.toFixed(2)} sq.m)
+              {material} ({materialQuantity.toFixed(2)} sq.m)
             </span>
             <span className="text-base font-medium">
               ₱{formatNumberWithCommas(materialCost)}
