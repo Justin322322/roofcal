@@ -4,6 +4,7 @@ import * as React from "react";
 import { useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import Image from "next/image";
+import { Separator } from "@/components/ui/separator";
 import {
   X,
   BookOpenIcon,
@@ -79,59 +80,59 @@ export function TutorialGuideDialog() {
           {/* Content */}
           <div className="flex-1 overflow-auto p-6">
             <Tabs defaultValue="overview" className="w-full">
-              <div className="mb-6">
-                <TabsList className="flex flex-wrap w-full h-auto p-1 bg-muted/50 rounded-lg gap-1">
+              <div className="mb-4 md:mb-6">
+                <TabsList className="flex flex-wrap w-full h-auto p-0 md:p-1 bg-muted/50 rounded-lg gap-1">
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
+                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
                     value="overview"
                   >
                     <HomeIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Overview</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
+                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
                     value="roof-types"
                   >
                     <LayersIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Roof Types</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
+                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
                     value="materials"
                   >
                     <LayersIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Materials</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
+                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
                     value="calculator"
                   >
                     <CalculatorIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Calculator</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
+                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
                     value="manual-calc"
                   >
                     <ClipboardListIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Manual Calc</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
+                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
                     value="contractor"
                   >
                     <HardHatIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Contractor</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
+                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
                     value="ai-system"
                   >
                     <SparklesIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">AI System</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
+                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
                     value="archive"
                   >
                     <ArchiveIcon className="h-4 w-4" />
@@ -288,33 +289,60 @@ export function TutorialGuideDialog() {
                 <div className="space-y-4 text-muted-foreground leading-relaxed">
                   <p>{content.tabs.materials.description}</p>
 
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {content.tabs.materials.materialList?.map((material, index) => (
-                      <div key={index} className="border rounded-lg p-4 grid grid-cols-[96px_1fr] gap-3 items-start">
-                        <div className="aspect-square bg-muted/30 rounded-lg overflow-hidden">
-                          <Image
-                            src={(material.image?.startsWith("/roof/") ? `${BLOB_BASE}${material.image.replace("/roof/", "")}` : material.image) || `${BLOB_BASE}corrugated.jpg`}
-                            alt={material.name}
-                            width={96}
-                            height={96}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <h4 className="text-base font-medium text-foreground">
-                            {material.name}
-                          </h4>
-                          <div className="space-y-1 text-sm">
-                            <p><strong>Cost:</strong> {material.cost}</p>
-                            <p><strong>Lifespan:</strong> {material.lifespan}</p>
-                            <p><strong>Pros:</strong> {material.pros}</p>
-                            <p><strong>Cons:</strong> {material.cons}</p>
-                            <p><strong>Best for:</strong> {material.bestFor}</p>
+                  {/* Group variants to avoid repeated images */}
+                  {(() => {
+                    const mats = content.tabs.materials.materialList || [];
+                    type Group = { key: string; image: string; items: typeof mats };
+                    const groups: Group[] = [];
+                    const byKey: Record<string, Group> = {};
+                    mats.forEach((m) => {
+                      const base = m.name.toLowerCase().includes("long span") ? "Long Span" : "Corrugated";
+                      if (!byKey[base]) {
+                        const defaultImg = base === "Long Span" ? `${BLOB_BASE}long-span.jpg` : `${BLOB_BASE}corrugated.jpg`;
+                        byKey[base] = { key: base, image: (m.image?.startsWith("/roof/") ? `${BLOB_BASE}${m.image.replace("/roof/", "")}` : m.image) || defaultImg, items: [] };
+                        groups.push(byKey[base]);
+                      }
+                      byKey[base].items.push(m);
+                    });
+
+                    return (
+                      <div className="grid gap-4 md:grid-cols-2">
+                        {groups.map((group) => (
+                          <div key={group.key} className="border rounded-lg p-4 group">
+                          <div className="grid grid-cols-[120px_1fr] gap-4 items-start">
+                              <div className="aspect-square bg-muted/30 rounded-lg overflow-hidden group-hover:bg-muted/50 transition-colors">
+                                <Image
+                                  src={group.image}
+                                  alt={group.key}
+                                  width={120}
+                                  height={120}
+                                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
+                                />
+                              </div>
+                              <div>
+                                <h4 className="text-lg font-semibold text-foreground mb-2">{group.key}</h4>
+                                <Separator className="my-3" />
+                                <div className="space-y-3">
+                                  {group.items.map((material, idx) => (
+                                    <div key={idx} className="rounded-md border p-3">
+                                      <div className="font-medium text-sm">{material.name}</div>
+                                      <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-sm mt-1">
+                                        <p><strong>Cost:</strong> {material.cost}</p>
+                                        <p><strong>Lifespan:</strong> {material.lifespan}</p>
+                                        <p className="sm:col-span-2"><strong>Pros:</strong> {material.pros}</p>
+                                        <p className="sm:col-span-2"><strong>Cons:</strong> {material.cons}</p>
+                                        <p className="sm:col-span-2"><strong>Best for:</strong> {material.bestFor}</p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })()}
 
                   <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                     <h4 className="text-base font-medium text-foreground mb-2">
