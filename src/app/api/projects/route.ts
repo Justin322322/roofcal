@@ -298,6 +298,16 @@ export async function GET(request: NextRequest) {
         longitude: project.longitude ? Number(project.longitude) : null,
         deliveryCost: project.deliveryCost ? Number(project.deliveryCost) : null,
         deliveryDistance: project.deliveryDistance ? Number(project.deliveryDistance) : null,
+        // Include material detail fields for print preview
+        materialThickness: project.materialThickness,
+        ridgeType: project.ridgeType,
+        gutterSize: project.gutterSize,
+        insulationThickness: project.insulationThickness,
+        // Map additional fields that printer expects
+        gutterMaterial: project.gutterSize, // Using gutterSize as gutterMaterial for now
+        screwType: project.materialThickness, // Using materialThickness as screwType for now
+        insulationType: project.insulationThickness,
+        ventilationType: project.ventilationPieces ? `${project.ventilationPieces} pieces` : undefined,
       })),
       total,
       page: filters.page!,

@@ -79,6 +79,15 @@ interface Project {
   materialCost?: number;
   laborCost?: number;
   deliveryCost?: number;
+  // Material detail fields for print preview
+  materialThickness?: string;
+  ridgeType?: string;
+  gutterSize?: string;
+  insulationThickness?: string;
+  gutterMaterial?: string;
+  screwType?: string;
+  insulationType?: string;
+  ventilationType?: string;
   contractor?: {
     id: string;
     firstName: string;

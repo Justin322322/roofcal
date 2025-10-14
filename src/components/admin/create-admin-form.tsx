@@ -187,9 +187,9 @@ export default function CreateAdminForm({ onSuccess }: CreateAdminFormProps) {
           </LoadingButton>
         </form>
 
-        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-          <p className="text-sm text-blue-800">
-            <strong>📧 Email Notification:</strong> The admin will receive their login credentials via email and will be required to change their password on first login for security purposes.
+        <div className="mt-4 rounded-md border border-border bg-muted/30 p-3">
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium">Email notification:</span> The admin will receive their login credentials via email and will be required to change their password on first login for security purposes.
           </p>
         </div>
       </CardContent>

@@ -142,6 +142,15 @@ interface Project {
   gutterPieces?: number;
   ridgeLength?: number;
   ventilationPieces?: number;
+  // Material detail fields for print preview
+  materialThickness?: string;
+  ridgeType?: string;
+  gutterSize?: string;
+  insulationThickness?: string;
+  gutterMaterial?: string;
+  screwType?: string;
+  insulationType?: string;
+  ventilationType?: string;
 }
 
 // Simple Location Map Component

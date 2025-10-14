@@ -108,6 +108,16 @@ export async function GET(request: NextRequest) {
       client: project.user_project_clientIdTouser || project.user_project_userIdTouser,
       createdAt: project.created_at,
       updatedAt: project.updated_at,
+      // Include material detail fields for print preview
+      materialThickness: project.materialThickness,
+      ridgeType: project.ridgeType,
+      gutterSize: project.gutterSize,
+      insulationThickness: project.insulationThickness,
+      // Map additional fields that printer expects
+      gutterMaterial: project.gutterSize, // Using gutterSize as gutterMaterial for now
+      screwType: project.materialThickness, // Using materialThickness as screwType for now
+      insulationType: project.insulationThickness,
+      ventilationType: project.ventilationPieces ? `${project.ventilationPieces} pieces` : undefined,
     }));
 
     return NextResponse.json({

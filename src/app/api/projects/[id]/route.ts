@@ -69,6 +69,16 @@ export async function GET(
       removalCost: Number(project.removalCost),
       totalCost: Number(project.totalCost),
       ridgeLength: Number(project.ridgeLength),
+      // Include material detail fields for print preview
+      materialThickness: project.materialThickness,
+      ridgeType: project.ridgeType,
+      gutterSize: project.gutterSize,
+      insulationThickness: project.insulationThickness,
+      // Map additional fields that printer expects
+      gutterMaterial: project.gutterSize, // Using gutterSize as gutterMaterial for now
+      screwType: project.materialThickness, // Using materialThickness as screwType for now
+      insulationType: project.insulationThickness,
+      ventilationType: project.ventilationPieces ? `${project.ventilationPieces} pieces` : undefined,
     };
 
     return NextResponse.json(response);
