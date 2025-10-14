@@ -1098,40 +1098,46 @@ export function WarehouseManagementPage() {
                           const available = Math.max(warehouse.capacity - totalVolumeUsed, 0);
                           const utilization = Math.min((totalVolumeUsed / warehouse.capacity) * 100, 100);
                           
-                          // Create chart data
+                          // Create chart data with proper stacking
                           const chartData = [
                             {
                               name: "Used",
                               value: totalVolumeUsed,
-                              fill: "hsl(var(--chart-1))",
                             },
                             {
                               name: "Available",
                               value: available,
-                              fill: "hsl(var(--chart-2))",
                             },
                           ];
                           
                           return (
                             <div className="mt-4">
-                              <span className="font-medium text-sm">Capacity Overview:</span>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-medium text-sm">Storage Capacity</span>
+                                <span className="text-xs font-medium text-muted-foreground">{utilization.toFixed(1)}% Full</span>
+                              </div>
                               <ChartContainer
                                 config={{
-                                  value: {
-                                    label: "Volume",
+                                  used: {
+                                    label: "Used",
+                                    color: "hsl(var(--primary))",
+                                  },
+                                  available: {
+                                    label: "Available",
+                                    color: "hsl(var(--muted))",
                                   },
                                 }}
-                                className="h-[120px] w-full mt-2"
+                                className="h-[140px] w-full"
                               >
                                 <AreaChart data={chartData}>
                                   <defs>
                                     <linearGradient id="fillUsed" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/>
-                                      <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.1}/>
+                                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
                                     </linearGradient>
                                     <linearGradient id="fillAvailable" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.8}/>
-                                      <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0.1}/>
+                                      <stop offset="5%" stopColor="hsl(var(--muted))" stopOpacity={0.6}/>
+                                      <stop offset="95%" stopColor="hsl(var(--muted))" stopOpacity={0.1}/>
                                     </linearGradient>
                                   </defs>
                                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -1148,27 +1154,35 @@ export function WarehouseManagementPage() {
                                   <Area 
                                     type="monotone" 
                                     dataKey="value" 
-                                    stroke="hsl(var(--chart-1))" 
+                                    stroke="hsl(var(--primary))" 
                                     fill="url(#fillUsed)"
                                     stackId="1"
+                                    strokeWidth={2}
                                   />
                                   <Area 
                                     type="monotone" 
                                     dataKey="value" 
-                                    stroke="hsl(var(--chart-2))" 
+                                    stroke="hsl(var(--muted))" 
                                     fill="url(#fillAvailable)"
                                     stackId="1"
+                                    strokeWidth={2}
                                   />
                                 </AreaChart>
                               </ChartContainer>
-                              <div className="flex items-center justify-center gap-4 mt-2 text-xs">
-                                <div className="flex items-center gap-1.5">
-                                  <div className="w-3 h-3 rounded-sm bg-[hsl(var(--chart-1))]"></div>
-                                  <span className="text-muted-foreground">Used: {totalVolumeUsed.toFixed(2)} m³ ({utilization.toFixed(1)}%)</span>
+                              <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-3 h-3 rounded-sm bg-primary"></div>
+                                  <div className="text-xs">
+                                    <span className="font-medium">{totalVolumeUsed.toFixed(2)} m³</span>
+                                    <span className="text-muted-foreground ml-1">used</span>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-1.5">
-                                  <div className="w-3 h-3 rounded-sm bg-[hsl(var(--chart-2))]"></div>
-                                  <span className="text-muted-foreground">Available: {available.toFixed(2)} m³</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-3 h-3 rounded-sm bg-muted"></div>
+                                  <div className="text-xs">
+                                    <span className="font-medium">{available.toFixed(2)} m³</span>
+                                    <span className="text-muted-foreground ml-1">available</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
