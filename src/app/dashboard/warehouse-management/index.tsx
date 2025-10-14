@@ -37,6 +37,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import "leaflet/dist/leaflet.css";
+import { RadialBarChart, RadialBar, Cell } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 // Dynamic imports for Leaflet maps to avoid SSR issues
 const WarehouseCardMap = dynamic(() => import("./WarehouseCardMap"), {
@@ -1021,57 +1023,111 @@ export function WarehouseManagementPage() {
                         {warehouse.capacity && warehouse.capacity > 0 ? (
                           <div>
                             <span className="font-medium text-sm">Capacity Utilization:</span>
-                            <div className="w-full bg-gray-200 h-2 mt-1">
-                              {(() => {
-                                // Calculate total volume used based on material dimensions
-                                const totalVolumeUsed = activeMaterials.reduce((sum, m) => {
-                                  // Use material volume if available, otherwise calculate from dimensions
-                                  let unitVolume = 1; // Default fallback
-                                  
-                                  if (m.material.volume && m.material.volume > 0) {
-                                    unitVolume = m.material.volume;
-                                  } else if (m.material.length && m.material.width && m.material.height) {
-                                    unitVolume = m.material.length * m.material.width * m.material.height;
-                                  }
-                                  
-                                  return sum + (m.quantity * unitVolume);
-                                }, 0);
+                            {(() => {
+                              // Calculate total volume used based on material dimensions
+                              const totalVolumeUsed = activeMaterials.reduce((sum, m) => {
+                                // Use material volume if available, otherwise calculate from dimensions
+                                let unitVolume = 1; // Default fallback
                                 
-                                const utilization = Math.min((totalVolumeUsed / warehouse.capacity) * 100, 100);
-                                let colorClass = 'bg-green-500'; // Default green for low usage
-                                
-                                if (utilization >= 90) {
-                                  colorClass = 'bg-red-500'; // Red for critical usage (90%+)
-                                } else if (utilization >= 75) {
-                                  colorClass = 'bg-yellow-500'; // Yellow for high usage (75-89%)
-                                } else if (utilization >= 50) {
-                                  colorClass = 'bg-orange-500'; // Orange for moderate usage (50-74%)
+                                if (m.material.volume && m.material.volume > 0) {
+                                  unitVolume = m.material.volume;
+                                } else if (m.material.length && m.material.width && m.material.height) {
+                                  unitVolume = m.material.length * m.material.width * m.material.height;
                                 }
                                 
-                                return (
-                                  <div 
-                                    className={`${colorClass} h-2 transition-colors duration-300`}
-                                    style={{ 
-                                      width: `${utilization}%` 
-                                    }}
-                                  />
-                                );
-                              })()}
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {(() => {
-                                const totalVolumeUsed = activeMaterials.reduce((sum, m) => {
-                                  let unitVolume = 1;
-                                  if (m.material.volume && m.material.volume > 0) {
-                                    unitVolume = m.material.volume;
-                                  } else if (m.material.length && m.material.width && m.material.height) {
-                                    unitVolume = m.material.length * m.material.width * m.material.height;
-                                  }
-                                  return sum + (m.quantity * unitVolume);
-                                }, 0);
-                                return `${totalVolumeUsed.toFixed(2)} / ${warehouse.capacity.toFixed(2)} m³ used`;
-                              })()}
-                            </p>
+                                return sum + (m.quantity * unitVolume);
+                              }, 0);
+                              
+                              const utilization = Math.min((totalVolumeUsed / warehouse.capacity) * 100, 100);
+                              const available = Math.max(warehouse.capacity - totalVolumeUsed, 0);
+                              
+                              let statusText = 'Good';
+                              
+                              if (utilization >= 90) {
+                                statusText = 'Critical';
+                              } else if (utilization >= 75) {
+                                statusText = 'High';
+                              } else if (utilization >= 50) {
+                                statusText = 'Moderate';
+                              }
+                              
+                              const chartData = [
+                                { name: "Used", value: utilization, fill: "hsl(var(--chart-1))" },
+                                { name: "Available", value: 100 - utilization, fill: "hsl(var(--muted))" },
+                              ];
+
+                              const chartConfig = {
+                                Used: {
+                                  label: "Used",
+                                  color: utilization >= 90 ? "hsl(0 84.2% 60.2%)" : 
+                                         utilization >= 75 ? "hsl(47.9 95.8% 53.1%)" : 
+                                         utilization >= 50 ? "hsl(24.6 95% 53.1%)" : 
+                                         "hsl(142.1 76.2% 36.3%)",
+                                },
+                                Available: {
+                                  label: "Available",
+                                  color: "hsl(var(--muted))",
+                                },
+                              };
+
+                              return (
+                                <div className="mt-2 relative">
+                                  {/* Visual Chart */}
+                                  <ChartContainer config={chartConfig} className="h-32 sm:h-40">
+                                    <RadialBarChart
+                                      data={chartData}
+                                      innerRadius={60}
+                                      outerRadius={80}
+                                      startAngle={90}
+                                      endAngle={-270}
+                                    >
+                                      <RadialBar
+                                        dataKey="value"
+                                        cornerRadius={4}
+                                        fill="var(--color-Used)"
+                                      >
+                                        {chartData.map((entry, index) => (
+                                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                                        ))}
+                                      </RadialBar>
+                                      <ChartTooltip
+                                        content={
+                                          <ChartTooltipContent
+                                            formatter={(value) => `${Number(value).toFixed(1)}%`}
+                                          />
+                                        }
+                                      />
+                                    </RadialBarChart>
+                                  </ChartContainer>
+                                  
+                                  {/* Center Text Overlay */}
+                                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                    <span className="text-lg sm:text-2xl font-bold text-foreground">
+                                      {utilization.toFixed(1)}%
+                                    </span>
+                                    <span className="text-[10px] sm:text-xs text-muted-foreground">
+                                      {statusText}
+                                    </span>
+                                  </div>
+                                  
+                                  {/* Stats */}
+                                  <div className="mt-2 sm:mt-3 space-y-1.5 sm:space-y-2">
+                                    <div className="flex justify-between items-center text-[11px] sm:text-xs">
+                                      <span className="text-muted-foreground">Used:</span>
+                                      <span className="font-medium">{totalVolumeUsed.toFixed(2)} m³</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-[11px] sm:text-xs">
+                                      <span className="text-muted-foreground">Available:</span>
+                                      <span className="font-medium">{available.toFixed(2)} m³</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-[11px] sm:text-xs">
+                                      <span className="text-muted-foreground">Total Capacity:</span>
+                                      <span className="font-medium">{warehouse.capacity.toFixed(2)} m³</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })()}
                           </div>
                         ) : (
                           <div>
