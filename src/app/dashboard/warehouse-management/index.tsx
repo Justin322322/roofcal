@@ -1113,23 +1113,24 @@ export function WarehouseManagementPage() {
                                 config={{
                                   used: {
                                     label: "Used",
-                                    color: "hsl(var(--primary))",
+                                    color: "hsl(var(--chart-1))",
                                   },
                                   total: {
                                     label: "Total Capacity",
-                                    color: "hsl(var(--muted))",
+                                    color: "hsl(var(--chart-2))",
                                   },
                                 }}
                                 className="h-[140px] w-full"
                               >
                                 <LineChart data={chartData}>
-                                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                                   <XAxis 
                                     dataKey="name" 
                                     tickLine={false}
                                     axisLine={false}
                                     tickMargin={8}
                                     className="text-xs"
+                                    stroke="hsl(var(--muted-foreground))"
                                   />
                                   <YAxis 
                                     tickLine={false}
@@ -1137,6 +1138,7 @@ export function WarehouseManagementPage() {
                                     tickMargin={8}
                                     className="text-xs"
                                     domain={[0, 'dataMax']}
+                                    stroke="hsl(var(--muted-foreground))"
                                   />
                                   <ChartTooltip 
                                     content={<ChartTooltipContent />}
@@ -1144,32 +1146,32 @@ export function WarehouseManagementPage() {
                                   <Line 
                                     type="monotone" 
                                     dataKey="used" 
-                                    stroke="hsl(var(--primary))"
+                                    stroke="hsl(var(--chart-1))"
                                     strokeWidth={3}
-                                    dot={{ r: 4, fill: "hsl(var(--primary))" }}
-                                    activeDot={{ r: 6 }}
+                                    dot={{ r: 5, fill: "hsl(var(--chart-1))", strokeWidth: 2, stroke: "hsl(var(--background))" }}
+                                    activeDot={{ r: 7, fill: "hsl(var(--chart-1))" }}
                                   />
                                   <Line 
                                     type="monotone" 
                                     dataKey="total" 
-                                    stroke="hsl(var(--muted))"
+                                    stroke="hsl(var(--chart-2))"
                                     strokeWidth={2}
                                     strokeDasharray="5 5"
-                                    dot={{ r: 4, fill: "hsl(var(--muted))" }}
-                                    activeDot={{ r: 6 }}
+                                    dot={{ r: 5, fill: "hsl(var(--chart-2))", strokeWidth: 2, stroke: "hsl(var(--background))" }}
+                                    activeDot={{ r: 7, fill: "hsl(var(--chart-2))" }}
                                   />
                                 </LineChart>
                               </ChartContainer>
                               <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
                                 <div className="flex items-center gap-2">
-                                  <div className="w-3 h-3 rounded-sm bg-primary"></div>
+                                  <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: 'hsl(var(--chart-1))' }}></div>
                                   <div className="text-xs">
                                     <span className="font-medium">{totalVolumeUsed.toFixed(2)} m³</span>
                                     <span className="text-muted-foreground ml-1">used</span>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <div className="w-3 h-3 rounded-sm bg-muted"></div>
+                                  <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: 'hsl(var(--chart-2))' }}></div>
                                   <div className="text-xs">
                                     <span className="font-medium">{warehouse.capacity.toFixed(2)} m³</span>
                                     <span className="text-muted-foreground ml-1">total</span>
