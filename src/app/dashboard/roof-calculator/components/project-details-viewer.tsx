@@ -1,17 +1,21 @@
 "use client";
 
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency, formatArea } from "@/lib/utils";
-import { CalendarIcon, MapPinIcon, UserIcon, FileTextIcon } from "lucide-react";
+import { 
+  MapPinIcon, 
+  FileTextIcon,
+  DollarSignIcon,
+  RulerIcon,
+  PackageIcon,
+} from "lucide-react";
 
 interface Project {
   id: string;
@@ -27,9 +31,23 @@ interface Project {
   createdAt: Date;
   proposalSent?: Date | null;
   notes?: string | null;
+  // Additional fields for detailed view
+  length?: number;
+  width?: number;
+  pitch?: number;
   materialCost?: number;
+  gutterCost?: number;
+  ridgeCost?: number;
+  screwsCost?: number;
+  insulationCost?: number;
+  ventilationCost?: number;
+  totalMaterialsCost?: number;
   laborCost?: number;
-  deliveryCost?: number;
+  removalCost?: number;
+  deliveryCost?: number | null;
+  deliveryDistance?: number | null;
+  latitude?: number | null;
+  longitude?: number | null;
   contractor?: {
     id: string;
     firstName: string;
@@ -62,7 +80,7 @@ export function ProjectDetailsViewer({ project, isOpen, onClose }: ProjectDetail
       case "CLIENT_PENDING":
         return <Badge variant="outline">Pending Contractor</Badge>;
       case "CONTRACTOR_REVIEWING":
-        return <Badge variant="default" className="bg-yellow-100 text-yellow-800">Under Review</Badge>;
+        return <Badge variant="default" className="bg-yellow-100 text-yellow-800">Action Required</Badge>;
       case "ACCEPTED":
         return <Badge variant="default" className="bg-green-100 text-green-800">Accepted</Badge>;
       case "IN_PROGRESS":
@@ -70,143 +88,240 @@ export function ProjectDetailsViewer({ project, isOpen, onClose }: ProjectDetail
       case "COMPLETED":
         return <Badge variant="default" className="bg-gray-100 text-gray-800">Completed</Badge>;
       case "REJECTED":
-        return <Badge variant="destructive">Rejected</Badge>;
+        return <Badge variant="destructive">Declined</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileTextIcon className="h-5 w-5" />
-            Project Details
-          </DialogTitle>
-          <DialogDescription>
-            Complete information about your roofing project
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-6">
-          {/* Project Header */}
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-xl font-semibold">{project.projectName}</h3>
-              {project.address && (
-                <div className="flex items-center gap-2 text-muted-foreground mt-1">
-                  <MapPinIcon className="h-4 w-4" />
-                  <span>{project.address}, {project.city}, {project.state}</span>
-                </div>
-              )}
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent className="sm:max-w-2xl overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle>{project.projectName}</SheetTitle>
+          <SheetDescription>
+            Complete project details and pricing breakdown
+          </SheetDescription>
+        </SheetHeader>
+        
+        <div className="mt-6 space-y-6">
+          {/* Project Information */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <FileTextIcon className="h-5 w-5 text-primary" />
+              <h3 className="text-lg font-semibold">Project Information</h3>
             </div>
-            {getStatusBadge(project.status, project.proposalStatus)}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Status</p>
+                <p className="text-sm font-medium">{getStatusBadge(project.status, project.proposalStatus)}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Material</p>
+                <p className="text-sm font-medium">{project.material}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Area</p>
+                <p className="text-sm font-medium">{project.area.toLocaleString()} sq ft</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Created</p>
+                <p className="text-sm font-medium">{new Date(project.createdAt).toLocaleDateString()}</p>
+              </div>
+            </div>
           </div>
 
           <Separator />
 
-          {/* Project Information */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Basic Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">Material</div>
-                  <div className="capitalize">{project.material}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">Roof Area</div>
-                  <div>{formatArea(project.area)}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">Created Date</div>
-                  <div className="flex items-center gap-2">
-                    <CalendarIcon className="h-4 w-4" />
-                    {project.createdAt instanceof Date && !isNaN(project.createdAt.getTime()) 
-                      ? project.createdAt.toLocaleDateString()
-                      : new Date(project.createdAt).toLocaleDateString()
-                    }
-                  </div>
-                </div>
-                {project.proposalSent && (
-                  <div>
-                    <div className="text-sm font-medium text-muted-foreground">Proposal Sent</div>
-                    <div className="flex items-center gap-2">
-                      <CalendarIcon className="h-4 w-4" />
-                      {new Date(project.proposalSent).toLocaleDateString()}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Cost Breakdown</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {project.materialCost !== undefined && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Material Cost</span>
-                    <span className="font-medium">{formatCurrency(project.materialCost)}</span>
-                  </div>
-                )}
-                {project.laborCost !== undefined && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Labor Cost</span>
-                    <span className="font-medium">{formatCurrency(project.laborCost)}</span>
-                  </div>
-                )}
-                {project.deliveryCost !== undefined && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Delivery Cost</span>
-                    <span className="font-medium">{formatCurrency(project.deliveryCost)}</span>
-                  </div>
-                )}
-                <Separator />
-                <div className="flex justify-between font-semibold text-lg">
-                  <span>Total Cost</span>
-                  <span>{formatCurrency(project.totalCost)}</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Contractor Information */}
           {project.contractor && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Contractor Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-3">
-                  <UserIcon className="h-5 w-5 text-muted-foreground" />
+            <>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <PackageIcon className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-semibold">Contractor Information</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="font-medium">{project.contractor.firstName} {project.contractor.lastName}</div>
-                    <div className="text-sm text-muted-foreground">{project.contractor.email}</div>
+                    <p className="text-sm font-medium text-muted-foreground">Name</p>
+                    <p className="text-sm font-medium">{project.contractor.firstName} {project.contractor.lastName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Email</p>
+                    <p className="text-sm font-medium">{project.contractor.email}</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+              <Separator />
+            </>
           )}
+
+          {/* Location */}
+          {(project.address || project.city || project.state) && (
+            <>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <MapPinIcon className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-semibold">Location</h3>
+                </div>
+                <div className="space-y-2">
+                  {project.address && (
+                    <p className="text-sm"><span className="font-medium text-muted-foreground">Address:</span> {project.address}</p>
+                  )}
+                  {(project.city || project.state) && (
+                    <p className="text-sm">
+                      <span className="font-medium text-muted-foreground">City/State:</span> {project.city}, {project.state}
+                    </p>
+                  )}
+                  {project.deliveryDistance !== null && project.deliveryDistance !== undefined && (
+                    <p className="text-sm">
+                      <span className="font-medium text-muted-foreground">Delivery Distance:</span> {project.deliveryDistance.toFixed(2)} miles
+                    </p>
+                  )}
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
+
+          {/* Project Dimensions */}
+          {(project.length || project.width || project.pitch) && (
+            <>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <RulerIcon className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-semibold">Dimensions</h3>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  {project.length && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Length</p>
+                      <p className="text-sm font-medium">{project.length} ft</p>
+                    </div>
+                  )}
+                  {project.width && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Width</p>
+                      <p className="text-sm font-medium">{project.width} ft</p>
+                    </div>
+                  )}
+                  {project.pitch && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Pitch</p>
+                      <p className="text-sm font-medium">{project.pitch}°</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
+
+          {/* Price Breakdown */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <DollarSignIcon className="h-5 w-5 text-primary" />
+              <h3 className="text-lg font-semibold">Price Breakdown</h3>
+            </div>
+            
+            <div className="space-y-3">
+              {/* Material Costs */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Material Costs</p>
+                <div className="ml-4 space-y-1">
+                  {project.materialCost !== undefined && project.materialCost > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Roofing Material</span>
+                      <span className="font-medium">${project.materialCost.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {project.gutterCost !== undefined && project.gutterCost > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Gutter System</span>
+                      <span className="font-medium">${project.gutterCost.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {project.ridgeCost !== undefined && project.ridgeCost > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Ridge Cap</span>
+                      <span className="font-medium">${project.ridgeCost.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {project.screwsCost !== undefined && project.screwsCost > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Screws & Fasteners</span>
+                      <span className="font-medium">${project.screwsCost.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {project.insulationCost !== undefined && project.insulationCost > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Insulation</span>
+                      <span className="font-medium">${project.insulationCost.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {project.ventilationCost !== undefined && project.ventilationCost > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Ventilation</span>
+                      <span className="font-medium">${project.ventilationCost.toLocaleString()}</span>
+                    </div>
+                  )}
+                </div>
+                {project.totalMaterialsCost !== undefined && project.totalMaterialsCost > 0 && (
+                  <div className="flex justify-between text-sm font-medium pt-1 border-t">
+                    <span>Subtotal - Materials</span>
+                    <span>${project.totalMaterialsCost.toLocaleString()}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Labor & Services */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Labor & Services</p>
+                <div className="ml-4 space-y-1">
+                  {project.laborCost !== undefined && project.laborCost > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Labor</span>
+                      <span className="font-medium">${project.laborCost.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {project.removalCost !== undefined && project.removalCost > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Removal & Disposal</span>
+                      <span className="font-medium">${project.removalCost.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {project.deliveryCost !== null && project.deliveryCost !== undefined && project.deliveryCost > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Delivery</span>
+                      <span className="font-medium">${project.deliveryCost.toLocaleString()}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Total */}
+              <div className="pt-3 border-t-2">
+                <div className="flex justify-between text-lg font-bold">
+                  <span>Total Project Cost</span>
+                  <span className="text-primary">${project.totalCost.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Notes */}
           {project.notes && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Notes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm whitespace-pre-wrap">{project.notes}</p>
-              </CardContent>
-            </Card>
+            <>
+              <Separator />
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Notes</p>
+                <p className="text-sm bg-muted p-3 rounded-md whitespace-pre-wrap">{project.notes}</p>
+              </div>
+            </>
           )}
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }
 

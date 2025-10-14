@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
-import { generateHandoffToken } from "@/lib/handoff-token";
-import { sendCustomEmail } from "@/lib/email";
 import { notifyQuoteRequested } from "@/lib/notifications";
 
 export const runtime = 'nodejs';
@@ -32,45 +30,17 @@ export async function POST(
       return NextResponse.json({ error: "Contractor not found" }, { status: 404 });
     }
 
-    // Update project handoff fields
+    // Update project handoff fields - set to CONTRACTOR_REVIEWING so contractor can accept/decline immediately
     const updated = await prisma.project.update({
       where: { id },
       data: {
         contractorId,
         sentToContractorAt: new Date(),
-        contractorStatus: "pending",
-        status: "CLIENT_PENDING",
+        contractorStatus: "reviewing",
+        status: "CONTRACTOR_REVIEWING",
         handoffNote: note,
       },
     });
-
-    // Generate handoff token and email contractor
-    const token = generateHandoffToken(id, contractorId);
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const acceptUrl = `${baseUrl}/contractor/projects/${token}?action=accept`;
-    const declineUrl = `${baseUrl}/contractor/projects/${token}?action=decline`;
-
-    await sendCustomEmail(
-      contractor.email,
-      `Project Ready for Review: ${updated.projectName}`,
-      {
-        title: "Project Ready for Review",
-        heading: "Project Ready for Review",
-        content: `A new project "${updated.projectName}" is ready for your review. ${note ? `<br/><br/><strong>Note:</strong> ${note}` : ""}`,
-        actionContent: `
-          <div style="text-align: center; margin: 32px 0;">
-            <a href="${acceptUrl}" style="display: inline-block; background: #16a34a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; margin-right: 12px;">
-              Accept
-            </a>
-            <a href="${declineUrl}" style="display: inline-block; background: #dc2626; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;">
-              Decline
-            </a>
-          </div>
-        `,
-        securityNotice: "This link will expire in 7 days.",
-      },
-      `A new project "${updated.projectName}" is ready for your review. Accept: ${acceptUrl} Decline: ${declineUrl}`
-    );
 
     // In-app notification
     await notifyQuoteRequested(

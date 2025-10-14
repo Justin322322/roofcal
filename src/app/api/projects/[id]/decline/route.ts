@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
+import { sendCustomEmail } from "@/lib/email";
 
 export const runtime = 'nodejs';
 
@@ -42,6 +43,39 @@ export async function POST(
         notes: reason ? `${project.notes ? project.notes + '\n\n' : ''}Declined: ${reason}` : project.notes,
       },
     });
+
+    // Send email to client notifying them of the rejection
+    if (project.user_project_clientIdTouser) {
+      const client = project.user_project_clientIdTouser;
+      
+      try {
+        await sendCustomEmail(
+          client.email,
+          `Project Declined: ${updatedProject.projectName}`,
+          {
+            title: "Project Declined",
+            heading: "Project Declined",
+            content: `
+              <p>We regret to inform you that the contractor has declined your project "<strong>${updatedProject.projectName}</strong>".</p>
+              ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
+              <p>Your project has been marked as declined. You may want to contact another contractor or review your project details.</p>
+            `,
+            actionContent: `
+              <div style="text-align: center; margin: 32px 0;">
+                <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard?tab=my-projects" style="display: inline-block; background: #16a34a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                  View My Projects
+                </a>
+              </div>
+            `,
+            securityNotice: "If you have any questions, please contact our support team.",
+          },
+          `Your project "${updatedProject.projectName}" has been declined by the contractor. ${reason ? `Reason: ${reason}` : ''}`
+        );
+      } catch (emailError) {
+        console.error("Failed to send rejection email:", emailError);
+        // Don't fail the request if email fails
+      }
+    }
 
     return NextResponse.json({ 
       success: true, 

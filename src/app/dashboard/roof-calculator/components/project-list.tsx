@@ -120,6 +120,8 @@ export function ProjectList() {
   const [contractorDialogOpen, setContractorDialogOpen] = useState(false);
   const [selectedContractorId, setSelectedContractorId] = useState<string>("");
   const [sendingToContractor, setSendingToContractor] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
+  const [archivingProjectId, setArchivingProjectId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProjects();
@@ -181,6 +183,46 @@ export function ProjectList() {
     }
   };
 
+  const handleArchiveProject = async (projectId: string) => {
+    setArchivingProjectId(projectId);
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Failed to archive project');
+
+      toast.success('Project archived successfully');
+      fetchProjects();
+    } catch (error) {
+      console.error('Failed to archive project:', error);
+      toast.error('Failed to archive project');
+    } finally {
+      setArchivingProjectId(null);
+    }
+  };
+
+  const handleUnarchiveProject = async (projectId: string) => {
+    setArchivingProjectId(projectId);
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unarchive: true }),
+      });
+
+      if (!response.ok) throw new Error('Failed to unarchive project');
+
+      toast.success('Project unarchived successfully');
+      fetchProjects();
+    } catch (error) {
+      console.error('Failed to unarchive project:', error);
+      toast.error('Failed to unarchive project');
+    } finally {
+      setArchivingProjectId(null);
+    }
+  };
+
 
   const getStatusBadge = (status: string, proposalStatus: string | null) => {
     if (proposalStatus === "SENT") {
@@ -208,12 +250,18 @@ export function ProjectList() {
         return <Badge variant="default" className="bg-gray-100 text-gray-800">Completed</Badge>;
       case "REJECTED":
         return <Badge variant="destructive">Rejected</Badge>;
+      case "ARCHIVED":
+        return <Badge variant="outline" className="bg-slate-100 text-slate-600">Archived</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
 
   const filteredProjects = projects.filter(project => {
+    // Archive filter
+    if (!showArchived && project.status === "ARCHIVED") return false;
+    if (showArchived && project.status !== "ARCHIVED") return false;
+
     // Search filter
     const matchesSearch = project.projectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          project.material.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -221,8 +269,8 @@ export function ProjectList() {
     
     if (!matchesSearch) return false;
 
-    // Status filter
-    if (statusFilter !== "all") {
+    // Status filter (skip for archived projects)
+    if (statusFilter !== "all" && project.status !== "ARCHIVED") {
       const matchesStatus = project.status === statusFilter || 
                            (statusFilter === "proposal" && project.proposalStatus === "SENT");
       if (!matchesStatus) return false;
@@ -255,6 +303,7 @@ export function ProjectList() {
     setMaxCost("");
     setDateFrom("");
     setDateTo("");
+    setShowArchived(false);
   };
 
   const hasActiveFilters = searchQuery || statusFilter !== "all" || minCost || maxCost || dateFrom || dateTo;
@@ -415,8 +464,24 @@ export function ProjectList() {
               </div>
             </div>
 
+            {/* Show Archived Toggle */}
+            <div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="showArchived"
+                  checked={showArchived}
+                  onChange={(e) => setShowArchived(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <label htmlFor="showArchived" className="text-sm font-medium cursor-pointer">
+                  Show Archived Projects
+                </label>
+              </div>
+            </div>
+
             {/* Clear Filters Button */}
-            {hasActiveFilters && (
+            {(hasActiveFilters || showArchived) && (
               <div>
                 <Button
                   variant="outline"
@@ -609,14 +674,23 @@ export function ProjectList() {
                             Send to Contractor
                           </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem
-                          onClick={() => {
-                            toast.info("Archive functionality coming soon");
-                          }}
-                        >
-                          <ArchiveIcon className="mr-2 h-4 w-4" />
-                          Archive
-                        </DropdownMenuItem>
+                        {project.status === "ARCHIVED" ? (
+                          <DropdownMenuItem
+                            onClick={() => handleUnarchiveProject(project.id)}
+                            disabled={archivingProjectId === project.id}
+                          >
+                            <ArchiveIcon className="mr-2 h-4 w-4" />
+                            {archivingProjectId === project.id ? "Unarchiving..." : "Unarchive"}
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem
+                            onClick={() => handleArchiveProject(project.id)}
+                            disabled={archivingProjectId === project.id}
+                          >
+                            <ArchiveIcon className="mr-2 h-4 w-4" />
+                            {archivingProjectId === project.id ? "Archiving..." : "Archive"}
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -46,7 +47,6 @@ import {
   CalendarIcon,
   CheckIcon,
   XIcon,
-  PlayIcon,
   CheckCircleIcon,
   FilterIcon,
   XCircleIcon,
@@ -55,6 +55,37 @@ import {
   RulerIcon,
   PackageIcon,
 } from "lucide-react";
+
+// Dynamically import Leaflet components to avoid SSR issues
+const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), {
+  ssr: false,
+});
+
+const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), {
+  ssr: false,
+});
+
+const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), {
+  ssr: false,
+});
+
+const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
+  ssr: false,
+});
+
+// Fix for default markers in React Leaflet - only on client side
+const setupLeafletIcons = async () => {
+  if (typeof window !== "undefined") {
+    const L = await import("leaflet");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (L.Icon.Default.prototype as any)._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+      iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+      shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+    });
+  }
+};
 
 interface Project {
   id: string;
@@ -94,6 +125,44 @@ interface Project {
   notes?: string | null;
 }
 
+// Simple Location Map Component
+function LocationMap({ latitude, longitude, address }: { latitude: number | null; longitude: number | null; address?: string | null }) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    setupLeafletIcons();
+  }, []);
+
+  if (!isClient || !latitude || !longitude) {
+    return null;
+  }
+
+  return (
+    <div className="mt-4 rounded-lg overflow-hidden border" style={{ height: "250px" }}>
+      <MapContainer
+        center={[latitude, longitude]}
+        zoom={13}
+        className="h-full w-full"
+        scrollWheelZoom={false}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <Marker position={[latitude, longitude]}>
+          <Popup>
+            <div className="text-sm">
+              <div className="font-semibold">Project Location</div>
+              {address && <div className="text-gray-600">{address}</div>}
+            </div>
+          </Popup>
+        </Marker>
+      </MapContainer>
+    </div>
+  );
+}
+
 export function ContractorProjectsContent() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -131,34 +200,6 @@ export function ContractorProjectsContent() {
       toast.error("Failed to load projects");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleApproveProject = async (projectId: string) => {
-    setLoadingProjectId(projectId);
-    try {
-      const response = await fetch(`/api/projects/${projectId}/approve`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to approve project");
-      }
-
-      const result = await response.json();
-      toast.success(result.message || "Project approved successfully", {
-        description: "The project is now under review",
-      });
-      await fetchProjects();
-    } catch (error) {
-      console.error("Failed to approve project:", error);
-      toast.error("Failed to approve project", {
-        description: error instanceof Error ? error.message : "Please try again",
-      });
-    } finally {
-      setLoadingProjectId(null);
     }
   };
 
@@ -207,34 +248,6 @@ export function ContractorProjectsContent() {
     }
   };
 
-  const handleStartContract = async (projectId: string) => {
-    setLoadingProjectId(projectId);
-    try {
-      const response = await fetch(`/api/projects/${projectId}/start-contract`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to start contract");
-      }
-
-      const result = await response.json();
-      toast.success(result.message || "Contract started", {
-        description: "The project is now in progress",
-      });
-      await fetchProjects();
-    } catch (error) {
-      console.error("Failed to start contract:", error);
-      toast.error("Failed to start contract", {
-        description: error instanceof Error ? error.message : "Please try again",
-      });
-    } finally {
-      setLoadingProjectId(null);
-    }
-  };
-
   const handleFinishProject = async (projectId: string) => {
     setLoadingProjectId(projectId);
     try {
@@ -263,12 +276,13 @@ export function ContractorProjectsContent() {
     }
   };
 
-  const handleAcceptAndSendProposal = async (projectId: string) => {
+  const handleAcceptProject = async (projectId: string) => {
     setLoadingProjectId(projectId);
     try {
-      const response = await fetch(`/api/projects/${projectId}/approve`, {
-        method: "POST",
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "ACCEPTED" }),
       });
 
       if (!response.ok) {
@@ -278,7 +292,7 @@ export function ContractorProjectsContent() {
 
       const result = await response.json();
       toast.success(result.message || "Project accepted", {
-        description: "You can now send a proposal to the client",
+        description: "The project has been accepted and is ready to work on",
       });
       await fetchProjects();
     } catch (error) {
@@ -303,18 +317,16 @@ export function ContractorProjectsContent() {
     }
     
     switch (status) {
-      case "CLIENT_PENDING":
-        return <Badge variant="outline" className="border-orange-200 text-orange-800">Pending Review</Badge>;
       case "CONTRACTOR_REVIEWING":
-        return <Badge variant="default" className="bg-yellow-100 text-yellow-800">Under Review</Badge>;
+        return <Badge variant="default" className="bg-yellow-100 text-yellow-800">Action Required</Badge>;
       case "PROPOSAL_SENT":
         return <Badge variant="default" className="bg-blue-100 text-blue-800">Proposal Sent</Badge>;
       case "ACCEPTED":
         return <Badge variant="default" className="bg-green-100 text-green-800">Accepted</Badge>;
-      case "IN_PROGRESS":
-        return <Badge variant="default" className="bg-purple-100 text-purple-800">In Progress</Badge>;
       case "COMPLETED":
         return <Badge variant="default" className="bg-gray-100 text-gray-800">Completed</Badge>;
+      case "REJECTED":
+        return <Badge variant="destructive">Declined</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -331,13 +343,10 @@ export function ContractorProjectsContent() {
     // Status filter
     if (statusFilter !== "all") {
       const projectStatus = project.proposalStatus || project.status;
-      if (statusFilter === "pending" && projectStatus !== "CLIENT_PENDING") return false;
       if (statusFilter === "reviewing" && projectStatus !== "CONTRACTOR_REVIEWING") return false;
-      if (statusFilter === "proposal" && projectStatus !== "PROPOSAL_SENT" && project.proposalStatus !== "SENT") return false;
       if (statusFilter === "accepted" && projectStatus !== "ACCEPTED" && project.proposalStatus !== "ACCEPTED") return false;
-      if (statusFilter === "in_progress" && projectStatus !== "IN_PROGRESS") return false;
       if (statusFilter === "completed" && projectStatus !== "COMPLETED") return false;
-      if (statusFilter === "rejected" && project.proposalStatus !== "REJECTED") return false;
+      if (statusFilter === "rejected" && projectStatus !== "REJECTED" && project.proposalStatus !== "REJECTED") return false;
     }
 
     // Cost filter
@@ -432,13 +441,10 @@ export function ContractorProjectsContent() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="pending">Pending Review</SelectItem>
-                    <SelectItem value="reviewing">Under Review</SelectItem>
-                    <SelectItem value="proposal">Proposal Sent</SelectItem>
+                    <SelectItem value="reviewing">Action Required</SelectItem>
                     <SelectItem value="accepted">Accepted</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="rejected">Rejected</SelectItem>
+                    <SelectItem value="rejected">Declined</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -607,12 +613,12 @@ export function ContractorProjectsContent() {
                             <EyeIcon className="h-4 w-4 mr-1" />
                             View
                           </Button>
-                          {project.status === "CLIENT_PENDING" && (
+                          {project.status === "CONTRACTOR_REVIEWING" && (
                             <>
                               <Button
                                 size="sm"
                                 variant="default"
-                                onClick={() => handleApproveProject(project.id)}
+                                onClick={() => handleAcceptProject(project.id)}
                                 disabled={loadingProjectId === project.id}
                               >
                                 {loadingProjectId === project.id ? (
@@ -623,7 +629,7 @@ export function ContractorProjectsContent() {
                                 ) : (
                                   <>
                                     <CheckIcon className="h-4 w-4 mr-1" />
-                                    Approve
+                                    Accept
                                   </>
                                 )}
                               </Button>
@@ -642,26 +648,6 @@ export function ContractorProjectsContent() {
                             <Button
                               size="sm"
                               variant="default"
-                              onClick={() => handleStartContract(project.id)}
-                              disabled={loadingProjectId === project.id}
-                            >
-                              {loadingProjectId === project.id ? (
-                                <>
-                                  <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
-                                  Starting...
-                                </>
-                              ) : (
-                                <>
-                                  <PlayIcon className="h-4 w-4 mr-1" />
-                                  Start Contract
-                                </>
-                              )}
-                            </Button>
-                          )}
-                          {project.status === "IN_PROGRESS" && (
-                            <Button
-                              size="sm"
-                              variant="default"
                               onClick={() => handleFinishProject(project.id)}
                               disabled={loadingProjectId === project.id}
                             >
@@ -677,37 +663,6 @@ export function ContractorProjectsContent() {
                                 </>
                               )}
                             </Button>
-                          )}
-                          {project.status === "CONTRACTOR_REVIEWING" && (
-                            <>
-                              <Button
-                                size="sm"
-                                variant="default"
-                                onClick={() => handleAcceptAndSendProposal(project.id)}
-                                disabled={loadingProjectId === project.id}
-                              >
-                                {loadingProjectId === project.id ? (
-                                  <>
-                                    <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
-                                    Processing...
-                                  </>
-                                ) : (
-                                  <>
-                                    <CheckIcon className="h-4 w-4 mr-1" />
-                                    Accept & Send Proposal
-                                  </>
-                                )}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleDeclineProject(project.id)}
-                                disabled={loadingProjectId === project.id}
-                              >
-                                <XIcon className="h-4 w-4 mr-1" />
-                                Decline
-                              </Button>
-                            </>
                           )}
                           {(project.status === "PROPOSAL_SENT" || 
                             project.status === "COMPLETED" ||
@@ -812,6 +767,14 @@ export function ContractorProjectsContent() {
                         </p>
                       )}
                     </div>
+                    {/* Location Map */}
+                    {selectedProject.latitude && selectedProject.longitude && (
+                      <LocationMap
+                        latitude={selectedProject.latitude}
+                        longitude={selectedProject.longitude}
+                        address={selectedProject.address}
+                      />
+                    )}
                   </div>
                   <Separator />
                 </>
@@ -865,44 +828,44 @@ export function ContractorProjectsContent() {
                       {selectedProject.materialCost !== undefined && selectedProject.materialCost > 0 && (
                         <div className="flex justify-between text-sm">
                           <span>Roofing Material</span>
-                          <span className="font-medium">${selectedProject.materialCost.toLocaleString()}</span>
+                          <span className="font-medium">₱{selectedProject.materialCost.toLocaleString()}</span>
                         </div>
                       )}
                       {selectedProject.gutterCost !== undefined && selectedProject.gutterCost > 0 && (
                         <div className="flex justify-between text-sm">
                           <span>Gutter System</span>
-                          <span className="font-medium">${selectedProject.gutterCost.toLocaleString()}</span>
+                          <span className="font-medium">₱{selectedProject.gutterCost.toLocaleString()}</span>
                         </div>
                       )}
                       {selectedProject.ridgeCost !== undefined && selectedProject.ridgeCost > 0 && (
                         <div className="flex justify-between text-sm">
                           <span>Ridge Cap</span>
-                          <span className="font-medium">${selectedProject.ridgeCost.toLocaleString()}</span>
+                          <span className="font-medium">₱{selectedProject.ridgeCost.toLocaleString()}</span>
                         </div>
                       )}
                       {selectedProject.screwsCost !== undefined && selectedProject.screwsCost > 0 && (
                         <div className="flex justify-between text-sm">
                           <span>Screws & Fasteners</span>
-                          <span className="font-medium">${selectedProject.screwsCost.toLocaleString()}</span>
+                          <span className="font-medium">₱{selectedProject.screwsCost.toLocaleString()}</span>
                         </div>
                       )}
                       {selectedProject.insulationCost !== undefined && selectedProject.insulationCost > 0 && (
                         <div className="flex justify-between text-sm">
                           <span>Insulation</span>
-                          <span className="font-medium">${selectedProject.insulationCost.toLocaleString()}</span>
+                          <span className="font-medium">₱{selectedProject.insulationCost.toLocaleString()}</span>
                         </div>
                       )}
                       {selectedProject.ventilationCost !== undefined && selectedProject.ventilationCost > 0 && (
                         <div className="flex justify-between text-sm">
                           <span>Ventilation</span>
-                          <span className="font-medium">${selectedProject.ventilationCost.toLocaleString()}</span>
+                          <span className="font-medium">₱{selectedProject.ventilationCost.toLocaleString()}</span>
                         </div>
                       )}
                     </div>
                     {selectedProject.totalMaterialsCost !== undefined && selectedProject.totalMaterialsCost > 0 && (
                       <div className="flex justify-between text-sm font-medium pt-1 border-t">
                         <span>Subtotal - Materials</span>
-                        <span>${selectedProject.totalMaterialsCost.toLocaleString()}</span>
+                        <span>₱{selectedProject.totalMaterialsCost.toLocaleString()}</span>
                       </div>
                     )}
                   </div>
@@ -914,19 +877,19 @@ export function ContractorProjectsContent() {
                       {selectedProject.laborCost !== undefined && selectedProject.laborCost > 0 && (
                         <div className="flex justify-between text-sm">
                           <span>Labor</span>
-                          <span className="font-medium">${selectedProject.laborCost.toLocaleString()}</span>
+                          <span className="font-medium">₱{selectedProject.laborCost.toLocaleString()}</span>
                         </div>
                       )}
                       {selectedProject.removalCost !== undefined && selectedProject.removalCost > 0 && (
                         <div className="flex justify-between text-sm">
                           <span>Removal & Disposal</span>
-                          <span className="font-medium">${selectedProject.removalCost.toLocaleString()}</span>
+                          <span className="font-medium">₱{selectedProject.removalCost.toLocaleString()}</span>
                         </div>
                       )}
                       {selectedProject.deliveryCost !== null && selectedProject.deliveryCost !== undefined && selectedProject.deliveryCost > 0 && (
                         <div className="flex justify-between text-sm">
                           <span>Delivery</span>
-                          <span className="font-medium">${selectedProject.deliveryCost.toLocaleString()}</span>
+                          <span className="font-medium">₱{selectedProject.deliveryCost.toLocaleString()}</span>
                         </div>
                       )}
                     </div>
@@ -936,7 +899,7 @@ export function ContractorProjectsContent() {
                   <div className="pt-3 border-t-2">
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total Project Cost</span>
-                      <span className="text-primary">${selectedProject.totalCost.toLocaleString()}</span>
+                      <span className="text-primary">₱{selectedProject.totalCost.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
