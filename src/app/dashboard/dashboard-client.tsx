@@ -18,9 +18,11 @@ import MyProjectsContent from "./(sections)/my-projects";
 import ArchivedProjectsContent from "./(sections)/archived-projects";
 import DatabaseManagementContent from "./(sections)/database-management";
 import SystemControlContent from "./(sections)/system-control";
+import RequestHelpContent from "./(sections)/request-help";
 
 type DashboardSection =
   | "roof-calculator"
+  | "request-help"
   | "my-projects"
   | "archived-projects"
   | "contractor-projects"
@@ -29,7 +31,6 @@ type DashboardSection =
   | "database-management"
   | "system-control"
   | "admin-management"
-  | "create-customer-project"
 
 function DashboardSkeleton() {
   return (
@@ -110,6 +111,8 @@ export default function DashboardClient() {
     switch (section) {
       case "roof-calculator":
         return userRole === UserRole.CLIENT; // Only clients can access roof calculator
+      case "request-help":
+        return userRole === UserRole.CLIENT; // Only clients can request help
       case "my-projects":
         return userRole === UserRole.CLIENT; // Only clients can access my projects
       case "archived-projects":
@@ -118,7 +121,6 @@ export default function DashboardClient() {
         return userRole === UserRole.ADMIN; // Only contractors (admins) can access project management
       case "account-management":
       case "pricing-maintenance":
-      case "create-customer-project":
         return userRole === UserRole.ADMIN;
       case "database-management":
       case "system-control":
@@ -196,6 +198,8 @@ export default function DashboardClient() {
     switch (activeSection) {
       case "roof-calculator":
         return <RoofCalculatorContent />;
+      case "request-help":
+        return <RequestHelpContent />;
       case "my-projects":
         return <MyProjectsContent />;
       case "archived-projects":
@@ -238,13 +242,6 @@ export default function DashboardClient() {
             </div>
           </div>
         );
-      case "create-customer-project":
-        // Create Customer Project page for ADMIN users
-        const CreateCustomerProject = dynamic(
-          () => import("@/app/dashboard/create-customer-project"),
-          { ssr: false }
-        );
-        return <CreateCustomerProject />;
       case null: // Default based on user role
       default:
         if (userRole === UserRole.CLIENT) {

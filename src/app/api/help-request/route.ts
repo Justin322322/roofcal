@@ -62,7 +62,7 @@ export async function POST(request: Request) {
             message: `${session.user.name} (${session.user.email}) needs assistance with creating a project${message ? `: "${message}"` : ""}`,
             projectId: null,
             projectName: null,
-            actionUrl: `/dashboard?tab=create-customer-project&clientId=${session.user.id}`,
+            actionUrl: `/dashboard?tab=roof-calculator&helpRequest=true&clientId=${session.user.id}`,
             read: false,
             created_at: new Date(),
           },

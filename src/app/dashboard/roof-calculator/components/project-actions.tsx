@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { SaveIcon, Loader2Icon, SendIcon, UsersIcon } from "lucide-react";
-import { saveProject, updateProject, getProjectDetails } from "../actions";
+import { saveProject, updateProject, getProjectDetails, saveProjectForCustomer } from "../actions";
 import { AddressInput } from "@/components/map/address-input";
 import { WarehouseSelector } from "@/components/map/warehouse-selector";
 import { formatCurrency, formatArea } from "@/lib/utils";
@@ -48,6 +48,9 @@ interface ProjectActionsProps {
   onWarehouseChange?: (warehouseId: string) => void;
   projectAddress?: { coordinates: { latitude: number; longitude: number } } | null;
   onAddressChange?: (address: { coordinates: { latitude: number; longitude: number } }) => void;
+  isHelpRequest?: boolean;
+  helpRequestClientId?: string | null;
+  helpRequestClient?: { name: string; email: string } | null;
 }
 
 interface Contractor {
@@ -72,6 +75,9 @@ export function ProjectActions({
   onWarehouseChange,
   projectAddress: _projectAddress, // eslint-disable-line @typescript-eslint/no-unused-vars
   onAddressChange,
+  isHelpRequest = false,
+  helpRequestClientId,
+  helpRequestClient,
 }: ProjectActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -217,16 +223,27 @@ export function ProjectActions({
         deliveryDistance: deliveryDistance || undefined,
       };
 
-      // If we have a currentProjectId, update the existing project
-      // Otherwise, create a new project
-      const result = currentProjectId
-        ? await updateProject(currentProjectId, projectData)
-        : await saveProject(projectData);
+      let result;
+      
+      if (currentProjectId) {
+        // Update existing project
+        result = await updateProject(currentProjectId, projectData);
+      } else if (isHelpRequest && helpRequestClientId) {
+        // Save project for customer (help request)
+        result = await saveProjectForCustomer(projectData, helpRequestClientId);
+      } else {
+        // Save normal project
+        result = await saveProject(projectData);
+      }
 
       if (result.success) {
-        const action = currentProjectId ? "updated" : "saved";
+        const action = currentProjectId ? "updated" : (isHelpRequest ? "created for client" : "saved");
+        const description = isHelpRequest 
+          ? `Project "${projectName}" has been created for ${helpRequestClient?.name || "the client"}`
+          : `Project "${projectName}" has been ${currentProjectId ? "updated" : "saved"}`;
+        
         toast.success(`Project ${action} successfully`, {
-          description: `Project "${projectName}" has been ${action}`,
+          description,
         });
         onSaveDialogChange?.(false);
         setProjectName("");
@@ -422,12 +439,18 @@ export function ProjectActions({
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {currentProjectId ? "Update Project" : "Save Project"}
+              {currentProjectId 
+                ? "Update Project" 
+                : isHelpRequest 
+                  ? "Create Project for Client" 
+                  : "Save Project"}
             </DialogTitle>
             <DialogDescription>
               {currentProjectId
                 ? "Update your current roof calculation project."
-                : `Save your current roof calculation as a ${measurements.constructionMode === "repair" ? "repair" : "new construction"} project for future reference.`}
+                : isHelpRequest
+                  ? `Creating a project for ${helpRequestClient?.name || "the requesting client"}. This project will be owned by the client and they will receive a notification.`
+                  : `Save your current roof calculation as a ${measurements.constructionMode === "repair" ? "repair" : "new construction"} project for future reference.`}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6">

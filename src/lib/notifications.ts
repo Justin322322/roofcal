@@ -570,7 +570,7 @@ export async function notifyAdminsHelpRequest(
             message: `${clientName} (${clientEmail}) needs assistance with creating a project${message ? `: "${message}"` : ""}`,
             projectId: null,
             projectName: null,
-            actionUrl: `/dashboard?tab=create-customer-project&clientId=${clientId}`,
+            actionUrl: `/dashboard?tab=roof-calculator&helpRequest=true&clientId=${clientId}`,
             read: false,
             created_at: new Date(),
           },
