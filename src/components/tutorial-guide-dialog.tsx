@@ -342,8 +342,8 @@ export function TutorialGuideDialog() {
                                       </div>
                                     </div>
                                   </TooltipTrigger>
-                                  <TooltipContent side="top" className="max-w-xs">
-                                    <p className="text-sm">{material.description}</p>
+                                  <TooltipContent side="top" className="max-w-xs bg-popover text-popover-foreground border">
+                                    <p className="text-sm text-popover-foreground">{material.description}</p>
                                   </TooltipContent>
                                 </Tooltip>
                               ))}
@@ -399,10 +399,10 @@ export function TutorialGuideDialog() {
                                       <div className="text-sm font-medium text-foreground text-center">{item.name}</div>
                                     </div>
                                   </TooltipTrigger>
-                                  <TooltipContent side="top" className="max-w-xs">
-                                    <p className="text-sm font-medium">{item.name}</p>
+                                  <TooltipContent side="top" className="max-w-xs bg-popover text-popover-foreground border">
+                                    <p className="text-sm font-medium text-popover-foreground">{item.name}</p>
                                     {item.description && (
-                                      <p className="text-xs text-muted-foreground mt-1">
+                                      <p className="text-xs text-popover-foreground/80 mt-1">
                                         {item.description}
                                       </p>
                                     )}
