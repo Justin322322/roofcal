@@ -3,6 +3,7 @@
 import { useQueryState } from "nuqs";
 import { useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
+import dynamic from "next/dynamic";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,6 +30,7 @@ type DashboardSection =
   | "warehouse-management"
   | "database-management"
   | "system-control"
+  | "admin-management"
 
 function DashboardSkeleton() {
   return (
@@ -122,6 +124,10 @@ export default function DashboardClient() {
       case "database-management":
       case "system-control":
         return userRole === UserRole.DEVELOPER; // Only developers can access dev tools
+      case "admin-management":
+        // Dev-only convenience: allow developers in development env
+        if (process.env.NODE_ENV === "development") return userRole === UserRole.DEVELOPER;
+        return false;
       default:
         return false;
     }
@@ -208,6 +214,25 @@ export default function DashboardClient() {
         return <DatabaseManagementContent />;
       case "system-control":
         return <SystemControlContent />;
+      case "admin-management":
+        // Inline render of Admin Management UI routed inside dashboard (dev only)
+        const CreateAdminForm = dynamic(
+          () => import("@/components/admin/create-admin-form"),
+          { ssr: false }
+        );
+        return (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Admin Management</h1>
+              <p className="text-muted-foreground">
+                Create and manage admin accounts for system administration.
+              </p>
+            </div>
+            <div className="flex justify-center">
+              <CreateAdminForm />
+            </div>
+          </div>
+        );
       case null: // Default based on user role
       default:
         if (userRole === UserRole.CLIENT) {

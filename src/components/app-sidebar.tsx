@@ -10,6 +10,7 @@ import {
   DatabaseIcon,
   SettingsIcon,
   ArchiveIcon,
+  UserPlusIcon,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { UserRole } from "@/types/user-role";
@@ -60,6 +61,16 @@ const developerTools = {
       url: "system-control",
       icon: SettingsIcon,
     },
+    // Show Add Admin only in development to aid local setup
+    ...(process.env.NODE_ENV === "development"
+      ? ([
+          {
+            name: "Add Admin User",
+            url: "admin-management",
+            icon: UserPlusIcon,
+          },
+        ] as const)
+      : ([] as const)),
   ],
 };
 

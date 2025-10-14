@@ -53,13 +53,13 @@ export default function Header() {
             </a>
           </nav>
           <div className="hidden md:flex items-center gap-3">
-            <ThemeToggle />
             <Button variant="accent" size="sm" asChild>
               <Link href="/login">Login</Link>
             </Button>
             <Button size="sm" asChild>
               <Link href="/signup">Sign up</Link>
             </Button>
+            <ThemeToggle />
           </div>
           {/* Mobile dropdown panel below navbar */}
           <div className="md:hidden flex items-center gap-2">
@@ -76,7 +76,6 @@ export default function Header() {
                 <Menu className="h-5 w-5" />
               )}
             </Button>
-            <ThemeToggle />
           </div>
         </div>
       </div>
@@ -133,6 +132,9 @@ export default function Header() {
                   >
                     <Link href="/signup">Sign up</Link>
                   </Button>
+                </div>
+                <div className="mt-2 flex justify-end">
+                  <ThemeToggle />
                 </div>
               </div>
             </div>
