@@ -122,11 +122,11 @@ export function ConsolidatedAdditionalSpecs({
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="gutterLengthA" className="text-sm font-medium">A - Length (m)</Label>
+              <Label htmlFor="gutterLengthA" className="text-sm font-medium">A - Front Length (m)</Label>
               <Input
                 id="gutterLengthA"
                 type="number"
-                placeholder="Enter A length"
+                placeholder="Enter front length"
                 value={measurements.gutterLengthA}
                 onChange={(e) => handleChange("gutterLengthA", e.target.value)}
                 min="0"
@@ -150,11 +150,11 @@ export function ConsolidatedAdditionalSpecs({
             </div>
 
             <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-              <Label htmlFor="gutterLengthC" className="text-sm font-medium">C - Length (m)</Label>
+              <Label htmlFor="gutterLengthC" className="text-sm font-medium">C - Side Length (m)</Label>
               <Input
                 id="gutterLengthC"
                 type="number"
-                placeholder="Enter C length"
+                placeholder="Enter side length"
                 value={measurements.gutterLengthC}
                 onChange={(e) => handleChange("gutterLengthC", e.target.value)}
                 min="0"
@@ -166,9 +166,20 @@ export function ConsolidatedAdditionalSpecs({
 
           {calculatedGutterPieces > 0 && (
             <div className="p-3 sm:p-4 bg-muted rounded-md">
-              <p className="text-sm sm:text-base font-medium">
-                Calculated Gutter Pieces: {calculatedGutterPieces}
-              </p>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <span className="text-sm sm:text-base font-medium">Calculated Gutter Pieces: {calculatedGutterPieces}</span>
+              </div>
+              <div className="mt-2 space-y-1">
+                <p className="text-xs text-muted-foreground">
+                  <strong>Formula:</strong> (A + B + C) × 2 ÷ 2.3
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  <strong>Calculation:</strong> ({measurements.gutterLengthA || 0} + {measurements.gutterSlope || 0} + {measurements.gutterLengthC || 0}) × 2 ÷ 2.3 = {calculatedGutterPieces}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  <strong>Explanation:</strong> Total perimeter × 2 (for both sides) ÷ 2.3m (standard gutter length)
+                </p>
+              </div>
             </div>
           )}
         </div>

@@ -2,6 +2,8 @@
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -36,14 +38,51 @@ export function MeasurementForm({
       return;
     }
 
+    // Validation for length and width
+    if (field === "length" || field === "width") {
+      const numericValue = parseFloat(value);
+      if (value === "" || (!isNaN(numericValue) && numericValue >= 0)) {
+        const newMeasurements = {
+          ...measurements,
+          [field]: value,
+        };
+        
+        // Check if length is lower than width
+        const length = parseFloat(newMeasurements.length) || 0;
+        const width = parseFloat(newMeasurements.width) || 0;
+        
+        if (length > 0 && width > 0 && length < width) {
+          // You can add a warning here if needed
+          console.warn("Length should not be lower than width");
+        }
+        
+        onMeasurementsChange(newMeasurements);
+      }
+      return;
+    }
+
     onMeasurementsChange({
       ...measurements,
       [field]: value,
     });
   };
 
+  // Check if length is lower than width for warning display
+  const length = parseFloat(measurements.length) || 0;
+  const width = parseFloat(measurements.width) || 0;
+  const showLengthWarning = length > 0 && width > 0 && length < width;
+
   return (
     <div className="space-y-4">
+      {showLengthWarning && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Warning: Length ({length}m) is lower than width ({width}m). Please verify your measurements.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="length">Length (meters)</Label>

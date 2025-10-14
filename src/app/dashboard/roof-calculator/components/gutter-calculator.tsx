@@ -47,11 +47,11 @@ export function GutterCalculator({
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-2">
-          <Label htmlFor="gutterLengthA" className="text-sm font-medium">A - Length (m)</Label>
+          <Label htmlFor="gutterLengthA" className="text-sm font-medium">A - Front Length (m)</Label>
           <Input
             id="gutterLengthA"
             type="number"
-            placeholder="Enter A length"
+            placeholder="Enter front length"
             value={gutterLengthA}
             onChange={(e) => onGutterChange("gutterLengthA", e.target.value)}
             min="0"
@@ -75,11 +75,11 @@ export function GutterCalculator({
         </div>
 
         <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-          <Label htmlFor="gutterLengthC" className="text-sm font-medium">C - Length (m)</Label>
+          <Label htmlFor="gutterLengthC" className="text-sm font-medium">C - Side Length (m)</Label>
           <Input
             id="gutterLengthC"
             type="number"
-            placeholder="Enter C length"
+            placeholder="Enter side length"
             value={gutterLengthC}
             onChange={(e) => onGutterChange("gutterLengthC", e.target.value)}
             min="0"
@@ -95,9 +95,17 @@ export function GutterCalculator({
             <span className="text-muted-foreground">Calculated Pieces:</span>
             <span className="font-semibold text-base sm:text-lg">{calculatedPieces} pieces</span>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            Formula: (A + B + C) × 2 ÷ 2.3
-          </p>
+          <div className="mt-2 space-y-1">
+            <p className="text-xs text-muted-foreground">
+              <strong>Formula:</strong> (A + B + C) × 2 ÷ 2.3
+            </p>
+            <p className="text-xs text-muted-foreground">
+              <strong>Calculation:</strong> ({gutterLengthA || 0} + {gutterSlope || 0} + {gutterLengthC || 0}) × 2 ÷ 2.3 = {calculatedPieces}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              <strong>Explanation:</strong> Total perimeter × 2 (for both sides) ÷ 2.3m (standard gutter length)
+            </p>
+          </div>
         </div>
       )}
     </div>
