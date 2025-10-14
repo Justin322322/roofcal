@@ -10,12 +10,20 @@ export function SiteHeader({ currentSection }: SiteHeaderProps) {
     switch (section) {
       case "roof-calculator":
         return "Project Request";
+      case "my-projects":
+        return "My Projects";
+      case "contractor-projects":
+        return "Project Management";
       case "account-management":
         return "Account Management";
       case "system-maintenance":
         return "System Maintenance";
       case "warehouse-management":
         return "Warehouse Management";
+      case "database-management":
+        return "Database Management";
+      case "system-control":
+        return "System Control";
       case "delivery-settings":
         return "Delivery Settings";
       case "delivery-test":
