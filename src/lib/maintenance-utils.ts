@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { sendMaintenanceNotification, type MaintenanceNotificationData } from "./maintenance-notifications";
 
 /**
  * Maintenance settings interface
@@ -85,6 +86,28 @@ export async function enableMaintenance(
     });
   }
 
+  // Send maintenance notification to all users
+  try {
+    const notificationData: MaintenanceNotificationData = {
+      maintenanceMode: true,
+      message,
+      scheduledEnd,
+      startedBy: userId,
+      startedAt: settings.maintenanceStartedAt,
+    };
+
+    const notificationResult = await sendMaintenanceNotification(notificationData);
+    
+    if (notificationResult.success) {
+      console.log(`Maintenance notification sent successfully to ${notificationResult.sentCount} users`);
+    } else {
+      console.error(`Maintenance notification had errors:`, notificationResult.errors);
+    }
+  } catch (error) {
+    console.error("Failed to send maintenance notification:", error);
+    // Don't fail the maintenance enable operation if notification fails
+  }
+
   return {
     maintenanceMode: settings.maintenanceMode,
     maintenanceMessage: settings.maintenanceMessage,
@@ -100,6 +123,10 @@ export async function enableMaintenance(
 export async function disableMaintenance(): Promise<MaintenanceSettings> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let settings = await (prisma as any).systemsettings.findFirst();
+
+  // Store the previous maintenance info for notification
+  const previousMaintenanceStartedBy = settings?.maintenanceStartedBy;
+  const previousMaintenanceStartedAt = settings?.maintenanceStartedAt;
 
   if (!settings) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -128,6 +155,28 @@ export async function disableMaintenance(): Promise<MaintenanceSettings> {
     });
   }
 
+  // Send maintenance completion notification to all users
+  if (previousMaintenanceStartedBy && previousMaintenanceStartedAt) {
+    try {
+      const notificationData: MaintenanceNotificationData = {
+        maintenanceMode: false,
+        startedBy: previousMaintenanceStartedBy,
+        startedAt: previousMaintenanceStartedAt,
+      };
+
+      const notificationResult = await sendMaintenanceNotification(notificationData);
+      
+      if (notificationResult.success) {
+        console.log(`Maintenance completion notification sent successfully to ${notificationResult.sentCount} users`);
+      } else {
+        console.error(`Maintenance completion notification had errors:`, notificationResult.errors);
+      }
+    } catch (error) {
+      console.error("Failed to send maintenance completion notification:", error);
+      // Don't fail the maintenance disable operation if notification fails
+    }
+  }
+
   return {
     maintenanceMode: settings.maintenanceMode,
     maintenanceMessage: settings.maintenanceMessage,
@@ -152,6 +201,10 @@ export async function updateMaintenanceSettings(
 ): Promise<MaintenanceSettings> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let settings = await (prisma as any).systemsettings.findFirst();
+
+  // Store the previous maintenance info for notification
+  const previousMaintenanceMode = settings?.maintenanceMode;
+  const previousMaintenanceStartedAt = settings?.maintenanceStartedAt;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data: any = {
@@ -184,6 +237,30 @@ export async function updateMaintenanceSettings(
       where: { id: settings.id },
       data,
     });
+  }
+
+  // Send maintenance notifications if status changed
+  if (previousMaintenanceMode !== maintenanceMode) {
+    try {
+      const notificationData: MaintenanceNotificationData = {
+        maintenanceMode,
+        message,
+        scheduledEnd,
+        startedBy: userId,
+        startedAt: maintenanceMode ? settings.maintenanceStartedAt : previousMaintenanceStartedAt || new Date(),
+      };
+
+      const notificationResult = await sendMaintenanceNotification(notificationData);
+      
+      if (notificationResult.success) {
+        console.log(`Maintenance ${maintenanceMode ? 'start' : 'end'} notification sent successfully to ${notificationResult.sentCount} users`);
+      } else {
+        console.error(`Maintenance notification had errors:`, notificationResult.errors);
+      }
+    } catch (error) {
+      console.error("Failed to send maintenance notification:", error);
+      // Don't fail the maintenance update operation if notification fails
+    }
   }
 
   return {

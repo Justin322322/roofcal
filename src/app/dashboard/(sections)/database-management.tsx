@@ -15,13 +15,13 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ScrollableTable } from "@/components/ui/horizontal-scroll-table";
 import {
   Dialog,
   DialogContent,
@@ -34,12 +34,7 @@ import { Loader2, Database, AlertTriangle, Search } from "lucide-react";
 
 interface TableData {
   data: Record<string, unknown>[];
-  pagination: {
-    page: number;
-    pageSize: number;
-    totalCount: number;
-    totalPages: number;
-  };
+  totalCount: number;
 }
 
 interface TableColumn {
@@ -54,7 +49,6 @@ export default function DatabaseManagementContent() {
   const [tableData, setTableData] = useState<TableData | null>(null);
   const [tableColumns, setTableColumns] = useState<TableColumn[]>([]);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [editDialog, setEditDialog] = useState(false);
@@ -71,7 +65,7 @@ export default function DatabaseManagementContent() {
       fetchTableSchema();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTable, page, search]);
+  }, [selectedTable, search]);
 
   const fetchTables = async () => {
     try {
@@ -87,10 +81,7 @@ export default function DatabaseManagementContent() {
   const fetchTableData = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams({
-        page: page.toString(),
-        pageSize: "20",
-      });
+      const params = new URLSearchParams();
       if (search) params.append("search", search);
 
       const response = await fetch(`/api/database/${selectedTable}?${params}`);
@@ -233,7 +224,7 @@ export default function DatabaseManagementContent() {
                 <div>
                   <CardTitle className="capitalize">{selectedTable}</CardTitle>
                   <CardDescription>
-                    {tableData.pagination.totalCount} total records
+                    {tableData.totalCount} total records
                   </CardDescription>
                 </div>
                 <div className="flex gap-2">
@@ -255,95 +246,57 @@ export default function DatabaseManagementContent() {
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : (
-                <>
-                  <div className="w-full overflow-x-auto">
-                    <div className="min-w-full rounded-md border">
-                      <Table className="min-w-full">
-                        <TableHeader>
-                          <TableRow>
-                            {tableColumns.slice(0, 10).map((col) => (
-                              <TableHead key={col.name} className="capitalize whitespace-nowrap min-w-[150px]">
-                                {col.name}
-                              </TableHead>
-                            ))}
-                            {isEditable(selectedTable) && (
-                              <TableHead className="w-24 whitespace-nowrap sticky right-0 bg-background">Actions</TableHead>
-                            )}
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {tableData.data.length === 0 ? (
-                            <TableRow>
-                              <TableCell
-                                colSpan={tableColumns.length + 1}
-                                className="text-center text-muted-foreground"
+                <ScrollableTable className="w-full">
+                  <TableHeader>
+                    <TableRow>
+                      {tableColumns.map((col) => (
+                        <TableHead key={col.name} className="capitalize whitespace-nowrap min-w-[150px]">
+                          {col.name}
+                        </TableHead>
+                      ))}
+                      {isEditable(selectedTable) && (
+                        <TableHead className="w-24 whitespace-nowrap sticky right-0 bg-background border-l">Actions</TableHead>
+                      )}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {tableData.data.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={tableColumns.length + (isEditable(selectedTable) ? 1 : 0)}
+                          className="text-center text-muted-foreground"
+                        >
+                          No records found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      tableData.data.map((record, idx) => (
+                        <TableRow key={(record.id as string) || idx}>
+                          {tableColumns.map((col) => (
+                            <TableCell key={col.name} className="whitespace-nowrap min-w-[150px]">
+                              <div className="max-w-[300px]">
+                                <div className="truncate" title={formatValue(record[col.name])}>
+                                  {formatValue(record[col.name])}
+                                </div>
+                              </div>
+                            </TableCell>
+                          ))}
+                          {isEditable(selectedTable) && (
+                            <TableCell className="whitespace-nowrap sticky right-0 bg-background border-l">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEdit(record)}
                               >
-                                No records found
-                              </TableCell>
-                            </TableRow>
-                          ) : (
-                            tableData.data.map((record, idx) => (
-                              <TableRow key={(record.id as string) || idx}>
-                                {tableColumns.slice(0, 10).map((col) => (
-                                  <TableCell key={col.name} className="whitespace-nowrap min-w-[150px]">
-                                    <div className="max-w-[300px]">
-                                      <div className="truncate" title={formatValue(record[col.name])}>
-                                        {formatValue(record[col.name])}
-                                      </div>
-                                    </div>
-                                  </TableCell>
-                                ))}
-                                {isEditable(selectedTable) && (
-                                  <TableCell className="whitespace-nowrap sticky right-0 bg-background border-l">
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => handleEdit(record)}
-                                    >
-                                      Edit
-                                    </Button>
-                                  </TableCell>
-                                )}
-                              </TableRow>
-                            ))
+                                Edit
+                              </Button>
+                            </TableCell>
                           )}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </div>
-
-                  {/* Pagination */}
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="text-sm text-muted-foreground">
-                      Page {tableData.pagination.page} of{" "}
-                      {tableData.pagination.totalPages}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1 || loading}
-                      >
-                        Previous
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setPage((p) =>
-                            Math.min(tableData.pagination.totalPages, p + 1)
-                          )
-                        }
-                        disabled={
-                          page === tableData.pagination.totalPages || loading
-                        }
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  </div>
-                </>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </ScrollableTable>
               )}
             </CardContent>
           </Card>

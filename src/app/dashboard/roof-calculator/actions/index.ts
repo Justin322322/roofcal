@@ -256,6 +256,150 @@ export async function updateProject(
 }
 
 /**
+ * Save project for a customer (admin creates project on behalf of customer)
+ */
+export async function saveProjectForCustomer(
+  data: ProjectFromCalculator,
+  customerId: string
+): Promise<{ success: boolean; projectId?: string; error?: string }> {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    // Only ADMIN users can create projects for customers
+    if (session.user.role !== UserRole.ADMIN) {
+      return { success: false, error: "Unauthorized - ADMIN role required" };
+    }
+
+    // Validate customer exists and is a CLIENT
+    const customer = await prisma.user.findFirst({
+      where: {
+        id: customerId,
+        role: UserRole.CLIENT,
+        isDisabled: false,
+      },
+    });
+
+    if (!customer) {
+      return { success: false, error: "Customer not found or not authorized" };
+    }
+
+    // Validate required fields
+    if (!data.warehouseId) {
+      return { success: false, error: "Warehouse selection is required" };
+    }
+
+    // Convert calculator data to project format
+    const projectData: CreateProjectInput = {
+      projectName: data.projectName,
+      clientName: data.clientName || customer.firstName + " " + customer.lastName,
+      status: "DRAFT",
+
+      // Delivery and Location
+      address: data.address,
+      city: data.city,
+      state: data.state,
+      zipCode: data.zipCode,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      deliveryCost: data.deliveryCost,
+      deliveryDistance: data.deliveryDistance,
+      warehouseId: data.warehouseId,
+
+      // Measurements
+      length: parseFloat(data.measurements.length) || 0,
+      width: parseFloat(data.measurements.width) || 0,
+      pitch: parseFloat(data.measurements.pitch) || 0,
+      roofType: data.measurements.roofType,
+      floors: parseInt(data.measurements.floors) || 1,
+      materialThickness: data.measurements.materialThickness,
+      ridgeType: data.measurements.ridgeType,
+      gutterSize: data.measurements.gutterSize,
+      budgetLevel: data.measurements.budgetLevel,
+      budgetAmount: parseFloat(data.measurements.budgetAmount) || undefined,
+      constructionMode: data.measurements.constructionMode.toUpperCase() as
+        | "NEW"
+        | "REPAIR",
+      gutterLengthA: parseFloat(data.measurements.gutterLengthA) || undefined,
+      gutterSlope: parseFloat(data.measurements.gutterSlope) || undefined,
+      gutterLengthC: parseFloat(data.measurements.gutterLengthC) || undefined,
+      insulationThickness: data.measurements.insulationThickness,
+      ventilationPieces: parseInt(data.measurements.ventilationPieces) || 0,
+
+      // Material
+      material: data.material,
+
+      // Results
+      area: data.results.area,
+      materialCost: data.results.materialCost,
+      gutterCost: data.results.gutterCost,
+      ridgeCost: data.results.ridgeCost,
+      screwsCost: data.results.screwsCost,
+      insulationCost: data.results.insulationCost,
+      ventilationCost: data.results.ventilationCost,
+      totalMaterialsCost: data.results.totalMaterialsCost,
+      laborCost: data.results.laborCost,
+      removalCost: data.results.removalCost,
+      totalCost: data.results.totalCost,
+      gutterPieces: data.results.gutterPieces,
+      ridgeLength: data.results.ridgeLength,
+
+      // Decision Tree
+      complexityScore: data.decisionTree.complexity.score,
+      complexityLevel: data.decisionTree.complexity.level,
+      recommendedMaterial:
+        data.decisionTree.materialRecommendation.recommendedMaterial,
+      optimizationTips: JSON.stringify(data.decisionTree.optimizationTips),
+
+      // Metadata
+      notes: data.notes,
+    };
+
+    // Create project with customer as owner
+    const project = await prisma.project.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: customerId, // Customer owns the project
+        clientId: customerId, // Customer is the client
+        contractorId: null, // No contractor assigned initially
+        status: "DRAFT",
+        proposalStatus: "DRAFT",
+        assignedAt: null,
+        updated_at: new Date(),
+        ...projectData,
+      },
+    });
+
+    // Create notification for customer about admin-created project
+    await prisma.notification.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: customerId,
+        type: "PROJECT_CREATED_BY_ADMIN",
+        title: "New Project Created",
+        message: `${session.user.name} created a roofing project for you`,
+        projectId: project.id,
+        projectName: project.projectName,
+        actionUrl: `/dashboard?tab=my-projects`,
+        read: false,
+        created_at: new Date(),
+      },
+    });
+
+    revalidatePath("/dashboard?tab=roof-calculator");
+    revalidatePath("/dashboard?tab=my-projects");
+
+    return { success: true, projectId: project.id };
+  } catch (error) {
+    console.error("Error saving project for customer:", error);
+    return { success: false, error: "Failed to save project for customer" };
+  }
+}
+
+/**
  * Load project data into calculator
  */
 export async function loadProject(

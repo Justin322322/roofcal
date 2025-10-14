@@ -94,6 +94,9 @@ interface Project {
     lastName: string;
     email: string;
   } | null;
+  // Admin creation tracking
+  createdByAdmin?: boolean;
+  adminName?: string;
 }
 
 type SortField = "projectName" | "material" | "area" | "totalCost" | "createdAt" | "status";

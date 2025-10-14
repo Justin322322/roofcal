@@ -147,14 +147,6 @@ export function ProjectPrinter({ project, isOpen, onClose }: ProjectPrinterProps
             )}
           </div>
 
-          {project.deliveryDistance !== null && project.deliveryDistance !== undefined && (
-            <>
-              <h2>Delivery Information</h2>
-              <div className="section">
-                <div className="kv"><span className="label">Delivery Distance:</span> {project.deliveryDistance.toFixed(2)} miles</div>
-              </div>
-            </>
-          )}
 
           {(project.length || project.width || project.pitch) && (
             <>

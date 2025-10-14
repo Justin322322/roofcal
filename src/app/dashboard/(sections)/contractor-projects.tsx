@@ -25,7 +25,6 @@
  */
 
 import { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -81,36 +80,6 @@ import {
   PackageIcon,
 } from "lucide-react";
 
-// Dynamically import Leaflet components to avoid SSR issues
-const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), {
-  ssr: false,
-});
-
-const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), {
-  ssr: false,
-});
-
-const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), {
-  ssr: false,
-});
-
-const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
-  ssr: false,
-});
-
-// Fix for default markers in React Leaflet - only on client side
-const setupLeafletIcons = async () => {
-  if (typeof window !== "undefined") {
-    const L = await import("leaflet");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (L.Icon.Default.prototype as any)._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-      iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-      shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-    });
-  }
-};
 
 interface ProjectMaterial {
   id: string;
@@ -177,43 +146,6 @@ interface Project {
   ventilationType?: string;
 }
 
-// Simple Location Map Component
-function LocationMap({ latitude, longitude, address }: { latitude: number | null; longitude: number | null; address?: string | null }) {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-    setupLeafletIcons();
-  }, []);
-
-  if (!isClient || !latitude || !longitude) {
-    return null;
-  }
-
-  return (
-    <div className="mt-4 rounded-lg overflow-hidden border" style={{ height: "250px" }}>
-      <MapContainer
-        center={[latitude, longitude]}
-        zoom={13}
-        className="h-full w-full"
-        scrollWheelZoom={false}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <Marker position={[latitude, longitude]}>
-          <Popup>
-            <div className="text-sm">
-              <div className="font-semibold">Project Location</div>
-              {address && <div className="text-gray-600">{address}</div>}
-            </div>
-          </Popup>
-        </Marker>
-      </MapContainer>
-    </div>
-  );
-}
 
 export function ContractorProjectsContent() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -830,20 +762,7 @@ export function ContractorProjectsContent() {
                           ].filter(Boolean).join(', ')}
                         </span>
                       </p>
-                      {selectedProject.deliveryDistance !== null && selectedProject.deliveryDistance !== undefined && (
-                        <p className="text-sm">
-                          <span className="font-medium text-muted-foreground">Delivery Distance:</span> {selectedProject.deliveryDistance.toFixed(2)} miles
-                        </p>
-                      )}
                     </div>
-                    {/* Location Map */}
-                    {selectedProject.latitude && selectedProject.longitude && (
-                      <LocationMap
-                        latitude={selectedProject.latitude}
-                        longitude={selectedProject.longitude}
-                        address={selectedProject.address}
-                      />
-                    )}
                   </div>
                   <Separator />
                 </>

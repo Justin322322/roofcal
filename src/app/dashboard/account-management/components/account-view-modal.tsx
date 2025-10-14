@@ -21,7 +21,7 @@ import {
   CalendarIcon,
   TrendingUpIcon,
   DollarSignIcon,
-  TrashIcon,
+  BanIcon,
   ActivityIcon,
   UserIcon,
   BarChart3Icon,
@@ -125,11 +125,11 @@ export function AccountViewModal({
 
     try {
       await onDelete(account.id);
-      toast.success("Account deleted successfully");
+      toast.success("Account restricted successfully");
       onClose();
     } catch (error) {
-      console.error("Error deleting account:", error);
-      toast.error("Failed to delete account. Please try again.");
+      console.error("Error restricting account:", error);
+      toast.error("Failed to restrict account. Please try again.");
     } finally {
       setDeletingAccount(false);
     }
@@ -556,8 +556,8 @@ export function AccountViewModal({
                     variant="destructive"
                     disabled={deletingAccount}
                   >
-                    <TrashIcon className="h-4 w-4 mr-2" />
-                    {deletingAccount ? "Deleting..." : "Delete Account"}
+                    <BanIcon className="h-4 w-4 mr-2" />
+                    {deletingAccount ? "Restricting..." : "Restrict Account"}
                   </Button>
                 }
                 accountName={account.clientName}

@@ -29,6 +29,7 @@ type DashboardSection =
   | "database-management"
   | "system-control"
   | "admin-management"
+  | "create-customer-project"
 
 function DashboardSkeleton() {
   return (
@@ -236,6 +237,13 @@ export default function DashboardClient() {
             </div>
           </div>
         );
+      case "create-customer-project":
+        // Create Customer Project page for ADMIN users
+        const CreateCustomerProject = dynamic(
+          () => import("@/app/dashboard/create-customer-project"),
+          { ssr: false }
+        );
+        return <CreateCustomerProject />;
       case null: // Default based on user role
       default:
         if (userRole === UserRole.CLIENT) {

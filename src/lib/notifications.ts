@@ -3,7 +3,7 @@ import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 
 export interface NotificationData {
-  type: "status_change" | "proposal_sent" | "proposal_accepted" | "proposal_rejected" | "project_assigned" | "quote_requested" | "low_stock" | "project_completed" | "project_accepted";
+  type: "status_change" | "proposal_sent" | "proposal_accepted" | "proposal_rejected" | "project_assigned" | "quote_requested" | "low_stock" | "project_completed" | "project_accepted" | "maintenance_start" | "maintenance_end";
   projectId: string;
   projectName: string;
   fromUserId: string;
@@ -480,4 +480,51 @@ export async function notifyLowStock(
     currentStock,
     threshold,
   });
+}
+
+/**
+ * Send notification when admin creates a project for a customer
+ */
+export async function notifyCustomerProjectCreated(
+  customerId: string,
+  projectId: string,
+  adminName: string
+) {
+  try {
+    // Get project details for the notification
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: {
+        projectName: true,
+        totalCost: true,
+        material: true,
+        area: true,
+      },
+    });
+
+    if (!project) {
+      console.error(`Project ${projectId} not found for admin creation notification`);
+      return;
+    }
+
+    // Create notification for customer
+    await prisma.notification.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: customerId,
+        type: "PROJECT_CREATED_BY_ADMIN",
+        title: "New Project Created",
+        message: `${adminName} created a roofing project for you`,
+        projectId: projectId,
+        projectName: project.projectName,
+        actionUrl: `/dashboard?tab=my-projects`,
+        read: false,
+        created_at: new Date(),
+      },
+    });
+
+    console.log(`Admin project creation notification sent to customer ${customerId} for project ${projectId}`);
+  } catch (error) {
+    console.error("Error creating admin project creation notification:", error);
+  }
 }

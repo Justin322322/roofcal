@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   MoreHorizontalIcon,
-  TrashIcon,
+  BanIcon,
   MailIcon,
   PhoneIcon,
   EyeIcon,
@@ -211,8 +211,8 @@ export function AccountManagementTable({
                               }
                               className="text-destructive"
                             >
-                              <TrashIcon className="h-4 w-4 mr-2" />
-                              Delete Account
+                              <BanIcon className="h-4 w-4 mr-2" />
+                              Restrict Account
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

@@ -10,6 +10,7 @@ import {
   SettingsIcon,
   ArchiveIcon,
   UserPlusIcon,
+  PlusIcon,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { UserRole } from "@/types/user-role";
@@ -34,6 +35,11 @@ const adminTools = {
       name: "Account Management",
       url: "account-management",
       icon: UsersIcon,
+    },
+    {
+      name: "Create Customer Project",
+      url: "create-customer-project",
+      icon: PlusIcon,
     },
     {
       name: "Pricing Maintenance",

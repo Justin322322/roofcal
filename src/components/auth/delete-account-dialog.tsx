@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TrashIcon } from "lucide-react";
+import { BanIcon } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,7 +52,7 @@ export default function DeleteAccountDialog({
     } catch (error) {
       console.error("Delete failed:", error);
       if (!disableInternalErrorHandling) {
-        setError("Failed to delete account. Please try again.");
+        setError("Failed to restrict account. Please try again.");
       }
       // Re-throw the error so parent can handle it
       throw error;
@@ -76,20 +76,19 @@ export default function DeleteAccountDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            <TrashIcon className="h-5 w-5 text-destructive" />
-            Delete Account
+            <BanIcon className="h-5 w-5 text-destructive" />
+            Restrict Account
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-2">
             <p>
-              Are you sure you want to delete this account? This action cannot
-              be undone.
+              Are you sure you want to restrict this account? This will disable the account and prevent access.
             </p>
             <div className="bg-muted p-3 rounded-md">
               <p className="font-medium text-sm">{accountName}</p>
               <p className="text-xs text-muted-foreground">{accountEmail}</p>
             </div>
             <p className="text-sm text-destructive font-medium">
-              This will permanently delete the account and all associated data.
+              This will restrict the account and prevent the user from accessing the system.
             </p>
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -113,10 +112,10 @@ export default function DeleteAccountDialog({
             {isDeleting ? (
               <span className="flex items-center gap-2">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Deleting...
+                Restricting...
               </span>
             ) : (
-              "Delete Account"
+              "Restrict Account"
             )}
           </AlertDialogAction>
         </AlertDialogFooter>

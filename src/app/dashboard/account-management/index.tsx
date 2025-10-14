@@ -111,16 +111,16 @@ export function AccountManagementContent() {
 
       if (result.success) {
         // Show success message and refresh accounts
-        toast.success("Account deleted successfully", {
-          description: "The account has been permanently removed.",
+        toast.success("Account restricted successfully", {
+          description: "The account has been restricted and access disabled.",
           duration: 3000,
         });
         refreshAccounts();
       } else {
         // Handle deletion failure without throwing
-        const errorMessage = result.errors?.[0] || "Failed to delete account";
-        console.error("Delete account failed:", errorMessage);
-        toast.error("Failed to delete account", {
+        const errorMessage = result.errors?.[0] || "Failed to restrict account";
+        console.error("Restrict account failed:", errorMessage);
+        toast.error("Failed to restrict account", {
           description: errorMessage,
           duration: 5000,
         });
@@ -130,7 +130,7 @@ export function AccountManagementContent() {
       const errorMessage =
         error instanceof Error ? error.message : "An unexpected error occurred";
       console.error("Delete account error:", error);
-      toast.error("Failed to delete account", {
+      toast.error("Failed to restrict account", {
         description: errorMessage,
         duration: 5000,
       });
