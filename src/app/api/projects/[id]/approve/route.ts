@@ -8,7 +8,7 @@ export const runtime = 'nodejs';
 // PUT /api/projects/[id]/approve - Approve or reject a project
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -20,6 +20,7 @@ export async function PUT(
       );
     }
 
+    const { id } = await params;
     const { action } = await request.json(); // "approve" or "reject"
 
     if (!action || !["approve", "reject"].includes(action)) {
@@ -32,7 +33,7 @@ export async function PUT(
     // Find the project
     const project = await prisma.project.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id, // Only the project owner can approve/reject
       },
       include: {
@@ -60,7 +61,7 @@ export async function PUT(
     const newStatus = action === "approve" ? "ACTIVE" : "REJECTED";
     
     const updatedProject = await prisma.project.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         status: newStatus,
         updated_at: new Date(),
