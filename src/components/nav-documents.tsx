@@ -8,6 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 export function NavDocuments({
@@ -23,6 +24,8 @@ export function NavDocuments({
   activeSection?: string;
   onSectionChange?: (section: string) => void;
 }) {
+  const { isMobile, setOpenMobile } = useSidebar();
+
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Professional Tools</SidebarGroupLabel>
@@ -34,6 +37,10 @@ export function NavDocuments({
               onClick={() => {
                 if (onSectionChange && item.url !== "#") {
                   onSectionChange(item.url);
+                  // Close sidebar on mobile after clicking
+                  if (isMobile) {
+                    setOpenMobile(false);
+                  }
                 }
               }}
               isActive={activeSection === item.url}

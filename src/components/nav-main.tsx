@@ -9,6 +9,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 export function NavMain({
@@ -24,6 +25,8 @@ export function NavMain({
   activeSection?: string;
   onSectionChange?: (section: string) => void;
 }) {
+  const { isMobile, setOpenMobile } = useSidebar();
+
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
@@ -40,6 +43,10 @@ export function NavMain({
                 onClick={() => {
                   if (onSectionChange && item.url !== "#") {
                     onSectionChange(item.url);
+                    // Close sidebar on mobile after clicking
+                    if (isMobile) {
+                      setOpenMobile(false);
+                    }
                   }
                 }}
                 isActive={activeSection === item.url}

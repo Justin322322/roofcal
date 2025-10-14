@@ -812,31 +812,37 @@ export function WarehouseManagementPage() {
       </div>
 
       {/* Action Buttons */}
-      <div className="mb-4 flex justify-end">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => {
-            fetchWarehouses();
-            if (activeTab === "overview") {
-              refreshAllWarehouseMaterials();
-              // Force multiple refreshes to ensure data is updated
-              setTimeout(() => refreshAllWarehouseMaterials(), 100);
-              setTimeout(() => refreshAllWarehouseMaterials(), 500);
-            }
-          }}>
+      <div className="mb-4 flex flex-col sm:flex-row justify-end gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              fetchWarehouses();
+              if (activeTab === "overview") {
+                refreshAllWarehouseMaterials();
+                // Force multiple refreshes to ensure data is updated
+                setTimeout(() => refreshAllWarehouseMaterials(), 100);
+                setTimeout(() => refreshAllWarehouseMaterials(), 500);
+              }
+            }}
+            className="flex-1 sm:flex-initial"
+          >
             <RefreshCwIcon className="h-4 w-4 mr-2" />
-            Refresh
+            <span className="hidden sm:inline">Refresh</span>
+            <span className="sm:hidden">Refresh</span>
           </Button>
           <Dialog open={showSetupForm} onOpenChange={setShowSetupForm}>
             <DialogTrigger asChild>
-                <Button>
+                <Button className="flex-1 sm:flex-initial">
                   <PlusIcon className="h-4 w-4 mr-2" />
-                  Add Warehouse Location
+                  <span className="hidden sm:inline">Add Warehouse Location</span>
+                  <span className="sm:hidden">Add Warehouse</span>
                 </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Add New Warehouse Location</DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="text-base sm:text-lg">Add New Warehouse Location</DialogTitle>
+                <DialogDescription className="text-xs sm:text-sm">
                   Create a new warehouse location where you can store materials and set location-specific pricing
                 </DialogDescription>
               </DialogHeader>
@@ -848,10 +854,10 @@ export function WarehouseManagementPage() {
 
       {/* Edit Warehouse Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Warehouse</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-base sm:text-lg">Edit Warehouse</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">
               Update warehouse information and capacity settings
             </DialogDescription>
           </DialogHeader>
@@ -916,23 +922,24 @@ export function WarehouseManagementPage() {
       {/* Main Content Card */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <CardTitle>Warehouse Management</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-lg sm:text-xl">Warehouse Management</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
                 Manage warehouse locations and their material inventory with advanced tracking
               </CardDescription>
             </div>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList>
-                <TabsTrigger value="overview">Locations</TabsTrigger>
-                <TabsTrigger value="inventory">Materials & Pricing</TabsTrigger>
-                <TabsTrigger value="warnings" className="relative">
-                  Stock Warnings
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full sm:w-auto">
+              <TabsList className="grid w-full sm:w-auto grid-cols-3 h-auto">
+                <TabsTrigger value="overview" className="text-xs sm:text-sm">Locations</TabsTrigger>
+                <TabsTrigger value="inventory" className="text-xs sm:text-sm">Materials & Pricing</TabsTrigger>
+                <TabsTrigger value="warnings" className="relative text-xs sm:text-sm">
+                  <span className="hidden sm:inline">Stock Warnings</span>
+                  <span className="sm:hidden">Warnings</span>
                   {getWarningCount() > 0 && (
                     <Badge 
                       variant="destructive" 
-                      className="ml-2 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
+                      className="ml-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full p-0 text-[10px] sm:text-xs flex items-center justify-center"
                     >
                       {getWarningCount()}
                     </Badge>
@@ -1075,7 +1082,7 @@ export function WarehouseManagementPage() {
                           </div>
                         )}
 
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <Button 
                             variant="outline" 
                             size="sm"
@@ -1087,7 +1094,8 @@ export function WarehouseManagementPage() {
                             className="flex-1"
                           >
                             <PackageIcon className="h-4 w-4 mr-2" />
-                            Manage Materials & Pricing
+                            <span className="hidden sm:inline">Manage Materials & Pricing</span>
+                            <span className="sm:hidden">Manage Materials</span>
                           </Button>
                           <Button 
                             variant="outline" 
@@ -1097,8 +1105,10 @@ export function WarehouseManagementPage() {
                               setEditingWarehouse(warehouse);
                               setShowEditDialog(true);
                             }}
+                            className="sm:w-auto w-full"
                           >
-                            <EditIcon className="h-4 w-4" />
+                            <EditIcon className="h-4 w-4 mr-2" />
+                            <span className="sm:hidden">Edit Warehouse</span>
                           </Button>
                         </div>
                       </CardContent>
@@ -1190,17 +1200,21 @@ export function WarehouseManagementPage() {
 
               {activeTab === "warnings" && (
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                      <h3 className="text-lg font-semibold">Stock Level Warnings</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="text-base sm:text-lg font-semibold">Stock Level Warnings</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         Monitor material inventory levels and get alerts for low stock or critical shortages
                       </p>
                     </div>
-                    <Button variant="outline" onClick={() => {
-                      fetchWarehouses();
-                      refreshAllWarehouseMaterials();
-                    }}>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        fetchWarehouses();
+                        refreshAllWarehouseMaterials();
+                      }}
+                      className="w-full sm:w-auto"
+                    >
                       <RefreshCwIcon className="h-4 w-4 mr-2" />
                       Refresh Warnings
                     </Button>

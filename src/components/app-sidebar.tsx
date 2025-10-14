@@ -24,6 +24,7 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import RoofCalcLogo from "@/components/RoofCalcLogo";
 
@@ -73,6 +74,7 @@ export function AppSidebar({
   ...props
 }: AppSidebarProps) {
   const { data: session } = useSession();
+  const { isMobile, setOpenMobile } = useSidebar();
 
   const getNavigationData = () => {
     const userRole = session?.user?.role;
@@ -137,7 +139,13 @@ export function AppSidebar({
         <SidebarMenu>
           <SidebarMenuItem>
             <button
-              onClick={() => onSectionChange?.("overview")}
+              onClick={() => {
+                onSectionChange?.("overview");
+                // Close sidebar on mobile after clicking
+                if (isMobile) {
+                  setOpenMobile(false);
+                }
+              }}
               className="flex w-full items-center gap-2 px-3 py-2 hover:bg-accent rounded-md transition-colors cursor-pointer"
             >
               <RoofCalcLogo className="h-5 w-5 text-primary" size={20} />
