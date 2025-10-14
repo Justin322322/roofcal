@@ -20,6 +20,7 @@ export interface RoofTypeCard {
 export interface MaterialInfo {
   name: string;
   image?: string;
+  description?: string;
   cost: string;
   lifespan: string;
   pros: string;

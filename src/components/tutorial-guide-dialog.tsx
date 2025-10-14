@@ -81,58 +81,58 @@ export function TutorialGuideDialog() {
           <div className="flex-1 overflow-auto p-6">
             <Tabs defaultValue="overview" className="w-full">
               <div className="mb-4 md:mb-6">
-                <TabsList className="flex flex-wrap w-full h-auto p-0 md:p-1 bg-muted/50 rounded-lg gap-1">
+                <TabsList className="flex flex-wrap w-full h-auto p-0 bg-muted/50 rounded-lg gap-0">
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
+                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1"
                     value="overview"
                   >
                     <HomeIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Overview</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
+                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1"
                     value="roof-types"
                   >
                     <LayersIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Roof Types</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
+                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1"
                     value="materials"
                   >
                     <LayersIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Materials</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
+                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1"
                     value="calculator"
                   >
                     <CalculatorIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Calculator</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
+                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1"
                     value="manual-calc"
                   >
                     <ClipboardListIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Manual Calc</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
+                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1"
                     value="contractor"
                   >
                     <HardHatIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Contractor</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
+                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1"
                     value="ai-system"
                   >
                     <SparklesIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">AI System</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
+                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1"
                     value="archive"
                   >
                     <ArchiveIcon className="h-4 w-4" />
@@ -326,7 +326,10 @@ export function TutorialGuideDialog() {
                                   {group.items.map((material, idx) => (
                                     <div key={idx} className="rounded-md border p-3">
                                       <div className="font-medium text-sm">{material.name}</div>
-                                      <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-sm mt-1">
+                                      {material.description && (
+                                        <p className="text-xs text-muted-foreground mt-0.5">{material.description}</p>
+                                      )}
+                                      <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-sm mt-2">
                                         <p><strong>Cost:</strong> {material.cost}</p>
                                         <p><strong>Lifespan:</strong> {material.lifespan}</p>
                                         <p className="sm:col-span-2"><strong>Pros:</strong> {material.pros}</p>
@@ -369,21 +372,25 @@ export function TutorialGuideDialog() {
                       ((content.tabs.materials as unknown as { [k: string]: { name: string; image: string }[] })[section.key])?.length ? (
                         <div key={section.key}>
                           <h4 className="text-base font-medium text-foreground mb-2">{section.title}</h4>
-                          <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                            {(content.tabs.materials as unknown as { [k: string]: { name: string; image: string }[] })[section.key].map((item: { name: string; image: string }, idx: number) => (
-                              <div key={idx} className="border rounded-lg p-3">
-                                <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden">
-                                  <Image
-                                    src={item.image?.startsWith("/roof/") ? `${BLOB_BASE}${item.image.replace("/roof/", "")}` : item.image}
-                                    alt={item.name}
-                                    width={200}
-                                    height={200}
-                                    className="w-full h-full object-cover"
-                                  />
+                          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                            {(() => {
+                              const raw = (content.tabs.materials as unknown as { [k: string]: { name: string; image: string }[] })[section.key];
+                              const items = raw.filter((itm, idx, arr) => arr.findIndex((x) => x.name === itm.name) === idx);
+                              return items.map((item: { name: string; image: string }, idx: number) => (
+                                <div key={`${section.key}-${idx}-${item.name}`} className="group border rounded-lg p-3">
+                                  <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
+                                    <Image
+                                      src={item.image?.startsWith("/roof/") ? `${BLOB_BASE}${item.image.replace("/roof/", "")}` : item.image}
+                                      alt={item.name}
+                                      width={200}
+                                      height={200}
+                                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
+                                    />
+                                  </div>
+                                  <div className="text-sm font-medium text-foreground text-center">{item.name}</div>
                                 </div>
-                                <div className="text-sm font-medium text-foreground text-center">{item.name}</div>
-                              </div>
-                            ))}
+                              ));
+                            })()}
                           </div>
                         </div>
                       ) : null

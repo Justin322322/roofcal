@@ -73,6 +73,7 @@
         {
           "name": "Corrugated (0.4mm)",
           "image": "/roof/corrugated.jpg",
+          "description": "Lightweight corrugated steel sheet suitable for budget-friendly installs.",
           "cost": "₱450 per square meter",
           "lifespan": "30-50 years",
           "pros": "Lightweight, weather-resistant, easy installation, affordable",
@@ -82,6 +83,7 @@
         {
           "name": "Corrugated (0.5mm)",
           "image": "/roof/corrugated.jpg",
+          "description": "Thicker corrugated panel offering better rigidity and lifespan.",
           "cost": "₱520 per square meter",
           "lifespan": "30-50 years",
           "pros": "Durable, weather-resistant, better structural integrity",
@@ -91,6 +93,7 @@
         {
           "name": "Long Span (0.4mm)",
           "image": "/roof/long-span.jpg",
+          "description": "Modern long span profile with excellent water drainage.",
           "cost": "₱520 per square meter",
           "lifespan": "30-50 years",
           "pros": "Durable, weather-resistant, excellent water drainage, modern appearance",
@@ -100,6 +103,7 @@
         {
           "name": "Long Span (0.5mm)",
           "image": "/roof/long-span.jpg",
+          "description": "Premium long span thickness for maximum durability and structure.",
           "cost": "₱600 per square meter",
           "lifespan": "30-50 years",
           "pros": "Maximum durability, excellent water drainage, superior structural integrity",
