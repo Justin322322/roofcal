@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import ScrollingCalculators from "./ScrollingCalculators";
 
 export default function Hero() {
@@ -18,12 +20,16 @@ export default function Hero() {
               Roof Calculator
             </span>
           </h2>
-          <p className="text-lg sm:text-xl lg:text-2xl text-muted-foreground mb-16 leading-relaxed max-w-4xl mx-auto font-light">
+          <p className="text-lg sm:text-xl lg:text-2xl text-muted-foreground mb-8 leading-relaxed max-w-4xl mx-auto font-light">
             Accurate roofing measurements, material estimates, and cost
             calculations for contractors and homeowners. Get professional-grade
             results in seconds.
           </p>
-
+          <div className="flex justify-center gap-4 mb-16">
+            <Button size="lg" variant="accent" asChild>
+              <Link href="/signup">Get Started</Link>
+            </Button>
+          </div>
         </div>
         {/* Demo calculation preview */}
         <div

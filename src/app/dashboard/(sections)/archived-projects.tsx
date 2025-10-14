@@ -247,7 +247,7 @@ export default function ArchivedProjectsContent() {
         bValue = b[sortField];
       }
 
-      if (typeof aValue === "string") {
+      if (typeof aValue === "string" && typeof bValue === "string") {
         aValue = aValue.toLowerCase();
         bValue = bValue.toLowerCase();
       }
@@ -557,17 +557,14 @@ export default function ArchivedProjectsContent() {
 
       {/* Project Details View Dialog */}
       {selectedProject && (
-        <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{selectedProject.projectName}</DialogTitle>
-              <DialogDescription>
-                Project details and pricing information
-              </DialogDescription>
-            </DialogHeader>
-            <ProjectDetailsViewer projectId={selectedProject.id} />
-          </DialogContent>
-        </Dialog>
+        <ProjectDetailsViewer
+          project={selectedProject}
+          isOpen={viewDialogOpen}
+          onClose={() => {
+            setViewDialogOpen(false);
+            setSelectedProject(null);
+          }}
+        />
       )}
 
       {/* Delete Confirmation Dialog */}
