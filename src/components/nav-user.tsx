@@ -121,7 +121,7 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild className="text-popover-foreground hover:text-popover-foreground focus:text-accent-foreground">
                 <NotificationCenter 
                   onNotificationRead={() => setHasUnreadNotifications(false)}
                   onNotificationUpdate={() => {
@@ -145,7 +145,7 @@ export function NavUser({
             <DropdownMenuSeparator />
             <LogoutDialog
               trigger={
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-popover-foreground hover:text-popover-foreground focus:text-accent-foreground">
                   <LogOutIcon />
                   Log out
                 </DropdownMenuItem>
