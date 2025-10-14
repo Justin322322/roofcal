@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { 
   WarehouseIcon, 
   AlertTriangleIcon, 
-  PackageIcon
+  PackageIcon,
 } from "lucide-react";
 
 interface WarehouseMaterialWarning {
@@ -93,77 +93,92 @@ export function WarehouseMaterialWarnings({
   const [warnings, setWarnings] = useState<WarehouseMaterialWarning[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchWarnings = useCallback(async () => {
-    try {
-      setIsLoading(true);
+  const calculateLocalWarnings = useCallback(() => {
+    // Calculate warnings from real warehouse data as fallback
+    const calculatedWarnings: WarehouseMaterialWarning[] = [];
+    
+    warehouses.forEach(warehouse => {
+      const warehouseMaterials = allWarehouseMaterials[warehouse.id] || [];
+      const activeMaterials = warehouseMaterials.filter(m => m.isActive);
       
-      // Calculate warnings from real warehouse data
-      const calculatedWarnings: WarehouseMaterialWarning[] = [];
+      const warehouseWarnings: WarehouseMaterialWarning['warnings'] = [];
       
-      warehouses.forEach(warehouse => {
-        const warehouseMaterials = allWarehouseMaterials[warehouse.id] || [];
-        const activeMaterials = warehouseMaterials.filter(m => m.isActive);
+      activeMaterials.forEach(material => {
+        const currentStock = material.quantity;
         
-        const warehouseWarnings: WarehouseMaterialWarning['warnings'] = [];
+        // Define warning thresholds based on material category
+        let warningThreshold = 10; // Default threshold
+        let criticalThreshold = 5; // Default critical threshold
         
-        activeMaterials.forEach(material => {
-          const currentStock = material.quantity;
-          
-          // Define warning thresholds based on material category
-          let warningThreshold = 10; // Default threshold
-          let criticalThreshold = 5; // Default critical threshold
-          
-          // Adjust thresholds based on material type
-          if (material.material.category === 'Labor') {
-            warningThreshold = 1; // Labor is typically fixed
-            criticalThreshold = 0;
-          } else if (material.material.category === 'Insulation' || material.material.category === 'Ventilation') {
-            warningThreshold = 5;
-            criticalThreshold = 2;
-          } else if (material.material.category === 'Gutter') {
-            warningThreshold = 15;
-            criticalThreshold = 8;
-          }
-          
-          // Check if material needs warning
-          if (currentStock <= criticalThreshold || currentStock <= warningThreshold) {
-            const isCritical = currentStock <= criticalThreshold;
-            const projectedStock = Math.max(0, currentStock - (currentStock * 0.1)); // Simulate some usage
-            
-            warehouseWarnings.push({
-              materialId: material.materialId,
-              materialName: material.material.name,
-              currentStock: currentStock,
-              reservedForProjects: Math.floor(currentStock * 0.3), // Simulate 30% reserved
-              projectedStock: projectedStock,
-              criticalLevel: isCritical,
-              projectsUsing: [
-                {
-                  projectId: `project-${material.materialId}`,
-                  projectName: `Sample Project - ${material.material.name}`,
-                  quantity: Math.floor(currentStock * 0.2)
-                }
-              ]
-            });
-          }
-        });
+        // Adjust thresholds based on material type
+        if (material.material.category === 'Labor') {
+          warningThreshold = 1; // Labor is typically fixed
+          criticalThreshold = 0;
+        } else if (material.material.category === 'Insulation' || material.material.category === 'Ventilation') {
+          warningThreshold = 5;
+          criticalThreshold = 2;
+        } else if (material.material.category === 'Gutter') {
+          warningThreshold = 15;
+          criticalThreshold = 8;
+        }
         
-        if (warehouseWarnings.length > 0) {
-          calculatedWarnings.push({
-            warehouseId: warehouse.id,
-            warehouseName: warehouse.name,
-            warnings: warehouseWarnings
+        // Check if material needs warning
+        if (currentStock <= criticalThreshold || currentStock <= warningThreshold) {
+          const isCritical = currentStock <= criticalThreshold;
+          const projectedStock = Math.max(0, currentStock - (currentStock * 0.1));
+          
+          warehouseWarnings.push({
+            materialId: material.materialId,
+            materialName: material.material.name,
+            currentStock: currentStock,
+            reservedForProjects: 0, // Will be updated by API
+            projectedStock: projectedStock,
+            criticalLevel: isCritical,
+            projectsUsing: [] // Will be updated by API
           });
         }
       });
       
-      setWarnings(calculatedWarnings);
+      if (warehouseWarnings.length > 0) {
+        calculatedWarnings.push({
+          warehouseId: warehouse.id,
+          warehouseName: warehouse.name,
+          warnings: warehouseWarnings
+        });
+      }
+    });
+    
+    setWarnings(calculatedWarnings);
+  }, [warehouses, allWarehouseMaterials]);
+
+  const fetchWarnings = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      
+      // Fetch real warnings from API
+      const response = await fetch('/api/warehouses/warnings');
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.warnings) {
+          setWarnings(result.warnings);
+        } else {
+          // Fallback to calculating from local data if API fails
+          calculateLocalWarnings();
+        }
+      } else {
+        // Fallback to calculating from local data if API fails
+        calculateLocalWarnings();
+      }
     } catch (error) {
-      console.error('Error calculating warehouse warnings:', error);
+      console.error('Error fetching warehouse warnings:', error);
+      // Fallback to calculating from local data
+      calculateLocalWarnings();
     } finally {
       setIsLoading(false);
     }
-  }, [warehouses, allWarehouseMaterials]);
+  }, [calculateLocalWarnings]);
+
 
   useEffect(() => {
     fetchWarnings();
@@ -277,6 +292,7 @@ export function WarehouseMaterialWarnings({
                     <TableHead>Reserved</TableHead>
                     <TableHead>Projected</TableHead>
                     <TableHead>Projects</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

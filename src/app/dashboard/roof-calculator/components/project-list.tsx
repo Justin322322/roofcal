@@ -5,6 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -43,6 +52,7 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   SendIcon,
+  UserCheckIcon,
 } from "lucide-react";
 import { formatCurrency, formatArea } from "@/lib/utils";
 import { ProposalViewer } from "./proposal-viewer";
@@ -78,6 +88,16 @@ interface Project {
 type SortField = "projectName" | "material" | "area" | "totalCost" | "createdAt" | "status";
 type SortDirection = "asc" | "desc";
 
+interface Contractor {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  companyName: string;
+  completedProjects: number;
+  joinedDate: Date;
+}
+
 export function ProjectList() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -90,10 +110,29 @@ export function ProjectList() {
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [sortField, setSortField] = useState<SortField>("createdAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [contractors, setContractors] = useState<Contractor[]>([]);
+  const [contractorDialogOpen, setContractorDialogOpen] = useState(false);
+  const [selectedContractorId, setSelectedContractorId] = useState<string>("");
+  const [sendingToContractor, setSendingToContractor] = useState(false);
 
   useEffect(() => {
     fetchProjects();
+    fetchContractors();
   }, []);
+
+  const fetchContractors = async () => {
+    try {
+      const response = await fetch('/api/contractors');
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.contractors) {
+          setContractors(result.contractors);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch contractors:", error);
+    }
+  };
 
   const fetchProjects = async () => {
     setIsLoading(true);
@@ -406,21 +445,9 @@ export function ProjectList() {
                         </DropdownMenuItem>
                         {project.status === "DRAFT" && (
                           <DropdownMenuItem
-                            onClick={async () => {
-                              try {
-                                const response = await fetch(`/api/projects/${project.id}/send-to-contractor`, {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                });
-                                
-                                if (!response.ok) throw new Error("Failed to send to contractor");
-                                
-                                toast.success("Project sent to contractor successfully");
-                                fetchProjects();
-                              } catch (error) {
-                                console.error("Failed to send to contractor:", error);
-                                toast.error("Failed to send project to contractor");
-                              }
+                            onClick={() => {
+                              setSelectedProject(project);
+                              setContractorDialogOpen(true);
                             }}
                           >
                             <SendIcon className="mr-2 h-4 w-4" />
@@ -507,6 +534,119 @@ export function ProjectList() {
             setSelectedProject(null);
           }}
         />
+      )}
+
+      {/* Contractor Selection Dialog */}
+      {selectedProject && (
+        <Dialog open={contractorDialogOpen} onOpenChange={setContractorDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Select Contractor</DialogTitle>
+              <DialogDescription>
+                Choose a contractor to send this project to for review and proposal creation.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {contractors.length === 0 ? (
+                <div className="text-center py-8">
+                  <UserCheckIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-sm text-muted-foreground">No contractors available</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="contractor">Select Contractor</Label>
+                  <Select
+                    value={selectedContractorId}
+                    onValueChange={setSelectedContractorId}
+                  >
+                    <SelectTrigger id="contractor">
+                      <SelectValue placeholder="Choose a contractor..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {contractors.map((contractor) => (
+                        <SelectItem key={contractor.id} value={contractor.id}>
+                          <div className="flex flex-col">
+                            <span className="font-medium">
+                              {contractor.firstName} {contractor.lastName}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {contractor.email}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {contractor.completedProjects} completed projects
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setContractorDialogOpen(false);
+                  setSelectedProject(null);
+                  setSelectedContractorId("");
+                }}
+                disabled={sendingToContractor}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  if (!selectedContractorId) {
+                    toast.error("Please select a contractor");
+                    return;
+                  }
+
+                  setSendingToContractor(true);
+                  try {
+                    const response = await fetch(
+                      `/api/projects/${selectedProject.id}/send-to-contractor`,
+                      {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          contractorId: selectedContractorId,
+                          note: "Project sent for review",
+                        }),
+                      }
+                    );
+
+                    if (!response.ok) throw new Error("Failed to send to contractor");
+
+                    toast.success("Project sent to contractor successfully");
+                    fetchProjects();
+                    setContractorDialogOpen(false);
+                    setSelectedProject(null);
+                    setSelectedContractorId("");
+                  } catch (error) {
+                    console.error("Failed to send to contractor:", error);
+                    toast.error("Failed to send project to contractor");
+                  } finally {
+                    setSendingToContractor(false);
+                  }
+                }}
+                disabled={!selectedContractorId || sendingToContractor}
+              >
+                {sendingToContractor ? (
+                  <>
+                    <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <SendIcon className="mr-2 h-4 w-4" />
+                    Send Project
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
