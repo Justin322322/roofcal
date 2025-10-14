@@ -63,7 +63,6 @@ export default function Header() {
           </div>
           {/* Mobile dropdown panel below navbar */}
           <div className="md:hidden flex items-center gap-2">
-            <ThemeToggle />
             <Button
               variant="ghost"
               size="icon"
@@ -77,6 +76,7 @@ export default function Header() {
                 <Menu className="h-5 w-5" />
               )}
             </Button>
+            <ThemeToggle />
           </div>
         </div>
       </div>

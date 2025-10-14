@@ -236,12 +236,15 @@ export default function ArchivedProjectsContent() {
       return true;
     })
     .sort((a, b) => {
-      let aValue: string | number = a[sortField];
-      let bValue: string | number = b[sortField];
+      let aValue: string | number;
+      let bValue: string | number;
 
       if (sortField === "createdAt") {
-        aValue = new Date(aValue).getTime();
-        bValue = new Date(bValue).getTime();
+        aValue = new Date(a.createdAt).getTime();
+        bValue = new Date(b.createdAt).getTime();
+      } else {
+        aValue = a[sortField];
+        bValue = b[sortField];
       }
 
       if (typeof aValue === "string") {
