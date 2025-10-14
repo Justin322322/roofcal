@@ -61,16 +61,11 @@ const developerTools = {
       url: "system-control",
       icon: SettingsIcon,
     },
-    // Show Add Admin only in development to aid local setup
-    ...(process.env.NODE_ENV === "development"
-      ? ([
-          {
-            name: "Add Admin User",
-            url: "admin-management",
-            icon: UserPlusIcon,
-          },
-        ] as const)
-      : ([] as const)),
+    {
+      name: "Add Admin User",
+      url: "admin-management",
+      icon: UserPlusIcon,
+    },
   ],
 };
 
@@ -175,6 +170,7 @@ export function AppSidebar({
         {session?.user?.role === UserRole.ADMIN && (
           <NavDocuments
             items={adminTools.documents}
+            label="Professional Tools"
             activeSection={activeSection}
             onSectionChange={onSectionChange}
           />
@@ -183,6 +179,7 @@ export function AppSidebar({
         {session?.user?.role === UserRole.DEVELOPER && (
           <NavDocuments
             items={developerTools.documents}
+            label="Developer Tools"
             activeSection={activeSection}
             onSectionChange={onSectionChange}
           />

@@ -15,6 +15,7 @@ export function NavDocuments({
   items,
   activeSection,
   onSectionChange,
+  label = "Professional Tools",
 }: {
   items: {
     name: string;
@@ -23,12 +24,13 @@ export function NavDocuments({
   }[];
   activeSection?: string;
   onSectionChange?: (section: string) => void;
+  label?: string;
 }) {
   const { isMobile, setOpenMobile } = useSidebar();
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>Professional Tools</SidebarGroupLabel>
+      <SidebarGroupLabel>{label}</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.name}>
