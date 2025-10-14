@@ -112,6 +112,7 @@ interface Project {
   address: string | null;
   city: string | null;
   state: string | null;
+  zipCode: string | null;
   createdAt: Date;
   client?: {
     id: string;
@@ -616,11 +617,11 @@ export function ContractorProjectsContent() {
                         {project.client ? `${project.client.firstName} ${project.client.lastName}` : 'N/A'}
                       </TableCell>
                       <TableCell>
-                        {project.address ? (
+                        {(project.address || project.city || project.state || project.zipCode) ? (
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
                             <MapPinIcon className="h-3 w-3" />
-                            <span className="truncate max-w-[200px]">
-                              {project.city}, {project.state}
+                            <span className="truncate max-w-[200px]" title={[project.address, project.city, project.state, project.zipCode].filter(Boolean).join(', ')}>
+                              {[project.address, project.city, project.state, project.zipCode].filter(Boolean).join(', ')}
                             </span>
                           </div>
                         ) : (
@@ -776,7 +777,7 @@ export function ContractorProjectsContent() {
               <Separator />
 
               {/* Location */}
-              {(selectedProject.address || selectedProject.city || selectedProject.state) && (
+              {(selectedProject.address || selectedProject.city || selectedProject.state || selectedProject.zipCode) && (
                 <>
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
@@ -784,14 +785,18 @@ export function ContractorProjectsContent() {
                       <h3 className="text-lg font-semibold">Location</h3>
                     </div>
                     <div className="space-y-2">
-                      {selectedProject.address && (
-                        <p className="text-sm"><span className="font-medium text-muted-foreground">Address:</span> {selectedProject.address}</p>
-                      )}
-                      {(selectedProject.city || selectedProject.state) && (
-                        <p className="text-sm">
-                          <span className="font-medium text-muted-foreground">City/State:</span> {selectedProject.city}, {selectedProject.state}
-                        </p>
-                      )}
+                      <p className="text-sm">
+                        <span className="font-medium text-muted-foreground">Full Address:</span>
+                        <br />
+                        <span className="ml-0">
+                          {[
+                            selectedProject.address,
+                            selectedProject.city,
+                            selectedProject.state,
+                            selectedProject.zipCode
+                          ].filter(Boolean).join(', ')}
+                        </span>
+                      </p>
                       {selectedProject.deliveryDistance !== null && selectedProject.deliveryDistance !== undefined && (
                         <p className="text-sm">
                           <span className="font-medium text-muted-foreground">Delivery Distance:</span> {selectedProject.deliveryDistance.toFixed(2)} miles
