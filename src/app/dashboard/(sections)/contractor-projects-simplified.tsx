@@ -28,7 +28,6 @@
  */
 
 import { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -70,7 +69,6 @@ import { toast } from "sonner";
 import {
   Loader2Icon,
   FileTextIcon,
-  MapPinIcon,
   CheckIcon,
   XIcon,
   CheckCircleIcon,
@@ -80,36 +78,6 @@ import {
   RulerIcon,
 } from "lucide-react";
 
-// Dynamically import Leaflet components to avoid SSR issues
-const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), {
-  ssr: false,
-});
-
-const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), {
-  ssr: false,
-});
-
-const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), {
-  ssr: false,
-});
-
-const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
-  ssr: false,
-});
-
-// Fix for default markers in React Leaflet - only on client side
-const setupLeafletIcons = async () => {
-  if (typeof window !== "undefined") {
-    const L = await import("leaflet");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (L.Icon.Default.prototype as any)._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-      iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-      shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-    });
-  }
-};
 
 interface Project {
   id: string;
@@ -161,50 +129,6 @@ interface Project {
   insulationType?: string;
 }
 
-// Simple Location Map Component
-function LocationMap({ latitude, longitude, address }: { latitude: number | null; longitude: number | null; address?: string | null }) {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-    setupLeafletIcons();
-  }, []);
-
-  if (!isClient || !latitude || !longitude) {
-    return (
-      <div className="h-48 bg-muted rounded-lg flex items-center justify-center">
-        <div className="text-center">
-          <MapPinIcon className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">
-            {address || "Location not available"}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="h-48 rounded-lg overflow-hidden">
-      <MapContainer
-        center={[latitude, longitude]}
-        zoom={13}
-        style={{ height: "100%", width: "100%" }}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
-        <Marker position={[latitude, longitude]}>
-          <Popup>
-            <div className="text-center">
-              <p className="font-medium">{address}</p>
-            </div>
-          </Popup>
-        </Marker>
-      </MapContainer>
-    </div>
-  );
-}
 
 export function ContractorProjectsContent() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -570,7 +494,7 @@ export function ContractorProjectsContent() {
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -617,49 +541,63 @@ export function ContractorProjectsContent() {
                           {formatDate(project.createdAt)}
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex justify-end gap-2">
                             <Button
-                              variant="outline"
                               size="sm"
+                              variant="outline"
                               onClick={() => handleViewProject(project)}
                             >
-                              <EyeIcon className="h-4 w-4" />
+                              <EyeIcon className="h-4 w-4 mr-1" />
+                              View
                             </Button>
-                            {(project.status === "CONTRACTOR_REVIEWING" || project.proposalStatus === "SENT") && (
+                            {project.status === "CONTRACTOR_REVIEWING" && (
                               <>
                                 <Button
-                                  variant="default"
                                   size="sm"
+                                  variant="default"
                                   onClick={() => handleAcceptProject(project.id)}
                                   disabled={loadingProjectId === project.id}
                                 >
                                   {loadingProjectId === project.id ? (
-                                    <Loader2Icon className="h-4 w-4 animate-spin" />
+                                    <>
+                                      <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
+                                      Processing...
+                                    </>
                                   ) : (
-                                    <CheckIcon className="h-4 w-4" />
+                                    <>
+                                      <CheckIcon className="h-4 w-4 mr-1" />
+                                      Accept
+                                    </>
                                   )}
                                 </Button>
                                 <Button
-                                  variant="destructive"
                                   size="sm"
+                                  variant="destructive"
                                   onClick={() => handleDeclineProject(project.id)}
                                   disabled={loadingProjectId === project.id}
                                 >
-                                  <XIcon className="h-4 w-4" />
+                                  <XIcon className="h-4 w-4 mr-1" />
+                                  Decline
                                 </Button>
                               </>
                             )}
                             {project.status === "ACCEPTED" && (
                               <Button
-                                variant="default"
                                 size="sm"
+                                variant="default"
                                 onClick={() => handleFinishProject(project.id)}
                                 disabled={loadingProjectId === project.id}
                               >
                                 {loadingProjectId === project.id ? (
-                                  <Loader2Icon className="h-4 w-4 animate-spin" />
+                                  <>
+                                    <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
+                                    Finishing...
+                                  </>
                                 ) : (
-                                  <CheckCircleIcon className="h-4 w-4" />
+                                  <>
+                                    <CheckCircleIcon className="h-4 w-4 mr-1" />
+                                    Finish
+                                  </>
                                 )}
                               </Button>
                             )}
@@ -747,7 +685,7 @@ export function ContractorProjectsContent() {
                 <>
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
-                      <MapPinIcon className="h-5 w-5 text-primary" />
+                      <FileTextIcon className="h-5 w-5 text-primary" />
                       <h3 className="text-lg font-semibold">Location</h3>
                     </div>
                     <div className="space-y-2">
@@ -763,20 +701,7 @@ export function ContractorProjectsContent() {
                           ].filter(Boolean).join(', ')}
                         </span>
                       </p>
-                      {selectedProject.deliveryDistance !== null && selectedProject.deliveryDistance !== undefined && (
-                        <p className="text-sm">
-                          <span className="font-medium text-muted-foreground">Delivery Distance:</span> {selectedProject.deliveryDistance.toFixed(2)} miles
-                        </p>
-                      )}
                     </div>
-                    {/* Location Map */}
-                    {selectedProject.latitude && selectedProject.longitude && (
-                      <LocationMap
-                        latitude={selectedProject.latitude}
-                        longitude={selectedProject.longitude}
-                        address={selectedProject.address}
-                      />
-                    )}
                   </div>
                   <Separator />
                 </>

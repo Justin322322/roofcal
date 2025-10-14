@@ -256,11 +256,7 @@ export default function DatabaseManagementContent() {
                 </div>
               ) : (
                 <>
-                  <div className="rounded-md border overflow-x-auto relative">
-                    {/* Scroll indicator */}
-                    <div className="absolute top-2 right-2 z-10 bg-background/80 backdrop-blur-sm px-2 py-1 rounded-md text-xs text-muted-foreground border">
-                      ← Scroll horizontally →
-                    </div>
+                  <div className="rounded-md border overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
