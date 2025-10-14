@@ -81,6 +81,9 @@ interface Project {
   deliveryDistance?: number | null;
   latitude?: number | null;
   longitude?: number | null;
+  gutterPieces?: number;
+  ridgeLength?: number;
+  ventilationPieces?: number;
   contractor?: {
     id: string;
     firstName: string;
@@ -310,19 +313,40 @@ export function ProjectDetailsViewer({ project, isOpen, onClose }: ProjectDetail
                 <div className="ml-4 space-y-1">
                   {project.materialCost !== undefined && project.materialCost > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span>Roofing Material</span>
+                      <span>
+                        Roofing Material
+                        {project.area && (
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({project.area.toFixed(2)} sq ft)
+                          </span>
+                        )}
+                      </span>
                       <span className="font-medium">₱{project.materialCost.toLocaleString()}</span>
                     </div>
                   )}
                   {project.gutterCost !== undefined && project.gutterCost > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span>Gutter System</span>
+                      <span>
+                        Gutter System
+                        {project.gutterPieces && (
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({project.gutterPieces} pieces)
+                          </span>
+                        )}
+                      </span>
                       <span className="font-medium">₱{project.gutterCost.toLocaleString()}</span>
                     </div>
                   )}
                   {project.ridgeCost !== undefined && project.ridgeCost > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span>Ridge Cap</span>
+                      <span>
+                        Ridge Cap
+                        {project.ridgeLength && (
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({project.ridgeLength.toFixed(2)} ft)
+                          </span>
+                        )}
+                      </span>
                       <span className="font-medium">₱{project.ridgeCost.toLocaleString()}</span>
                     </div>
                   )}
@@ -340,7 +364,14 @@ export function ProjectDetailsViewer({ project, isOpen, onClose }: ProjectDetail
                   )}
                   {project.ventilationCost !== undefined && project.ventilationCost > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span>Ventilation</span>
+                      <span>
+                        Ventilation
+                        {project.ventilationPieces && (
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({project.ventilationPieces} pieces)
+                          </span>
+                        )}
+                      </span>
                       <span className="font-medium">₱{project.ventilationCost.toLocaleString()}</span>
                     </div>
                   )}

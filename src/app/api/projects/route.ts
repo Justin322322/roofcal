@@ -290,7 +290,9 @@ export async function GET(request: NextRequest) {
         laborCost: Number(project.laborCost),
         removalCost: Number(project.removalCost),
         totalCost: Number(project.totalCost),
+        gutterPieces: project.gutterPieces,
         ridgeLength: Number(project.ridgeLength),
+        ventilationPieces: project.ventilationPieces,
         // Convert location Decimal fields to number
         latitude: project.latitude ? Number(project.latitude) : null,
         longitude: project.longitude ? Number(project.longitude) : null,

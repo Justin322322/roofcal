@@ -41,7 +41,7 @@
           "description": "Professional-grade features for roofing businesses"
         }
       ],
-      "gettingStarted": "Navigate through the tabs above to learn about specific features. We recommend starting with the \"Calculator\" tab to understand the core estimation workflow, then exploring \"Projects\" for management features."
+      "gettingStarted": "Navigate through the tabs above to learn about specific features. We recommend starting with the \"Calculator\" tab to understand the core estimation workflow."
     },
     "roof-types": {
       "title": "Roof Types",
@@ -193,50 +193,6 @@
         }
       ]
     },
-    "projects": {
-      "title": "Projects",
-      "description": "Manage all your roofing projects in one centralized location. Track project status, view history, and generate professional reports.",
-      "features": [
-        {
-          "title": "Project Dashboard",
-          "description": "View all your projects in a single dashboard with status indicators and quick actions"
-        },
-        {
-          "title": "Project Details",
-          "description": "Access comprehensive project information including measurements, materials, and cost breakdowns"
-        },
-        {
-          "title": "Project Status",
-          "description": "Track project progress with status indicators: Draft, Active, Completed, and Archived"
-        },
-        {
-          "title": "Client Management",
-          "description": "Assign projects to clients and track contractor assignments"
-        },
-        {
-          "title": "Print & Export",
-          "description": "Generate professional project reports for client presentations"
-        }
-      ],
-      "projectStatuses": [
-        {
-          "status": "Draft",
-          "description": "Project is being created and calculations are being refined"
-        },
-        {
-          "status": "Active",
-          "description": "Project is approved and ready for execution"
-        },
-        {
-          "status": "Completed",
-          "description": "Project has been finished"
-        },
-        {
-          "status": "Archived",
-          "description": "Project is stored for historical reference"
-        }
-      ]
-    },
     "contractor": {
       "title": "Contractor Features",
       "description": "Professional contractor features designed to streamline your roofing business operations, improve client relationships, and maximize profitability through advanced tools and integrations.",
@@ -319,59 +275,6 @@
         "Maintain minimum stock levels",
         "Track material costs",
         "Plan for seasonal variations"
-      ]
-    },
-    "costs": {
-      "title": "Cost Management",
-      "description": "Understanding and managing costs is essential for profitable roofing projects. Our system provides detailed cost breakdowns and tracking capabilities.",
-      "costComponents": [
-        {
-          "component": "Material Costs",
-          "description": "Primary roofing materials including shingles, tiles, metal panels, etc.",
-          "factors": [
-            "Material type and quality",
-            "Roof area and complexity",
-            "Waste factor (10% automatically added)",
-            "Gable roof premium (+5%)"
-          ]
-        },
-        {
-          "component": "Labor Costs",
-          "description": "Installation and construction labor",
-          "factors": [
-            "Project complexity",
-            "Roof pitch and accessibility",
-            "Local labor rates",
-            "Project timeline"
-          ]
-        },
-        {
-          "component": "Additional Materials",
-          "description": "Supporting materials and accessories",
-          "factors": [
-            "Gutters and downspouts",
-            "Ridge caps and flashing",
-            "Ventilation systems",
-            "Insulation materials"
-          ]
-        },
-        {
-          "component": "Delivery & Transportation",
-          "description": "Material delivery and equipment costs",
-          "factors": [
-            "Distance from supplier",
-            "Material weight and volume",
-            "Accessibility of site",
-            "Equipment rental"
-          ]
-        }
-      ],
-      "costOptimization": [
-        "Compare material options",
-        "Plan for bulk purchases",
-        "Schedule projects efficiently",
-        "Minimize waste through accurate measurements",
-        "Negotiate supplier contracts"
       ]
     },
     "manual-calc": {

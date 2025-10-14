@@ -13,9 +13,7 @@ import {
   ClipboardListIcon,
   HardHatIcon,
   SparklesIcon,
-  KanbanSquareIcon,
   ArchiveIcon,
-  CreditCardIcon,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -132,24 +130,10 @@ export function TutorialGuideDialog() {
                   </TabsTrigger>
                   <TabsTrigger
                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
-                    value="projects"
-                  >
-                    <KanbanSquareIcon className="h-4 w-4" />
-                    <span className="whitespace-nowrap">Projects</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
                     value="archive"
                   >
                     <ArchiveIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Archive</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
-                    value="costs"
-                  >
-                    <CreditCardIcon className="h-4 w-4" />
-                    <span className="whitespace-nowrap">Costs</span>
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -230,9 +214,6 @@ export function TutorialGuideDialog() {
                     </div>
 
                     <div className="space-y-3">
-                      <h4 className="text-base font-medium text-foreground">
-                        Complex Roofs:
-                      </h4>
                       <div className="grid gap-3 grid-cols-2">
                         {content.tabs["roof-types"].complexRoofs?.map((roof, index) => (
                           <div
@@ -404,9 +385,6 @@ export function TutorialGuideDialog() {
                   </div>
 
                   <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-                    <h4 className="text-base font-medium text-foreground mb-2">
-                      Advanced Features:
-                    </h4>
                     <ul className="text-sm text-muted-foreground space-y-1">
                       {content.tabs.calculator.advancedFeatures?.map((feature, index) => (
                         <li key={index}>
@@ -693,104 +671,6 @@ export function TutorialGuideDialog() {
               </TabsContent>
 
               <TabsContent
-                value="projects"
-                className="mt-0 p-4 bg-muted/20 rounded-lg"
-              >
-                <h3 className="text-lg font-semibold mb-3">{content.tabs.projects.title}</h3>
-                <div className="space-y-4 text-muted-foreground leading-relaxed">
-                  <p>{content.tabs.projects.description}</p>
-
-                  <div className="space-y-4">
-                    <h4 className="text-base font-medium text-foreground">
-                      Project Management Features:
-                    </h4>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-3">
-                        <div className="border rounded-lg p-4">
-                          <h5 className="font-medium text-foreground mb-2">
-                            Project Organization
-                          </h5>
-                          <ul className="text-sm space-y-1">
-                            {(content.tabs.projects.features as Record<string, string[]>)?.projectOrganization?.map((feature: string, index: number) => (
-                              <li key={index}>• {feature}</li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        <div className="border rounded-lg p-4">
-                          <h5 className="font-medium text-foreground mb-2">
-                            Progress Tracking
-                          </h5>
-                          <ul className="text-sm space-y-1">
-                            {(content.tabs.projects.features as Record<string, string[]>)?.progressTracking?.map((feature: string, index: number) => (
-                              <li key={index}>• {feature}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="border rounded-lg p-4">
-                          <h5 className="font-medium text-foreground mb-2">
-                            Documentation
-                          </h5>
-                          <ul className="text-sm space-y-1">
-                            {(content.tabs.projects.features as Record<string, string[]>)?.documentation?.map((feature: string, index: number) => (
-                              <li key={index}>• {feature}</li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        <div className="border rounded-lg p-4">
-                          <h5 className="font-medium text-foreground mb-2">
-                            Collaboration
-                          </h5>
-                          <ul className="text-sm space-y-1">
-                            {(content.tabs.projects.features as Record<string, string[]>)?.collaboration?.map((feature: string, index: number) => (
-                              <li key={index}>• {feature}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-                    <h4 className="text-base font-medium text-foreground mb-2">
-                      Project Workflow:
-                    </h4>
-                    <div className="grid gap-3 md:grid-cols-3">
-                      {content.tabs.projects.workflow?.map((step, index) => (
-                        <div key={index} className="text-center">
-                          <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center mx-auto mb-2 text-sm font-medium">
-                            {index + 1}
-                          </div>
-                          <h5 className="font-medium text-foreground">
-                            {step.step}
-                          </h5>
-                          <p className="text-sm text-muted-foreground">
-                            {step.description}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-                    <h4 className="text-base font-medium text-foreground mb-2">
-                      Pro Tips:
-                    </h4>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      {content.tabs.projects.proTips?.map((tip, index) => (
-                        <li key={index}>• {typeof tip === 'string' ? tip : `${tip.tip}: ${tip.description}`}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent
                 value="archive"
                 className="mt-0 p-4 bg-muted/20 rounded-lg"
               >
@@ -888,112 +768,6 @@ export function TutorialGuideDialog() {
                 </div>
               </TabsContent>
 
-              <TabsContent
-                value="costs"
-                className="mt-0 p-4 bg-muted/20 rounded-lg"
-              >
-                <h3 className="text-lg font-semibold mb-3">{content.tabs.costs.title}</h3>
-                <div className="space-y-4 text-muted-foreground leading-relaxed">
-                  <p>{content.tabs.costs.description}</p>
-
-                  <div className="space-y-4">
-                    <h4 className="text-base font-medium text-foreground">
-                      Cost Configuration:
-                    </h4>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-3">
-                        <div className="border rounded-lg p-4">
-                          <h5 className="font-medium text-foreground mb-2">
-                            Material Pricing
-                          </h5>
-                          <ul className="text-sm space-y-1">
-                            {content.tabs.costs.configuration?.materialPricing?.map((item, index) => (
-                              <li key={index}>• {item}</li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        <div className="border rounded-lg p-4">
-                          <h5 className="font-medium text-foreground mb-2">
-                            Labor Rates
-                          </h5>
-                          <ul className="text-sm space-y-1">
-                            {content.tabs.costs.configuration?.laborRates?.map((item, index) => (
-                              <li key={index}>• {item}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="border rounded-lg p-4">
-                          <h5 className="font-medium text-foreground mb-2">
-                            Additional Costs
-                          </h5>
-                          <ul className="text-sm space-y-1">
-                            {content.tabs.costs.configuration?.additionalCosts?.map((item, index) => (
-                              <li key={index}>• {item}</li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        <div className="border rounded-lg p-4">
-                          <h5 className="font-medium text-foreground mb-2">
-                            Markup & Margins
-                          </h5>
-                          <ul className="text-sm space-y-1">
-                            {content.tabs.costs.configuration?.markupMargins?.map((item, index) => (
-                              <li key={index}>• {item}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-                    <h4 className="text-base font-medium text-foreground mb-2">
-                      Regional Customization:
-                    </h4>
-                    <div className="grid gap-3 md:grid-cols-2">
-                      <div>
-                        <h5 className="font-medium text-foreground mb-2">
-                          Location Factors:
-                        </h5>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                          {content.tabs.costs.regionalCustomization?.locationFactors?.map((factor, index) => (
-                            <li key={index}>• {factor}</li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div>
-                        <h5 className="font-medium text-foreground mb-2">
-                          Market Data:
-                        </h5>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                          {content.tabs.costs.regionalCustomization?.marketData?.map((data, index) => (
-                            <li key={index}>• {data}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-                    <h4 className="text-base font-medium text-foreground mb-2">
-                      Important Considerations:
-                    </h4>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      {content.tabs.costs.considerations?.map((consideration, index) => (
-                        <li key={index}>
-                          • <strong>{consideration.consideration}:</strong> {consideration.description}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </TabsContent>
             </Tabs>
           </div>
           <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">

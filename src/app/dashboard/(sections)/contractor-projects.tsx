@@ -138,6 +138,9 @@ interface Project {
   latitude?: number | null;
   longitude?: number | null;
   notes?: string | null;
+  gutterPieces?: number;
+  ridgeLength?: number;
+  ventilationPieces?: number;
 }
 
 // Simple Location Map Component
@@ -871,19 +874,40 @@ export function ContractorProjectsContent() {
                         <>
                           {selectedProject.materialCost !== undefined && selectedProject.materialCost > 0 && (
                             <div className="flex justify-between text-sm">
-                              <span>Roofing Material</span>
+                              <span>
+                                Roofing Material
+                                {selectedProject.area && (
+                                  <span className="text-xs text-muted-foreground ml-1">
+                                    ({selectedProject.area.toFixed(2)} sq ft)
+                                  </span>
+                                )}
+                              </span>
                               <span className="font-medium">₱{selectedProject.materialCost.toLocaleString()}</span>
                             </div>
                           )}
                           {selectedProject.gutterCost !== undefined && selectedProject.gutterCost > 0 && (
                             <div className="flex justify-between text-sm">
-                              <span>Gutter System</span>
+                              <span>
+                                Gutter System
+                                {selectedProject.gutterPieces && (
+                                  <span className="text-xs text-muted-foreground ml-1">
+                                    ({selectedProject.gutterPieces} pieces)
+                                  </span>
+                                )}
+                              </span>
                               <span className="font-medium">₱{selectedProject.gutterCost.toLocaleString()}</span>
                             </div>
                           )}
                           {selectedProject.ridgeCost !== undefined && selectedProject.ridgeCost > 0 && (
                             <div className="flex justify-between text-sm">
-                              <span>Ridge Cap</span>
+                              <span>
+                                Ridge Cap
+                                {selectedProject.ridgeLength && (
+                                  <span className="text-xs text-muted-foreground ml-1">
+                                    ({selectedProject.ridgeLength.toFixed(2)} ft)
+                                  </span>
+                                )}
+                              </span>
                               <span className="font-medium">₱{selectedProject.ridgeCost.toLocaleString()}</span>
                             </div>
                           )}
@@ -901,7 +925,14 @@ export function ContractorProjectsContent() {
                           )}
                           {selectedProject.ventilationCost !== undefined && selectedProject.ventilationCost > 0 && (
                             <div className="flex justify-between text-sm">
-                              <span>Ventilation</span>
+                              <span>
+                                Ventilation
+                                {selectedProject.ventilationPieces && (
+                                  <span className="text-xs text-muted-foreground ml-1">
+                                    ({selectedProject.ventilationPieces} pieces)
+                                  </span>
+                                )}
+                              </span>
                               <span className="font-medium">₱{selectedProject.ventilationCost.toLocaleString()}</span>
                             </div>
                           )}
