@@ -1,11 +1,23 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import ScrollingCalculators from "./ScrollingCalculators";
+import { useTheme } from "next-themes";
 
 export default function Hero() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const previewSrc = mounted && resolvedTheme === "dark"
+    ? "/dashboard-dark.png"
+    : "/dashboard-light.png";
 
   return (
     <main
@@ -46,7 +58,7 @@ export default function Hero() {
               </div>
               <div className="relative w-full">
                 <Image
-                  src="/dashboard.png"
+                  src={previewSrc}
                   alt="Roof calculator demo screenshot"
                   width={1920}
                   height={1080}

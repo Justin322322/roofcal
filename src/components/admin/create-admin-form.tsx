@@ -93,18 +93,18 @@ export default function CreateAdminForm({ onSuccess }: CreateAdminFormProps) {
   };
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="space-y-1">
+    <Card className="w-full max-w-lg">
+      <CardHeader className="space-y-1 pb-3">
         <CardTitle className="text-2xl font-bold text-center">
           Create Admin Account
         </CardTitle>
-        <CardDescription className="text-center">
+        <CardDescription className="text-center text-sm">
           Create a new admin account for system management
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pb-4">
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name</Label>
               <Input
@@ -188,7 +188,7 @@ export default function CreateAdminForm({ onSuccess }: CreateAdminFormProps) {
         </form>
 
         <div className="mt-4 rounded-md border border-border bg-muted/30 p-3">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             <span className="font-medium">Email notification:</span> The admin will receive their login credentials via email and will be required to change their password on first login for security purposes.
           </p>
         </div>

@@ -32,6 +32,7 @@
 - **Delivery Optimization**: Geocoding and route calculation for cost-effective deliveries
 - **Role-Based Access**: Secure access control for Clients, Admins, and Developers
 - **Real-Time Notifications**: Instant alerts for project updates and material warnings
+- **Dark Mode Support**: Complete light/dark theme system with system preference detection
 
 ### Technology Stack
 
@@ -42,6 +43,8 @@
 - **External Services**: OpenRouteService (geocoding), Nodemailer (email)
 - **State Management**: React Hooks, nuqs (URL state)
 - **Authentication**: JWT-based with email verification
+- **Theme Management**: next-themes with system preference detection
+- **Drag & Drop**: @dnd-kit for Kanban board functionality
 
 ---
 
@@ -61,6 +64,7 @@ flowchart TB
         PROJ[Project Management]
         WARE[Warehouse Management]
         NOTIF[Notification System]
+        TUTORIAL[Tutorial System]
     end
 
     subgraph "Data Layer"
@@ -81,6 +85,7 @@ flowchart TB
     NEXT --> PROJ
     NEXT --> WARE
     NEXT --> NOTIF
+    NEXT --> TUTORIAL
     
     AUTH --> PRISMA
     CALC --> PRISMA
@@ -120,6 +125,7 @@ flowchart TB
 - Accept/Reject proposals
 - Archive projects
 - Cost Customization
+- Tutorial Guide (interactive help system)
 
 **Restrictions:**
 - Cannot access account management
@@ -140,6 +146,7 @@ flowchart TB
 - Project Assignment
 - Proposal Creation
 - System Settings
+- Tutorial Guide access
 
 **Additional Capabilities:**
 - Review client projects
@@ -160,6 +167,8 @@ flowchart TB
 - Maintenance Mode
 - System Logs
 - Advanced Configuration
+- Admin Management (create admin accounts)
+- Tutorial Guide access
 
 ---
 
@@ -178,6 +187,7 @@ Secure authentication with email verification and role-based access control.
 - **Rate Limiting**: Protection against brute force attacks
 - **Session Management**: JWT-based with NextAuth.js
 - **Role-Based Redirect**: Automatic routing based on user role
+- **Password Change Required**: Force password change on first login for admin-created accounts
 
 #### Authentication Flow
 
@@ -348,12 +358,15 @@ stateDiagram-v2
 
 #### Kanban Board Features
 
-- Drag-and-drop status updates
+- **Drag-and-Drop**: Powered by @dnd-kit library
+- **Board Positions**: Persistent card ordering within columns
+- **Proposal Positions**: Separate ordering for proposal view
+- **Stage Progress Tracking**: Visual progress indicators for 5-stage lifecycle
+- **Mobile Responsive**: Touch-friendly drag operations
 - Visual project cards with key information
 - Filter by status, client, contractor
 - Search and sort capabilities
 - Real-time updates
-- Stage progress tracking
 
 ---
 
@@ -547,6 +560,49 @@ sequenceDiagram
     U->>UI: Mark as Read
     UI->>DB: Update Read Status
 ```
+
+---
+
+### H. Tutorial & Onboarding System
+
+Interactive tutorial system providing comprehensive guidance and learning resources for all users.
+
+#### Features
+
+- **Interactive Tutorial Dialog**: Comprehensive guide accessible from dashboard sidebar
+- **Multi-Tab Content**: 8+ tutorial sections covering all features
+- **Visual Learning**: Image galleries for materials, components, and roof types
+- **Contextual Help**: Role-specific guidance and best practices
+- **Material Database**: Visual reference for roofing materials with specifications
+
+#### Tutorial Sections
+
+- **Overview & Getting Started**: Welcome guide and platform introduction
+- **Roof Types**: Detailed coverage of Gable, Hip, Shed, and complex roof configurations
+- **Materials Guide**: Comprehensive material selection with Asphalt, Metal, Tile, and specialty options
+- **Calculator Workflow**: Step-by-step estimation process guidance
+- **Manual Entry Options**: Alternative input methods and calculations
+- **Project Management**: Complete project lifecycle management guide
+- **Warehouse Management**: Inventory tracking and material management
+- **AI Recommendations System**: Understanding intelligent decision support
+
+#### Material Visual Database
+
+The system includes an extensive visual reference library located in `/public/roof/`:
+
+- **Roofing Materials**: Corrugated, long-span, and specialty roofing systems
+- **Ridge Caps & Vents**: Various ridge cap styles and ventilation options
+- **Gutters**: GI (Galvanized Iron), PVC, and stainless steel gutter systems
+- **Screws & Fasteners**: Self-drilling hex, tile screws, and specialized fasteners
+- **Insulation Types**: Fiber glass batt, foam board, mineral wool, and spray foam
+- **Ventilation Components**: Static vents, turbine vents, ridge vents, and exhaust fans
+
+#### User Experience
+
+- **Role-Based Content**: Tailored guidance based on user permissions (CLIENT, ADMIN, DEVELOPER)
+- **Progressive Learning**: Structured learning path from basic to advanced features
+- **Quick Reference**: Fast access to specific topics and troubleshooting
+- **Mobile Responsive**: Optimized for all device types and screen sizes
 
 ---
 
@@ -759,6 +815,7 @@ erDiagram
 - **email**: Unique email address
 - **role**: CLIENT, ADMIN, or DEVELOPER
 - **email_verified**: Email verification timestamp
+- **passwordChangeRequired**: Boolean flag for forced password changes
 
 #### Project Table
 - **id**: Unique identifier
@@ -767,9 +824,12 @@ erDiagram
 - **contractorId**: Assigned contractor
 - **warehouseId**: Assigned warehouse
 - **status**: Project workflow status
-- **currentStage**: Current project stage
+- **currentStage**: Current project stage (INSPECTION, ESTIMATE, MATERIALS, INSTALL, FINALIZE)
 - **materialCost**: Calculated material cost
 - **totalCost**: Total project cost
+- **boardPosition**: Integer for Kanban card ordering
+- **proposalPosition**: Integer for proposal view ordering
+- **stageProgress**: JSON field for stage completion tracking
 
 #### WarehouseMaterial Table
 - **id**: Unique identifier
@@ -948,6 +1008,31 @@ Get maintenance mode status.
 #### POST /api/system/maintenance
 Toggle maintenance mode.
 
+### Admin Management Endpoints
+
+#### POST /api/admin/create
+Create new admin account with temporary password.
+
+**Request:**
+```json
+{
+  "email": "admin@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "temporaryPassword": "TempPass123!"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Admin account created successfully",
+  "userId": "user-id",
+  "passwordChangeRequired": true
+}
+```
+
 ---
 
 ## Key Features
@@ -994,6 +1079,34 @@ Toggle maintenance mode.
 - **Email Notifications**: Verification codes and alerts
 - **In-App Notifications**: Real-time dashboard updates
 - **Read/Unread Tracking**: Notification management
+
+### 7. Dark Mode & Theming
+
+- **Light/Dark Mode**: Complete theme system with smooth transitions
+- **System Preference**: Automatic detection of OS theme preference
+- **Theme Persistence**: User preference stored across sessions
+- **Accessible Toggle**: Available on all pages (dashboard, auth, landing)
+- **CSS Variables**: Comprehensive design token system
+
+### 8. Dashboard Sections by Role
+
+The application provides role-based dashboard sections with specific functionality:
+
+#### CLIENT Dashboard Sections
+- **Roof Calculator**: Create and manage roofing estimates
+- **My Projects**: View and manage personal projects
+- **Archived Projects**: Access completed and archived projects
+
+#### ADMIN Dashboard Sections
+- **Contractor Projects**: Kanban board for project management and workflow
+- **Account Management**: User administration and account controls
+- **Warehouse Management**: Multi-warehouse inventory tracking and management
+- **System Maintenance**: System health monitoring and maintenance controls
+
+#### DEVELOPER Dashboard Sections
+- **Database Management**: Direct database access and management tools
+- **System Control**: Advanced system configuration and control panel
+- **Admin Management**: Create and manage admin accounts with temporary passwords
 
 ---
 
@@ -1161,6 +1274,8 @@ Navigate to `http://localhost:3000`
 3. Check your email for the verification code
 4. Verify your email
 5. You'll be logged in as a CLIENT
+6. Access the tutorial guide from the dashboard sidebar for comprehensive guidance
+7. Dark mode is enabled by default and can be toggled from any page
 
 ### Promoting to Admin
 
@@ -1171,6 +1286,15 @@ UPDATE user
 SET role = 'ADMIN' 
 WHERE email = 'your-email@example.com';
 ```
+
+### Creating Admin Accounts (Developers)
+
+Developers can create admin accounts through the Admin Management section:
+
+1. Navigate to the Admin Management section in the developer dashboard
+2. Use the admin creation form to generate new admin accounts
+3. New admins will receive temporary passwords and be required to change them on first login
+4. All admin accounts start with password change requirements enabled
 
 ---
 
