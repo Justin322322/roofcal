@@ -56,6 +56,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -668,99 +675,145 @@ export function ContractorProjectsContent() {
         </Card>
       </div>
 
-      {/* Project Details Dialog */}
-      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+      {/* Project Details Sheet */}
+      <Sheet open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <SheetContent className="sm:max-w-2xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
               <FileTextIcon className="h-5 w-5" />
-              Project Details
-            </DialogTitle>
-            <DialogDescription>
-              View detailed information about this roofing project
-            </DialogDescription>
-          </DialogHeader>
+              {selectedProject?.projectName}
+            </SheetTitle>
+            <SheetDescription>
+              Complete project details and pricing breakdown
+            </SheetDescription>
+          </SheetHeader>
           
           {selectedProject && (
-            <div className="space-y-6">
-              {/* Project Overview */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Project Information</h3>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Project Name:</span>
-                        <span className="font-medium">{selectedProject.projectName}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status:</span>
-                        {getStatusBadge(selectedProject.status, selectedProject.proposalStatus)}
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Material:</span>
-                        <span className="font-medium">{selectedProject.material}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Area:</span>
-                        <span className="font-medium">{selectedProject.area} sqm</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Client Information */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Client Information</h3>
-                    {selectedProject.client ? (
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Name:</span>
-                          <span className="font-medium">
-                            {selectedProject.client.firstName} {selectedProject.client.lastName}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Email:</span>
-                          <span className="font-medium">{selectedProject.client.email}</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground">No client information available</p>
-                    )}
-                  </div>
+            <div className="mt-6 space-y-6">
+              {/* Project Information */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <FileTextIcon className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-semibold">Project Information</h3>
                 </div>
-
-                {/* Location */}
-                <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">Location</h3>
-                    <div className="space-y-2">
-                      <div className="flex items-start gap-2">
-                        <MapPinIcon className="h-4 w-4 text-muted-foreground mt-0.5" />
-                        <div>
-                          <p className="font-medium">
-                            {selectedProject.address || "Address not provided"}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {[selectedProject.city, selectedProject.state, selectedProject.zipCode]
-                              .filter(Boolean)
-                              .join(", ") || "Location details not available"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                    <p className="text-sm font-medium text-muted-foreground">Status</p>
+                    <p className="text-sm font-medium">{getStatusBadge(selectedProject.status, selectedProject.proposalStatus)}</p>
                   </div>
-
-                  {/* Map */}
-                  <LocationMap
-                    latitude={selectedProject.latitude ?? null}
-                    longitude={selectedProject.longitude ?? null}
-                    address={selectedProject.address}
-                  />
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Material</p>
+                    <p className="text-sm font-medium">{selectedProject.material}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total Area</p>
+                    <p className="text-sm font-medium">{selectedProject.area.toLocaleString()} sq ft</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Created</p>
+                    <p className="text-sm font-medium">{formatDate(selectedProject.createdAt)}</p>
+                  </div>
                 </div>
               </div>
 
               <Separator />
+
+              {/* Client Information */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <FileTextIcon className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-semibold">Client Information</h3>
+                </div>
+                {selectedProject.client ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Name</p>
+                      <p className="text-sm font-medium">{selectedProject.client.firstName} {selectedProject.client.lastName}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Email</p>
+                      <p className="text-sm font-medium">{selectedProject.client.email}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No client information available</p>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Location */}
+              {(selectedProject.address || selectedProject.city || selectedProject.state || selectedProject.zipCode) && (
+                <>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <MapPinIcon className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold">Location</h3>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm">
+                        <span className="font-medium text-muted-foreground">Full Address:</span>
+                        <br />
+                        <span className="ml-0">
+                          {[
+                            selectedProject.address,
+                            selectedProject.city,
+                            selectedProject.state,
+                            selectedProject.zipCode
+                          ].filter(Boolean).join(', ')}
+                        </span>
+                      </p>
+                      {selectedProject.deliveryDistance !== null && selectedProject.deliveryDistance !== undefined && (
+                        <p className="text-sm">
+                          <span className="font-medium text-muted-foreground">Delivery Distance:</span> {selectedProject.deliveryDistance.toFixed(2)} miles
+                        </p>
+                      )}
+                    </div>
+                    {/* Location Map */}
+                    {selectedProject.latitude && selectedProject.longitude && (
+                      <LocationMap
+                        latitude={selectedProject.latitude}
+                        longitude={selectedProject.longitude}
+                        address={selectedProject.address}
+                      />
+                    )}
+                  </div>
+                  <Separator />
+                </>
+              )}
+
+              {/* Project Dimensions */}
+              {(selectedProject.length || selectedProject.width || selectedProject.pitch) && (
+                <>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <RulerIcon className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold">Dimensions</h3>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      {selectedProject.length && (
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Length</p>
+                          <p className="text-sm font-medium">{selectedProject.length} ft</p>
+                        </div>
+                      )}
+                      {selectedProject.width && (
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Width</p>
+                          <p className="text-sm font-medium">{selectedProject.width} ft</p>
+                        </div>
+                      )}
+                      {selectedProject.pitch && (
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Pitch</p>
+                          <p className="text-sm font-medium">{selectedProject.pitch}°</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <Separator />
+                </>
+              )}
 
               {/* Price Breakdown */}
               <div className="space-y-4">
@@ -769,113 +822,133 @@ export function ContractorProjectsContent() {
                   <h3 className="text-lg font-semibold">Price Breakdown</h3>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-muted-foreground">Material Costs</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>Main Material:</span>
-                        <span className="font-medium">{formatCurrency(selectedProject.materialCost || 0)}</span>
+                <div className="space-y-3">
+                  {/* Material Costs */}
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">Material Costs</p>
+                    <div className="ml-4 space-y-1">
+                      {selectedProject.materialCost !== undefined && selectedProject.materialCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>
+                            Roofing Material
+                            {selectedProject.area && (
+                              <span className="text-xs text-muted-foreground ml-1">
+                                ({selectedProject.area.toFixed(2)} sq ft)
+                              </span>
+                            )}
+                          </span>
+                          <span className="font-medium">₱{selectedProject.materialCost.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {selectedProject.gutterCost !== undefined && selectedProject.gutterCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>
+                            Gutter System
+                            {selectedProject.gutterPieces && (
+                              <span className="text-xs text-muted-foreground ml-1">
+                                ({selectedProject.gutterPieces} pieces)
+                              </span>
+                            )}
+                          </span>
+                          <span className="font-medium">₱{selectedProject.gutterCost.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {selectedProject.ridgeCost !== undefined && selectedProject.ridgeCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>
+                            Ridge Cap
+                            {selectedProject.ridgeLength && (
+                              <span className="text-xs text-muted-foreground ml-1">
+                                ({selectedProject.ridgeLength.toFixed(2)} ft)
+                              </span>
+                            )}
+                          </span>
+                          <span className="font-medium">₱{selectedProject.ridgeCost.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {selectedProject.screwsCost !== undefined && selectedProject.screwsCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>Screws & Fasteners</span>
+                          <span className="font-medium">₱{selectedProject.screwsCost.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {selectedProject.insulationCost !== undefined && selectedProject.insulationCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>Insulation</span>
+                          <span className="font-medium">₱{selectedProject.insulationCost.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {selectedProject.ventilationCost !== undefined && selectedProject.ventilationCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>
+                            Ventilation
+                            {selectedProject.ventilationPieces && (
+                              <span className="text-xs text-muted-foreground ml-1">
+                                ({selectedProject.ventilationPieces} pieces)
+                              </span>
+                            )}
+                          </span>
+                          <span className="font-medium">₱{selectedProject.ventilationCost.toLocaleString()}</span>
+                        </div>
+                      )}
+                    </div>
+                    {selectedProject.totalMaterialsCost !== undefined && selectedProject.totalMaterialsCost > 0 && (
+                      <div className="flex justify-between text-sm font-medium pt-1 border-t">
+                        <span>Subtotal - Materials</span>
+                        <span>₱{selectedProject.totalMaterialsCost.toLocaleString()}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Gutters:</span>
-                        <span className="font-medium">{formatCurrency(selectedProject.gutterCost || 0)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Ridge:</span>
-                        <span className="font-medium">{formatCurrency(selectedProject.ridgeCost || 0)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Screws:</span>
-                        <span className="font-medium">{formatCurrency(selectedProject.screwsCost || 0)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Insulation:</span>
-                        <span className="font-medium">{formatCurrency(selectedProject.insulationCost || 0)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Ventilation:</span>
-                        <span className="font-medium">{formatCurrency(selectedProject.ventilationCost || 0)}</span>
-                      </div>
+                    )}
+                  </div>
+
+                  {/* Labor & Services */}
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">Labor & Services</p>
+                    <div className="ml-4 space-y-1">
+                      {selectedProject.laborCost !== undefined && selectedProject.laborCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>Labor</span>
+                          <span className="font-medium">₱{selectedProject.laborCost.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {selectedProject.removalCost !== undefined && selectedProject.removalCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>Removal & Disposal</span>
+                          <span className="font-medium">₱{selectedProject.removalCost.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {selectedProject.deliveryCost !== null && selectedProject.deliveryCost !== undefined && selectedProject.deliveryCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>Delivery</span>
+                          <span className="font-medium">₱{selectedProject.deliveryCost.toLocaleString()}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
-                  
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-muted-foreground">Service Costs</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>Labor:</span>
-                        <span className="font-medium">{formatCurrency(selectedProject.laborCost || 0)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Removal:</span>
-                        <span className="font-medium">{formatCurrency(selectedProject.removalCost || 0)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Delivery:</span>
-                        <span className="font-medium">
-                          {selectedProject.deliveryCost ? formatCurrency(selectedProject.deliveryCost) : "Included"}
-                        </span>
-                      </div>
+
+                  {/* Total */}
+                  <div className="pt-3 border-t-2">
+                    <div className="flex justify-between text-lg font-bold">
+                      <span>Total Project Cost</span>
+                      <span className="text-primary">₱{selectedProject.totalCost.toLocaleString()}</span>
                     </div>
                   </div>
-                </div>
-
-                <Separator />
-
-                <div className="flex justify-between items-center text-lg font-semibold">
-                  <span>Total Cost:</span>
-                  <span className="text-primary">{formatCurrency(selectedProject.totalCost)}</span>
                 </div>
               </div>
-
-              {/* Project Details */}
-              {(selectedProject.length || selectedProject.width || selectedProject.pitch) && (
-                <>
-                  <Separator />
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <RulerIcon className="h-5 w-5 text-primary" />
-                      <h3 className="text-lg font-semibold">Project Specifications</h3>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {selectedProject.length && (
-                        <div className="text-center p-4 border rounded-lg">
-                          <p className="text-sm text-muted-foreground">Length</p>
-                          <p className="text-lg font-semibold">{selectedProject.length}m</p>
-                        </div>
-                      )}
-                      {selectedProject.width && (
-                        <div className="text-center p-4 border rounded-lg">
-                          <p className="text-sm text-muted-foreground">Width</p>
-                          <p className="text-lg font-semibold">{selectedProject.width}m</p>
-                        </div>
-                      )}
-                      {selectedProject.pitch && (
-                        <div className="text-center p-4 border rounded-lg">
-                          <p className="text-sm text-muted-foreground">Pitch</p>
-                          <p className="text-lg font-semibold">{selectedProject.pitch}°</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
 
               {/* Notes */}
               {selectedProject.notes && (
                 <>
                   <Separator />
                   <div className="space-y-2">
-                    <h3 className="text-lg font-semibold">Notes</h3>
-                    <p className="text-muted-foreground">{selectedProject.notes}</p>
+                    <p className="text-sm font-medium text-muted-foreground">Notes</p>
+                    <p className="text-sm bg-muted p-3 rounded-md whitespace-pre-wrap">{selectedProject.notes}</p>
                   </div>
                 </>
               )}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
 
       {/* Decline Project Dialog */}
       <Dialog open={declineDialogOpen} onOpenChange={setDeclineDialogOpen}>

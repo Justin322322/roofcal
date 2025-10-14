@@ -13,7 +13,7 @@ import { useSessionLoading } from "@/hooks/use-session-loading";
 import AccountManagementContent from "./(sections)/account-management";
 import SystemMaintenanceContent from "./(sections)/pricing-maintenance/pricing-maintenance";
 import { RoofCalculatorContent } from "./roof-calculator";
-import { ContractorProjectsContent } from "./(sections)/contractor-projects-simplified"; // Using simplified version without warehouse complexity
+import { ContractorProjectsContent } from "./(sections)/contractor-projects-simplified"; // Using simplified version with drawer UI
 import MyProjectsContent from "./(sections)/my-projects";
 import ArchivedProjectsContent from "./(sections)/archived-projects";
 import DatabaseManagementContent from "./(sections)/database-management";

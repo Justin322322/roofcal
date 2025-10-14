@@ -194,11 +194,11 @@ export function WarehouseSelector({
         </Card>
       )}
 
-      {/* Warehouse Information */}
+      {/* Contractor Information */}
       {selectedWarehouse && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Selected Warehouse Details</CardTitle>
+            <CardTitle className="text-sm">Selected Contractor Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
@@ -213,19 +213,6 @@ export function WarehouseSelector({
                   {selectedWarehouse.city}, {selectedWarehouse.state} {selectedWarehouse.zipCode}
                 </div>
               </div>
-            </div>
-            
-            {/* Warehouse Location Map */}
-            <div className="mt-4">
-              <div className="text-sm font-medium text-card-foreground mb-2">Location</div>
-              <DeliveryMap
-                origin={{
-                  latitude: selectedWarehouse.latitude,
-                  longitude: selectedWarehouse.longitude,
-                }}
-                height="200px"
-                showControls={false}
-              />
             </div>
           </CardContent>
         </Card>

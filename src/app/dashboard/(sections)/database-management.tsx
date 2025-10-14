@@ -256,17 +256,21 @@ export default function DatabaseManagementContent() {
                 </div>
               ) : (
                 <>
-                  <div className="rounded-md border">
+                  <div className="rounded-md border overflow-x-auto relative">
+                    {/* Scroll indicator */}
+                    <div className="absolute top-2 right-2 z-10 bg-background/80 backdrop-blur-sm px-2 py-1 rounded-md text-xs text-muted-foreground border">
+                      ← Scroll horizontally →
+                    </div>
                     <Table>
                       <TableHeader>
                         <TableRow>
                           {tableColumns.slice(0, 10).map((col) => (
-                            <TableHead key={col.name} className="capitalize">
+                            <TableHead key={col.name} className="capitalize whitespace-nowrap">
                               {col.name}
                             </TableHead>
                           ))}
                           {isEditable(selectedTable) && (
-                            <TableHead className="w-24">Actions</TableHead>
+                            <TableHead className="w-24 whitespace-nowrap">Actions</TableHead>
                           )}
                         </TableRow>
                       </TableHeader>
@@ -284,14 +288,16 @@ export default function DatabaseManagementContent() {
                           tableData.data.map((record, idx) => (
                             <TableRow key={(record.id as string) || idx}>
                               {tableColumns.slice(0, 10).map((col) => (
-                                <TableCell key={col.name}>
-                                  <div className="max-w-xs truncate">
-                                    {formatValue(record[col.name])}
+                                <TableCell key={col.name} className="whitespace-nowrap">
+                                  <div className="min-w-[120px] max-w-[300px] px-2">
+                                    <div className="truncate" title={formatValue(record[col.name])}>
+                                      {formatValue(record[col.name])}
+                                    </div>
                                   </div>
                                 </TableCell>
                               ))}
                               {isEditable(selectedTable) && (
-                                <TableCell>
+                                <TableCell className="whitespace-nowrap">
                                   <Button
                                     size="sm"
                                     variant="outline"
