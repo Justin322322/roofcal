@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -32,10 +31,8 @@ import {
 import { toast } from "sonner";
 import {
   Loader2Icon,
-  FileTextIcon,
   EyeIcon,
   CalendarIcon,
-  MapPinIcon,
   ArchiveIcon,
   ArrowUpDownIcon,
   ArrowUpIcon,
@@ -101,7 +98,7 @@ export default function ArchivedProjectsContent() {
         
         if (result.success && result.projects) {
           // Convert Decimal fields to numbers for display
-          const formattedProjects = result.projects.map((p: any) => ({
+          const formattedProjects = result.projects.map((p: Project) => ({
             ...p,
             totalCost: Number(p.totalCost),
             area: Number(p.area),
@@ -163,28 +160,28 @@ export default function ArchivedProjectsContent() {
 
   const getStatusBadge = (status: string, proposalStatus: string | null) => {
     if (proposalStatus === "SENT") {
-      return <Badge variant="default" className="bg-blue-100 text-blue-800">Proposal Sent</Badge>;
+      return <Badge variant="outline" className="bg-blue-100 text-blue-700">Proposal Sent</Badge>;
     }
     if (proposalStatus === "ACCEPTED") {
-      return <Badge variant="default" className="bg-green-100 text-green-800">Accepted</Badge>;
+      return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
     }
     if (proposalStatus === "REJECTED") {
-      return <Badge variant="destructive">Rejected</Badge>;
+      return <Badge variant="outline" className="bg-red-100 text-red-700">Rejected</Badge>;
     }
     
     switch (status) {
       case "CONTRACTOR_REVIEWING":
-        return <Badge variant="default" className="bg-yellow-100 text-yellow-800">Action Required</Badge>;
+        return <Badge variant="outline" className="bg-yellow-100 text-yellow-700">Action Required</Badge>;
       case "PROPOSAL_SENT":
-        return <Badge variant="default" className="bg-blue-100 text-blue-800">Proposal Sent</Badge>;
+        return <Badge variant="outline" className="bg-blue-100 text-blue-700">Proposal Sent</Badge>;
       case "ACCEPTED":
-        return <Badge variant="default" className="bg-green-100 text-green-800">Accepted</Badge>;
+        return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
       case "COMPLETED":
-        return <Badge variant="default" className="bg-gray-100 text-gray-800">Completed</Badge>;
+        return <Badge variant="outline" className="bg-green-100 text-green-700">Completed</Badge>;
       case "REJECTED":
-        return <Badge variant="destructive">Declined</Badge>;
+        return <Badge variant="outline" className="bg-red-100 text-red-700">Declined</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline" className="bg-slate-100 text-slate-600">{status}</Badge>;
     }
   };
 
@@ -241,8 +238,8 @@ export default function ArchivedProjectsContent() {
       return true;
     })
     .sort((a, b) => {
-      let aValue: any = a[sortField];
-      let bValue: any = b[sortField];
+      let aValue: string | number = a[sortField];
+      let bValue: string | number = b[sortField];
 
       if (sortField === "createdAt") {
         aValue = new Date(aValue).getTime();
