@@ -726,19 +726,24 @@ export function WarehouseManagementPage() {
       const activeMaterials = warehouseMaterials.filter(m => m.isActive);
       
       activeMaterials.forEach(material => {
+        // Skip Labor materials - they are fixed costs, not physical inventory
+        if (material.material.category.toLowerCase() === 'labor') {
+          return;
+        }
+        
         const currentStock = material.quantity;
         let warningThreshold = 10;
         let criticalThreshold = 5;
         
-        if (material.material.category === 'Labor') {
-          warningThreshold = 1;
-          criticalThreshold = 0;
-        } else if (material.material.category === 'Insulation' || material.material.category === 'Ventilation') {
+        if (material.material.category === 'Insulation' || material.material.category === 'Ventilation') {
           warningThreshold = 5;
           criticalThreshold = 2;
         } else if (material.material.category === 'Gutter') {
           warningThreshold = 15;
           criticalThreshold = 8;
+        } else if (material.material.category === 'Screws' || material.material.category === 'Hardware') {
+          warningThreshold = 20;
+          criticalThreshold = 10;
         }
         
         if (currentStock <= criticalThreshold || currentStock <= warningThreshold) {
