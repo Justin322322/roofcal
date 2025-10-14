@@ -10,23 +10,29 @@ export default withAuth(
 
     // Check maintenance mode - allow DEVELOPER to bypass
     if (token?.role !== UserRole.DEVELOPER) {
-      const maintenanceStatus = await getMaintenanceStatus();
-      
-      if (maintenanceStatus.maintenanceMode) {
-        // Allow access to maintenance page and auth pages
-        if (
-          pathname === "/maintenance" ||
-          pathname.startsWith("/login") ||
-          pathname.startsWith("/signup") ||
-          pathname.startsWith("/verify") ||
-          pathname.startsWith("/forgot-password") ||
-          pathname.startsWith("/reset-password")
-        ) {
-          // Allow access to these pages
-        } else {
-          // Redirect to maintenance page
-          return NextResponse.redirect(new URL("/maintenance", req.url));
+      try {
+        const maintenanceStatus = await getMaintenanceStatus();
+        
+        if (maintenanceStatus.maintenanceMode) {
+          // Allow access to maintenance page and auth pages
+          if (
+            pathname === "/maintenance" ||
+            pathname.startsWith("/login") ||
+            pathname.startsWith("/signup") ||
+            pathname.startsWith("/verify") ||
+            pathname.startsWith("/forgot-password") ||
+            pathname.startsWith("/reset-password")
+          ) {
+            // Allow access to these pages
+          } else {
+            // Redirect to maintenance page
+            return NextResponse.redirect(new URL("/maintenance", req.url));
+          }
         }
+      } catch (error) {
+        // If maintenance check fails, log error but allow access
+        console.error("Error checking maintenance status:", error);
+        // Continue with normal flow
       }
     }
 
@@ -63,13 +69,14 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        // Allow access to auth pages without token
+        // Allow access to auth pages and maintenance page without token
         if (
           req.nextUrl.pathname.startsWith("/login") ||
           req.nextUrl.pathname.startsWith("/signup") ||
           req.nextUrl.pathname.startsWith("/verify") ||
           req.nextUrl.pathname.startsWith("/forgot-password") ||
-          req.nextUrl.pathname.startsWith("/reset-password")
+          req.nextUrl.pathname.startsWith("/reset-password") ||
+          req.nextUrl.pathname === "/maintenance"
         ) {
           return true;
         }
