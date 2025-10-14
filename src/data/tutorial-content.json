@@ -374,34 +374,122 @@
         "Negotiate supplier contracts"
       ]
     },
+    "manual-calc": {
+      "title": "Manual Calculator",
+      "description": "For advanced users who prefer full control over their calculations, our manual calculator provides direct input fields for all parameters.",
+      "whenToUse": [
+        "You have exact measurements and specifications",
+        "You want to bypass the AI recommendations",
+        "You need to calculate costs for non-standard roof configurations",
+        "You're an experienced contractor with specific requirements"
+      ],
+      "manualEntryOptions": [
+        {
+          "option": "Direct Measurement Input",
+          "description": "Enter exact roof dimensions, pitch, and area measurements"
+        },
+        {
+          "option": "Custom Material Selection",
+          "description": "Choose materials directly from the complete database"
+        },
+        {
+          "option": "Manual Complexity Setting",
+          "description": "Set your own complexity level (1-10) based on your expertise"
+        },
+        {
+          "option": "Custom Pricing Override",
+          "description": "Override default pricing with your own supplier costs"
+        }
+      ],
+      "bestPractices": [
+        "Double-check all measurements before calculation",
+        "Consider local market pricing variations",
+        "Account for waste and material overlap",
+        "Factor in labor costs and complexity",
+        "Review and validate all manual inputs"
+      ]
+    },
+    "archive": {
+      "title": "Project Archive",
+      "description": "Keep your completed projects organized and accessible for future reference. The archive system helps you maintain a comprehensive project history.",
+      "features": {
+        "projectStorage": [
+          "Long-term storage for completed projects",
+          "Organized by completion date and project type",
+          "Preserve all calculation details and specifications",
+          "Maintain client and contractor information"
+        ],
+        "searchRetrieval": [
+          "Search by project name, date, or client",
+          "Filter by roof type, material, or status",
+          "Quick access to historical data",
+          "Export archived project information"
+        ],
+        "dataManagement": [
+          "Automatic archival of completed projects",
+          "Configurable retention policies",
+          "Secure data storage and backup",
+          "Compliance with data retention requirements"
+        ],
+        "restorationReference": [
+          "Restore archived projects for reference",
+          "Compare current projects with past work",
+          "Use historical data for estimates",
+          "Track project trends over time"
+        ]
+      },
+      "bestPractices": [
+        "Archive projects after completion",
+        "Use descriptive project names for easy retrieval",
+        "Regularly review and clean up old archives",
+        "Maintain backup copies of critical projects",
+        "Document lessons learned for future reference"
+      ]
+    },
     "ai-system": {
       "title": "AI-Powered Recommendations",
       "description": "Our intelligent decision tree system analyzes your project parameters and provides expert recommendations for optimal material selection and cost optimization.",
-      "features": [
-        {
-          "title": "Material Recommendations",
-          "description": "AI analyzes your project specifications and recommends the best materials based on budget, climate, and durability requirements"
-        },
-        {
-          "title": "Complexity Scoring",
-          "description": "Automatic complexity assessment (1-10 scale) based on roof type, pitch, area, and material selection"
-        },
-        {
-          "title": "Optimization Tips",
-          "description": "Actionable tips to reduce costs while maintaining quality and durability"
-        },
-        {
-          "title": "Budget Validation",
-          "description": "Real-time budget checking to ensure your selections align with your financial constraints"
-        }
-      ],
-      "howItWorks": [
-        "Enter your project specifications",
-        "AI analyzes multiple factors (roof type, pitch, area, budget)",
-        "System generates material recommendations",
-        "Complexity score is calculated",
-        "Optimization tips are provided",
-        "Budget validation ensures affordability"
+      "features": {
+        "smartRecommendations": [
+          "AI analyzes project specifications",
+          "Recommends optimal materials based on budget",
+          "Considers climate and durability requirements",
+          "Provides cost-effective alternatives"
+        ],
+        "predictiveAnalytics": [
+          "Forecasts potential cost overruns",
+          "Identifies material availability issues",
+          "Predicts project timeline impacts",
+          "Suggests optimization opportunities"
+        ],
+        "intelligentCalculations": [
+          "Automatic complexity assessment (1-10 scale)",
+          "Smart material quantity calculations",
+          "Waste factor optimization",
+          "Labor cost estimation"
+        ],
+        "qualityAssurance": [
+          "Budget validation in real-time",
+          "Material compatibility checks",
+          "Code compliance verification",
+          "Quality vs cost balance recommendations"
+        ]
+      },
+      "learning": {
+        "description": "Our AI system continuously learns from project data to improve recommendations and accuracy over time.",
+        "dataSources": [
+          "Historical project data",
+          "Material performance metrics",
+          "Cost trends and market data",
+          "User feedback and corrections"
+        ]
+      },
+      "gettingMostFromAI": [
+        "Provide accurate and complete project specifications",
+        "Review and validate AI recommendations",
+        "Use the optimization tips provided",
+        "Provide feedback to improve future recommendations",
+        "Combine AI suggestions with your professional expertise"
       ]
     }
   }
