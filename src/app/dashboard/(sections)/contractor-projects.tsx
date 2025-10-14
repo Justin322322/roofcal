@@ -13,17 +13,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import {
   Loader2Icon,
   FileTextIcon,
   MapPinIcon,
-  DollarSignIcon,
   CalendarIcon,
   CheckIcon,
   XIcon,
   PlayIcon,
   CheckCircleIcon,
+  FilterIcon,
+  XCircleIcon,
 } from "lucide-react";
 
 interface Project {
@@ -50,6 +58,11 @@ export function ContractorProjectsContent() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [minCost, setMinCost] = useState<string>("");
+  const [maxCost, setMaxCost] = useState<string>("");
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
 
   useEffect(() => {
     fetchProjects();
@@ -171,11 +184,55 @@ export function ContractorProjectsContent() {
   };
 
   const filteredProjects = projects.filter(project => {
+    // Search filter
     const matchesSearch = project.projectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          project.client?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          project.client?.lastName?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
+    
+    if (!matchesSearch) return false;
+
+    // Status filter
+    if (statusFilter !== "all") {
+      const projectStatus = project.proposalStatus || project.status;
+      if (statusFilter === "pending" && projectStatus !== "CLIENT_PENDING") return false;
+      if (statusFilter === "reviewing" && projectStatus !== "CONTRACTOR_REVIEWING") return false;
+      if (statusFilter === "proposal" && projectStatus !== "PROPOSAL_SENT" && project.proposalStatus !== "SENT") return false;
+      if (statusFilter === "accepted" && projectStatus !== "ACCEPTED" && project.proposalStatus !== "ACCEPTED") return false;
+      if (statusFilter === "in_progress" && projectStatus !== "IN_PROGRESS") return false;
+      if (statusFilter === "completed" && projectStatus !== "COMPLETED") return false;
+      if (statusFilter === "rejected" && project.proposalStatus !== "REJECTED") return false;
+    }
+
+    // Cost filter
+    if (minCost && project.totalCost < parseFloat(minCost)) return false;
+    if (maxCost && project.totalCost > parseFloat(maxCost)) return false;
+
+    // Date filter
+    if (dateFrom) {
+      const fromDate = new Date(dateFrom);
+      const projectDate = new Date(project.createdAt);
+      if (projectDate < fromDate) return false;
+    }
+    if (dateTo) {
+      const toDate = new Date(dateTo);
+      toDate.setHours(23, 59, 59, 999); // Include the entire end date
+      const projectDate = new Date(project.createdAt);
+      if (projectDate > toDate) return false;
+    }
+
+    return true;
   });
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setMinCost("");
+    setMaxCost("");
+    setDateFrom("");
+    setDateTo("");
+  };
+
+  const hasActiveFilters = searchQuery || statusFilter !== "all" || minCost || maxCost || dateFrom || dateTo;
 
   if (isLoading) {
     return (
@@ -206,23 +263,148 @@ export function ContractorProjectsContent() {
         </p>
       </div>
 
-      {/* Search */}
-      <div className="mb-6">
-        <Input
-          placeholder="Search projects by name or client..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full sm:w-96"
-        />
-      </div>
+      {/* Search and Filters */}
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <FilterIcon className="h-5 w-5" />
+            <CardTitle className="text-lg">Filters</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Search */}
+            <div>
+              <label className="text-sm font-medium mb-2 block">Search</label>
+              <Input
+                placeholder="Search projects by name or client..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+              />
+            </div>
+
+            {/* Filters Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Status Filter */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Status</label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="pending">Pending Review</SelectItem>
+                    <SelectItem value="reviewing">Under Review</SelectItem>
+                    <SelectItem value="proposal">Proposal Sent</SelectItem>
+                    <SelectItem value="accepted">Accepted</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Min Cost */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Min Cost</label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={minCost}
+                  onChange={(e) => setMinCost(e.target.value)}
+                />
+              </div>
+
+              {/* Max Cost */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Max Cost</label>
+                <Input
+                  type="number"
+                  placeholder="999999"
+                  value={maxCost}
+                  onChange={(e) => setMaxCost(e.target.value)}
+                />
+              </div>
+
+              {/* Date From */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">From Date</label>
+                <Input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Date To */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">To Date</label>
+                <Input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Clear Filters Button */}
+            {hasActiveFilters && (
+              <div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="flex items-center gap-2"
+                >
+                  <XCircleIcon className="h-4 w-4" />
+                  Clear All Filters
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Projects Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Projects</CardTitle>
-          <CardDescription>
-            {filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''} found
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Projects</CardTitle>
+              <CardDescription>
+                {filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''} found
+                {hasActiveFilters && (
+                  <span className="ml-2 text-primary">
+                    (filtered from {projects.length} total)
+                  </span>
+                )}
+              </CardDescription>
+            </div>
+            {hasActiveFilters && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <FilterIcon className="h-3 w-3" />
+                {[
+                  searchQuery && "Search",
+                  statusFilter !== "all" && "Status",
+                  minCost && "Min Cost",
+                  maxCost && "Max Cost",
+                  dateFrom && "From Date",
+                  dateTo && "To Date",
+                ].filter(Boolean).length} active filter{[
+                  searchQuery && "Search",
+                  statusFilter !== "all" && "Status",
+                  minCost && "Min Cost",
+                  maxCost && "Max Cost",
+                  dateFrom && "From Date",
+                  dateTo && "To Date",
+                ].filter(Boolean).length !== 1 ? 's' : ''}
+              </Badge>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {filteredProjects.length === 0 ? (
@@ -267,10 +449,9 @@ export function ContractorProjectsContent() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1">
-                          <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">₱{project.totalCost.toFixed(0)}</span>
-                        </div>
+                        <span className="font-medium">
+                          {project.totalCost.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        </span>
                       </TableCell>
                       <TableCell>{getStatusBadge(project.status, project.proposalStatus)}</TableCell>
                       <TableCell>
@@ -320,6 +501,12 @@ export function ContractorProjectsContent() {
                               <CheckCircleIcon className="h-4 w-4 mr-1" />
                               Finish
                             </Button>
+                          )}
+                          {(project.status === "CONTRACTOR_REVIEWING" || 
+                            project.status === "PROPOSAL_SENT" || 
+                            project.status === "COMPLETED" ||
+                            (project.proposalStatus === "SENT" || project.proposalStatus === "ACCEPTED" || project.proposalStatus === "REJECTED")) && (
+                            <span className="text-sm text-muted-foreground">No actions available</span>
                           )}
                         </div>
                       </TableCell>

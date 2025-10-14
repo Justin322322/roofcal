@@ -18,16 +18,16 @@ export function formatStatus(status: string): string {
 }
 
 /**
- * Format a number with thousands separators (e.g., 1,000)
+ * Format a number with thousands separators (e.g., 1.000)
  */
 export function formatNumber(num: number): string {
-  return num.toLocaleString();
+  return num.toLocaleString('de-DE');
 }
 
 /**
  * Format currency with proper formatting
  */
-export function formatCurrency(amount: number, currency: string = "₱"): string {
+export function formatCurrency(amount: number, currency: string = ""): string {
   return `${currency}${formatNumber(Math.round(amount))}`;
 }
 

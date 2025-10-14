@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,6 +53,8 @@ import {
   ArrowDownIcon,
   SendIcon,
   UserCheckIcon,
+  FilterIcon,
+  XCircleIcon,
 } from "lucide-react";
 import { formatCurrency, formatArea } from "@/lib/utils";
 import { ProposalViewer } from "./proposal-viewer";
@@ -103,6 +105,10 @@ export function ProjectList() {
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [minCost, setMinCost] = useState<string>("");
+  const [maxCost, setMaxCost] = useState<string>("");
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [proposalDialogOpen, setProposalDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
@@ -208,13 +214,50 @@ export function ProjectList() {
   };
 
   const filteredProjects = projects.filter(project => {
-    const matchesStatus = statusFilter === "all" || project.status === statusFilter || 
-                         (statusFilter === "proposal" && project.proposalStatus === "SENT");
+    // Search filter
     const matchesSearch = project.projectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          project.material.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          (project.address && project.address.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesStatus && matchesSearch;
+    
+    if (!matchesSearch) return false;
+
+    // Status filter
+    if (statusFilter !== "all") {
+      const matchesStatus = project.status === statusFilter || 
+                           (statusFilter === "proposal" && project.proposalStatus === "SENT");
+      if (!matchesStatus) return false;
+    }
+
+    // Cost filter
+    if (minCost && project.totalCost < parseFloat(minCost)) return false;
+    if (maxCost && project.totalCost > parseFloat(maxCost)) return false;
+
+    // Date filter
+    if (dateFrom) {
+      const fromDate = new Date(dateFrom);
+      const projectDate = new Date(project.createdAt);
+      if (projectDate < fromDate) return false;
+    }
+    if (dateTo) {
+      const toDate = new Date(dateTo);
+      toDate.setHours(23, 59, 59, 999);
+      const projectDate = new Date(project.createdAt);
+      if (projectDate > toDate) return false;
+    }
+
+    return true;
   });
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setMinCost("");
+    setMaxCost("");
+    setDateFrom("");
+    setDateTo("");
+  };
+
+  const hasActiveFilters = searchQuery || statusFilter !== "all" || minCost || maxCost || dateFrom || dateTo;
 
   // Sort projects
   const sortedProjects = [...filteredProjects].sort((a, b) => {
@@ -284,50 +327,162 @@ export function ProjectList() {
 
   return (
     <div className="space-y-6">
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
-          <Input
-            placeholder="Search projects..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full"
-          />
-        </div>
-        <div className="flex gap-2">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Projects</SelectItem>
-              <SelectItem value="DRAFT">Draft</SelectItem>
-              <SelectItem value="CLIENT_PENDING">Pending Contractor</SelectItem>
-              <SelectItem value="CONTRACTOR_REVIEWING">Under Review</SelectItem>
-              <SelectItem value="proposal">Proposal Sent</SelectItem>
-              <SelectItem value="ACCEPTED">Accepted</SelectItem>
-              <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-              <SelectItem value="COMPLETED">Completed</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      {/* Search and Filters */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <FilterIcon className="h-5 w-5" />
+            <CardTitle className="text-lg">Filters</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Search */}
+            <div>
+              <label className="text-sm font-medium mb-2 block">Search</label>
+              <Input
+                placeholder="Search projects by name, material, or address..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+              />
+            </div>
+
+            {/* Filters Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Status Filter */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Status</label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Projects</SelectItem>
+                    <SelectItem value="DRAFT">Draft</SelectItem>
+                    <SelectItem value="CLIENT_PENDING">Pending Contractor</SelectItem>
+                    <SelectItem value="CONTRACTOR_REVIEWING">Under Review</SelectItem>
+                    <SelectItem value="proposal">Proposal Sent</SelectItem>
+                    <SelectItem value="ACCEPTED">Accepted</SelectItem>
+                    <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                    <SelectItem value="COMPLETED">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Min Cost */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Min Cost</label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={minCost}
+                  onChange={(e) => setMinCost(e.target.value)}
+                />
+              </div>
+
+              {/* Max Cost */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Max Cost</label>
+                <Input
+                  type="number"
+                  placeholder="999999"
+                  value={maxCost}
+                  onChange={(e) => setMaxCost(e.target.value)}
+                />
+              </div>
+
+              {/* Date From */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">From Date</label>
+                <Input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Date To */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">To Date</label>
+                <Input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Clear Filters Button */}
+            {hasActiveFilters && (
+              <div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="flex items-center gap-2"
+                >
+                  <XCircleIcon className="h-4 w-4" />
+                  Clear All Filters
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Projects Table */}
-      {sortedProjects.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-8">
-            <FileTextIcon className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No projects found</h3>
-            <p className="text-muted-foreground text-center">
-              {searchQuery || statusFilter !== "all"
-                ? "No projects match your current filters."
-                : "You haven't created any projects yet. Use the roof calculator to get started."}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="rounded-md border">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Projects</CardTitle>
+              <CardDescription>
+                {sortedProjects.length} project{sortedProjects.length !== 1 ? 's' : ''} found
+                {hasActiveFilters && (
+                  <span className="ml-2 text-primary">
+                    (filtered from {projects.length} total)
+                  </span>
+                )}
+              </CardDescription>
+            </div>
+            {hasActiveFilters && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <FilterIcon className="h-3 w-3" />
+                {[
+                  searchQuery && "Search",
+                  statusFilter !== "all" && "Status",
+                  minCost && "Min Cost",
+                  maxCost && "Max Cost",
+                  dateFrom && "From Date",
+                  dateTo && "To Date",
+                ].filter(Boolean).length} active filter{[
+                  searchQuery && "Search",
+                  statusFilter !== "all" && "Status",
+                  minCost && "Min Cost",
+                  maxCost && "Max Cost",
+                  dateFrom && "From Date",
+                  dateTo && "To Date",
+                ].filter(Boolean).length !== 1 ? 's' : ''}
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {sortedProjects.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <FileTextIcon className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No projects found</h3>
+              <p className="text-muted-foreground">
+                {hasActiveFilters
+                  ? "No projects match your current filters."
+                  : "You haven't created any projects yet. Use the roof calculator to get started."}
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -480,7 +635,9 @@ export function ProjectList() {
             </TableBody>
           </Table>
         </div>
-      )}
+          )}
+        </CardContent>
+      </Card>
 
       {/* Proposal Viewer */}
       {selectedProject && (
