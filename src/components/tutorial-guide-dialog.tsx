@@ -80,58 +80,58 @@ export function TutorialGuideDialog() {
           <div className="flex-1 overflow-auto p-6">
             <Tabs defaultValue="overview" className="w-full">
               <div className="mb-6">
-                <TabsList className="w-max min-w-full inline-flex h-auto p-1 bg-muted/50 rounded-lg gap-1">
+                <TabsList className="flex flex-wrap w-full h-auto p-1 bg-muted/50 rounded-lg gap-1">
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
                     value="overview"
                   >
                     <HomeIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Overview</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
                     value="roof-types"
                   >
                     <LayersIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Roof Types</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
                     value="materials"
                   >
                     <LayersIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Materials</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
                     value="calculator"
                   >
                     <CalculatorIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Calculator</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
                     value="manual-calc"
                   >
                     <ClipboardListIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Manual Calc</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
                     value="contractor"
                   >
                     <HardHatIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">Contractor</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
                     value="ai-system"
                   >
                     <SparklesIcon className="h-4 w-4" />
                     <span className="whitespace-nowrap">AI System</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1 sm:flex-none"
                     value="archive"
                   >
                     <ArchiveIcon className="h-4 w-4" />
