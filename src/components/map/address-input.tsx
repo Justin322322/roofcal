@@ -10,33 +10,25 @@ import { geocodeAddress } from "@/lib/geocoding";
 import type { GeocodedAddress, Coordinates } from "@/types/location";
 
 interface AddressInputProps {
-  initialAddress?: {
-    street?: string;
-    city?: string;
-    state?: string;
-    zipCode?: string;
-  };
+  initialAddress?: string;
   initialCoordinates?: Coordinates;
   onAddressChange?: (address: GeocodedAddress) => void;
   onCoordinatesChange?: (coordinates: Coordinates) => void;
   className?: string;
   required?: boolean;
+  placeholder?: string;
 }
 
 export function AddressInput({
-  initialAddress,
+  initialAddress = "",
   initialCoordinates,
   onAddressChange,
   onCoordinatesChange,
   className = "",
   required = false,
+  placeholder = "Enter complete address (e.g., 123 Main St, Manila, Metro Manila, 1000)",
 }: AddressInputProps) {
-  const [address, setAddress] = useState({
-    street: initialAddress?.street || "",
-    city: initialAddress?.city || "",
-    state: initialAddress?.state || "",
-    zipCode: initialAddress?.zipCode || "",
-  });
+  const [address, setAddress] = useState(initialAddress);
 
   const [coordinates, setCoordinates] = useState<Coordinates | null>(
     initialCoordinates || null
@@ -45,17 +37,17 @@ export function AddressInput({
   const [geocodingError, setGeocodingError] = useState<string | null>(null);
   const [isValidated, setIsValidated] = useState(false);
 
-  const handleAddressChange = (field: keyof typeof address, value: string) => {
-    setAddress(prev => ({ ...prev, [field]: value }));
+  const handleAddressChange = (value: string) => {
+    setAddress(value);
     setIsValidated(false);
     setGeocodingError(null);
   };
 
   const handleGeocode = async () => {
-    const fullAddress = `${address.street}, ${address.city}, ${address.state} ${address.zipCode}`.trim();
+    const fullAddress = address.trim();
     
-    if (!fullAddress || fullAddress === ", ,  ") {
-      setGeocodingError("Please enter a complete address");
+    if (!fullAddress) {
+      setGeocodingError("Please enter an address");
       return;
     }
 
@@ -95,58 +87,24 @@ export function AddressInput({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Address Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="street">
-                Street Address {required && <span className="text-red-500">*</span>}
-              </Label>
-              <Input
-                id="street"
-                placeholder="Street Address"
-                value={address.street}
-                onChange={(e) => handleAddressChange("street", e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="city">
-                City/Municipality {required && <span className="text-red-500">*</span>}
-              </Label>
-              <Input
-                id="city"
-                placeholder="City/Municipality"
-                value={address.city}
-                onChange={(e) => handleAddressChange("city", e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="state">
-                Province {required && <span className="text-red-500">*</span>}
-              </Label>
-              <Input
-                id="state"
-                placeholder="Province"
-                value={address.state}
-                onChange={(e) => handleAddressChange("state", e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="zipCode">
-                Postal Code {required && <span className="text-red-500">*</span>}
-              </Label>
-              <Input
-                id="zipCode"
-                placeholder="Postal Code"
-                value={address.zipCode}
-                onChange={(e) => handleAddressChange("zipCode", e.target.value)}
-              />
-            </div>
+          {/* Single Address Input */}
+          <div className="space-y-2">
+            <Label htmlFor="address">
+              Complete Address {required && <span className="text-red-500">*</span>}
+            </Label>
+            <Input
+              id="address"
+              placeholder={placeholder}
+              value={address}
+              onChange={(e) => handleAddressChange(e.target.value)}
+              className="w-full"
+            />
           </div>
 
           {/* Geocode Button */}
           <Button
             onClick={handleGeocode}
-            disabled={isGeocoding}
+            disabled={isGeocoding || !address.trim()}
             className="w-full"
             variant="outline"
           >
@@ -179,8 +137,6 @@ export function AddressInput({
           )}
         </CardContent>
       </Card>
-
-      
     </div>
   );
 }

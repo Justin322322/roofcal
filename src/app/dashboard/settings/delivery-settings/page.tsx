@@ -30,9 +30,6 @@ export default function DeliverySettingsPage() {
   const [newWarehouse, setNewWarehouse] = useState({
     name: "",
     address: "",
-    city: "",
-    state: "",
-    zipCode: "",
   });
   const [newWarehouseCoords, setNewWarehouseCoords] = useState<Coordinates | null>(null);
 
@@ -89,7 +86,7 @@ export default function DeliverySettingsPage() {
       const data = await response.json();
       if (data.success) {
         setWarehouses([...warehouses, data.data]);
-        setNewWarehouse({ name: "", address: "", city: "", state: "", zipCode: "" });
+        setNewWarehouse({ name: "", address: "" });
         setNewWarehouseCoords(null);
         alert("Warehouse added successfully!");
       } else {
@@ -189,7 +186,7 @@ export default function DeliverySettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="warehouseName">Warehouse Name</Label>
                   <Input
@@ -199,57 +196,20 @@ export default function DeliverySettingsPage() {
                     onChange={(e) => setNewWarehouse({ ...newWarehouse, name: e.target.value })}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="warehouseAddress">Street Address</Label>
-                  <Input
-                    id="warehouseAddress"
-                    placeholder="Street Address"
-                    value={newWarehouse.address}
-                    onChange={(e) => setNewWarehouse({ ...newWarehouse, address: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="warehouseCity">City/Municipality</Label>
-                  <Input
-                    id="warehouseCity"
-                    placeholder="City/Municipality"
-                    value={newWarehouse.city}
-                    onChange={(e) => setNewWarehouse({ ...newWarehouse, city: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="warehouseState">Province</Label>
-                  <Input
-                    id="warehouseState"
-                    placeholder="Province"
-                    value={newWarehouse.state}
-                    onChange={(e) => setNewWarehouse({ ...newWarehouse, state: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="warehouseZip">Postal Code</Label>
-                  <Input
-                    id="warehouseZip"
-                    placeholder="Postal Code"
-                    value={newWarehouse.zipCode}
-                    onChange={(e) => setNewWarehouse({ ...newWarehouse, zipCode: e.target.value })}
-                  />
-                </div>
-              </div>
 
-              <AddressInput
-                initialAddress={newWarehouse}
-                onAddressChange={(geocoded) => {
-                  setNewWarehouse({
-                    name: newWarehouse.name,
-                    address: geocoded.street,
-                    city: geocoded.city,
-                    state: geocoded.state,
-                    zipCode: geocoded.zipCode,
-                  });
-                }}
-                onCoordinatesChange={setNewWarehouseCoords}
-              />
+                <AddressInput
+                  initialAddress={newWarehouse.address}
+                  onAddressChange={(geocoded) => {
+                    setNewWarehouse({
+                      name: newWarehouse.name,
+                      address: geocoded.formattedAddress || "",
+                    });
+                  }}
+                  onCoordinatesChange={setNewWarehouseCoords}
+                  placeholder="Enter complete warehouse address (e.g., 123 Industrial St, Quezon City, Metro Manila, 1100)"
+                  required
+                />
+              </div>
 
               <Button onClick={handleAddWarehouse} disabled={!newWarehouseCoords}>
                 Add Warehouse

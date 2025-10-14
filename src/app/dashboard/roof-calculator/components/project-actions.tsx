@@ -90,12 +90,7 @@ export function ProjectActions({
   const [isSendingQuote, setIsSendingQuote] = useState(false);
   
   // Address and warehouse state
-  const [address, setAddress] = useState({
-    street: "",
-    city: "",
-    state: "",
-    zipCode: "",
-  });
+  const [address, setAddress] = useState("");
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [isValidated, setIsValidated] = useState(false);
@@ -158,12 +153,7 @@ export function ProjectActions({
             setNotes(result.project.notes || "");
             // Load address and warehouse if available
             if (result.project.address) {
-              setAddress({
-                street: result.project.address,
-                city: result.project.city || "",
-                state: result.project.state || "",
-                zipCode: result.project.zipCode || "",
-              });
+              setAddress(result.project.address || "");
               if (result.project.latitude && result.project.longitude) {
                 setCoordinates({
                   latitude: result.project.latitude,
@@ -186,7 +176,7 @@ export function ProjectActions({
       setProjectName("");
       setClientName("");
       setNotes("");
-      setAddress({ street: "", city: "", state: "", zipCode: "" });
+      setAddress("");
       setCoordinates(null);
       setIsValidated(false);
       setDeliveryCost(null);
@@ -220,10 +210,7 @@ export function ProjectActions({
         projectName: projectName.trim(),
         clientName: clientName.trim() || undefined,
         notes: notes.trim() || undefined,
-        address: address.street,
-        city: address.city,
-        state: address.state,
-        zipCode: address.zipCode,
+        address: address,
         latitude: coordinates.latitude,
         longitude: coordinates.longitude,
         warehouseId: selectedWarehouseId,
@@ -246,7 +233,7 @@ export function ProjectActions({
         setProjectName("");
         setClientName("");
         setNotes("");
-        setAddress({ street: "", city: "", state: "", zipCode: "" });
+        setAddress("");
         setCoordinates(null);
         setIsValidated(false);
         setDeliveryCost(null);
@@ -463,12 +450,7 @@ export function ProjectActions({
                 initialAddress={address}
                 initialCoordinates={coordinates || undefined}
                 onAddressChange={(geocodedAddress) => {
-                  setAddress({
-                    street: geocodedAddress.street || "",
-                    city: geocodedAddress.city || "",
-                    state: geocodedAddress.state || "",
-                    zipCode: geocodedAddress.zipCode || "",
-                  });
+                  setAddress(geocodedAddress.formattedAddress || "");
                   setCoordinates(geocodedAddress.coordinates);
                   setIsValidated(true);
                   onAddressChange?.(geocodedAddress);
