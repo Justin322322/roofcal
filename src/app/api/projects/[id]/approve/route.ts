@@ -36,7 +36,6 @@ export async function POST(
       data: {
         status: "CONTRACTOR_REVIEWING",
         contractorStatus: "reviewing",
-        reviewedAt: new Date(),
       },
     });
 

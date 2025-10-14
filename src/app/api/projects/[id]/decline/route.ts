@@ -37,7 +37,6 @@ export async function POST(
       data: {
         status: "REJECTED",
         contractorStatus: "declined",
-        reviewedAt: new Date(),
         notes: reason ? `${project.notes ? project.notes + '\n\n' : ''}Declined: ${reason}` : project.notes,
       },
     });
