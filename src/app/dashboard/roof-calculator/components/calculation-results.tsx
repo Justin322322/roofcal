@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { SparklesIcon, Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import { formatNumberWithCommas } from "../utils/format";
-import { getSlopeMultiplier } from "../constants";
+import { getSlopeMultiplier, SCREW_TYPES } from "../constants";
 import { toast } from "sonner";
 
 interface CalculationResultsProps {
@@ -27,6 +27,7 @@ interface CalculationResultsProps {
   materialQuantity: number;
   screwsQuantity: number;
   material: string;
+  screwType?: string;
   constructionMode: "new" | "repair";
   budgetAmount?: number;
   onAutoOptimize?: () => { hasChanges: boolean; changesCount: number };
@@ -54,6 +55,7 @@ export function CalculationResults({
   materialQuantity,
   screwsQuantity,
   material,
+  screwType,
   constructionMode,
   budgetAmount,
   onAutoOptimize,
@@ -216,7 +218,7 @@ export function CalculationResults({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
-              Screws ({screwsQuantity} pcs)
+              {screwType ? SCREW_TYPES[screwType as keyof typeof SCREW_TYPES]?.name || 'Screws' : 'Screws'} ({screwsQuantity} pcs)
             </span>
             <span className="text-base font-medium">
               ₱{formatNumberWithCommas(screwsCost)}

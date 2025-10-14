@@ -54,8 +54,6 @@ const FullScreenMapModal = dynamic(() => import("./FullScreenMapModal"), {
 import { Warehouse } from "./types";
 import { MaterialDragDropManager } from "./MaterialDragDropManager";
 import { WarehouseMaterialWarnings } from "@/components/warehouse-material-warnings";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 interface WarehouseMaterial {
   id: string;
@@ -1082,7 +1080,7 @@ export function WarehouseManagementPage() {
                           </div>
                         )}
 
-                        {/* Capacity Chart */}
+                        {/* Capacity Battery Indicator */}
                         {warehouse.capacity && warehouse.capacity > 0 && activeMaterials.length > 0 && (() => {
                           // Calculate total volume used based on material dimensions
                           const totalVolumeUsed = activeMaterials.reduce((sum, m) => {
@@ -1097,81 +1095,64 @@ export function WarehouseManagementPage() {
                           
                           const utilization = Math.min((totalVolumeUsed / warehouse.capacity) * 100, 100);
                           
-                          // Create chart data with multiple data points for line chart
-                          const chartData = [
-                            { name: "Used", used: totalVolumeUsed, total: warehouse.capacity },
-                            { name: "Total", used: totalVolumeUsed, total: warehouse.capacity },
-                          ];
+                          // Determine battery color based on utilization
+                          let batteryColor = "hsl(var(--chart-1))"; // Green for low usage
+                          if (utilization >= 90) {
+                            batteryColor = "hsl(var(--destructive))"; // Red for critical
+                          } else if (utilization >= 75) {
+                            batteryColor = "hsl(var(--chart-3))"; // Orange for high
+                          } else if (utilization >= 50) {
+                            batteryColor = "hsl(var(--chart-2))"; // Yellow for moderate
+                          }
                           
                           return (
                             <div className="mt-4">
-                              <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center justify-between mb-3">
                                 <span className="font-medium text-sm">Storage Capacity</span>
                                 <span className="text-xs font-medium text-muted-foreground">{utilization.toFixed(1)}% Full</span>
                               </div>
-                              <ChartContainer
-                                config={{
-                                  used: {
-                                    label: "Used",
-                                    color: "hsl(var(--chart-1))",
-                                  },
-                                  total: {
-                                    label: "Total Capacity",
-                                    color: "hsl(var(--chart-2))",
-                                  },
-                                }}
-                                className="h-[140px] w-full"
-                              >
-                                <LineChart data={chartData}>
-                                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                                  <XAxis 
-                                    dataKey="name" 
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickMargin={8}
-                                    className="text-xs"
-                                    stroke="hsl(var(--muted-foreground))"
-                                  />
-                                  <YAxis 
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickMargin={8}
-                                    className="text-xs"
-                                    domain={[0, 'dataMax']}
-                                    stroke="hsl(var(--muted-foreground))"
-                                  />
-                                  <ChartTooltip 
-                                    content={<ChartTooltipContent />}
-                                  />
-                                  <Line 
-                                    type="monotone" 
-                                    dataKey="used" 
-                                    stroke="hsl(var(--chart-1))"
-                                    strokeWidth={3}
-                                    dot={{ r: 5, fill: "hsl(var(--chart-1))", strokeWidth: 2, stroke: "hsl(var(--background))" }}
-                                    activeDot={{ r: 7, fill: "hsl(var(--chart-1))" }}
-                                  />
-                                  <Line 
-                                    type="monotone" 
-                                    dataKey="total" 
-                                    stroke="hsl(var(--chart-2))"
-                                    strokeWidth={2}
-                                    strokeDasharray="5 5"
-                                    dot={{ r: 5, fill: "hsl(var(--chart-2))", strokeWidth: 2, stroke: "hsl(var(--background))" }}
-                                    activeDot={{ r: 7, fill: "hsl(var(--chart-2))" }}
-                                  />
-                                </LineChart>
-                              </ChartContainer>
+                              
+                              {/* Battery Indicator */}
+                              <div className="relative">
+                                {/* Battery Body */}
+                                <div className="relative h-16 w-full rounded-lg border-2 border-border bg-muted/50 overflow-hidden">
+                                  {/* Filled Portion */}
+                                  <div 
+                                    className="absolute left-0 top-0 h-full rounded-sm transition-all duration-500 ease-out"
+                                    style={{ 
+                                      width: `${utilization}%`,
+                                      backgroundColor: batteryColor
+                                    }}
+                                  >
+                                    {/* Gradient overlay for depth */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                                  </div>
+                                  
+                                  {/* Percentage Label */}
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <span className="text-sm font-bold" style={{ 
+                                      color: utilization > 50 ? 'white' : 'hsl(var(--foreground))' 
+                                    }}>
+                                      {utilization.toFixed(1)}%
+                                    </span>
+                                  </div>
+                                </div>
+                                
+                                {/* Battery Tip */}
+                                <div className="absolute -right-1 top-1/2 -translate-y-1/2 h-8 w-2 rounded-r-md border-2 border-l-0 border-border bg-muted/50"></div>
+                              </div>
+                              
+                              {/* Capacity Details */}
                               <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
                                 <div className="flex items-center gap-2">
-                                  <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: 'hsl(var(--chart-1))' }}></div>
+                                  <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: batteryColor }}></div>
                                   <div className="text-xs">
                                     <span className="font-medium">{totalVolumeUsed.toFixed(2)} m³</span>
                                     <span className="text-muted-foreground ml-1">used</span>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: 'hsl(var(--chart-2))' }}></div>
+                                  <div className="w-3 h-3 rounded-sm bg-muted"></div>
                                   <div className="text-xs">
                                     <span className="font-medium">{warehouse.capacity.toFixed(2)} m³</span>
                                     <span className="text-muted-foreground ml-1">total</span>

@@ -356,6 +356,7 @@ export function RoofCalculatorContent() {
               materialQuantity={results.materialQuantity}
               screwsQuantity={results.screwsQuantity}
               material={getMaterialName(material)}
+              screwType={measurements.screwType}
               constructionMode={measurements.constructionMode}
               budgetAmount={parseFloat(measurements.budgetAmount) || 0}
               onAutoOptimize={handleAutoOptimize}
