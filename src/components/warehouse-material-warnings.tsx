@@ -109,7 +109,7 @@ export function WarehouseMaterialWarnings({
       
       activeMaterials.forEach(material => {
         // Skip Labor materials - they are fixed costs, not physical inventory
-        if (material.material.category === 'Labor') {
+        if (material.material.category.toLowerCase() === 'labor') {
           return;
         }
         

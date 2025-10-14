@@ -166,48 +166,60 @@ export function ContractorProjectsContent() {
       title: "Pending Review",
       statuses: ["CLIENT_PENDING"],
       color: "border-orange-200",
-      projects: projects.filter(p => p.status === "CLIENT_PENDING" && !searchQuery || 
-        p.projectName.toLowerCase().includes(searchQuery.toLowerCase())),
+      projects: projects.filter(p => 
+        p.status === "CLIENT_PENDING" && 
+        (!searchQuery || p.projectName.toLowerCase().includes(searchQuery.toLowerCase()))
+      ),
     },
     {
       id: "reviewing",
       title: "Under Review",
       statuses: ["CONTRACTOR_REVIEWING"],
       color: "border-yellow-200",
-      projects: projects.filter(p => p.status === "CONTRACTOR_REVIEWING" && !searchQuery || 
-        p.projectName.toLowerCase().includes(searchQuery.toLowerCase())),
+      projects: projects.filter(p => 
+        p.status === "CONTRACTOR_REVIEWING" && 
+        (!searchQuery || p.projectName.toLowerCase().includes(searchQuery.toLowerCase()))
+      ),
     },
     {
       id: "proposal",
       title: "Proposal Sent",
       statuses: ["PROPOSAL_SENT"],
       color: "border-blue-200",
-      projects: projects.filter(p => p.status === "PROPOSAL_SENT" && !searchQuery || 
-        p.projectName.toLowerCase().includes(searchQuery.toLowerCase())),
+      projects: projects.filter(p => 
+        p.status === "PROPOSAL_SENT" && 
+        (!searchQuery || p.projectName.toLowerCase().includes(searchQuery.toLowerCase()))
+      ),
     },
     {
       id: "accepted",
       title: "Accepted",
       statuses: ["ACCEPTED"],
       color: "border-green-200",
-      projects: projects.filter(p => p.status === "ACCEPTED" && !searchQuery || 
-        p.projectName.toLowerCase().includes(searchQuery.toLowerCase())),
+      projects: projects.filter(p => 
+        p.status === "ACCEPTED" && 
+        (!searchQuery || p.projectName.toLowerCase().includes(searchQuery.toLowerCase()))
+      ),
     },
     {
       id: "progress",
       title: "In Progress",
       statuses: ["IN_PROGRESS"],
       color: "border-purple-200",
-      projects: projects.filter(p => p.status === "IN_PROGRESS" && !searchQuery || 
-        p.projectName.toLowerCase().includes(searchQuery.toLowerCase())),
+      projects: projects.filter(p => 
+        p.status === "IN_PROGRESS" && 
+        (!searchQuery || p.projectName.toLowerCase().includes(searchQuery.toLowerCase()))
+      ),
     },
     {
       id: "completed",
       title: "Completed",
       statuses: ["COMPLETED"],
       color: "border-gray-200",
-      projects: projects.filter(p => p.status === "COMPLETED" && !searchQuery || 
-        p.projectName.toLowerCase().includes(searchQuery.toLowerCase())),
+      projects: projects.filter(p => 
+        p.status === "COMPLETED" && 
+        (!searchQuery || p.projectName.toLowerCase().includes(searchQuery.toLowerCase()))
+      ),
     },
   ];
 
@@ -366,7 +378,11 @@ export function ContractorProjectsContent() {
                             </div>
                             <div className="flex items-center gap-1">
                               <CalendarIcon className="h-3 w-3 text-muted-foreground" />
-                              <span className="text-muted-foreground">{new Date(project.createdAt).toLocaleDateString()}</span>
+                              <span className="text-muted-foreground">
+                                {project.createdAt 
+                                  ? new Date(project.createdAt).toLocaleDateString() 
+                                  : 'N/A'}
+                              </span>
                             </div>
                           </div>
 

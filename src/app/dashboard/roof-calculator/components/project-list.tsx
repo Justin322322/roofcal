@@ -559,21 +559,18 @@ export function ProjectList() {
                     value={selectedContractorId}
                     onValueChange={setSelectedContractorId}
                   >
-                    <SelectTrigger id="contractor">
+                    <SelectTrigger id="contractor" className="w-full">
                       <SelectValue placeholder="Choose a contractor..." />
                     </SelectTrigger>
                     <SelectContent>
                       {contractors.map((contractor) => (
                         <SelectItem key={contractor.id} value={contractor.id}>
-                          <div className="flex flex-col">
-                            <span className="font-medium">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-medium text-sm">
                               {contractor.firstName} {contractor.lastName}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                              {contractor.email}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {contractor.completedProjects} completed projects
+                              {contractor.email} • {contractor.completedProjects} completed
                             </span>
                           </div>
                         </SelectItem>

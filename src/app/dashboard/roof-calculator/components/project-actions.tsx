@@ -354,7 +354,7 @@ export function ProjectActions({
                 onValueChange={setSelectedContractorId}
                 disabled={isLoadingContractors}
               >
-                <SelectTrigger className="mt-1">
+                <SelectTrigger className="mt-1 w-full">
                   <SelectValue placeholder={
                     isLoadingContractors ? "Loading contractors..." : "Choose a contractor"
                   } />
@@ -362,8 +362,8 @@ export function ProjectActions({
                 <SelectContent>
                   {contractors.map((contractor) => (
                     <SelectItem key={contractor.id} value={contractor.id}>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{contractor.companyName}</span>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-medium text-sm">{contractor.companyName}</span>
                         <span className="text-xs text-muted-foreground">
                           {contractor.completedProjects} completed projects
                         </span>
