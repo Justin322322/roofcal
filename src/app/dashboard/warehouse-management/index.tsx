@@ -55,7 +55,7 @@ import { Warehouse } from "./types";
 import { MaterialDragDropManager } from "./MaterialDragDropManager";
 import { WarehouseMaterialWarnings } from "@/components/warehouse-material-warnings";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 interface WarehouseMaterial {
   id: string;
@@ -1095,19 +1095,12 @@ export function WarehouseManagementPage() {
                             return sum + (m.quantity * unitVolume);
                           }, 0);
                           
-                          const available = Math.max(warehouse.capacity - totalVolumeUsed, 0);
                           const utilization = Math.min((totalVolumeUsed / warehouse.capacity) * 100, 100);
                           
-                          // Create chart data with proper stacking
+                          // Create chart data with multiple data points for line chart
                           const chartData = [
-                            {
-                              name: "Used",
-                              value: totalVolumeUsed,
-                            },
-                            {
-                              name: "Available",
-                              value: available,
-                            },
+                            { name: "Used", used: totalVolumeUsed, total: warehouse.capacity },
+                            { name: "Total", used: totalVolumeUsed, total: warehouse.capacity },
                           ];
                           
                           return (
@@ -1122,24 +1115,14 @@ export function WarehouseManagementPage() {
                                     label: "Used",
                                     color: "hsl(var(--primary))",
                                   },
-                                  available: {
-                                    label: "Available",
+                                  total: {
+                                    label: "Total Capacity",
                                     color: "hsl(var(--muted))",
                                   },
                                 }}
                                 className="h-[140px] w-full"
                               >
-                                <AreaChart data={chartData}>
-                                  <defs>
-                                    <linearGradient id="fillUsed" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
-                                    </linearGradient>
-                                    <linearGradient id="fillAvailable" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor="hsl(var(--muted))" stopOpacity={0.6}/>
-                                      <stop offset="95%" stopColor="hsl(var(--muted))" stopOpacity={0.1}/>
-                                    </linearGradient>
-                                  </defs>
+                                <LineChart data={chartData}>
                                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                                   <XAxis 
                                     dataKey="name" 
@@ -1148,26 +1131,34 @@ export function WarehouseManagementPage() {
                                     tickMargin={8}
                                     className="text-xs"
                                   />
+                                  <YAxis 
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickMargin={8}
+                                    className="text-xs"
+                                    domain={[0, 'dataMax']}
+                                  />
                                   <ChartTooltip 
                                     content={<ChartTooltipContent />}
                                   />
-                                  <Area 
+                                  <Line 
                                     type="monotone" 
-                                    dataKey="value" 
-                                    stroke="hsl(var(--primary))" 
-                                    fill="url(#fillUsed)"
-                                    stackId="1"
-                                    strokeWidth={2}
+                                    dataKey="used" 
+                                    stroke="hsl(var(--primary))"
+                                    strokeWidth={3}
+                                    dot={{ r: 4, fill: "hsl(var(--primary))" }}
+                                    activeDot={{ r: 6 }}
                                   />
-                                  <Area 
+                                  <Line 
                                     type="monotone" 
-                                    dataKey="value" 
-                                    stroke="hsl(var(--muted))" 
-                                    fill="url(#fillAvailable)"
-                                    stackId="1"
+                                    dataKey="total" 
+                                    stroke="hsl(var(--muted))"
                                     strokeWidth={2}
+                                    strokeDasharray="5 5"
+                                    dot={{ r: 4, fill: "hsl(var(--muted))" }}
+                                    activeDot={{ r: 6 }}
                                   />
-                                </AreaChart>
+                                </LineChart>
                               </ChartContainer>
                               <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
                                 <div className="flex items-center gap-2">
@@ -1180,8 +1171,8 @@ export function WarehouseManagementPage() {
                                 <div className="flex items-center gap-2">
                                   <div className="w-3 h-3 rounded-sm bg-muted"></div>
                                   <div className="text-xs">
-                                    <span className="font-medium">{available.toFixed(2)} m³</span>
-                                    <span className="text-muted-foreground ml-1">available</span>
+                                    <span className="font-medium">{warehouse.capacity.toFixed(2)} m³</span>
+                                    <span className="text-muted-foreground ml-1">total</span>
                                   </div>
                                 </div>
                               </div>
