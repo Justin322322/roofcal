@@ -27,7 +27,6 @@ import { saveProject, updateProject, getProjectDetails } from "../actions";
 import { AddressInput } from "@/components/map/address-input";
 import { WarehouseSelector } from "@/components/map/warehouse-selector";
 import { formatCurrency, formatArea } from "@/lib/utils";
-import { GutterCalculator } from "./gutter-calculator";
 import type {
   Measurements,
   CalculationResults,
@@ -525,29 +524,6 @@ export function ProjectActions({
               </div>
             )}
 
-            {/* Gutter Calculator */}
-            <div>
-              <Label>Gutter Calculation</Label>
-              <GutterCalculator
-                gutterLengthA={measurements.gutterLengthA}
-                gutterSlope={measurements.gutterSlope}
-                gutterLengthC={measurements.gutterLengthC}
-                gutterSize={measurements.gutterSize}
-                onGutterChange={() => {
-                  // This is read-only in the project creation context
-                  // The gutter values come from the main calculator
-                }}
-                calculatedPieces={results.gutterPieces}
-              />
-              {results.gutterPieces > 0 && (
-                <div className="mt-2 p-3 bg-muted rounded-lg">
-                  <div className="text-sm font-medium">Gutter Cost</div>
-                  <div className="text-sm text-muted-foreground">
-                    {results.gutterPieces} pieces × ₱{measurements.gutterSize === 'cut-16' ? '350' : '450'} = ₱{results.gutterCost.toLocaleString()}
-                  </div>
-                </div>
-              )}
-            </div>
 
             <div>
               <Label htmlFor="clientName">Client Name</Label>
