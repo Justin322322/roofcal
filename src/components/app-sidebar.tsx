@@ -7,6 +7,8 @@ import {
   CalculatorIcon,
   WrenchIcon,
   WarehouseIcon,
+  DatabaseIcon,
+  SettingsIcon,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { UserRole } from "@/types/user-role";
@@ -24,7 +26,7 @@ import {
 } from "@/components/ui/sidebar";
 import RoofCalcLogo from "@/components/RoofCalcLogo";
 
-const data = {
+const adminTools = {
   documents: [
     {
       name: "Account Management",
@@ -40,6 +42,21 @@ const data = {
       name: "Warehouse Management",
       url: "warehouse-management",
       icon: WarehouseIcon,
+    },
+  ],
+};
+
+const developerTools = {
+  documents: [
+    {
+      name: "Database Management",
+      url: "database-management",
+      icon: DatabaseIcon,
+    },
+    {
+      name: "System Control",
+      url: "system-control",
+      icon: SettingsIcon,
     },
   ],
 };
@@ -128,10 +145,18 @@ export function AppSidebar({
           activeSection={activeSection}
           onSectionChange={onSectionChange}
         />
-        {/* Only show Professional Tools for ADMIN users */}
+        {/* Show Professional Tools for ADMIN users */}
         {session?.user?.role === UserRole.ADMIN && (
           <NavDocuments
-            items={data.documents}
+            items={adminTools.documents}
+            activeSection={activeSection}
+            onSectionChange={onSectionChange}
+          />
+        )}
+        {/* Show Developer Tools for DEVELOPER users */}
+        {session?.user?.role === UserRole.DEVELOPER && (
+          <NavDocuments
+            items={developerTools.documents}
             activeSection={activeSection}
             onSectionChange={onSectionChange}
           />

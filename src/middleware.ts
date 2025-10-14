@@ -1,20 +1,48 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 import { UserRole } from "@/types/user-role";
+import { getMaintenanceStatus } from "@/lib/maintenance-utils";
 
 export default withAuth(
-  function middleware(req) {
+  async function middleware(req) {
     const token = req.nextauth.token;
     const { pathname } = req.nextUrl;
 
-    // Debug logging (commented out to prevent console spam)
-    // console.log("Middleware - Path:", pathname);
-    // console.log("Middleware - Token:", token ? "exists" : "null");
-    // console.log("Middleware - EmailVerified:", token?.emailVerified);
+    // Check maintenance mode - allow DEVELOPER to bypass
+    if (token?.role !== UserRole.DEVELOPER) {
+      const maintenanceStatus = await getMaintenanceStatus();
+      
+      if (maintenanceStatus.maintenanceMode) {
+        // Allow access to maintenance page and auth pages
+        if (
+          pathname === "/maintenance" ||
+          pathname.startsWith("/login") ||
+          pathname.startsWith("/signup") ||
+          pathname.startsWith("/verify") ||
+          pathname.startsWith("/forgot-password") ||
+          pathname.startsWith("/reset-password")
+        ) {
+          // Allow access to these pages
+        } else {
+          // Redirect to maintenance page
+          return NextResponse.redirect(new URL("/maintenance", req.url));
+        }
+      }
+    }
+
+    // Developer-only routes
+    if (
+      pathname.startsWith("/dashboard/database-management") ||
+      pathname.startsWith("/dashboard/system-control")
+    ) {
+      if (token?.role !== UserRole.DEVELOPER) {
+        return NextResponse.redirect(new URL("/dashboard", req.url));
+      }
+    }
 
     // Admin-only routes
     if (pathname.startsWith("/dashboard/account-management")) {
-      if (token?.role !== UserRole.ADMIN) {
+      if (token?.role !== UserRole.ADMIN && token?.role !== UserRole.DEVELOPER) {
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
     }
@@ -61,5 +89,6 @@ export const config = {
     "/verify",
     "/forgot-password",
     "/reset-password",
+    "/maintenance",
   ],
 };

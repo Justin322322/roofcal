@@ -5,6 +5,7 @@
 export enum UserRole {
   CLIENT = "CLIENT",
   ADMIN = "ADMIN",
+  DEVELOPER = "DEVELOPER",
 }
 
 /**
@@ -23,6 +24,8 @@ export function getUserRoleDisplayName(role: UserRole): string {
       return "Client";
     case UserRole.ADMIN:
       return "Administrator";
+    case UserRole.DEVELOPER:
+      return "Developer";
     default:
       return "Unknown";
   }
@@ -30,7 +33,7 @@ export function getUserRoleDisplayName(role: UserRole): string {
 
 /**
  * Check if a user role has permission for a required role
- * Uses a hierarchy where ADMIN has higher privileges than CLIENT
+ * Uses a hierarchy where DEVELOPER has highest privileges, followed by ADMIN, then CLIENT
  */
 export function hasRolePermission(
   userRole: UserRole,
@@ -39,6 +42,7 @@ export function hasRolePermission(
   const roleHierarchy = {
     [UserRole.CLIENT]: 0,
     [UserRole.ADMIN]: 1,
+    [UserRole.DEVELOPER]: 2,
   };
 
   return roleHierarchy[userRole] >= roleHierarchy[requiredRole];

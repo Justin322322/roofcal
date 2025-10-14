@@ -261,6 +261,18 @@ model warehousematerial {
   @@map("WarehouseMaterial")
 }
 
+model systemsettings {
+  id                        String    @id @default(uuid())
+  maintenanceMode           Boolean   @default(false)
+  maintenanceMessage        String?   @db.Text
+  maintenanceScheduledEnd   DateTime?
+  maintenanceStartedBy      String?
+  maintenanceStartedAt      DateTime?
+  updated_at                DateTime  @updatedAt
+
+  @@index([maintenanceMode], map: "SystemSettings_maintenanceMode_idx")
+}
+
 enum ProjectStage {
   INSPECTION
   ESTIMATE
@@ -311,6 +323,7 @@ enum ProposalStatus {
 enum user_role {
   CLIENT
   ADMIN
+  DEVELOPER
 }
 
 enum projectmaterial_status {
