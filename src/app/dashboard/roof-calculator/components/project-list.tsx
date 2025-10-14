@@ -2,9 +2,25 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -16,17 +32,22 @@ import { toast } from "sonner";
 import {
   Loader2Icon,
   FileTextIcon,
-  SendIcon,
   EyeIcon,
   CalendarIcon,
-  UserIcon,
-  DollarSignIcon,
   MapPinIcon,
+  EditIcon,
+  ArchiveIcon,
+  PrinterIcon,
+  MoreVerticalIcon,
+  ArrowUpDownIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
 } from "lucide-react";
 import { formatCurrency, formatArea } from "@/lib/utils";
 import { ProposalViewer } from "./proposal-viewer";
-import { useSession } from "next-auth/react";
-import { UserRole } from "@/types/user-role";
+import { ProjectDetailsViewer } from "./project-details-viewer";
+import { ProjectEditor } from "./project-editor";
+import { ProjectPrinter } from "./project-printer";
 
 interface Project {
   id: string;
@@ -53,6 +74,9 @@ interface Project {
   } | null;
 }
 
+type SortField = "projectName" | "material" | "area" | "totalCost" | "createdAt" | "status";
+type SortDirection = "asc" | "desc";
+
 export function ProjectList() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -60,7 +84,11 @@ export function ProjectList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [proposalDialogOpen, setProposalDialogOpen] = useState(false);
-  const { data: session } = useSession();
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [printDialogOpen, setPrintDialogOpen] = useState(false);
+  const [sortField, setSortField] = useState<SortField>("createdAt");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
   useEffect(() => {
     fetchProjects();
@@ -148,8 +176,62 @@ export function ProjectList() {
     return matchesStatus && matchesSearch;
   });
 
-  const canRequestQuote = (project: Project) => project.status === "DRAFT";
-  const canViewProposal = (project: Project) => project.proposalStatus === "SENT";
+  // Sort projects
+  const sortedProjects = [...filteredProjects].sort((a, b) => {
+    let aValue: string | number;
+    let bValue: string | number;
+
+    switch (sortField) {
+      case "projectName":
+        aValue = a.projectName.toLowerCase();
+        bValue = b.projectName.toLowerCase();
+        break;
+      case "material":
+        aValue = a.material.toLowerCase();
+        bValue = b.material.toLowerCase();
+        break;
+      case "area":
+        aValue = a.area;
+        bValue = b.area;
+        break;
+      case "totalCost":
+        aValue = a.totalCost;
+        bValue = b.totalCost;
+        break;
+      case "createdAt":
+        aValue = new Date(a.createdAt).getTime();
+        bValue = new Date(b.createdAt).getTime();
+        break;
+      case "status":
+        aValue = a.status;
+        bValue = b.status;
+        break;
+      default:
+        return 0;
+    }
+
+    if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+    if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) return <ArrowUpDownIcon className="h-4 w-4 ml-1" />;
+    return sortDirection === "asc" ? (
+      <ArrowUpIcon className="h-4 w-4 ml-1" />
+    ) : (
+      <ArrowDownIcon className="h-4 w-4 ml-1" />
+    );
+  };
 
   if (isLoading) {
     return (
@@ -191,8 +273,8 @@ export function ProjectList() {
         </div>
       </div>
 
-      {/* Projects Grid */}
-      {filteredProjects.length === 0 ? (
+      {/* Projects Table */}
+      {sortedProjects.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-8">
             <FileTextIcon className="h-12 w-12 text-muted-foreground mb-4" />
@@ -205,97 +287,147 @@ export function ProjectList() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredProjects.map((project) => (
-            <Card key={project.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-lg truncate">{project.projectName}</CardTitle>
-                    <CardDescription className="flex items-center gap-1 mt-1">
-                      <MapPinIcon className="h-3 w-3" />
-                      {project.address ? (
-                        <span className="truncate">
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead 
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleSort("projectName")}
+                >
+                  <div className="flex items-center">
+                    Project Name
+                    {getSortIcon("projectName")}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleSort("material")}
+                >
+                  <div className="flex items-center">
+                    Material
+                    {getSortIcon("material")}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleSort("area")}
+                >
+                  <div className="flex items-center">
+                    Area
+                    {getSortIcon("area")}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleSort("totalCost")}
+                >
+                  <div className="flex items-center">
+                    Est. Cost
+                    {getSortIcon("totalCost")}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleSort("status")}
+                >
+                  <div className="flex items-center">
+                    Status
+                    {getSortIcon("status")}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleSort("createdAt")}
+                >
+                  <div className="flex items-center">
+                    Created
+                    {getSortIcon("createdAt")}
+                  </div>
+                </TableHead>
+                <TableHead className="w-[50px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sortedProjects.map((project) => (
+                <TableRow key={project.id} className="hover:bg-muted/50">
+                  <TableCell className="font-medium">
+                    <div>
+                      <div className="font-medium">{project.projectName}</div>
+                      {project.address && (
+                        <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                          <MapPinIcon className="h-3 w-3" />
                           {project.address}, {project.city}, {project.state}
-                        </span>
-                      ) : (
-                        <span>No address</span>
+                        </div>
                       )}
-                    </CardDescription>
-                  </div>
-                  {getStatusBadge(project.status, project.proposalStatus)}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <div className="font-medium text-muted-foreground">Material</div>
-                    <div className="capitalize">{project.material}</div>
-                  </div>
-                  <div>
-                    <div className="font-medium text-muted-foreground">Area</div>
-                    <div>{formatArea(project.area)}</div>
-                  </div>
-                  <div>
-                    <div className="font-medium text-muted-foreground">Est. Cost</div>
-                    <div className="flex items-center gap-1">
-                      <DollarSignIcon className="h-3 w-3" />
-                      {formatCurrency(project.totalCost)}
                     </div>
-                  </div>
-                  <div>
-                    <div className="font-medium text-muted-foreground">Created</div>
-                    <div className="flex items-center gap-1">
+                  </TableCell>
+                  <TableCell className="capitalize">{project.material}</TableCell>
+                  <TableCell>{formatArea(project.area)}</TableCell>
+                  <TableCell className="font-medium">{formatCurrency(project.totalCost)}</TableCell>
+                  <TableCell>{getStatusBadge(project.status, project.proposalStatus)}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <CalendarIcon className="h-3 w-3" />
                       {project.createdAt instanceof Date && !isNaN(project.createdAt.getTime()) 
                         ? project.createdAt.toLocaleDateString()
                         : new Date(project.createdAt).toLocaleDateString()
                       }
                     </div>
-                  </div>
-                </div>
-
-                {project.contractor && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <UserIcon className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-muted-foreground">
-                      {session?.user?.role === UserRole.ADMIN ? "Client:" : "Contractor:"}
-                    </span>
-                    <span>{project.contractor.firstName} {project.contractor.lastName}</span>
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {canRequestQuote(project) && (
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="flex-1"
-                    >
-                      <SendIcon className="h-3 w-3 mr-1" />
-                      Request Quote
-                    </Button>
-                  )}
-                  
-                  {canViewProposal(project) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedProject(project);
-                        setProposalDialogOpen(true);
-                      }}
-                      className="flex-1"
-                    >
-                      <EyeIcon className="h-3 w-3 mr-1" />
-                      View Proposal
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MoreVerticalIcon className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedProject(project);
+                            setViewDialogOpen(true);
+                          }}
+                        >
+                          <EyeIcon className="mr-2 h-4 w-4" />
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedProject(project);
+                            setEditDialogOpen(true);
+                          }}
+                        >
+                          <EditIcon className="mr-2 h-4 w-4" />
+                          Edit Project
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            toast.info("Archive functionality coming soon");
+                          }}
+                        >
+                          <ArchiveIcon className="mr-2 h-4 w-4" />
+                          Archive
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedProject(project);
+                            setPrintDialogOpen(true);
+                          }}
+                        >
+                          <PrinterIcon className="mr-2 h-4 w-4" />
+                          Print
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
 
@@ -310,6 +442,45 @@ export function ProjectList() {
           }}
           onProposalResponse={() => {
             fetchProjects(); // Refresh the project list
+          }}
+        />
+      )}
+
+      {/* View Project Details Dialog */}
+      {selectedProject && (
+        <ProjectDetailsViewer
+          project={selectedProject}
+          isOpen={viewDialogOpen}
+          onClose={() => {
+            setViewDialogOpen(false);
+            setSelectedProject(null);
+          }}
+        />
+      )}
+
+      {/* Edit Project Dialog */}
+      {selectedProject && (
+        <ProjectEditor
+          project={selectedProject}
+          isOpen={editDialogOpen}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedProject(null);
+          }}
+          onSave={() => {
+            fetchProjects(); // Refresh the project list
+          }}
+        />
+      )}
+
+      {/* Print Dialog */}
+      {selectedProject && (
+        <ProjectPrinter
+          project={selectedProject}
+          isOpen={printDialogOpen}
+          onClose={() => {
+            setPrintDialogOpen(false);
+            setSelectedProject(null);
           }}
         />
       )}
