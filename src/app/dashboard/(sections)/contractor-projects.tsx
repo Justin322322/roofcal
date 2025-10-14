@@ -20,6 +20,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import {
   Loader2Icon,
@@ -32,7 +50,10 @@ import {
   CheckCircleIcon,
   FilterIcon,
   XCircleIcon,
-  MessageSquareIcon,
+  EyeIcon,
+  DollarSignIcon,
+  RulerIcon,
+  PackageIcon,
 } from "lucide-react";
 
 interface Project {
@@ -53,6 +74,24 @@ interface Project {
     lastName: string;
     email: string;
   } | null;
+  // Additional fields for detailed view
+  length?: number;
+  width?: number;
+  pitch?: number;
+  materialCost?: number;
+  gutterCost?: number;
+  ridgeCost?: number;
+  screwsCost?: number;
+  insulationCost?: number;
+  ventilationCost?: number;
+  totalMaterialsCost?: number;
+  laborCost?: number;
+  removalCost?: number;
+  deliveryCost?: number | null;
+  deliveryDistance?: number | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  notes?: string | null;
 }
 
 export function ContractorProjectsContent() {
@@ -64,6 +103,14 @@ export function ContractorProjectsContent() {
   const [maxCost, setMaxCost] = useState<string>("");
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
+  
+  // Loading states for actions
+  const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
+  const [declineDialogOpen, setDeclineDialogOpen] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [declineReason, setDeclineReason] = useState("");
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   useEffect(() => {
     fetchProjects();
@@ -88,93 +135,160 @@ export function ContractorProjectsContent() {
   };
 
   const handleApproveProject = async (projectId: string) => {
+    setLoadingProjectId(projectId);
     try {
       const response = await fetch(`/api/projects/${projectId}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!response.ok) throw new Error("Failed to approve project");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to approve project");
+      }
 
-      toast.success("Project approved successfully");
-      fetchProjects();
+      const result = await response.json();
+      toast.success(result.message || "Project approved successfully", {
+        description: "The project is now under review",
+      });
+      await fetchProjects();
     } catch (error) {
       console.error("Failed to approve project:", error);
-      toast.error("Failed to approve project");
+      toast.error("Failed to approve project", {
+        description: error instanceof Error ? error.message : "Please try again",
+      });
+    } finally {
+      setLoadingProjectId(null);
     }
   };
 
+  const handleViewProject = (project: Project) => {
+    setSelectedProject(project);
+    setViewDialogOpen(true);
+  };
+
   const handleDeclineProject = async (projectId: string) => {
+    setSelectedProjectId(projectId);
+    setDeclineDialogOpen(true);
+  };
+
+  const confirmDeclineProject = async () => {
+    if (!selectedProjectId) return;
+
+    setLoadingProjectId(selectedProjectId);
     try {
-      const response = await fetch(`/api/projects/${projectId}/decline`, {
+      const response = await fetch(`/api/projects/${selectedProjectId}/decline`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: declineReason }),
       });
 
-      if (!response.ok) throw new Error("Failed to decline project");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to decline project");
+      }
 
-      toast.success("Project declined");
-      fetchProjects();
+      const result = await response.json();
+      toast.success(result.message || "Project declined", {
+        description: "The project has been marked as declined",
+      });
+      
+      setDeclineDialogOpen(false);
+      setSelectedProjectId(null);
+      setDeclineReason("");
+      await fetchProjects();
     } catch (error) {
       console.error("Failed to decline project:", error);
-      toast.error("Failed to decline project");
+      toast.error("Failed to decline project", {
+        description: error instanceof Error ? error.message : "Please try again",
+      });
+    } finally {
+      setLoadingProjectId(null);
     }
   };
 
   const handleStartContract = async (projectId: string) => {
+    setLoadingProjectId(projectId);
     try {
       const response = await fetch(`/api/projects/${projectId}/start-contract`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!response.ok) throw new Error("Failed to start contract");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to start contract");
+      }
 
-      toast.success("Contract started");
-      fetchProjects();
+      const result = await response.json();
+      toast.success(result.message || "Contract started", {
+        description: "The project is now in progress",
+      });
+      await fetchProjects();
     } catch (error) {
       console.error("Failed to start contract:", error);
-      toast.error("Failed to start contract");
+      toast.error("Failed to start contract", {
+        description: error instanceof Error ? error.message : "Please try again",
+      });
+    } finally {
+      setLoadingProjectId(null);
     }
   };
 
   const handleFinishProject = async (projectId: string) => {
+    setLoadingProjectId(projectId);
     try {
       const response = await fetch(`/api/projects/${projectId}/finish`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!response.ok) throw new Error("Failed to finish project");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to finish project");
+      }
 
-      toast.success("Project completed");
-      fetchProjects();
+      const result = await response.json();
+      toast.success(result.message || "Project completed", {
+        description: "The project has been marked as completed",
+      });
+      await fetchProjects();
     } catch (error) {
       console.error("Failed to finish project:", error);
-      toast.error("Failed to finish project");
+      toast.error("Failed to finish project", {
+        description: error instanceof Error ? error.message : "Please try again",
+      });
+    } finally {
+      setLoadingProjectId(null);
     }
   };
 
   const handleAcceptAndSendProposal = async (projectId: string) => {
+    setLoadingProjectId(projectId);
     try {
-      // First approve the project
-      const approveResponse = await fetch(`/api/projects/${projectId}/approve`, {
+      const response = await fetch(`/api/projects/${projectId}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!approveResponse.ok) throw new Error("Failed to approve project");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to accept project");
+      }
 
-      toast.success("Project approved and ready for proposal");
-      fetchProjects();
+      const result = await response.json();
+      toast.success(result.message || "Project accepted", {
+        description: "You can now send a proposal to the client",
+      });
+      await fetchProjects();
     } catch (error) {
       console.error("Failed to accept project:", error);
-      toast.error("Failed to accept project");
+      toast.error("Failed to accept project", {
+        description: error instanceof Error ? error.message : "Please try again",
+      });
+    } finally {
+      setLoadingProjectId(null);
     }
-  };
-
-  const handleRequestMoreInfo = async () => {
-    toast.info("Request more info functionality coming soon");
   };
 
   const getStatusBadge = (status: string, proposalStatus: string | null) => {
@@ -485,20 +599,39 @@ export function ContractorProjectsContent() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleViewProject(project)}
+                          >
+                            <EyeIcon className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
                           {project.status === "CLIENT_PENDING" && (
                             <>
                               <Button
                                 size="sm"
                                 variant="default"
                                 onClick={() => handleApproveProject(project.id)}
+                                disabled={loadingProjectId === project.id}
                               >
-                                <CheckIcon className="h-4 w-4 mr-1" />
-                                Approve
+                                {loadingProjectId === project.id ? (
+                                  <>
+                                    <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
+                                    Processing...
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckIcon className="h-4 w-4 mr-1" />
+                                    Approve
+                                  </>
+                                )}
                               </Button>
                               <Button
                                 size="sm"
                                 variant="destructive"
                                 onClick={() => handleDeclineProject(project.id)}
+                                disabled={loadingProjectId === project.id}
                               >
                                 <XIcon className="h-4 w-4 mr-1" />
                                 Decline
@@ -510,9 +643,19 @@ export function ContractorProjectsContent() {
                               size="sm"
                               variant="default"
                               onClick={() => handleStartContract(project.id)}
+                              disabled={loadingProjectId === project.id}
                             >
-                              <PlayIcon className="h-4 w-4 mr-1" />
-                              Start Contract
+                              {loadingProjectId === project.id ? (
+                                <>
+                                  <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
+                                  Starting...
+                                </>
+                              ) : (
+                                <>
+                                  <PlayIcon className="h-4 w-4 mr-1" />
+                                  Start Contract
+                                </>
+                              )}
                             </Button>
                           )}
                           {project.status === "IN_PROGRESS" && (
@@ -520,9 +663,19 @@ export function ContractorProjectsContent() {
                               size="sm"
                               variant="default"
                               onClick={() => handleFinishProject(project.id)}
+                              disabled={loadingProjectId === project.id}
                             >
-                              <CheckCircleIcon className="h-4 w-4 mr-1" />
-                              Finish
+                              {loadingProjectId === project.id ? (
+                                <>
+                                  <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
+                                  Finishing...
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircleIcon className="h-4 w-4 mr-1" />
+                                  Finish
+                                </>
+                              )}
                             </Button>
                           )}
                           {project.status === "CONTRACTOR_REVIEWING" && (
@@ -531,22 +684,25 @@ export function ContractorProjectsContent() {
                                 size="sm"
                                 variant="default"
                                 onClick={() => handleAcceptAndSendProposal(project.id)}
+                                disabled={loadingProjectId === project.id}
                               >
-                                <CheckIcon className="h-4 w-4 mr-1" />
-                                Accept & Send Proposal
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={handleRequestMoreInfo}
-                              >
-                                <MessageSquareIcon className="h-4 w-4 mr-1" />
-                                Request Info
+                                {loadingProjectId === project.id ? (
+                                  <>
+                                    <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
+                                    Processing...
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckIcon className="h-4 w-4 mr-1" />
+                                    Accept & Send Proposal
+                                  </>
+                                )}
                               </Button>
                               <Button
                                 size="sm"
                                 variant="destructive"
                                 onClick={() => handleDeclineProject(project.id)}
+                                disabled={loadingProjectId === project.id}
                               >
                                 <XIcon className="h-4 w-4 mr-1" />
                                 Decline
@@ -568,6 +724,289 @@ export function ContractorProjectsContent() {
           )}
         </CardContent>
       </Card>
+
+      {/* Project Details View Sheet */}
+      <Sheet open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <SheetContent className="sm:max-w-2xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{selectedProject?.projectName}</SheetTitle>
+            <SheetDescription>
+              Complete project details and pricing breakdown
+            </SheetDescription>
+          </SheetHeader>
+          
+          {selectedProject && (
+            <div className="mt-6 space-y-6">
+              {/* Project Information */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <FileTextIcon className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-semibold">Project Information</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Status</p>
+                    <p className="text-sm font-medium">{getStatusBadge(selectedProject.status, selectedProject.proposalStatus)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Material</p>
+                    <p className="text-sm font-medium">{selectedProject.material}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total Area</p>
+                    <p className="text-sm font-medium">{selectedProject.area.toLocaleString()} sq ft</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Created</p>
+                    <p className="text-sm font-medium">{new Date(selectedProject.createdAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Client Information */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <PackageIcon className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-semibold">Client Information</h3>
+                </div>
+                {selectedProject.client ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Name</p>
+                      <p className="text-sm font-medium">{selectedProject.client.firstName} {selectedProject.client.lastName}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Email</p>
+                      <p className="text-sm font-medium">{selectedProject.client.email}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No client information available</p>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Location */}
+              {(selectedProject.address || selectedProject.city || selectedProject.state) && (
+                <>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <MapPinIcon className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold">Location</h3>
+                    </div>
+                    <div className="space-y-2">
+                      {selectedProject.address && (
+                        <p className="text-sm"><span className="font-medium text-muted-foreground">Address:</span> {selectedProject.address}</p>
+                      )}
+                      {(selectedProject.city || selectedProject.state) && (
+                        <p className="text-sm">
+                          <span className="font-medium text-muted-foreground">City/State:</span> {selectedProject.city}, {selectedProject.state}
+                        </p>
+                      )}
+                      {selectedProject.deliveryDistance !== null && selectedProject.deliveryDistance !== undefined && (
+                        <p className="text-sm">
+                          <span className="font-medium text-muted-foreground">Delivery Distance:</span> {selectedProject.deliveryDistance.toFixed(2)} miles
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <Separator />
+                </>
+              )}
+
+              {/* Project Dimensions */}
+              {(selectedProject.length || selectedProject.width || selectedProject.pitch) && (
+                <>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <RulerIcon className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold">Dimensions</h3>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      {selectedProject.length && (
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Length</p>
+                          <p className="text-sm font-medium">{selectedProject.length} ft</p>
+                        </div>
+                      )}
+                      {selectedProject.width && (
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Width</p>
+                          <p className="text-sm font-medium">{selectedProject.width} ft</p>
+                        </div>
+                      )}
+                      {selectedProject.pitch && (
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Pitch</p>
+                          <p className="text-sm font-medium">{selectedProject.pitch}°</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <Separator />
+                </>
+              )}
+
+              {/* Price Breakdown */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <DollarSignIcon className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-semibold">Price Breakdown</h3>
+                </div>
+                
+                <div className="space-y-3">
+                  {/* Material Costs */}
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">Material Costs</p>
+                    <div className="ml-4 space-y-1">
+                      {selectedProject.materialCost !== undefined && selectedProject.materialCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>Roofing Material</span>
+                          <span className="font-medium">${selectedProject.materialCost.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {selectedProject.gutterCost !== undefined && selectedProject.gutterCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>Gutter System</span>
+                          <span className="font-medium">${selectedProject.gutterCost.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {selectedProject.ridgeCost !== undefined && selectedProject.ridgeCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>Ridge Cap</span>
+                          <span className="font-medium">${selectedProject.ridgeCost.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {selectedProject.screwsCost !== undefined && selectedProject.screwsCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>Screws & Fasteners</span>
+                          <span className="font-medium">${selectedProject.screwsCost.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {selectedProject.insulationCost !== undefined && selectedProject.insulationCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>Insulation</span>
+                          <span className="font-medium">${selectedProject.insulationCost.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {selectedProject.ventilationCost !== undefined && selectedProject.ventilationCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>Ventilation</span>
+                          <span className="font-medium">${selectedProject.ventilationCost.toLocaleString()}</span>
+                        </div>
+                      )}
+                    </div>
+                    {selectedProject.totalMaterialsCost !== undefined && selectedProject.totalMaterialsCost > 0 && (
+                      <div className="flex justify-between text-sm font-medium pt-1 border-t">
+                        <span>Subtotal - Materials</span>
+                        <span>${selectedProject.totalMaterialsCost.toLocaleString()}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Labor & Services */}
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">Labor & Services</p>
+                    <div className="ml-4 space-y-1">
+                      {selectedProject.laborCost !== undefined && selectedProject.laborCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>Labor</span>
+                          <span className="font-medium">${selectedProject.laborCost.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {selectedProject.removalCost !== undefined && selectedProject.removalCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>Removal & Disposal</span>
+                          <span className="font-medium">${selectedProject.removalCost.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {selectedProject.deliveryCost !== null && selectedProject.deliveryCost !== undefined && selectedProject.deliveryCost > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>Delivery</span>
+                          <span className="font-medium">${selectedProject.deliveryCost.toLocaleString()}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Total */}
+                  <div className="pt-3 border-t-2">
+                    <div className="flex justify-between text-lg font-bold">
+                      <span>Total Project Cost</span>
+                      <span className="text-primary">${selectedProject.totalCost.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notes */}
+              {selectedProject.notes && (
+                <>
+                  <Separator />
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">Notes</p>
+                    <p className="text-sm bg-muted p-3 rounded-md whitespace-pre-wrap">{selectedProject.notes}</p>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Decline Dialog */}
+      <Dialog open={declineDialogOpen} onOpenChange={setDeclineDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Decline Project</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to decline this project? You can provide a reason below (optional).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="decline-reason">Reason for declining (optional)</Label>
+              <Textarea
+                id="decline-reason"
+                placeholder="Please provide a reason for declining this project..."
+                value={declineReason}
+                onChange={(e) => setDeclineReason(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeclineDialogOpen(false);
+                setSelectedProjectId(null);
+                setDeclineReason("");
+              }}
+              disabled={loadingProjectId !== null}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDeclineProject}
+              disabled={loadingProjectId !== null}
+            >
+              {loadingProjectId ? (
+                <>
+                  <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+                  Declining...
+                </>
+              ) : (
+                "Decline Project"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

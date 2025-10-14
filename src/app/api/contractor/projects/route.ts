@@ -88,6 +88,8 @@ export async function GET(request: NextRequest) {
       deliveryCost: project.deliveryCost ? Number(project.deliveryCost) : null,
       deliveryDistance: project.deliveryDistance ? Number(project.deliveryDistance) : null,
       client: project.user_project_clientIdTouser || project.user_project_userIdTouser,
+      createdAt: project.created_at,
+      updatedAt: project.updated_at,
     }));
 
     return NextResponse.json({
