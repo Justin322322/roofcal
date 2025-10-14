@@ -24,11 +24,13 @@ export async function getMaintenanceStatus(): Promise<MaintenanceSettings> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     settings = await (prisma as any).systemsettings.create({
       data: {
+        id: crypto.randomUUID(),
         maintenanceMode: false,
         maintenanceMessage: null,
         maintenanceScheduledEnd: null,
         maintenanceStartedBy: null,
         maintenanceStartedAt: null,
+        updated_at: new Date(),
       },
     });
   }
@@ -60,11 +62,13 @@ export async function enableMaintenance(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     settings = await (prisma as any).systemsettings.create({
       data: {
+        id: crypto.randomUUID(),
         maintenanceMode: true,
         maintenanceMessage: message || null,
         maintenanceScheduledEnd: scheduledEnd || null,
         maintenanceStartedBy: userId,
         maintenanceStartedAt: new Date(),
+        updated_at: new Date(),
       },
     });
   } else {
@@ -101,11 +105,13 @@ export async function disableMaintenance(): Promise<MaintenanceSettings> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     settings = await (prisma as any).systemsettings.create({
       data: {
+        id: crypto.randomUUID(),
         maintenanceMode: false,
         maintenanceMessage: null,
         maintenanceScheduledEnd: null,
         maintenanceStartedBy: null,
         maintenanceStartedAt: null,
+        updated_at: new Date(),
       },
     });
   } else {
@@ -166,7 +172,11 @@ export async function updateMaintenanceSettings(
   if (!settings) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     settings = await (prisma as any).systemsettings.create({
-      data,
+      data: {
+        ...data,
+        id: crypto.randomUUID(),
+        updated_at: new Date(),
+      },
     });
   } else {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

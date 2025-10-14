@@ -54,13 +54,13 @@ export async function PUT(
     }
 
     // Verify warehouse material exists
-    const existingWarehouseMaterial = await prisma.warehousematerial.findFirst({
+    const existingWarehouseMaterial = await prisma.warehouseMaterial.findFirst({
       where: {
         id: materialId,
         warehouseId,
       },
       include: {
-        pricingconfig: true,
+        PricingConfig: true,
       },
     });
 
@@ -72,7 +72,7 @@ export async function PUT(
     }
 
     // Update warehouse material
-    const warehouseMaterial = await prisma.warehousematerial.update({
+    const warehouseMaterial = await prisma.warehouseMaterial.update({
       where: { id: materialId },
       data: {
         quantity: validatedData.quantity,
@@ -81,7 +81,7 @@ export async function PUT(
         updated_at: new Date(),
       },
       include: {
-        pricingconfig: true,
+        PricingConfig: true,
       },
     });
 
@@ -95,17 +95,17 @@ export async function PUT(
       createdAt: warehouseMaterial.created_at,
       updatedAt: warehouseMaterial.updated_at,
       material: {
-        id: warehouseMaterial.pricingconfig.id,
-        name: warehouseMaterial.pricingconfig.name,
-        label: warehouseMaterial.pricingconfig.label,
-        description: warehouseMaterial.pricingconfig.description,
-        price: Number(warehouseMaterial.pricingconfig.price),
-        unit: warehouseMaterial.pricingconfig.unit,
-        category: warehouseMaterial.pricingconfig.category,
-        length: warehouseMaterial.pricingconfig.length ? Number(warehouseMaterial.pricingconfig.length) : undefined,
-        width: warehouseMaterial.pricingconfig.width ? Number(warehouseMaterial.pricingconfig.width) : undefined,
-        height: warehouseMaterial.pricingconfig.height ? Number(warehouseMaterial.pricingconfig.height) : undefined,
-        volume: warehouseMaterial.pricingconfig.volume ? Number(warehouseMaterial.pricingconfig.volume) : undefined,
+        id: warehouseMaterial.PricingConfig.id,
+        name: warehouseMaterial.PricingConfig.name,
+        label: warehouseMaterial.PricingConfig.label,
+        description: warehouseMaterial.PricingConfig.description,
+        price: Number(warehouseMaterial.PricingConfig.price),
+        unit: warehouseMaterial.PricingConfig.unit,
+        category: warehouseMaterial.PricingConfig.category,
+        length: warehouseMaterial.PricingConfig.length ? Number(warehouseMaterial.PricingConfig.length) : undefined,
+        width: warehouseMaterial.PricingConfig.width ? Number(warehouseMaterial.PricingConfig.width) : undefined,
+        height: warehouseMaterial.PricingConfig.height ? Number(warehouseMaterial.PricingConfig.height) : undefined,
+        volume: warehouseMaterial.PricingConfig.volume ? Number(warehouseMaterial.PricingConfig.volume) : undefined,
       },
     };
 
@@ -179,7 +179,7 @@ export async function DELETE(
     }
 
     // Verify warehouse material exists
-    const existingWarehouseMaterial = await prisma.warehousematerial.findFirst({
+    const existingWarehouseMaterial = await prisma.warehouseMaterial.findFirst({
       where: {
         id: materialId,
         warehouseId,
@@ -194,7 +194,7 @@ export async function DELETE(
     }
 
     // Deactivate the material instead of deleting it to maintain history
-    await prisma.warehousematerial.update({
+    await prisma.warehouseMaterial.update({
       where: { id: materialId },
       data: {
         isActive: false,

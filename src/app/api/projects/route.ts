@@ -38,10 +38,12 @@ export async function POST(request: NextRequest) {
     // Create project
     const project = await prisma.project.create({
       data: {
+        id: crypto.randomUUID(),
         userId: session.user.id,
         projectName: body.projectName,
         clientName: body.clientName,
         status: body.status || "DRAFT",
+        updated_at: new Date(),
 
         // Contractor-Client relationship fields
         contractorId: body.contractorId,
@@ -218,7 +220,7 @@ export async function GET(request: NextRequest) {
         skip,
         take,
         include: {
-          contractor: {
+          user_project_contractorIdTouser: {
             select: {
               id: true,
               firstName: true,
@@ -226,7 +228,7 @@ export async function GET(request: NextRequest) {
               email: true
             }
           },
-          client: {
+          user_project_clientIdTouser: {
             select: {
               id: true,
               firstName: true,

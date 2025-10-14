@@ -262,11 +262,13 @@ export async function createAccount(
     // Create new user with a transaction
     const newUser = await prisma.$transaction(async (tx) => {
       const userData: Prisma.userCreateInput = {
+        id: crypto.randomUUID(),
         email: data.email,
         firstName,
         lastName,
         passwordHash,
         role: "CLIENT",
+        updated_at: new Date(),
       };
 
       const user = await tx.user.create({
@@ -275,6 +277,7 @@ export async function createAccount(
 
       // Create an activity log for the account creation
       const activityData: Prisma.activityCreateInput = {
+        id: crypto.randomUUID(),
         user: { connect: { id: user.id } },
         type: "ACCOUNT_CREATED",
         description: "Account created by administrator",
@@ -546,11 +549,13 @@ export async function importAccounts(
         // Create the user with a transaction to ensure consistency
         const user = await prisma.$transaction(async (tx) => {
           const userData: Prisma.userCreateInput = {
+            id: crypto.randomUUID(),
             email: account.email,
             firstName,
             lastName,
             passwordHash,
             role: "CLIENT",
+            updated_at: new Date(),
           };
 
           const newUser = await tx.user.create({
@@ -559,6 +564,7 @@ export async function importAccounts(
 
           // Create an activity log for the account creation
           const activityData: Prisma.activityCreateInput = {
+            id: crypto.randomUUID(),
             user: { connect: { id: newUser.id } },
             type: "ACCOUNT_CREATED",
             description: "Account imported by administrator",

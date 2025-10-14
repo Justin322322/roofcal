@@ -50,7 +50,7 @@ export async function calculateProjectMaterials(project: Project | ProjectWithDe
   let totalCost = 0;
 
   // Get all active materials from pricing config
-  const pricingconfigs = await prisma.pricingconfig.findMany({
+  const pricingconfigs = await prisma.pricingConfig.findMany({
     where: { isActive: true },
     orderBy: { category: 'asc' }
   });
@@ -263,10 +263,10 @@ export async function findBestWarehouseForProject(project: Project | ProjectWith
   const warehouses = await prisma.warehouse.findMany({
     where: { isDefault: true }, // Start with default warehouses
     include: {
-      warehousematerial: {
+      WarehouseMaterial: {
         where: { isActive: true },
         include: {
-          pricingconfig: true
+          PricingConfig: true
         }
       }
     }
@@ -283,7 +283,7 @@ export async function findBestWarehouseForProject(project: Project | ProjectWith
     for (const requiredMaterial of materialCalculation.materials) {
       totalMaterials++;
       
-      const warehouseMaterial = warehouse.warehousematerial.find(
+      const warehouseMaterial = warehouse.WarehouseMaterial.find(
         wm => wm.materialId === requiredMaterial.materialId
       );
 

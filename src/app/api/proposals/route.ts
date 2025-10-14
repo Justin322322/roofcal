@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         contractorId: session.user.id, // Only the assigned contractor can create proposals
       },
       include: {
-        client: {
+        user_project_clientIdTouser: {
           select: {
             id: true,
             firstName: true,
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
             email: true,
           },
         },
-        user: {
+        user_project_userIdTouser: {
           select: {
             id: true,
             firstName: true,
@@ -99,15 +99,15 @@ export async function POST(request: NextRequest) {
     });
 
     // Send notification if proposal is being sent
-    if (status === "SENT" && project.client) {
+    if (status === "SENT" && project.user_project_clientIdTouser) {
       await notifyProposalSent(
         projectId,
         project.projectName,
         session.user.id,
         session.user.name || session.user.email!,
-        project.client.id,
-        `${project.client.firstName} ${project.client.lastName}`,
-        project.client.email
+        project.user_project_clientIdTouser.id,
+        `${project.user_project_clientIdTouser.firstName} ${project.user_project_clientIdTouser.lastName}`,
+        project.user_project_clientIdTouser.email
       );
     }
 
@@ -162,7 +162,7 @@ export async function GET(request: NextRequest) {
           ],
         },
         include: {
-          contractor: {
+          user_project_contractorIdTouser: {
             select: {
               id: true,
               firstName: true,
@@ -170,7 +170,7 @@ export async function GET(request: NextRequest) {
               email: true,
             },
           },
-          client: {
+          user_project_clientIdTouser: {
             select: {
               id: true,
               firstName: true,
@@ -202,7 +202,7 @@ export async function GET(request: NextRequest) {
             proposalStatus: { not: null },
           },
           include: {
-            client: {
+            user_project_clientIdTouser: {
               select: {
                 id: true,
                 firstName: true,
@@ -223,7 +223,7 @@ export async function GET(request: NextRequest) {
             proposalStatus: { not: null },
           },
           include: {
-            contractor: {
+            user_project_contractorIdTouser: {
               select: {
                 id: true,
                 firstName: true,

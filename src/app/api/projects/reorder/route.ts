@@ -48,8 +48,8 @@ export async function POST(request: NextRequest) {
     const projects = await prisma.project.findMany({
       where: { id: { in: ids } },
       include: {
-        client: { select: { id: true, firstName: true, lastName: true, email: true } },
-        contractor: { select: { id: true, firstName: true, lastName: true, email: true } },
+        user_project_clientIdTouser: { select: { id: true, firstName: true, lastName: true, email: true } },
+        user_project_contractorIdTouser: { select: { id: true, firstName: true, lastName: true, email: true } },
       },
     });
 
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       });
 
       if (statusChanged) {
-        const toNotify = session.user.role === UserRole.ADMIN ? current.client : current.contractor;
+        const toNotify = session.user.role === UserRole.ADMIN ? current.user_project_clientIdTouser : current.user_project_contractorIdTouser;
         if (toNotify) {
           notify.push(() =>
             notifyStatusChange(

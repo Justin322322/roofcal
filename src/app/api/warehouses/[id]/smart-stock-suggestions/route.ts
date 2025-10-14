@@ -46,11 +46,11 @@ export async function GET(
     let warehouseMaterials: Array<{
       materialId: string;
       quantity: number;
-      pricingconfig: {
+      PricingConfig: {
         label: string;
         category: string;
       };
-      projectmaterial?: Array<{
+      ProjectMaterial?: Array<{
         quantity: number;
         project: {
           id: string;
@@ -60,14 +60,14 @@ export async function GET(
     }>;
     
     try {
-      warehouseMaterials = await prisma.warehousematerial.findMany({
+      warehouseMaterials = await prisma.warehouseMaterial.findMany({
         where: { 
           warehouseId,
           isActive: true
         },
         include: {
-          pricingconfig: true,
-          projectmaterial: {
+          PricingConfig: true,
+          ProjectMaterial: {
             where: {
               status: 'RESERVED'
             },
@@ -85,22 +85,22 @@ export async function GET(
     } catch (error) {
       console.warn('ProjectMaterial table not available, falling back to simplified mode:', error);
       // Fallback to simplified mode without project reservations
-      warehouseMaterials = await prisma.warehousematerial.findMany({
+      warehouseMaterials = await prisma.warehouseMaterial.findMany({
         where: { 
           warehouseId,
           isActive: true
         },
         include: {
-          pricingconfig: true
+          PricingConfig: true
         }
       }) as Array<{
         materialId: string;
         quantity: number;
-        pricingconfig: {
+        PricingConfig: {
           label: string;
           category: string;
         };
-        projectmaterial?: Array<{
+        ProjectMaterial?: Array<{
           quantity: number;
           project: {
             id: string;
@@ -113,20 +113,20 @@ export async function GET(
     // Transform to warnings format
     const warnings = warehouseMaterials.map(wm => {
       const currentStock = wm.quantity;
-      const reservedForProjects = wm.projectmaterial ? wm.projectmaterial.reduce((sum: number, pm: { quantity: number }) => sum + pm.quantity, 0) : 0;
+      const reservedForProjects = wm.ProjectMaterial ? wm.ProjectMaterial.reduce((sum: number, pm: { quantity: number }) => sum + pm.quantity, 0) : 0;
       const projectedStock = currentStock - reservedForProjects;
       
       // Determine if this is a warning (low stock)
       let criticalLevel = false;
       let warningLevel = false;
       
-      if (wm.pricingconfig.category === 'Labor') {
+      if (wm.PricingConfig.category === 'Labor') {
         criticalLevel = currentStock <= 0;
         warningLevel = currentStock <= 1;
-      } else if (wm.pricingconfig.category === 'Insulation' || wm.pricingconfig.category === 'Ventilation') {
+      } else if (wm.PricingConfig.category === 'Insulation' || wm.PricingConfig.category === 'Ventilation') {
         criticalLevel = currentStock <= 2;
         warningLevel = currentStock <= 5;
-      } else if (wm.pricingconfig.category === 'Gutter') {
+      } else if (wm.PricingConfig.category === 'Gutter') {
         criticalLevel = currentStock <= 8;
         warningLevel = currentStock <= 15;
       } else {
@@ -136,12 +136,12 @@ export async function GET(
 
       return {
         materialId: wm.materialId,
-        materialName: wm.pricingconfig.label,
+        materialName: wm.PricingConfig.label,
         currentStock,
         reservedForProjects,
         projectedStock,
         criticalLevel: criticalLevel || warningLevel,
-        projectsUsing: wm.projectmaterial ? wm.projectmaterial.map((pm: { quantity: number; project: { id: string; projectName: string } }) => ({
+        projectsUsing: wm.ProjectMaterial ? wm.ProjectMaterial.map((pm: { quantity: number; project: { id: string; projectName: string } }) => ({
           projectId: pm.project.id,
           projectName: pm.project.projectName,
           quantity: pm.quantity
@@ -223,7 +223,7 @@ export async function POST(
     for (const suggestion of suggestions) {
       try {
         // Find the warehouse material
-        const warehouseMaterial = await prisma.warehousematerial.findFirst({
+        const warehouseMaterial = await prisma.warehouseMaterial.findFirst({
           where: {
             warehouseId,
             materialId: suggestion.materialId,
@@ -233,7 +233,7 @@ export async function POST(
 
         if (warehouseMaterial) {
           // Update the stock quantity
-          await prisma.warehousematerial.update({
+          await prisma.warehouseMaterial.update({
             where: { id: warehouseMaterial.id },
             data: {
               quantity: suggestion.suggestedStock,

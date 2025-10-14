@@ -75,7 +75,7 @@ export async function calculateSmartStockSuggestions(
     }
 
     // Get material volume information
-    const materials = await prisma.pricingconfig.findMany({
+    const materials = await prisma.pricingConfig.findMany({
       where: {
         id: { in: warnings.map(w => w.materialId) },
         category: 'materials'
@@ -102,16 +102,22 @@ export async function calculateSmartStockSuggestions(
     );
 
     // Calculate current capacity usage
-    const warehouseMaterials = await prisma.warehousematerial.findMany({
+    const warehouseMaterials = await prisma.warehouseMaterial.findMany({
       where: { warehouseId, isActive: true },
-      include: { pricingconfig: true }
+      include: { PricingConfig: true }
     });
 
     let usedCapacity = 0;
     warehouseMaterials.forEach(wm => {
       const volumeInfo = materialVolumeMap.get(wm.materialId);
       if (volumeInfo) {
-        const unitVolume = calculateMaterialVolume(volumeInfo);
+        const unitVolume = calculateMaterialVolume({
+          materialId: wm.materialId,
+          length: wm.PricingConfig.length ? Number(wm.PricingConfig.length) : undefined,
+          width: wm.PricingConfig.width ? Number(wm.PricingConfig.width) : undefined,
+          height: wm.PricingConfig.height ? Number(wm.PricingConfig.height) : undefined,
+          volume: wm.PricingConfig.volume ? Number(wm.PricingConfig.volume) : undefined,
+        });
         usedCapacity += wm.quantity * unitVolume;
       }
     });

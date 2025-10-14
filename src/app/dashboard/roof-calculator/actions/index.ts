@@ -104,12 +104,14 @@ export async function saveProject(
 
     const project = await prisma.project.create({
       data: {
+        id: crypto.randomUUID(),
         userId: session.user.id,
         clientId: session.user.role === UserRole.CLIENT ? session.user.id : null,
         contractorId: contractorId,
         status: "DRAFT", // Always start as DRAFT, regardless of user role
         proposalStatus: "DRAFT",
         assignedAt: null, // No assignment initially
+        updated_at: new Date(),
         ...projectData,
       },
     });
@@ -338,10 +340,12 @@ export async function duplicateProject(
     // Create duplicate with modified name
     const duplicateProject = await prisma.project.create({
       data: {
+        id: crypto.randomUUID(),
         userId: session.user.id,
         projectName: `${originalProject.projectName} (Copy)`,
         clientName: originalProject.clientName,
         status: "DRAFT",
+        updated_at: new Date(),
 
         // Copy all measurements
         length: originalProject.length,

@@ -13,7 +13,7 @@ export async function GET() {
         { name: "asc" },
       ],
       include: {
-        creator: {
+        user: {
           select: {
             id: true,
             firstName: true,
@@ -89,6 +89,7 @@ export async function POST(request: NextRequest) {
 
     const warehouse = await prisma.warehouse.create({
       data: {
+        id: crypto.randomUUID(),
         name,
         address,
         city,
@@ -98,13 +99,14 @@ export async function POST(request: NextRequest) {
         longitude,
         isDefault,
         created_by: session.user.id,
+        updated_at: new Date(),
         ...(length !== undefined && { length }),
         ...(width !== undefined && { width }),
         ...(height !== undefined && { height }),
         ...(capacity !== undefined && { capacity }),
       },
       include: {
-        creator: {
+        user: {
           select: {
             id: true,
             firstName: true,

@@ -32,7 +32,7 @@ export async function POST(
     }
 
     // Get current material stock
-    const currentMaterial = await prisma.warehousematerial.findUnique({
+    const currentMaterial = await prisma.warehouseMaterial.findUnique({
       where: {
         warehouseId_materialId: {
           warehouseId,
@@ -40,7 +40,7 @@ export async function POST(
         }
       },
       include: {
-        pricingconfig: true
+        PricingConfig: true
       }
     });
 
@@ -49,16 +49,16 @@ export async function POST(
     }
 
     // Calculate smart replenishment quantity based on material type and warehouse capacity
-    const category = currentMaterial.pricingconfig.category;
+    const category = currentMaterial.PricingConfig.category;
     const currentStock = Number(currentMaterial.quantity);
     const warehouseCapacity = Number(warehouse.capacity) || 0;
 
     // Calculate material volume for capacity checking
     let unitVolume = 1;
-    const volume = currentMaterial.pricingconfig.volume ? Number(currentMaterial.pricingconfig.volume) : 0;
-    const length = currentMaterial.pricingconfig.length ? Number(currentMaterial.pricingconfig.length) : 0;
-    const width = currentMaterial.pricingconfig.width ? Number(currentMaterial.pricingconfig.width) : 0;
-    const height = currentMaterial.pricingconfig.height ? Number(currentMaterial.pricingconfig.height) : 0;
+    const volume = currentMaterial.PricingConfig.volume ? Number(currentMaterial.PricingConfig.volume) : 0;
+    const length = currentMaterial.PricingConfig.length ? Number(currentMaterial.PricingConfig.length) : 0;
+    const width = currentMaterial.PricingConfig.width ? Number(currentMaterial.PricingConfig.width) : 0;
+    const height = currentMaterial.PricingConfig.height ? Number(currentMaterial.PricingConfig.height) : 0;
     
     if (volume > 0) {
       unitVolume = volume;
@@ -67,17 +67,17 @@ export async function POST(
     }
 
     // Get available capacity
-    const allMaterials = await prisma.warehousematerial.findMany({
+    const allMaterials = await prisma.warehouseMaterial.findMany({
       where: { warehouseId, isActive: true },
-      include: { pricingconfig: true }
+      include: { PricingConfig: true }
     });
 
     const usedCapacity = allMaterials.reduce((sum, wm) => {
       let materialVolume = 1;
-      const vol = wm.pricingconfig.volume ? Number(wm.pricingconfig.volume) : 0;
-      const len = wm.pricingconfig.length ? Number(wm.pricingconfig.length) : 0;
-      const wid = wm.pricingconfig.width ? Number(wm.pricingconfig.width) : 0;
-      const hgt = wm.pricingconfig.height ? Number(wm.pricingconfig.height) : 0;
+      const vol = wm.PricingConfig.volume ? Number(wm.PricingConfig.volume) : 0;
+      const len = wm.PricingConfig.length ? Number(wm.PricingConfig.length) : 0;
+      const wid = wm.PricingConfig.width ? Number(wm.PricingConfig.width) : 0;
+      const hgt = wm.PricingConfig.height ? Number(wm.PricingConfig.height) : 0;
       
       if (vol > 0) {
         materialVolume = vol;
@@ -111,7 +111,7 @@ export async function POST(
     const replenishmentQuantity = Math.min(suggestedQuantity, Math.max(1, safeQuantity));
 
     // Update stock
-    const updatedMaterial = await prisma.warehousematerial.update({
+    const updatedMaterial = await prisma.warehouseMaterial.update({
       where: {
         warehouseId_materialId: {
           warehouseId,
@@ -128,7 +128,7 @@ export async function POST(
       success: true,
       quantity: replenishmentQuantity,
       newStock: updatedMaterial.quantity,
-      message: `Replenished ${replenishmentQuantity} units of ${currentMaterial.pricingconfig.name}`
+      message: `Replenished ${replenishmentQuantity} units of ${currentMaterial.PricingConfig.name}`
     });
 
   } catch (error) {

@@ -29,7 +29,7 @@ export async function GET() {
         created_at: true,
         _count: {
           select: {
-            contractorProjects: {
+            project_project_contractorIdTouser: {
               where: {
                 status: "COMPLETED",
               },
@@ -49,7 +49,7 @@ export async function GET() {
       lastName: contractor.lastName,
       email: contractor.email,
       companyName: `${contractor.firstName} ${contractor.lastName} Roofing`, // Default company name
-      completedProjects: contractor._count.contractorProjects,
+      completedProjects: contractor._count.project_project_contractorIdTouser,
       joinedDate: contractor.created_at,
     }));
 

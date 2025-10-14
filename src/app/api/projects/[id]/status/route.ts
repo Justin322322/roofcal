@@ -44,7 +44,7 @@ export async function PATCH(
         ],
       },
       include: {
-        contractor: {
+        user_project_contractorIdTouser: {
           select: {
             id: true,
             firstName: true,
@@ -52,7 +52,7 @@ export async function PATCH(
             email: true,
           },
         },
-        client: {
+        user_project_clientIdTouser: {
           select: {
             id: true,
             firstName: true,
@@ -60,7 +60,7 @@ export async function PATCH(
             email: true,
           },
         },
-        user: {
+        user_project_userIdTouser: {
           select: {
             id: true,
             firstName: true,
@@ -139,30 +139,30 @@ export async function PATCH(
     const currentUser = session.user.name || "User";
     
     // Notify client if contractor changed status
-    if (session.user.role === UserRole.ADMIN && project.client) {
+    if (session.user.role === UserRole.ADMIN && project.user_project_clientIdTouser) {
       await notifyStatusChange(
         id,
         project.projectName,
         newStatus,
         session.user.id,
         currentUser,
-        project.client.id,
-        `${project.client.firstName} ${project.client.lastName}`,
-        project.client.email
+        project.user_project_clientIdTouser.id,
+        `${project.user_project_clientIdTouser.firstName} ${project.user_project_clientIdTouser.lastName}`,
+        project.user_project_clientIdTouser.email
       );
     }
 
     // Notify contractor if client changed status
-    if (session.user.role === UserRole.CLIENT && project.contractor) {
+    if (session.user.role === UserRole.CLIENT && project.user_project_contractorIdTouser) {
       await notifyStatusChange(
         id,
         project.projectName,
         newStatus,
         session.user.id,
         currentUser,
-        project.contractor.id,
-        `${project.contractor.firstName} ${project.contractor.lastName}`,
-        project.contractor.email
+        project.user_project_contractorIdTouser.id,
+        `${project.user_project_contractorIdTouser.firstName} ${project.user_project_contractorIdTouser.lastName}`,
+        project.user_project_contractorIdTouser.email
       );
     }
 
@@ -175,7 +175,7 @@ export async function PATCH(
         session.user.id,
         currentUser,
         project.userId,
-        `${project.user.firstName} ${project.user.lastName}`,
+        `${project.user_project_userIdTouser.firstName} ${project.user_project_userIdTouser.lastName}`,
         "" // Email not available in user include
       );
     }

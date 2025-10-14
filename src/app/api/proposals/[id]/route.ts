@@ -35,7 +35,7 @@ export async function PATCH(
         proposalStatus: "SENT", // Only proposals that have been sent can be accepted/rejected
       },
       include: {
-        contractor: {
+        user_project_contractorIdTouser: {
           select: {
             id: true,
             firstName: true,
@@ -43,7 +43,7 @@ export async function PATCH(
             email: true,
           },
         },
-        user: {
+        user_project_userIdTouser: {
           select: {
             id: true,
             firstName: true,
@@ -77,9 +77,9 @@ export async function PATCH(
         projectName: project.projectName,
         fromUserId: session.user.id,
         fromUserName: session.user.name || session.user.email!,
-        toUserId: project.contractor!.id,
-        toUserName: `${project.contractor!.firstName} ${project.contractor!.lastName}`,
-        toUserEmail: project.contractor!.email,
+        toUserId: project.user_project_contractorIdTouser!.id,
+        toUserName: `${project.user_project_contractorIdTouser!.firstName} ${project.user_project_contractorIdTouser!.lastName}`,
+        toUserEmail: project.user_project_contractorIdTouser!.email,
       };
     } else if (action === "reject") {
       updateData = {
@@ -94,9 +94,9 @@ export async function PATCH(
         projectName: project.projectName,
         fromUserId: session.user.id,
         fromUserName: session.user.name || session.user.email!,
-        toUserId: project.contractor!.id,
-        toUserName: `${project.contractor!.firstName} ${project.contractor!.lastName}`,
-        toUserEmail: project.contractor!.email,
+        toUserId: project.user_project_contractorIdTouser!.id,
+        toUserName: `${project.user_project_contractorIdTouser!.firstName} ${project.user_project_contractorIdTouser!.lastName}`,
+        toUserEmail: project.user_project_contractorIdTouser!.email,
       };
     }
 

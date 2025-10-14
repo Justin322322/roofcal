@@ -19,7 +19,7 @@ export async function POST(
 
     const project = await prisma.project.findUnique({ 
       where: { id },
-      include: { client: true }
+      include: { user_project_clientIdTouser: true }
     });
 
     if (!project) {

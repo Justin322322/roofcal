@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     const projects = await prisma.project.findMany({
       where,
       include: {
-        client: {
+        user_project_clientIdTouser: {
           select: {
             id: true,
             firstName: true,
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
             email: true,
           },
         },
-        user: {
+        user_project_userIdTouser: {
           select: {
             id: true,
             firstName: true,

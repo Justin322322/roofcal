@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { calculateProjectMaterials } from "./material-calculator";
 import type { Project } from "@/types/project";
 import type { Decimal } from "@prisma/client/runtime/library";
+import type { ProjectMaterial, WarehouseMaterial, PricingConfig } from "@prisma/client";
 
 // Type for project with Prisma Decimal fields
 type ProjectWithDecimals = {
@@ -24,6 +25,13 @@ type ProjectWithDecimals = {
   longitude?: Decimal | null;
   deliveryCost?: Decimal | null;
   deliveryDistance?: Decimal | null;
+};
+
+// Type for project material with warehouse material included
+type ProjectMaterialWithWarehouse = ProjectMaterial & {
+  WarehouseMaterial: WarehouseMaterial & {
+    PricingConfig: PricingConfig | null;
+  };
 };
 
 export interface MaterialAvailabilityCheck {
@@ -70,13 +78,13 @@ export async function validateMaterialAvailability(
   const insufficientMaterials: MaterialAvailabilityCheck['insufficientMaterials'] = [];
 
   // Get warehouse materials
-  const warehousematerials = await prisma.warehousematerial.findMany({
+  const warehousematerials = await prisma.warehouseMaterial.findMany({
     where: {
       warehouseId: targetWarehouseId,
       isActive: true
     },
     include: {
-      pricingconfig: true
+      PricingConfig: true
     }
   });
 
@@ -169,7 +177,7 @@ export async function reserveProjectMaterials(
       // Process each required material
       for (const requiredMaterial of materialCalculation.materials) {
         // Get or create warehouse material record
-        let warehousematerial = await tx.warehousematerial.findFirst({
+        let warehousematerial = await tx.warehouseMaterial.findFirst({
           where: {
             warehouseId: targetWarehouseId,
             materialId: requiredMaterial.materialId
@@ -178,7 +186,7 @@ export async function reserveProjectMaterials(
 
         if (!warehousematerial) {
           // Create new warehouse material record
-          warehousematerial = await tx.warehousematerial.create({
+          warehousematerial = await tx.warehouseMaterial.create({
             data: {
               id: crypto.randomUUID(),
               warehouseId: targetWarehouseId,
@@ -192,7 +200,7 @@ export async function reserveProjectMaterials(
         }
 
         // Check if materials are already reserved for this project
-        const existingReservation = await tx.projectmaterial.findFirst({
+        const existingReservation = await tx.projectMaterial.findFirst({
           where: {
             projectId: projectId,
             warehouseMaterialId: warehousematerial.id
@@ -201,7 +209,7 @@ export async function reserveProjectMaterials(
 
         if (existingReservation) {
           // Update existing reservation
-          await tx.projectmaterial.update({
+          await tx.projectMaterial.update({
             where: { id: existingReservation.id },
             data: {
               quantity: requiredMaterial.quantity,
@@ -213,7 +221,7 @@ export async function reserveProjectMaterials(
           });
         } else {
           // Create new reservation
-          await tx.projectmaterial.create({
+          await tx.projectMaterial.create({
             data: {
               id: crypto.randomUUID(),
               projectId: projectId,
@@ -269,15 +277,22 @@ export async function consumeProjectMaterials(
 ): Promise<MaterialConsumptionResult> {
   try {
     // Get project materials that are reserved
-    const projectmaterials = await prisma.projectmaterial.findMany({
+    const projectmaterials = await prisma.projectMaterial.findMany({
       where: {
         projectId: projectId,
         status: 'RESERVED'
       },
       include: {
-        warehousematerial: true
+        WarehouseMaterial: {
+          select: {
+            id: true,
+            materialId: true,
+            quantity: true,
+            PricingConfig: true
+          }
+        }
       }
-    });
+    }) as ProjectMaterialWithWarehouse[];
 
     if (projectmaterials.length === 0) {
       return {
@@ -293,15 +308,15 @@ export async function consumeProjectMaterials(
       
       for (const projectmaterial of projectmaterials) {
         // Check if warehouse has enough stock
-        if (projectmaterial.warehousematerial.quantity < projectmaterial.quantity) {
+        if (projectmaterial.WarehouseMaterial.quantity < projectmaterial.quantity) {
           throw new Error(
-            `Insufficient stock for material ${projectmaterial.warehousematerial.materialId}. ` +
-            `Required: ${projectmaterial.quantity}, Available: ${projectmaterial.warehousematerial.quantity}`
+            `Insufficient stock for material ${projectmaterial.WarehouseMaterial.materialId}. ` +
+            `Required: ${projectmaterial.quantity}, Available: ${projectmaterial.WarehouseMaterial.quantity}`
           );
         }
 
         // Deduct from warehouse stock
-        const updatedWarehouseMaterial = await tx.warehousematerial.update({
+        const updatedWarehouseMaterial = await tx.warehouseMaterial.update({
           where: { id: projectmaterial.warehouseMaterialId },
           data: {
             quantity: {
@@ -311,7 +326,7 @@ export async function consumeProjectMaterials(
         });
 
         // Mark as consumed
-        await tx.projectmaterial.update({
+        await tx.projectMaterial.update({
           where: { id: projectmaterial.id },
           data: {
             status: 'CONSUMED',
@@ -320,7 +335,7 @@ export async function consumeProjectMaterials(
         });
 
         consumedMaterials.push({
-          materialId: projectmaterial.warehousematerial.materialId,
+          materialId: projectmaterial.WarehouseMaterial.materialId,
           quantity: projectmaterial.quantity,
           remainingStock: updatedWarehouseMaterial.quantity
         });
@@ -354,15 +369,22 @@ export async function returnProjectMaterials(
 ): Promise<MaterialConsumptionResult> {
   try {
     // Get project materials
-    const projectmaterials = await prisma.projectmaterial.findMany({
+    const projectmaterials = await prisma.projectMaterial.findMany({
       where: {
         projectId: projectId,
         status: { in: ['RESERVED', 'CONSUMED'] }
       },
       include: {
-        warehousematerial: true
+        WarehouseMaterial: {
+          select: {
+            id: true,
+            materialId: true,
+            quantity: true,
+            PricingConfig: true
+          }
+        }
       }
-    });
+    }) as ProjectMaterialWithWarehouse[];
 
     if (projectmaterials.length === 0) {
       return {
@@ -380,7 +402,7 @@ export async function returnProjectMaterials(
         
         // If materials were consumed, return them to warehouse
         if (projectmaterial.status === 'CONSUMED') {
-          await tx.warehousematerial.update({
+          await tx.warehouseMaterial.update({
             where: { id: projectmaterial.warehouseMaterialId },
             data: {
               quantity: {
@@ -394,7 +416,7 @@ export async function returnProjectMaterials(
         }
 
         // Update project material status
-        await tx.projectmaterial.update({
+        await tx.projectMaterial.update({
           where: { id: projectmaterial.id },
           data: {
             status: newStatus,
@@ -404,12 +426,12 @@ export async function returnProjectMaterials(
         });
 
         // Get updated warehouse material quantity
-        const updatedWarehouseMaterial = await tx.warehousematerial.findUnique({
+        const updatedWarehouseMaterial = await tx.warehouseMaterial.findUnique({
           where: { id: projectmaterial.warehouseMaterialId }
         });
 
         returnedMaterials.push({
-          materialId: projectmaterial.warehousematerial.materialId,
+          materialId: projectmaterial.WarehouseMaterial.materialId,
           quantity: projectmaterial.quantity,
           remainingStock: updatedWarehouseMaterial?.quantity || 0
         });
@@ -447,27 +469,27 @@ export async function returnProjectMaterials(
  * Get material consumption summary for a project
  */
 export async function getProjectMaterialSummary(projectId: string) {
-  const projectmaterials = await prisma.projectmaterial.findMany({
+  const projectmaterials = await prisma.projectMaterial.findMany({
     where: { projectId },
     include: {
-      warehousematerial: {
+      WarehouseMaterial: {
         include: {
-          pricingconfig: true
+          PricingConfig: true
         }
       }
     }
-  });
+  }) as ProjectMaterialWithWarehouse[];
 
   const summary = {
     totalMaterials: projectmaterials.length,
-    reservedMaterials: projectmaterials.filter(pm => pm.status === 'RESERVED').length,
-    consumedMaterials: projectmaterials.filter(pm => pm.status === 'CONSUMED').length,
-    returnedMaterials: projectmaterials.filter(pm => pm.status === 'RETURNED').length,
-    cancelledMaterials: projectmaterials.filter(pm => pm.status === 'CANCELLED').length,
-    materials: projectmaterials.map(pm => ({
+    reservedMaterials: projectmaterials.filter((pm) => pm.status === 'RESERVED').length,
+    consumedMaterials: projectmaterials.filter((pm) => pm.status === 'CONSUMED').length,
+    returnedMaterials: projectmaterials.filter((pm) => pm.status === 'RETURNED').length,
+    cancelledMaterials: projectmaterials.filter((pm) => pm.status === 'CANCELLED').length,
+    materials: projectmaterials.map((pm) => ({
       id: pm.id,
-      materialName: pm.warehousematerial.pricingconfig.label,
-      category: pm.warehousematerial.pricingconfig.category,
+      materialName: pm.WarehouseMaterial.PricingConfig?.label || 'Unknown',
+      category: pm.WarehouseMaterial.PricingConfig?.category || 'Unknown',
       quantity: pm.quantity,
       status: pm.status,
       reservedAt: pm.reservedAt,

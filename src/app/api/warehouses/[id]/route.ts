@@ -14,7 +14,7 @@ export async function GET(
     const warehouse = await prisma.warehouse.findUnique({
       where: { id },
       include: {
-        creator: {
+        user: {
           select: {
             id: true,
             firstName: true,
@@ -125,7 +125,7 @@ export async function PUT(
         ...(capacity !== undefined && { capacity }),
       },
       include: {
-        creator: {
+        user: {
           select: {
             id: true,
             firstName: true,

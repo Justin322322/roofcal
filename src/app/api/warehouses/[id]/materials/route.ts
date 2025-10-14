@@ -51,12 +51,12 @@ export async function GET(
     }
 
     // Get warehouse materials with pricing info
-    const warehouseMaterials = await prisma.warehousematerial.findMany({
+    const warehouseMaterials = await prisma.warehouseMaterial.findMany({
       where: { 
         warehouseId
       },
       include: {
-        pricingconfig: true,
+        PricingConfig: true,
       },
       orderBy: {
         created_at: 'desc',
@@ -73,17 +73,17 @@ export async function GET(
       createdAt: wm.created_at,
       updatedAt: wm.updated_at,
       material: {
-        id: wm.pricingconfig.id,
-        name: wm.pricingconfig.name,
-        label: wm.pricingconfig.label,
-        description: wm.pricingconfig.description,
-        price: Number(wm.pricingconfig.price),
-        unit: wm.pricingconfig.unit,
-        category: wm.pricingconfig.category,
-        length: wm.pricingconfig.length ? Number(wm.pricingconfig.length) : undefined,
-        width: wm.pricingconfig.width ? Number(wm.pricingconfig.width) : undefined,
-        height: wm.pricingconfig.height ? Number(wm.pricingconfig.height) : undefined,
-        volume: wm.pricingconfig.volume ? Number(wm.pricingconfig.volume) : undefined,
+        id: wm.PricingConfig.id,
+        name: wm.PricingConfig.name,
+        label: wm.PricingConfig.label,
+        description: wm.PricingConfig.description,
+        price: Number(wm.PricingConfig.price),
+        unit: wm.PricingConfig.unit,
+        category: wm.PricingConfig.category,
+        length: wm.PricingConfig.length ? Number(wm.PricingConfig.length) : undefined,
+        width: wm.PricingConfig.width ? Number(wm.PricingConfig.width) : undefined,
+        height: wm.PricingConfig.height ? Number(wm.PricingConfig.height) : undefined,
+        volume: wm.PricingConfig.volume ? Number(wm.PricingConfig.volume) : undefined,
       },
     }));
 
@@ -142,7 +142,7 @@ export async function POST(
     }
 
     // Verify material exists in pricing config
-    const material = await prisma.pricingconfig.findUnique({
+    const material = await prisma.pricingConfig.findUnique({
       where: { id: validatedData.materialId },
     });
 
@@ -154,7 +154,7 @@ export async function POST(
     }
 
     // Check if material already exists in warehouse (active only)
-    const existingActiveMaterial = await prisma.warehousematerial.findFirst({
+    const existingActiveMaterial = await prisma.warehouseMaterial.findFirst({
       where: {
         warehouseId,
         materialId: validatedData.materialId,
@@ -170,7 +170,7 @@ export async function POST(
     }
 
     // Check if there's an inactive material to reactivate
-    const existingInactiveMaterial = await prisma.warehousematerial.findUnique({
+    const existingInactiveMaterial = await prisma.warehouseMaterial.findUnique({
       where: {
         warehouseId_materialId: {
           warehouseId,
@@ -178,7 +178,7 @@ export async function POST(
         },
       },
       include: {
-        pricingconfig: true,
+        PricingConfig: true,
       },
     });
 
@@ -186,7 +186,7 @@ export async function POST(
 
     if (existingInactiveMaterial && !existingInactiveMaterial.isActive) {
       // Reactivate existing inactive material
-      warehouseMaterial = await prisma.warehousematerial.update({
+      warehouseMaterial = await prisma.warehouseMaterial.update({
         where: { id: existingInactiveMaterial.id },
         data: {
           quantity: validatedData.quantity,
@@ -195,12 +195,12 @@ export async function POST(
           updated_at: new Date(),
         },
         include: {
-          pricingconfig: true,
+          PricingConfig: true,
         },
       });
     } else {
       // Create new warehouse material
-      warehouseMaterial = await prisma.warehousematerial.create({
+      warehouseMaterial = await prisma.warehouseMaterial.create({
         data: {
           id: crypto.randomUUID(),
           warehouseId,
@@ -212,7 +212,7 @@ export async function POST(
           updated_at: new Date(),
         },
         include: {
-          pricingconfig: true,
+          PricingConfig: true,
         },
       });
     }
@@ -227,17 +227,17 @@ export async function POST(
       createdAt: warehouseMaterial.created_at,
       updatedAt: warehouseMaterial.updated_at,
       material: {
-        id: warehouseMaterial.pricingconfig.id,
-        name: warehouseMaterial.pricingconfig.name,
-        label: warehouseMaterial.pricingconfig.label,
-        description: warehouseMaterial.pricingconfig.description,
-        price: Number(warehouseMaterial.pricingconfig.price),
-        unit: warehouseMaterial.pricingconfig.unit,
-        category: warehouseMaterial.pricingconfig.category,
-        length: warehouseMaterial.pricingconfig.length ? Number(warehouseMaterial.pricingconfig.length) : undefined,
-        width: warehouseMaterial.pricingconfig.width ? Number(warehouseMaterial.pricingconfig.width) : undefined,
-        height: warehouseMaterial.pricingconfig.height ? Number(warehouseMaterial.pricingconfig.height) : undefined,
-        volume: warehouseMaterial.pricingconfig.volume ? Number(warehouseMaterial.pricingconfig.volume) : undefined,
+        id: warehouseMaterial.PricingConfig.id,
+        name: warehouseMaterial.PricingConfig.name,
+        label: warehouseMaterial.PricingConfig.label,
+        description: warehouseMaterial.PricingConfig.description,
+        price: Number(warehouseMaterial.PricingConfig.price),
+        unit: warehouseMaterial.PricingConfig.unit,
+        category: warehouseMaterial.PricingConfig.category,
+        length: warehouseMaterial.PricingConfig.length ? Number(warehouseMaterial.PricingConfig.length) : undefined,
+        width: warehouseMaterial.PricingConfig.width ? Number(warehouseMaterial.PricingConfig.width) : undefined,
+        height: warehouseMaterial.PricingConfig.height ? Number(warehouseMaterial.PricingConfig.height) : undefined,
+        volume: warehouseMaterial.PricingConfig.volume ? Number(warehouseMaterial.PricingConfig.volume) : undefined,
       },
     };
 
