@@ -22,7 +22,6 @@ import {
   UserIcon,
   DollarSignIcon,
   MapPinIcon,
-  RefreshCwIcon,
 } from "lucide-react";
 import { formatCurrency, formatArea } from "@/lib/utils";
 import { ProposalViewer } from "./proposal-viewer";
@@ -174,16 +173,6 @@ export function ProjectList() {
           />
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchProjects}
-            disabled={isLoading}
-            className="flex items-center gap-2"
-          >
-            <RefreshCwIcon className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-full sm:w-48">
               <SelectValue placeholder="Filter by status" />

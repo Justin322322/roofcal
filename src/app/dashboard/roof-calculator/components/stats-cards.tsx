@@ -26,6 +26,28 @@ interface RoofStatsCardsProps {
   loading?: boolean;
 }
 
+// Helper function to get material name with fallback for thickness variants
+function getMaterialName(materialValue: string): string {
+  // Handle corrugated thickness variants
+  if (materialValue === "corrugated-0.4") return "Long Span (0.4mm)";
+  if (materialValue === "corrugated-0.5") return "Long Span (0.5mm)";
+  
+  // Find in materials array
+  const material = materials.find((m) => m.value === materialValue);
+  return material?.name || materialValue;
+}
+
+// Helper function to get material price
+function getMaterialPrice(materialValue: string): number {
+  // Handle corrugated thickness variants
+  if (materialValue === "corrugated-0.4") return 650;
+  if (materialValue === "corrugated-0.5") return 800;
+  
+  // Find in materials array
+  const material = materials.find((m) => m.value === materialValue);
+  return material?.price || 0;
+}
+
 export function RoofStatsCards({
   area,
   complexity,
@@ -34,8 +56,8 @@ export function RoofStatsCards({
   loading = false,
 }: RoofStatsCardsProps) {
   const stats = useMemo(() => {
-    const selectedMaterial = materials.find((m) => m.value === material);
-    const materialName = selectedMaterial?.name || "Not Selected";
+    const materialName = getMaterialName(material);
+    const materialPrice = getMaterialPrice(material);
 
     return [
       {
@@ -68,8 +90,8 @@ export function RoofStatsCards({
         title: "Material",
         value: materialName,
         icon: PackageIcon,
-        description: selectedMaterial
-          ? `${formatCurrency(selectedMaterial.price)}/sq.m`
+        description: materialPrice > 0
+          ? `${formatCurrency(materialPrice)}/sq.m`
           : "Select material",
       },
     ];
