@@ -38,7 +38,7 @@ const adminTools = {
     },
     {
       name: "Pricing Maintenance",
-      url: "system-maintenance",
+      url: "pricing-maintenance",
       icon: WrenchIcon,
     },
     {
