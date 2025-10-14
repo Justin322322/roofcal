@@ -118,11 +118,11 @@ export function RoofCalculatorContent() {
   };
 
   return (
-    <div className="px-4 lg:px-6">
-      <div className="space-y-6">
+    <div className="px-3 sm:px-4 lg:px-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Action Buttons */}
-        <div className="mb-4 flex justify-end">
-            <div className="flex items-center gap-2">
+        <div className="mb-4 flex flex-col sm:flex-row sm:justify-end gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               <ProjectActions
                 measurements={measurements}
                 results={results}
@@ -158,19 +158,21 @@ export function RoofCalculatorContent() {
                     setIsResetting(false);
                   }
                 }}
+                className="flex-1 sm:flex-initial"
               >
                 {isResetting ? (
                   <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <RotateCcwIcon className="h-4 w-4 mr-2" />
                 )}
-                {isResetting ? "Resetting..." : "Reset"}
+                <span className="hidden sm:inline">{isResetting ? "Resetting..." : "Reset"}</span>
+                <span className="sm:hidden">{isResetting ? "..." : "Reset"}</span>
               </Button>
             </div>
           </div>
 
       {/* Stats Cards */}
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <RoofStatsCards
           area={results.area}
           complexity={decisionTree.complexity}
@@ -181,14 +183,14 @@ export function RoofCalculatorContent() {
 
       {/* Main Content Grid */}
       <div>
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
           {/* Left Column - Inputs (Sticky) */}
-          <div className="space-y-6 lg:sticky lg:top-4 lg:self-start">
+          <div className="space-y-4 sm:space-y-6 lg:sticky lg:top-4 lg:self-start">
             {/* Construction Mode */}
             <Card>
               <CardHeader>
-                <CardTitle>Construction Mode</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-base sm:text-lg">Construction Mode</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
                   Select project type for accurate labor calculations
                 </CardDescription>
               </CardHeader>
@@ -213,8 +215,8 @@ export function RoofCalculatorContent() {
             {/* Budget Validation */}
             <Card>
               <CardHeader>
-                <CardTitle>Budget Planning</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-base sm:text-lg">Budget Planning</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
                   Enter your budget for validation and recommendations
                 </CardDescription>
               </CardHeader>
@@ -233,11 +235,11 @@ export function RoofCalculatorContent() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CalculatorIcon className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <CalculatorIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                   Measurements
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs sm:text-sm">
                   Enter your roof dimensions and specifications
                 </CardDescription>
               </CardHeader>
@@ -252,8 +254,8 @@ export function RoofCalculatorContent() {
             {/* Consolidated Material & Screw Selection */}
             <Card>
               <CardHeader>
-                <CardTitle>Material & Hardware Selection</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-base sm:text-lg">Material & Hardware Selection</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
                   Choose your budget level, roofing material, and screw type
                 </CardDescription>
               </CardHeader>
@@ -285,7 +287,7 @@ export function RoofCalculatorContent() {
                 />
 
                 {/* Recommended Selections */}
-                <div className="mt-6">
+                <div className="mt-4 sm:mt-6">
                   <RecommendedSelections
                     measurements={measurements}
                     materialName={getMaterialName(material)}
@@ -301,10 +303,10 @@ export function RoofCalculatorContent() {
               >
                 <CollapsibleTrigger asChild>
                   <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-                    <CardTitle className="flex items-center justify-between">
+                    <CardTitle className="flex items-center justify-between text-base sm:text-lg">
                       <div className="flex items-center gap-2">
-                        <SettingsIcon className="h-5 w-5" />
-                        Additional Specifications
+                        <SettingsIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                        <span className="text-sm sm:text-base">Additional Specifications</span>
                       </div>
                       <ChevronDownIcon
                         className={`h-4 w-4 transition-transform ${
@@ -312,7 +314,7 @@ export function RoofCalculatorContent() {
                         }`}
                       />
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-xs sm:text-sm">
                       Thickness, ridge, gutter, insulation & ventilation specifications
                     </CardDescription>
                   </CardHeader>
@@ -336,7 +338,7 @@ export function RoofCalculatorContent() {
           </div>
 
           {/* Right Column - Results & Analysis */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <CalculationResults
               area={results.area}
               materialCost={results.materialCost}
@@ -374,9 +376,9 @@ export function RoofCalculatorContent() {
             {results.totalCost > 0 && (
               <Card className="bg-primary/5 border-primary/20">
                 <CardHeader>
-                  <CardTitle className="text-base">Quick Tips</CardTitle>
+                  <CardTitle className="text-sm sm:text-base">Quick Tips</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2 text-sm">
+                <CardContent className="space-y-2 text-xs sm:text-sm">
                   <p>• Add 10% extra material for waste and cuts</p>
                   <p>
                     • Consider additional costs for underlayment and flashing

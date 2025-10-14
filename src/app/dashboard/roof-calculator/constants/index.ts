@@ -7,10 +7,13 @@ const FALLBACK_MATERIAL_PRICES = {
   corrugated: 800,
 } as const;
 
-const FALLBACK_GUTTER_PRICES = {
-  standard: 350, // 5 inch
-  large: 450, // 6 inch
-} as const;
+const FALLBACK_GUTTER_PRICES: Record<string, number> = {
+  "cut-16": 350, // 16 inches
+  "cut-24": 450, // 24 inches
+  // Legacy support
+  standard: 350,
+  large: 450,
+};
 
 const FALLBACK_RIDGE_PRICES = {
   corrugated: 180,

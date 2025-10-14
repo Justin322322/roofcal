@@ -18,6 +18,7 @@ export interface Measurements {
   insulationType?: "fiberglass-batt" | "foam-board" | "reflective-roll" | "spray-foam" | "mineral-wool";
   ridgeType: string;
   gutterSize: string;
+  gutterMaterial?: string;
   budgetLevel: string;
   budgetAmount: string;
   constructionMode: "new" | "repair";

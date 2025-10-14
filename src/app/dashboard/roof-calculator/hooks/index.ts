@@ -23,7 +23,8 @@ export function useRoofCalculator() {
     materialThickness: "0.4",
     insulationType: "fiberglass-batt",
     ridgeType: "corrugated",
-    gutterSize: "standard",
+    gutterSize: "cut-16",
+    gutterMaterial: "pre-painted-gi",
     budgetLevel: "low",
     budgetAmount: "",
     constructionMode: "new",
@@ -41,6 +42,20 @@ export function useRoofCalculator() {
   const [material, setMaterial] = useState("corrugated-0.4"); // Default material
   const [isLoadingPricing, setIsLoadingPricing] = useState(true);
   const [pricingError, setPricingError] = useState<string | null>(null);
+
+  // Auto-match ridge type with material selection
+  useEffect(() => {
+    // Extract base material name (e.g., "corrugated-0.4" -> "corrugated")
+    const baseMaterial = material.split("-")[0];
+    
+    // Auto-match ridge for corrugated and long-span materials
+    if (baseMaterial === "corrugated" || baseMaterial === "long-span") {
+      setMeasurements((prev) => ({
+        ...prev,
+        ridgeType: "corrugated",
+      }));
+    }
+  }, [material]);
 
   const [results, setResults] = useState<CalculationResults>({
     area: 0,
@@ -155,8 +170,8 @@ export function useRoofCalculator() {
     setMeasurements((prev) => {
       const isLow = prev.budgetLevel === "low";
 
-      // Gutter size: large for very large areas, otherwise standard
-      const nextGutterSize = area > 200 ? "large" : "standard";
+      // Gutter size: cut-24 for very large areas, otherwise cut-16
+      const nextGutterSize = area > 200 ? "cut-24" : "cut-16";
 
       // Ridge type: high budget prefers ventilated, low budget standard
       const nextRidgeType = isLow ? "standard" : "ventilated";
@@ -233,7 +248,11 @@ export function useRoofCalculator() {
     // 1. Calculate plan area and apply slope multiplier derived from pitch
     const planArea = length * width;
     const slopeMultiplier = getSlopeMultiplier(pitch);
-    const totalArea = planArea * slopeMultiplier;
+    
+    // Apply gable roof adjustment: +5% for triangular shape (2 sides)
+    // Shed roof stays the same (single straight slope)
+    const gableAreaMultiplier = measurements.roofType === "gable" ? 1.05 : 1.0;
+    const totalArea = planArea * slopeMultiplier * gableAreaMultiplier;
 
     // 2. Calculate roof material cost
     const selectedMaterial = materials.find((m) => m.value === material);
@@ -252,9 +271,7 @@ export function useRoofCalculator() {
           )
         : 0;
     const gutterPricePerPiece =
-      measurements.gutterSize === "large"
-        ? CONSTANTS.GUTTER_PRICES.large
-        : CONSTANTS.GUTTER_PRICES.standard;
+      (CONSTANTS.GUTTER_PRICES as Record<string, number>)[measurements.gutterSize] || 350;
     const gutterCost = gutterPieces * gutterPricePerPiece;
 
     // 4. Calculate roof ridge cost
@@ -492,12 +509,12 @@ export function useRoofCalculator() {
     }
     // Only keep ventilated for steep roofs that stayed steep after optimization
 
-    // 5. OPTIMIZE GUTTER SIZE - Only use large when necessary
+    // 5. OPTIMIZE GUTTER SIZE - Only use cut-24 when necessary
     if (totalArea > 200) {
-      optimizations.gutterSize = "large"; // Necessary for very large roofs
+      optimizations.gutterSize = "cut-24"; // Necessary for very large roofs
       changesCount++;
     } else if (totalArea <= 150) {
-      optimizations.gutterSize = "standard"; // Reduce complexity for smaller roofs
+      optimizations.gutterSize = "cut-16"; // Reduce complexity for smaller roofs
       changesCount++;
     }
     // Keep current selection for medium roofs (150-200 sq.m)

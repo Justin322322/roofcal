@@ -60,8 +60,8 @@ export async function calculateProjectMaterials(project: Project | ProjectWithDe
   const gutterLength = Number(project.gutterLengthA || 0) + Number(project.gutterLengthC || 0);
   const ridgeLength = Number(project.ridgeLength || 0);
   
-  // Gable roof adjustment: +5% cost
-  const gableAdjustment = project.roofType === "gable" ? 1.05 : 1.0;
+  // Note: Gable roof +5% adjustment is now applied to area calculation, not cost
+  // This is because gable roofs have 2 triangular sides vs shed's single straight slope
 
   // 1. Main roofing material
   const mainMaterial = pricingconfigs.find(pc => 
@@ -72,7 +72,7 @@ export async function calculateProjectMaterials(project: Project | ProjectWithDe
   if (mainMaterial) {
     const quantity = Math.ceil(roofArea * 1.1); // 10% waste factor
     const price = Number(mainMaterial.price);
-    const totalCost = quantity * price * gableAdjustment; // Apply gable adjustment
+    const totalCost = quantity * price; // No gable adjustment here - already in area
     
     materials.push({
       materialId: mainMaterial.id,

@@ -35,7 +35,7 @@ export function AdditionalSpecs({
     <div className="space-y-4">
       {/* Budget Level */}
       <div className="space-y-2">
-        <Label htmlFor="budgetLevel">Budget Level</Label>
+        <Label htmlFor="budgetLevel" className="text-sm font-medium">Budget Level</Label>
         <Select
           value={measurements.budgetLevel}
           onValueChange={(value) => {
@@ -47,7 +47,7 @@ export function AdditionalSpecs({
             );
           }}
         >
-          <SelectTrigger>
+          <SelectTrigger className="h-11">
             <SelectValue placeholder="Select budget level" />
           </SelectTrigger>
           <SelectContent>
@@ -59,12 +59,12 @@ export function AdditionalSpecs({
 
       {/* Material Thickness */}
       <div className="space-y-2">
-        <Label htmlFor="materialThickness">Material Thickness</Label>
+        <Label htmlFor="materialThickness" className="text-sm font-medium">Material Thickness</Label>
         <Select
           value={measurements.materialThickness}
           onValueChange={(value) => handleChange("materialThickness", value)}
         >
-          <SelectTrigger>
+          <SelectTrigger className="h-11">
             <SelectValue placeholder="Select thickness" />
           </SelectTrigger>
           <SelectContent>
@@ -74,20 +74,20 @@ export function AdditionalSpecs({
         </Select>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         {/* Ridge Type */}
         <div className="space-y-2">
-          <Label htmlFor="ridgeType">Ridge Specification</Label>
+          <Label htmlFor="ridgeType" className="text-sm font-medium">Ridge Specification</Label>
           <Select
             value={measurements.ridgeType}
             onValueChange={(value) => handleChange("ridgeType", value)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="h-11">
               <SelectValue placeholder="Select ridge type" />
             </SelectTrigger>
             <SelectContent>
               {/* Business rule: when only corrugated is allowed, keep ridge types aligned */}
-              <SelectItem value="corrugated">Long Span Ridge Cap</SelectItem>
+              <SelectItem value="corrugated">Corrugated Ridge Cap</SelectItem>
               <SelectItem value="standard">Standard Ridge Cap</SelectItem>
               <SelectItem value="ventilated">Ventilated Ridge Cap</SelectItem>
             </SelectContent>
@@ -96,29 +96,29 @@ export function AdditionalSpecs({
 
         {/* Gutter Size */}
         <div className="space-y-2">
-          <Label htmlFor="gutterSize">Gutter Size</Label>
+          <Label htmlFor="gutterSize" className="text-sm font-medium">Gutter Size</Label>
           <Select
             value={measurements.gutterSize}
             onValueChange={(value) => handleChange("gutterSize", value)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="h-11">
               <SelectValue placeholder="Select gutter size" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="standard">Standard (5 inch)</SelectItem>
-              <SelectItem value="large">Large (6 inch)</SelectItem>
+              <SelectItem value="cut-16">Cut 16 (16 inches)</SelectItem>
+              <SelectItem value="cut-24">Cut 24 (24 inches)</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      <div className="pt-2 text-xs text-muted-foreground space-y-1">
+      <div className="pt-2 text-xs sm:text-sm text-muted-foreground space-y-1.5">
         <p>
-          <strong>Tip:</strong> Ventilated ridge caps improve attic ventilation
+          <strong className="font-semibold">Tip:</strong> Ventilated ridge caps improve attic ventilation
           and reduce moisture buildup
         </p>
         <p>
-          <strong>Note:</strong> Large gutters (6&quot;) handle 50% more water
+          <strong className="font-semibold">Note:</strong> Large gutters (6&quot;) handle 50% more water
           than standard (5&quot;) - recommended for heavy rain areas
         </p>
       </div>

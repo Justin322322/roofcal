@@ -39,16 +39,16 @@ export function ConsolidatedAdditionalSpecs({
     <div className="space-y-6">
       {/* Material Thickness Display */}
       <div className="space-y-4">
-        <h4 className="text-sm font-semibold">Material Specifications</h4>
+        <h4 className="text-sm sm:text-base font-semibold">Material Specifications</h4>
         
         <div className="space-y-2">
-          <Label className="text-base font-medium">Material Thickness</Label>
-          <div className="p-3 bg-muted rounded-md">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">
+          <Label className="text-sm sm:text-base font-medium">Material Thickness</Label>
+          <div className="p-3 sm:p-4 bg-muted rounded-md">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <span className="text-sm sm:text-base font-medium">
                 {measurements.materialThickness} mm ({measurements.budgetLevel === "low" ? "Low" : "High"} Budget)
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs sm:text-sm text-muted-foreground">
                 Automatically set based on budget level above
               </span>
             </div>
@@ -60,40 +60,58 @@ export function ConsolidatedAdditionalSpecs({
 
       {/* Ridge & Gutter Specifications */}
       <div className="space-y-4">
-        <h4 className="text-sm font-semibold">Ridge & Gutter Specifications</h4>
+        <h4 className="text-sm sm:text-base font-semibold">Ridge & Gutter Specifications</h4>
         
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {/* Ridge Type */}
           <div className="space-y-2">
-            <Label htmlFor="ridgeType">Ridge Specification</Label>
+            <Label htmlFor="ridgeType" className="text-sm font-medium">Ridge Specification</Label>
             <Select
               value={measurements.ridgeType}
               onValueChange={(value) => handleChange("ridgeType", value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-11">
                 <SelectValue placeholder="Select ridge type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="corrugated">Long Span Ridge Cap</SelectItem>
+                <SelectItem value="corrugated">Corrugated Ridge Cap</SelectItem>
                 <SelectItem value="standard">Standard Ridge Cap</SelectItem>
                 <SelectItem value="ventilated">Ventilated Ridge Cap</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {/* Gutter Size */}
+          {/* Gutter Material */}
           <div className="space-y-2">
-            <Label htmlFor="gutterSize">Gutter Size</Label>
+            <Label htmlFor="gutterMaterial" className="text-sm font-medium">Gutter Material</Label>
+            <Select
+              value={measurements.gutterMaterial || "pre-painted-gi"}
+              onValueChange={(value) => handleChange("gutterMaterial", value)}
+            >
+              <SelectTrigger className="h-11">
+                <SelectValue placeholder="Select gutter material" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pre-painted-gi">Pre-painted GI Gutter</SelectItem>
+                <SelectItem value="stainless">Stainless Gutter</SelectItem>
+                <SelectItem value="pvc">PVC Gutter</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Gutter Size */}
+          <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+            <Label htmlFor="gutterSize" className="text-sm font-medium">Gutter Size</Label>
             <Select
               value={measurements.gutterSize}
               onValueChange={(value) => handleChange("gutterSize", value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-11">
                 <SelectValue placeholder="Select gutter size" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="standard">Standard (5 inch)</SelectItem>
-                <SelectItem value="large">Large (6 inch)</SelectItem>
+                <SelectItem value="cut-16">Cut 16 (16 inches)</SelectItem>
+                <SelectItem value="cut-24">Cut 24 (24 inches)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -101,9 +119,9 @@ export function ConsolidatedAdditionalSpecs({
 
         {/* Gutter Measurements */}
         <div className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="gutterLengthA">A - Length (m)</Label>
+              <Label htmlFor="gutterLengthA" className="text-sm font-medium">A - Length (m)</Label>
               <Input
                 id="gutterLengthA"
                 type="number"
@@ -112,11 +130,12 @@ export function ConsolidatedAdditionalSpecs({
                 onChange={(e) => handleChange("gutterLengthA", e.target.value)}
                 min="0"
                 step="0.1"
+                className="h-11"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="gutterSlope">B - Slope (m)</Label>
+              <Label htmlFor="gutterSlope" className="text-sm font-medium">B - Slope (m)</Label>
               <Input
                 id="gutterSlope"
                 type="number"
@@ -125,11 +144,12 @@ export function ConsolidatedAdditionalSpecs({
                 onChange={(e) => handleChange("gutterSlope", e.target.value)}
                 min="0"
                 step="0.1"
+                className="h-11"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="gutterLengthC">C - Length (m)</Label>
+            <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+              <Label htmlFor="gutterLengthC" className="text-sm font-medium">C - Length (m)</Label>
               <Input
                 id="gutterLengthC"
                 type="number"
@@ -138,13 +158,14 @@ export function ConsolidatedAdditionalSpecs({
                 onChange={(e) => handleChange("gutterLengthC", e.target.value)}
                 min="0"
                 step="0.1"
+                className="h-11"
               />
             </div>
           </div>
 
           {calculatedGutterPieces > 0 && (
-            <div className="p-3 bg-muted rounded-md">
-              <p className="text-sm font-medium">
+            <div className="p-3 sm:p-4 bg-muted rounded-md">
+              <p className="text-sm sm:text-base font-medium">
                 Calculated Gutter Pieces: {calculatedGutterPieces}
               </p>
             </div>
@@ -156,7 +177,7 @@ export function ConsolidatedAdditionalSpecs({
 
       {/* Insulation & Ventilation - Optional */}
       <div className="space-y-4">
-        <h4 className="text-sm font-semibold">Optional Additions</h4>
+        <h4 className="text-sm sm:text-base font-semibold">Optional Additions</h4>
         
         <div className="space-y-4">
           {/* Insulation Toggle */}
@@ -165,12 +186,10 @@ export function ConsolidatedAdditionalSpecs({
               id="includeInsulation"
               checked={measurements.includeInsulation || false}
               onCheckedChange={(checked) => {
-                handleChange("includeInsulation", checked ? "true" : "false");
-                // Reset insulation values when unchecked
-                if (!checked) {
-                  handleChange("insulationType", "");
-                  handleChange("insulationThickness", "");
-                }
+                onMeasurementsChange({
+                  includeInsulation: checked as boolean,
+                  ...(checked ? {} : { insulationType: undefined, insulationThickness: "" }),
+                });
               }}
             />
             <Label
@@ -183,16 +202,16 @@ export function ConsolidatedAdditionalSpecs({
 
           {/* Insulation Fields - Only show when enabled */}
           {measurements.includeInsulation && (
-            <div className="ml-6 space-y-4 border-l-2 border-primary/20 pl-4">
-              <div className="grid gap-4 md:grid-cols-2">
+            <div className="ml-2 sm:ml-6 space-y-4 border-l-2 border-primary/20 pl-3 sm:pl-4">
+              <div className="grid gap-4 sm:grid-cols-2">
                 {/* Insulation Type */}
                 <div className="space-y-2">
-                  <Label htmlFor="insulationType">Insulation Type</Label>
+                  <Label htmlFor="insulationType" className="text-sm font-medium">Insulation Type</Label>
                   <Select
                     value={measurements.insulationType}
                     onValueChange={(value) => handleChange("insulationType", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-11">
                       <SelectValue placeholder="Select insulation type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -207,12 +226,12 @@ export function ConsolidatedAdditionalSpecs({
 
                 {/* Insulation Thickness */}
                 <div className="space-y-2">
-                  <Label htmlFor="insulationThickness">Insulation Thickness (100% Coverage)</Label>
+                  <Label htmlFor="insulationThickness" className="text-sm font-medium">Insulation Thickness (100% Coverage)</Label>
                   <Select
                     value={measurements.insulationThickness}
                     onValueChange={(value) => handleChange("insulationThickness", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-11">
                       <SelectValue placeholder="Select thickness" />
                     </SelectTrigger>
                     <SelectContent>
@@ -239,12 +258,10 @@ export function ConsolidatedAdditionalSpecs({
               id="includeVentilation"
               checked={measurements.includeVentilation || false}
               onCheckedChange={(checked) => {
-                handleChange("includeVentilation", checked ? "true" : "false");
-                // Reset ventilation values when unchecked
-                if (!checked) {
-                  handleChange("ventilationType", "");
-                  handleChange("ventilationPieces", "");
-                }
+                onMeasurementsChange({
+                  includeVentilation: checked as boolean,
+                  ...(checked ? {} : { ventilationType: undefined, ventilationPieces: "" }),
+                });
               }}
             />
             <Label
@@ -257,16 +274,16 @@ export function ConsolidatedAdditionalSpecs({
 
           {/* Ventilation Fields - Only show when enabled */}
           {measurements.includeVentilation && (
-            <div className="ml-6 space-y-4 border-l-2 border-primary/20 pl-4">
-              <div className="grid gap-4 md:grid-cols-2">
+            <div className="ml-2 sm:ml-6 space-y-4 border-l-2 border-primary/20 pl-3 sm:pl-4">
+              <div className="grid gap-4 sm:grid-cols-2">
                 {/* Ventilation Type */}
                 <div className="space-y-2">
-                  <Label htmlFor="ventilationType">Ventilation Type</Label>
+                  <Label htmlFor="ventilationType" className="text-sm font-medium">Ventilation Type</Label>
                   <Select
                     value={measurements.ventilationType}
                     onValueChange={(value) => handleChange("ventilationType", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-11">
                       <SelectValue placeholder="Select ventilation type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -281,7 +298,7 @@ export function ConsolidatedAdditionalSpecs({
 
                 {/* Ventilation Pieces */}
                 <div className="space-y-2">
-                  <Label htmlFor="ventilationPieces">Number of Ventilation Pieces</Label>
+                  <Label htmlFor="ventilationPieces" className="text-sm font-medium">Number of Ventilation Pieces</Label>
                   <Input
                     id="ventilationPieces"
                     type="number"
@@ -289,6 +306,7 @@ export function ConsolidatedAdditionalSpecs({
                     value={measurements.ventilationPieces}
                     onChange={(e) => handleChange("ventilationPieces", e.target.value)}
                     min="0"
+                    className="h-11"
                   />
                   <p className="text-xs text-muted-foreground">
                     Recommended: 1 piece per 50 sq.m (Approx. {recommendedVentilationPieces} pieces for your roof)
@@ -301,15 +319,15 @@ export function ConsolidatedAdditionalSpecs({
       </div>
 
       {/* Tips and Notes */}
-      <div className="pt-2 text-xs text-muted-foreground space-y-1">
+      <div className="pt-2 text-xs sm:text-sm text-muted-foreground space-y-1.5">
         <p>
-          <strong>Tip:</strong> Insulation helps regulate temperature and reduce energy costs
+          <strong className="font-semibold">Tip:</strong> Insulation helps regulate temperature and reduce energy costs
         </p>
         <p>
-          <strong>Tip:</strong> Ventilation reduces moisture buildup and extends roof life
+          <strong className="font-semibold">Tip:</strong> Ventilation reduces moisture buildup and extends roof life
         </p>
         <p>
-          <strong>Note:</strong> Large gutters (6&quot;) handle 50% more water
+          <strong className="font-semibold">Note:</strong> Large gutters (6&quot;) handle 50% more water
           than standard (5&quot;) - recommended for heavy rain areas
         </p>
       </div>

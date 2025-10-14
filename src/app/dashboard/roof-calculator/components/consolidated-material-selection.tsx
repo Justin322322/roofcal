@@ -222,29 +222,54 @@ export function ConsolidatedMaterialSelection({
   const selectedMaterial = materials.find((m) => m.value === material);
   const selectedScrew = screwTypes.find((screw) => screw.value === screwType);
 
+  // Filter materials based on budget level (thickness)
+  const filteredMaterials = materials.filter((mat) => {
+    if (budgetLevel === "low") {
+      // Low budget: only show 0.4mm thickness materials
+      return mat.value.includes("-0.4");
+    } else if (budgetLevel === "high") {
+      // High budget: only show 0.5mm thickness materials
+      return mat.value.includes("-0.5");
+    }
+    return true; // Show all if no budget level selected
+  });
+
+  // Auto-select appropriate material when budget level changes
+  useEffect(() => {
+    if (!isLoadingMaterials && filteredMaterials.length > 0) {
+      // Check if current material is in filtered list
+      const isCurrentMaterialAvailable = filteredMaterials.some((m) => m.value === material);
+      
+      if (!isCurrentMaterialAvailable) {
+        // Auto-select the first available material from filtered list
+        onMaterialChange(filteredMaterials[0].value);
+      }
+    }
+  }, [budgetLevel, isLoadingMaterials, filteredMaterials, material, onMaterialChange]);
+
   return (
     <div className="space-y-6">
       {/* Budget Level Selection */}
       <div className="space-y-2">
-        <Label className="text-base font-medium">Budget Level</Label>
-        <div className="grid grid-cols-2 gap-2">
+        <Label className="text-sm sm:text-base font-medium">Budget Level</Label>
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
           <Button
             variant={budgetLevel === "low" ? "default" : "outline"}
             onClick={() => onBudgetLevelChange("low", "0.4")}
-            className="h-12"
+            className="h-auto sm:h-12 py-3 sm:py-0"
           >
-            <div className="text-left">
-              <div className="font-medium">Low Budget</div>
+            <div className="text-left w-full">
+              <div className="font-medium text-sm sm:text-base">Low Budget</div>
               <div className="text-xs opacity-70">0.4mm thickness</div>
             </div>
           </Button>
           <Button
             variant={budgetLevel === "high" ? "default" : "outline"}
             onClick={() => onBudgetLevelChange("high", "0.5")}
-            className="h-12"
+            className="h-auto sm:h-12 py-3 sm:py-0"
           >
-            <div className="text-left">
-              <div className="font-medium">High Budget</div>
+            <div className="text-left w-full">
+              <div className="font-medium text-sm sm:text-base">High Budget</div>
               <div className="text-xs opacity-70">0.5mm thickness</div>
             </div>
           </Button>
@@ -253,25 +278,25 @@ export function ConsolidatedMaterialSelection({
 
       {/* Material Selection */}
       <div className="space-y-2">
-        <Label className="text-base font-medium">Roofing Material</Label>
+        <Label className="text-sm sm:text-base font-medium">Roofing Material</Label>
         {selectedWarehouseId && (
-          <div className="text-sm text-muted-foreground">
-            Showing {materials.length} materials from selected warehouse
+          <div className="text-xs sm:text-sm text-muted-foreground">
+            Showing {filteredMaterials.length} materials matching your budget level
           </div>
         )}
         {isLoadingMaterials ? (
-          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-11 w-full" />
         ) : (
           <Select value={material} onValueChange={onMaterialChange}>
-            <SelectTrigger className="h-12">
+            <SelectTrigger className="h-11">
               <SelectValue placeholder="Select material" />
             </SelectTrigger>
             <SelectContent>
-              {materials.map((mat) => (
+              {filteredMaterials.map((mat) => (
                 <SelectItem key={mat.value} value={mat.value}>
-                  <div className="flex justify-between items-center w-full">
-                    <span>{mat.name}</span>
-                    <span className="text-muted-foreground ml-2">₱{mat.price.toLocaleString()}/sq.m</span>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full gap-1">
+                    <span className="text-sm">{mat.name}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">₱{mat.price.toLocaleString()}/sq.m</span>
                   </div>
                 </SelectItem>
               ))}
@@ -282,20 +307,20 @@ export function ConsolidatedMaterialSelection({
 
       {/* Screw Type Selection */}
       <div className="space-y-2">
-        <Label className="text-base font-medium">Screw Type</Label>
+        <Label className="text-sm sm:text-base font-medium">Screw Type</Label>
         {isLoadingScrews ? (
-          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-11 w-full" />
         ) : (
           <Select value={screwType} onValueChange={onScrewTypeChange}>
-            <SelectTrigger className="h-12">
+            <SelectTrigger className="h-11">
               <SelectValue placeholder="Select Screw Type" />
             </SelectTrigger>
             <SelectContent>
               {screwTypes.map((screw) => (
                 <SelectItem key={screw.value} value={screw.value}>
-                  <div className="flex justify-between items-center w-full">
-                    <span>{screw.name}</span>
-                    <span className="text-muted-foreground ml-2">₱{screw.price.toFixed(2)}/pc</span>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full gap-1">
+                    <span className="text-sm">{screw.name}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">₱{screw.price.toFixed(2)}/pc</span>
                   </div>
                 </SelectItem>
               ))}
@@ -308,13 +333,13 @@ export function ConsolidatedMaterialSelection({
       {selectedMaterial && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{selectedMaterial.name}</CardTitle>
-            <CardDescription>{selectedMaterial.description}</CardDescription>
+            <CardTitle className="text-sm sm:text-base">{selectedMaterial.name}</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">{selectedMaterial.description}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Price per sq.m</span>
-              <span className="text-lg font-semibold">
+              <span className="text-xs sm:text-sm text-muted-foreground">Price per sq.m</span>
+              <span className="text-base sm:text-lg font-semibold">
                 ₱{selectedMaterial.price.toLocaleString()}
               </span>
             </div>
@@ -326,15 +351,15 @@ export function ConsolidatedMaterialSelection({
       {selectedScrew && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{selectedScrew.name}</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-sm sm:text-base">{selectedScrew.name}</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
               High-quality screw for secure roof installation
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Price per piece</span>
-              <span className="text-lg font-semibold">
+              <span className="text-xs sm:text-sm text-muted-foreground">Price per piece</span>
+              <span className="text-base sm:text-lg font-semibold">
                 ₱{selectedScrew.price.toFixed(2)}
               </span>
             </div>
