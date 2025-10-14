@@ -16,8 +16,8 @@ export default function Hero() {
   }, []);
 
   const previewSrc = mounted && resolvedTheme === "dark"
-    ? "/dashboard-dark.png"
-    : "/dashboard-light.png";
+    ? "https://unex0yvstmuqs1jv.public.blob.vercel-storage.com/dashboard-dark.png"
+    : "https://unex0yvstmuqs1jv.public.blob.vercel-storage.com/dashboard-light.png";
 
   return (
     <main

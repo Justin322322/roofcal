@@ -26,10 +26,9 @@
 ### Key Capabilities
 
 - **Intelligent Roof Calculator**: AI-powered cost estimation with decision tree algorithms
-- **Project Management**: Complete workflow from draft to completion with Kanban boards
+- **Project Management**: Complete workflow from draft to completion
 - **Warehouse Management**: Multi-warehouse inventory tracking with smart stock balancing
 - **Material Consumption Tracking**: Real-time material reservation and consumption monitoring
-- **Delivery Optimization**: Geocoding and route calculation for cost-effective deliveries
 - **Role-Based Access**: Secure access control for Clients, Admins, and Developers
 - **Real-Time Notifications**: Instant alerts for project updates and material warnings
 - **Dark Mode Support**: Complete light/dark theme system with system preference detection
@@ -40,11 +39,10 @@
 - **UI Components**: Shadcn UI, Radix UI, Tailwind CSS
 - **Backend**: Next.js API Routes, NextAuth.js
 - **Database**: MySQL with Prisma ORM
-- **External Services**: OpenRouteService (geocoding), Nodemailer (email)
+- **External Services**: Nodemailer (email)
 - **State Management**: React Hooks, nuqs (URL state)
 - **Authentication**: JWT-based with email verification
 - **Theme Management**: next-themes with system preference detection
-- **Drag & Drop**: @dnd-kit for Kanban board functionality
 
 ---
 
@@ -74,7 +72,6 @@ flowchart TB
 
     subgraph "External Services"
         EMAIL[Email Service<br/>Nodemailer]
-        GEO[Geocoding Service<br/>OpenRouteService]
     end
 
     WEB --> NEXT
@@ -99,8 +96,6 @@ flowchart TB
     PROJ --> EMAIL
     NOTIF --> EMAIL
     
-    PROJ --> GEO
-    WARE --> GEO
 
     style NEXT fill:#000,stroke:#fff,stroke-width:3px,color:#fff
     style DB fill:#4472C4,stroke:#fff,stroke-width:2px,color:#fff
@@ -153,7 +148,7 @@ flowchart TB
 - Create and send proposals
 - Assign contractors
 - Manage warehouse stock
-- Configure pricing
+- Configure system settings
 - View all projects
 
 ### 3. DEVELOPER Role
@@ -356,17 +351,13 @@ stateDiagram-v2
 4. **INSTALL**: Installation in progress
 5. **FINALIZE**: Project completion and handoff
 
-#### Kanban Board Features
+#### Project Management Features
 
-- **Drag-and-Drop**: Powered by @dnd-kit library
-- **Board Positions**: Persistent card ordering within columns
-- **Proposal Positions**: Separate ordering for proposal view
-- **Stage Progress Tracking**: Visual progress indicators for 5-stage lifecycle
-- **Mobile Responsive**: Touch-friendly drag operations
 - Visual project cards with key information
 - Filter by status, client, contractor
 - Search and sort capabilities
 - Real-time updates
+- Stage progress tracking
 
 ---
 
@@ -378,7 +369,7 @@ Multi-warehouse inventory tracking with intelligent stock balancing.
 
 - **Multi-Warehouse Support**: Manage multiple warehouse locations
 - **Material Inventory**: Track stock levels for all materials
-- **Location-Based Pricing**: Adjust prices by warehouse location
+- **Location-Based Management**: Manage materials by warehouse location
 - **Capacity Management**: Monitor warehouse capacity utilization
 - **Stock Warnings**: Automatic alerts for low stock
 - **Smart Stock Planner**: AI-powered restocking recommendations
@@ -495,40 +486,6 @@ sequenceDiagram
 
 ---
 
-### F. Delivery & Pricing System
-
-Intelligent delivery cost calculation with geocoding and route optimization.
-
-#### Delivery Calculation Flow
-
-```mermaid
-flowchart LR
-    A[Project Address] --> B[Geocode Address]
-    B --> C{Coordinates Found?}
-    C -->|No| D[Use Default Distance]
-    C -->|Yes| E[Calculate Route]
-    E --> F[Get Distance from Warehouse]
-    F --> G[Calculate Delivery Cost]
-    G --> H[Apply Location Adjustment]
-    H --> I[Final Delivery Cost]
-    D --> I
-```
-
-#### Pricing Configuration
-
-- **Base Material Prices**: Configured per material type
-- **Location Adjustments**: Percentage adjustment per warehouse
-- **Delivery Cost**: Distance-based calculation
-- **Dynamic Pricing**: Real-time price updates
-
-#### Geocoding Integration
-
-- Uses OpenRouteService API
-- Converts addresses to coordinates
-- Calculates optimal routes
-- Distance-based pricing
-
----
 
 ### G. Notification System
 
@@ -617,7 +574,6 @@ flowchart LR
         ADMIN[Admin Users]
         DEVELOPER[Developer Users]
         EMAIL_SVC[Email Service]
-        GEO_SVC[Geocoding Service]
     end
 
     subgraph "RoofCalc System"
@@ -628,7 +584,6 @@ flowchart LR
     ADMIN -->|Project Management, Warehouse| SYSTEM
     DEVELOPER -->|System Control, Database| SYSTEM
     SYSTEM -->|Verification Codes, Notifications| EMAIL_SVC
-    SYSTEM -->|Geocoding, Routes| GEO_SVC
     EMAIL_SVC -->|Email Delivery| CLIENT
     EMAIL_SVC -->|Email Delivery| ADMIN
 ```
@@ -640,7 +595,6 @@ flowchart TB
     subgraph "External Entities"
         USER[Users]
         EMAIL[Email Service]
-        GEO[Geocoding Service]
     end
 
     subgraph "Processes"
@@ -649,8 +603,7 @@ flowchart TB
         P3[3.0<br/>Project Management]
         P4[4.0<br/>Warehouse Management]
         P5[5.0<br/>Material Consumption]
-        P6[6.0<br/>Delivery & Pricing]
-        P7[7.0<br/>Notifications]
+        P6[6.0<br/>Notifications]
     end
 
     subgraph "Data Stores"
@@ -680,13 +633,10 @@ flowchart TB
     P5 -->|Update| D4
     P5 -->|Update| D3
     
-    P3 -->|Calculate Delivery| P6
-    P6 -->|Geocode| GEO
-    
-    P3 -->|Send Alerts| P7
-    P4 -->|Send Alerts| P7
-    P7 -->|Create| D5
-    P7 -->|Send| EMAIL
+    P3 -->|Send Alerts| P6
+    P4 -->|Send Alerts| P6
+    P6 -->|Create| D5
+    P6 -->|Send| EMAIL
 ```
 
 ---
@@ -711,7 +661,6 @@ erDiagram
     WAREHOUSE ||--o{ WAREHOUSEMATERIAL : contains
     WAREHOUSE ||--o{ PROJECT : serves
 
-    PRICINGCONFIG ||--o{ WAREHOUSEMATERIAL : defines
     WAREHOUSEMATERIAL ||--o{ PROJECTMATERIAL : linked_to
 
     USER {
@@ -771,17 +720,6 @@ erDiagram
         datetime updated_at
     }
 
-    PRICINGCONFIG {
-        string id PK
-        string category
-        string name
-        string label
-        decimal price
-        string unit
-        boolean isActive
-        datetime created_at
-        datetime updated_at
-    }
 
     PROJECTMATERIAL {
         string id PK
@@ -977,17 +915,6 @@ Replenish material stock.
 #### GET /api/warehouses/warnings
 Get stock warnings.
 
-### Pricing Endpoints
-
-#### GET /api/pricing
-Get all pricing configurations.
-
-#### POST /api/pricing
-Create pricing configuration.
-
-#### PUT /api/pricing/[id]
-Update pricing configuration.
-
 ### Notification Endpoints
 
 #### GET /api/notifications
@@ -1046,7 +973,7 @@ Create new admin account with temporary password.
 
 ### 2. Project Workflow Management
 
-- **Kanban Board**: Visual project management with drag-and-drop
+- **Project Management**: Visual project management interface
 - **Status Transitions**: Enforced workflow with role-based permissions
 - **Stage Tracking**: 5-stage project lifecycle
 - **Proposal Management**: Complete proposal creation and approval flow
@@ -1066,21 +993,15 @@ Create new admin account with temporary password.
 - **Return Management**: Handle material returns on cancellation
 - **Availability Validation**: Check stock before reservation
 
-### 5. Delivery & Pricing
 
-- **Geocoding**: Automatic address to coordinate conversion
-- **Route Calculation**: Distance-based delivery cost
-- **Dynamic Pricing**: Location-based price adjustments
-- **OpenRouteService Integration**: Professional routing
-
-### 6. Notification System
+### 5. Notification System
 
 - **Real-Time Alerts**: Instant notifications for key events
 - **Email Notifications**: Verification codes and alerts
 - **In-App Notifications**: Real-time dashboard updates
 - **Read/Unread Tracking**: Notification management
 
-### 7. Dark Mode & Theming
+### 6. Dark Mode & Theming
 
 - **Light/Dark Mode**: Complete theme system with smooth transitions
 - **System Preference**: Automatic detection of OS theme preference
@@ -1088,7 +1009,7 @@ Create new admin account with temporary password.
 - **Accessible Toggle**: Available on all pages (dashboard, auth, landing)
 - **CSS Variables**: Comprehensive design token system
 
-### 8. Dashboard Sections by Role
+### 7. Dashboard Sections by Role
 
 The application provides role-based dashboard sections with specific functionality:
 
@@ -1098,7 +1019,7 @@ The application provides role-based dashboard sections with specific functionali
 - **Archived Projects**: Access completed and archived projects
 
 #### ADMIN Dashboard Sections
-- **Contractor Projects**: Kanban board for project management and workflow
+- **Contractor Projects**: Project management and workflow
 - **Account Management**: User administration and account controls
 - **Warehouse Management**: Multi-warehouse inventory tracking and management
 - **System Maintenance**: System health monitoring and maintenance controls
@@ -1243,8 +1164,6 @@ SMTP_PORT=587
 SMTP_USER="your-email@gmail.com"
 SMTP_PASS="your-app-password"
 
-# Geocoding
-OPENROUTESERVICE_API_KEY="your-api-key"
 ```
 
 4. **Set up the database**
@@ -1319,7 +1238,6 @@ SMTP_HOST="smtp.gmail.com"
 SMTP_PORT=587
 SMTP_USER="your-email@gmail.com"
 SMTP_PASS="your-app-password"
-OPENROUTESERVICE_API_KEY="your-api-key"
 ```
 
 ### Database Migration in Production
