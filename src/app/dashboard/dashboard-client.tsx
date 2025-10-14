@@ -13,16 +13,16 @@ import AccountManagementContent from "./(sections)/account-management";
 import SystemMaintenanceContent from "./(sections)/system-maintenance";
 import { RoofCalculatorContent } from "./roof-calculator";
 import WarehouseManagementSection from "./(sections)/warehouse-management";
-import DeliverySettingsPage from "./settings/delivery-settings/page";
 import { ContractorProjectsContent } from "./(sections)/contractor-projects";
+import MyProjectsContent from "./(sections)/my-projects";
 
 type DashboardSection =
   | "roof-calculator"
+  | "my-projects"
   | "contractor-projects"
   | "account-management"
   | "system-maintenance"
   | "warehouse-management"
-  | "delivery-settings"
 
 function DashboardSkeleton() {
   return (
@@ -103,9 +103,10 @@ export default function DashboardClient() {
     switch (section) {
       case "roof-calculator":
         return userRole === UserRole.CLIENT; // Only clients can access roof calculator
+      case "my-projects":
+        return userRole === UserRole.CLIENT; // Only clients can access my projects
       case "contractor-projects":
         return userRole === UserRole.ADMIN; // Only contractors (admins) can access project management
-      case "delivery-settings":
       case "account-management":
       case "system-maintenance":
       case "warehouse-management":
@@ -166,6 +167,8 @@ export default function DashboardClient() {
     switch (activeSection) {
       case "roof-calculator":
         return <RoofCalculatorContent />;
+      case "my-projects":
+        return <MyProjectsContent />;
       case "contractor-projects":
         return <ContractorProjectsContent />;
       case "account-management":
@@ -174,8 +177,6 @@ export default function DashboardClient() {
         return <SystemMaintenanceContent />;
       case "warehouse-management":
         return <WarehouseManagementSection />;
-      case "delivery-settings":
-        return <DeliverySettingsPage />;
       case null: // Default based on user role
       default:
         return userRole === UserRole.CLIENT ? <RoofCalculatorContent /> : <ContractorProjectsContent />;

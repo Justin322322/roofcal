@@ -33,8 +33,6 @@ import { useRoofCalculator } from "./hooks";
 import { materials } from "./components/material-selection";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ProjectList } from "./components/project-list";
 import type { Measurements } from "./types";
 import { RecommendedSelections } from "./components/recommended-selections";
 
@@ -125,15 +123,9 @@ export function RoofCalculatorContent() {
 
   return (
     <div className="px-4 lg:px-6">
-      <Tabs defaultValue="calculator" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="calculator">Calculator</TabsTrigger>
-          <TabsTrigger value="projects">My Projects</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="calculator" className="space-y-6">
-          {/* Action Buttons */}
-          <div className="mb-4 flex justify-end">
+      <div className="space-y-6">
+        {/* Action Buttons */}
+        <div className="mb-4 flex justify-end">
             <div className="flex items-center gap-2">
               <ProjectActions
                 measurements={measurements}
@@ -408,12 +400,7 @@ export function RoofCalculatorContent() {
           </div>
         </div>
       </div>
-        </TabsContent>
-        
-        <TabsContent value="projects">
-          <ProjectList />
-        </TabsContent>
-      </Tabs>
+      </div>
     </div>
   );
 }

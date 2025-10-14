@@ -2,13 +2,10 @@
 
 import * as React from "react";
 import {
-  CameraIcon,
-  FileCodeIcon,
   FileTextIcon,
   UsersIcon,
   CalculatorIcon,
   WrenchIcon,
-  SettingsIcon,
   WarehouseIcon,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -28,82 +25,6 @@ import {
 import RoofCalcLogo from "@/components/RoofCalcLogo";
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: [
-    {
-      title: "Roof Calculator",
-      url: "/dashboard?tab=roof-calculator",
-      icon: CalculatorIcon,
-    },
-    {
-      title: "My Projects",
-      url: "/dashboard?tab=roof-calculator",
-      icon: FileTextIcon,
-    },
-    {
-      title: "Contractor Projects",
-      url: "/dashboard?tab=contractor-projects",
-      icon: UsersIcon,
-    },
-    {
-      title: "Delivery Settings",
-      url: "/dashboard?tab=delivery-settings",
-      icon: SettingsIcon,
-    },
-  ],
-  navClouds: [
-    {
-      title: "Capture",
-      icon: CameraIcon,
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Proposal",
-      icon: FileTextIcon,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: FileCodeIcon,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  navSecondary: [],
   documents: [
     {
       name: "Account Management",
@@ -144,6 +65,12 @@ export function AppSidebar({
         title: "Project Request",
         url: "roof-calculator",
         icon: CalculatorIcon,
+        roles: [UserRole.CLIENT],
+      },
+      {
+        title: "My Projects",
+        url: "my-projects",
+        icon: FileTextIcon,
         roles: [UserRole.CLIENT],
       },
     ];
