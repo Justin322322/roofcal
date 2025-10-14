@@ -235,6 +235,48 @@ export function ProjectList() {
     }
   };
 
+  const handleApproveProject = async (projectId: string) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/approve`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'approve' }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to approve project');
+      }
+
+      toast.success('Project approved successfully');
+      fetchProjects();
+    } catch (error) {
+      console.error('Failed to approve project:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to approve project');
+    }
+  };
+
+  const handleRejectProject = async (projectId: string) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/approve`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reject' }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to reject project');
+      }
+
+      toast.success('Project rejected successfully');
+      fetchProjects();
+    } catch (error) {
+      console.error('Failed to reject project:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to reject project');
+    }
+  };
+
 
   const getStatusBadge = (status: string, proposalStatus: string | null) => {
     if (proposalStatus === "SENT") {
@@ -251,7 +293,7 @@ export function ProjectList() {
       case "DRAFT":
         return <Badge variant="outline" className="bg-slate-100 text-slate-600">Draft</Badge>;
       case "CLIENT_PENDING":
-        return <Badge variant="outline" className="bg-slate-100 text-slate-600">Pending Contractor</Badge>;
+        return <Badge variant="outline" className="bg-orange-100 text-orange-700">Pending Approval</Badge>;
       case "CONTRACTOR_REVIEWING":
         return <Badge variant="outline" className="bg-yellow-100 text-yellow-700">Under Review</Badge>;
       case "ACCEPTED":
@@ -421,7 +463,7 @@ export function ProjectList() {
                   <SelectContent>
                     <SelectItem value="all">All Projects</SelectItem>
                     <SelectItem value="DRAFT">Draft</SelectItem>
-                    <SelectItem value="CLIENT_PENDING">Pending Contractor</SelectItem>
+                    <SelectItem value="CLIENT_PENDING">Pending Approval</SelectItem>
                     <SelectItem value="CONTRACTOR_REVIEWING">Under Review</SelectItem>
                     <SelectItem value="ACCEPTED">Accepted</SelectItem>
                     <SelectItem value="COMPLETED">Completed</SelectItem>
@@ -685,6 +727,24 @@ export function ProjectList() {
                             <SendIcon className="mr-2 h-4 w-4" />
                             Send to Contractor
                           </DropdownMenuItem>
+                        )}
+                        {project.status === "CLIENT_PENDING" && (
+                          <>
+                            <DropdownMenuItem
+                              onClick={() => handleApproveProject(project.id)}
+                              className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                            >
+                              <UserCheckIcon className="mr-2 h-4 w-4" />
+                              Approve Project
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleRejectProject(project.id)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <XCircleIcon className="mr-2 h-4 w-4" />
+                              Reject Project
+                            </DropdownMenuItem>
+                          </>
                         )}
                         {project.status === "ARCHIVED" ? (
                           <DropdownMenuItem

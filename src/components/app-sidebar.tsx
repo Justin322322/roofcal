@@ -37,6 +37,11 @@ const adminTools = {
       icon: UsersIcon,
     },
     {
+      name: "Create Client Project",
+      url: "admin-project-creation",
+      icon: CalculatorIcon,
+    },
+    {
       name: "Pricing Maintenance",
       url: "pricing-maintenance",
       icon: WrenchIcon,

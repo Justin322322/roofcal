@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { UserRole } from "@/types/user-role";
 import { useSessionLoading } from "@/hooks/use-session-loading";
 import AccountManagementContent from "./(sections)/account-management";
+import AdminProjectCreationContent from "./(sections)/admin-project-creation";
 import SystemMaintenanceContent from "./(sections)/pricing-maintenance/pricing-maintenance";
 import { RoofCalculatorContent } from "./roof-calculator";
 import { ContractorProjectsContent } from "./(sections)/contractor-projects-simplified"; // Using simplified version with drawer UI
@@ -27,6 +28,7 @@ type DashboardSection =
   | "archived-projects"
   | "contractor-projects"
   | "account-management"
+  | "admin-project-creation"
   | "pricing-maintenance"
   | "database-management"
   | "system-control"
@@ -120,6 +122,7 @@ export default function DashboardClient() {
       case "contractor-projects":
         return userRole === UserRole.ADMIN; // Only contractors (admins) can access project management
       case "account-management":
+      case "admin-project-creation":
       case "pricing-maintenance":
         return userRole === UserRole.ADMIN;
       case "database-management":
@@ -208,6 +211,8 @@ export default function DashboardClient() {
         return <ContractorProjectsContent />;
       case "account-management":
         return <AccountManagementContent />;
+      case "admin-project-creation":
+        return <AdminProjectCreationContent />;
       case "pricing-maintenance":
         return <SystemMaintenanceContent />;
       case "database-management":

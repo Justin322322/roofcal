@@ -21,7 +21,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ScrollableTable } from "@/components/ui/horizontal-scroll-table";
+import { HorizontalScrollTable } from "@/components/ui/horizontal-scroll-table";
+import { Table } from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -30,7 +31,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Loader2, Database, AlertTriangle, Search } from "lucide-react";
+import { Loader2, Database, AlertTriangle, Search, Edit, Save } from "lucide-react";
 
 interface TableData {
   data: Record<string, unknown>[];
@@ -136,13 +137,19 @@ export default function DatabaseManagementContent() {
     const editableTables = [
       "user",
       "project",
-      "warehouse",
       "pricingconfig",
-      "warehousematerial",
-      "projectmaterial",
       "notification",
     ];
     return editableTables.includes(tableName);
+  };
+
+  const isHidden = (tableName: string) => {
+    const hiddenTables = [
+      "warehouse",
+      "warehousematerial",
+      "projectmaterial",
+    ];
+    return hiddenTables.includes(tableName);
   };
 
   const formatValue = (value: unknown) => {
@@ -193,23 +200,25 @@ export default function DatabaseManagementContent() {
               <SelectValue placeholder="Select a table..." />
             </SelectTrigger>
             <SelectContent>
-              {tables.map((table) => (
-                <SelectItem key={table} value={table}>
-                  <div className="flex items-center gap-2">
-                    <Database className="h-4 w-4" />
-                    <span className="capitalize">{table}</span>
-                    {isEditable(table) ? (
-                      <Badge variant="outline" className="ml-2">
-                        Editable
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary" className="ml-2">
-                        Read-Only
-                      </Badge>
-                    )}
-                  </div>
-                </SelectItem>
-              ))}
+              {tables
+                .filter((table) => !isHidden(table))
+                .map((table) => (
+                  <SelectItem key={table} value={table}>
+                    <div className="flex items-center gap-2">
+                      <Database className="h-4 w-4" />
+                      <span className="capitalize">{table}</span>
+                      {isEditable(table) ? (
+                        <Badge variant="outline" className="ml-2">
+                          Editable
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="ml-2">
+                          Read-Only
+                        </Badge>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </CardContent>
@@ -246,57 +255,74 @@ export default function DatabaseManagementContent() {
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : (
-                <ScrollableTable className="w-full">
-                  <TableHeader>
-                    <TableRow>
-                      {tableColumns.map((col) => (
-                        <TableHead key={col.name} className="capitalize whitespace-nowrap min-w-[150px]">
-                          {col.name}
-                        </TableHead>
-                      ))}
-                      {isEditable(selectedTable) && (
-                        <TableHead className="w-24 whitespace-nowrap sticky right-0 bg-background border-l">Actions</TableHead>
-                      )}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {tableData.data.length === 0 ? (
-                      <TableRow>
-                        <TableCell
-                          colSpan={tableColumns.length + (isEditable(selectedTable) ? 1 : 0)}
-                          className="text-center text-muted-foreground"
-                        >
-                          No records found
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      tableData.data.map((record, idx) => (
-                        <TableRow key={(record.id as string) || idx}>
+                <HorizontalScrollTable className="w-full" showScrollControls={true} scrollStep={300}>
+                  <div className="min-w-full rounded-md border">
+                    <Table className="min-w-full">
+                      <TableHeader>
+                        <TableRow>
                           {tableColumns.map((col) => (
-                            <TableCell key={col.name} className="whitespace-nowrap min-w-[150px]">
-                              <div className="max-w-[300px]">
-                                <div className="truncate" title={formatValue(record[col.name])}>
-                                  {formatValue(record[col.name])}
-                                </div>
+                            <TableHead key={col.name} className="capitalize whitespace-nowrap min-w-[200px] bg-muted/50">
+                              <div className="flex items-center gap-2">
+                                <span>{col.name}</span>
+                                <Badge variant="outline" className="text-xs">
+                                  {col.type}
+                                </Badge>
+                                {col.nullable && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    Nullable
+                                  </Badge>
+                                )}
                               </div>
-                            </TableCell>
+                            </TableHead>
                           ))}
                           {isEditable(selectedTable) && (
-                            <TableCell className="whitespace-nowrap sticky right-0 bg-background border-l">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleEdit(record)}
-                              >
-                                Edit
-                              </Button>
-                            </TableCell>
+                            <TableHead className="w-32 whitespace-nowrap sticky right-0 bg-muted/50 border-l">
+                              Actions
+                            </TableHead>
                           )}
                         </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </ScrollableTable>
+                      </TableHeader>
+                      <TableBody>
+                        {tableData.data.length === 0 ? (
+                          <TableRow>
+                            <TableCell
+                              colSpan={tableColumns.length + (isEditable(selectedTable) ? 1 : 0)}
+                              className="text-center text-muted-foreground py-8"
+                            >
+                              No records found
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          tableData.data.map((record, idx) => (
+                            <TableRow key={(record.id as string) || idx} className="hover:bg-muted/30 transition-colors">
+                              {tableColumns.map((col) => (
+                                <TableCell key={col.name} className="whitespace-nowrap min-w-[200px]">
+                                  <div className="max-w-[400px]">
+                                    <div className="truncate font-mono text-sm" title={formatValue(record[col.name])}>
+                                      {formatValue(record[col.name])}
+                                    </div>
+                                  </div>
+                                </TableCell>
+                              ))}
+                              {isEditable(selectedTable) && (
+                                <TableCell className="whitespace-nowrap sticky right-0 bg-background border-l">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleEdit(record)}
+                                    className="hover:bg-primary hover:text-primary-foreground transition-colors"
+                                  >
+                                    Edit
+                                  </Button>
+                                </TableCell>
+                              )}
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </HorizontalScrollTable>
               )}
             </CardContent>
           </Card>
@@ -305,39 +331,81 @@ export default function DatabaseManagementContent() {
 
       {/* Edit Dialog */}
       <Dialog open={editDialog} onOpenChange={setEditDialog}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Record</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5" />
+              Edit Record
+              {editRecord?.id ? (
+                <Badge variant="outline" className="ml-2">
+                  ID: {String(editRecord.id)}
+                </Badge>
+              ) : null}
+            </DialogTitle>
             <DialogDescription>
-              Make changes to the selected record. Click save when you&apos;re done.
+              Make changes to the selected record. Required fields are marked with an asterisk (*).
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-6 py-4">
             {editRecord &&
               Object.entries(editableFields)
                 .filter(([key]) => key !== "id" && key !== "created_at" && key !== "updated_at")
-                .map(([key, value]) => (
-                  <div key={key} className="space-y-2">
-                    <Label htmlFor={key} className="capitalize">
-                      {key}
-                    </Label>
-                    <Input
-                      id={key}
-                      value={String(value || "")}
-                      onChange={(e) =>
-                        setEditableFields({ ...editableFields, [key]: e.target.value })
-                      }
-                    />
-                  </div>
-                ))}
+                .map(([key, value]) => {
+                  const column = tableColumns.find(col => col.name === key);
+                  const isRequired = !column?.nullable;
+                  return (
+                    <div key={key} className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor={key} className="text-sm font-medium capitalize">
+                          {key}
+                          {isRequired && <span className="text-red-500 ml-1">*</span>}
+                        </Label>
+                        <div className="flex gap-1">
+                          {column && (
+                            <Badge variant="outline" className="text-xs">
+                              {column.type}
+                            </Badge>
+                          )}
+                          {!isRequired && (
+                            <Badge variant="secondary" className="text-xs">
+                              Optional
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <Input
+                        id={key}
+                        value={String(value || "")}
+                        onChange={(e) =>
+                          setEditableFields({ ...editableFields, [key]: e.target.value })
+                        }
+                        placeholder={`Enter ${key}${isRequired ? ' (required)' : ' (optional)'}`}
+                        className="w-full font-mono text-sm"
+                      />
+                    </div>
+                  );
+                })}
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setEditDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Changes
+            <Button 
+              onClick={handleSave} 
+              disabled={loading}
+              className="min-w-[120px]"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

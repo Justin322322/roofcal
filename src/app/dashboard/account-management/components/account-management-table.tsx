@@ -25,6 +25,7 @@ import {
   MailIcon,
   PhoneIcon,
   EyeIcon,
+  UserCheckIcon,
 } from "lucide-react";
 import type { Account } from "../types";
 import { getStatusBadgeVariant, formatCurrency } from "../utils";
@@ -37,6 +38,7 @@ interface AccountManagementTableProps {
   onDelete: (accountId: string) => Promise<void>;
   onView: (accountId: string) => void;
   onCallPhone: (phone: string) => void;
+  onEnable?: (accountId: string) => Promise<void>;
 }
 
 export function AccountManagementTable({
@@ -46,6 +48,7 @@ export function AccountManagementTable({
   onDelete,
   onView,
   onCallPhone,
+  onEnable,
 }: AccountManagementTableProps) {
   const [selectedDeleteAccountId, setSelectedDeleteAccountId] = useState<
     string | null
@@ -205,15 +208,32 @@ export function AccountManagementTable({
                                 Call Client
                               </DropdownMenuItem>
                             )}
-                            <DropdownMenuItem
-                              onSelect={() =>
-                                setSelectedDeleteAccountId(account.id)
-                              }
-                              className="text-destructive"
-                            >
-                              <BanIcon className="h-4 w-4 mr-2" />
-                              Restrict Account
-                            </DropdownMenuItem>
+                            {account.status === "Disabled" && onEnable && (
+                              <DropdownMenuItem
+                                onSelect={async () => {
+                                  try {
+                                    await onEnable(account.id);
+                                  } catch (error) {
+                                    console.error("Failed to enable account:", error);
+                                  }
+                                }}
+                                className="text-green-600"
+                              >
+                                <UserCheckIcon className="h-4 w-4 mr-2" />
+                                Enable Account
+                              </DropdownMenuItem>
+                            )}
+                            {account.status === "Active" && (
+                              <DropdownMenuItem
+                                onSelect={() =>
+                                  setSelectedDeleteAccountId(account.id)
+                                }
+                                className="text-destructive"
+                              >
+                                <BanIcon className="h-4 w-4 mr-2" />
+                                Restrict Account
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>

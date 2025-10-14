@@ -296,7 +296,7 @@ export async function saveProjectForCustomer(
     const projectData: CreateProjectInput = {
       projectName: data.projectName,
       clientName: data.clientName || customer.firstName + " " + customer.lastName,
-      status: "DRAFT",
+      status: "CLIENT_PENDING", // Admin-created projects need client approval
 
       // Delivery and Location
       address: data.address,
@@ -373,17 +373,17 @@ export async function saveProjectForCustomer(
       },
     });
 
-    // Create notification for customer about admin-created project
+    // Create notification for customer about admin-created project requiring approval
     await prisma.notification.create({
       data: {
         id: crypto.randomUUID(),
         userId: customerId,
         type: "PROJECT_CREATED_BY_ADMIN",
-        title: "New Project Created",
-        message: `${session.user.name} created a roofing project for you`,
+        title: "Project Approval Required",
+        message: `${session.user.name} created a roofing project for you. Please review and approve it to proceed.`,
         projectId: project.id,
         projectName: project.projectName,
-        actionUrl: `/dashboard?tab=my-projects`,
+        actionUrl: `/dashboard?tab=my-projects&projectId=${project.id}`,
         read: false,
         created_at: new Date(),
       },

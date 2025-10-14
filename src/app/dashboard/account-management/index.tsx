@@ -216,6 +216,7 @@ export function AccountManagementContent() {
           onDelete={handleDeleteAccount}
           onView={handleViewAccount}
           onCallPhone={handleCallPhone}
+          onEnable={handleEnableAccount}
         />
       </div>
 
