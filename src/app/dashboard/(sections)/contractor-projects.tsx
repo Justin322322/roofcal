@@ -1,5 +1,29 @@
 "use client";
 
+/**
+ * ORIGINAL CONTRACTOR PROJECTS COMPONENT - NOT CURRENTLY IN USE
+ * 
+ * This component contains the full-featured contractor projects management
+ * with complex warehouse integration, material consumption tracking, and stock management.
+ * 
+ * CURRENT STATUS: DISABLED - Using contractor-projects-simplified.tsx instead
+ * 
+ * Features included in this component:
+ * - Warehouse material integration
+ * - Material consumption tracking
+ * - Stock availability checking
+ * - Insufficient materials handling
+ * - Complex material reservation system
+ * - ProjectMaterial and WarehouseMaterial relationships
+ * 
+ * To re-enable this component:
+ * 1. Update dashboard-client.tsx to import from this file instead of contractor-projects-simplified.tsx
+ * 2. Ensure all warehouse-related API endpoints are working
+ * 3. Test material consumption and stock management functionality
+ * 
+ * Last updated: [Current Date] - Switched to simplified version without warehouse complexity
+ */
+
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -430,9 +454,9 @@ export function ContractorProjectsContent() {
     return (
       <div className="px-4 lg:px-6">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold">Contractor Projects</h2>
+          <h2 className="text-2xl font-bold">Assigned Projects</h2>
           <p className="text-muted-foreground">
-            Manage and track your assigned projects
+            View and manage projects assigned to you
           </p>
         </div>
         
@@ -449,9 +473,9 @@ export function ContractorProjectsContent() {
   return (
     <div className="px-4 lg:px-6">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold">Contractor Projects</h2>
+        <h2 className="text-2xl font-bold">Assigned Projects</h2>
         <p className="text-muted-foreground">
-          Manage and track your assigned projects
+          View and manage projects assigned to you
         </p>
       </div>
 

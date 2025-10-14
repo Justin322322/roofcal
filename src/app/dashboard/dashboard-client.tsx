@@ -13,8 +13,7 @@ import { useSessionLoading } from "@/hooks/use-session-loading";
 import AccountManagementContent from "./(sections)/account-management";
 import SystemMaintenanceContent from "./(sections)/pricing-maintenance/pricing-maintenance";
 import { RoofCalculatorContent } from "./roof-calculator";
-import WarehouseManagementSection from "./(sections)/warehouse-management";
-import { ContractorProjectsContent } from "./(sections)/contractor-projects";
+import { ContractorProjectsContent } from "./(sections)/contractor-projects-simplified"; // Using simplified version without warehouse complexity
 import MyProjectsContent from "./(sections)/my-projects";
 import ArchivedProjectsContent from "./(sections)/archived-projects";
 import DatabaseManagementContent from "./(sections)/database-management";
@@ -27,7 +26,6 @@ type DashboardSection =
   | "contractor-projects"
   | "account-management"
   | "pricing-maintenance"
-  | "warehouse-management"
   | "database-management"
   | "system-control"
   | "admin-management"
@@ -119,7 +117,6 @@ export default function DashboardClient() {
         return userRole === UserRole.ADMIN; // Only contractors (admins) can access project management
       case "account-management":
       case "pricing-maintenance":
-      case "warehouse-management":
         return userRole === UserRole.ADMIN;
       case "database-management":
       case "system-control":
@@ -207,8 +204,6 @@ export default function DashboardClient() {
         return <AccountManagementContent />;
       case "pricing-maintenance":
         return <SystemMaintenanceContent />;
-      case "warehouse-management":
-        return <WarehouseManagementSection />;
       case "database-management":
         return <DatabaseManagementContent />;
       case "system-control":

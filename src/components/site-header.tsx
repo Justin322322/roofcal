@@ -14,9 +14,11 @@ export function SiteHeader({ currentSection }: SiteHeaderProps) {
       case "my-projects":
         return "My Projects";
       case "contractor-projects":
-        return "Project Management";
+        return "Assigned Projects";
       case "account-management":
         return "Account Management";
+      case "pricing-maintenance":
+        return "Pricing Maintenance";
       case "system-maintenance":
         return "System Maintenance";
       case "warehouse-management":

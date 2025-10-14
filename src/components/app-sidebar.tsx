@@ -6,7 +6,6 @@ import {
   UsersIcon,
   CalculatorIcon,
   WrenchIcon,
-  WarehouseIcon,
   DatabaseIcon,
   SettingsIcon,
   ArchiveIcon,
@@ -40,11 +39,6 @@ const adminTools = {
       name: "Pricing Maintenance",
       url: "pricing-maintenance",
       icon: WrenchIcon,
-    },
-    {
-      name: "Warehouse Management",
-      url: "warehouse-management",
-      icon: WarehouseIcon,
     },
   ],
 };
@@ -110,7 +104,7 @@ export function AppSidebar({
     // Admin (Contractor) navigation items
     const adminNavItems = [
       {
-        title: "Contractor Projects",
+        title: "Assigned Projects",
         url: "contractor-projects",
         icon: UsersIcon,
         roles: [UserRole.ADMIN],

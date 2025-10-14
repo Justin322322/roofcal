@@ -1,0 +1,934 @@
+"use client";
+
+/**
+ * SIMPLIFIED CONTRACTOR PROJECTS COMPONENT - CURRENTLY IN USE
+ * 
+ * This is a simplified version of the contractor projects management
+ * without warehouse integration or complex material consumption tracking.
+ * 
+ * CURRENT STATUS: ACTIVE - This is the component currently being used
+ * 
+ * Features included in this simplified version:
+ * - Basic project listing and filtering
+ * - Project viewing with detailed information
+ * - Project actions (accept, decline, complete)
+ * - Client information display
+ * - Location mapping
+ * - Price breakdown display
+ * - Project specifications
+ * 
+ * Removed features (compared to original):
+ * - Warehouse material integration
+ * - Material consumption tracking
+ * - Stock availability checking
+ * - Insufficient materials handling
+ * - Complex material reservation system
+ * 
+ * Last updated: [Current Date] - Simplified version without warehouse complexity
+ */
+
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
+import {
+  Loader2Icon,
+  FileTextIcon,
+  MapPinIcon,
+  CheckIcon,
+  XIcon,
+  CheckCircleIcon,
+  FilterIcon,
+  EyeIcon,
+  DollarSignIcon,
+  RulerIcon,
+} from "lucide-react";
+
+// Dynamically import Leaflet components to avoid SSR issues
+const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), {
+  ssr: false,
+});
+
+const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), {
+  ssr: false,
+});
+
+const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), {
+  ssr: false,
+});
+
+const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
+  ssr: false,
+});
+
+// Fix for default markers in React Leaflet - only on client side
+const setupLeafletIcons = async () => {
+  if (typeof window !== "undefined") {
+    const L = await import("leaflet");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (L.Icon.Default.prototype as any)._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+      iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+      shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+    });
+  }
+};
+
+interface Project {
+  id: string;
+  projectName: string;
+  status: string;
+  proposalStatus: string | null;
+  totalCost: number;
+  area: number;
+  material: string;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zipCode: string | null;
+  createdAt: Date;
+  client?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  } | null;
+  // Additional fields for detailed view
+  length?: number;
+  width?: number;
+  pitch?: number;
+  materialCost?: number;
+  gutterCost?: number;
+  ridgeCost?: number;
+  screwsCost?: number;
+  insulationCost?: number;
+  ventilationCost?: number;
+  totalMaterialsCost?: number;
+  laborCost?: number;
+  removalCost?: number;
+  deliveryCost?: number | null;
+  deliveryDistance?: number | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  notes?: string | null;
+  gutterPieces?: number;
+  ridgeLength?: number;
+  ventilationPieces?: number;
+  // Material detail fields for print preview
+  materialThickness?: string;
+  ridgeType?: string;
+  gutterSize?: string;
+  insulationThickness?: string;
+  gutterMaterial?: string;
+  screwType?: string;
+  insulationType?: string;
+}
+
+// Simple Location Map Component
+function LocationMap({ latitude, longitude, address }: { latitude: number | null; longitude: number | null; address?: string | null }) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    setupLeafletIcons();
+  }, []);
+
+  if (!isClient || !latitude || !longitude) {
+    return (
+      <div className="h-48 bg-muted rounded-lg flex items-center justify-center">
+        <div className="text-center">
+          <MapPinIcon className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">
+            {address || "Location not available"}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-48 rounded-lg overflow-hidden">
+      <MapContainer
+        center={[latitude, longitude]}
+        zoom={13}
+        style={{ height: "100%", width: "100%" }}
+      >
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        <Marker position={[latitude, longitude]}>
+          <Popup>
+            <div className="text-center">
+              <p className="font-medium">{address}</p>
+            </div>
+          </Popup>
+        </Marker>
+      </MapContainer>
+    </div>
+  );
+}
+
+export function ContractorProjectsContent() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [minCost, setMinCost] = useState<string>("");
+  const [maxCost, setMaxCost] = useState<string>("");
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
+  
+  // Loading states for actions
+  const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
+  const [declineDialogOpen, setDeclineDialogOpen] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [declineReason, setDeclineReason] = useState("");
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/contractor/projects');
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.projects) {
+          setProjects(result.projects);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch projects:", error);
+      toast.error("Failed to load projects");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleViewProject = (project: Project) => {
+    setSelectedProject(project);
+    setViewDialogOpen(true);
+  };
+
+  const handleDeclineProject = async (projectId: string) => {
+    setSelectedProjectId(projectId);
+    setDeclineDialogOpen(true);
+  };
+
+  const confirmDeclineProject = async () => {
+    if (!selectedProjectId) return;
+
+    setLoadingProjectId(selectedProjectId);
+    try {
+      const response = await fetch(`/api/projects/${selectedProjectId}/decline`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: declineReason }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to decline project");
+      }
+
+      const result = await response.json();
+      toast.success(result.message || "Project declined", {
+        description: "The project has been marked as declined",
+      });
+      
+      setDeclineDialogOpen(false);
+      setSelectedProjectId(null);
+      setDeclineReason("");
+      await fetchProjects();
+    } catch (error) {
+      console.error("Failed to decline project:", error);
+      toast.error("Failed to decline project", {
+        description: error instanceof Error ? error.message : "Please try again",
+      });
+    } finally {
+      setLoadingProjectId(null);
+    }
+  };
+
+  const handleFinishProject = async (projectId: string) => {
+    setLoadingProjectId(projectId);
+    try {
+      const response = await fetch(`/api/projects/${projectId}/finish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to finish project");
+      }
+
+      const result = await response.json();
+      toast.success(result.message || "Project completed", {
+        description: "The project has been marked as completed",
+      });
+      await fetchProjects();
+    } catch (error) {
+      console.error("Failed to finish project:", error);
+      toast.error("Failed to finish project", {
+        description: error instanceof Error ? error.message : "Please try again",
+      });
+    } finally {
+      setLoadingProjectId(null);
+    }
+  };
+
+  const handleAcceptProject = async (projectId: string) => {
+    setLoadingProjectId(projectId);
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "ACCEPTED" }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to accept project");
+      }
+
+      const result = await response.json();
+      toast.success(result.message || "Project accepted", {
+        description: "The project has been accepted and is ready to work on",
+      });
+      await fetchProjects();
+    } catch (error) {
+      console.error("Failed to accept project:", error);
+      toast.error("Failed to accept project", {
+        description: error instanceof Error ? error.message : "Please try again",
+      });
+    } finally {
+      setLoadingProjectId(null);
+    }
+  };
+
+  const getStatusBadge = (status: string, proposalStatus: string | null) => {
+    if (proposalStatus === "SENT") {
+      return <Badge variant="outline" className="bg-blue-100 text-blue-700">Proposal Sent</Badge>;
+    }
+    if (proposalStatus === "ACCEPTED") {
+      return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
+    }
+    if (proposalStatus === "REJECTED") {
+      return <Badge variant="outline" className="bg-red-100 text-red-700">Rejected</Badge>;
+    }
+    
+    switch (status) {
+      case "CONTRACTOR_REVIEWING":
+        return <Badge variant="outline" className="bg-yellow-100 text-yellow-700">Action Required</Badge>;
+      case "PROPOSAL_SENT":
+        return <Badge variant="outline" className="bg-blue-100 text-blue-700">Proposal Sent</Badge>;
+      case "ACCEPTED":
+        return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
+      case "COMPLETED":
+        return <Badge variant="outline" className="bg-green-100 text-green-700">Completed</Badge>;
+      case "REJECTED":
+        return <Badge variant="outline" className="bg-red-100 text-red-700">Declined</Badge>;
+      default:
+        return <Badge variant="outline" className="bg-slate-100 text-slate-600">{status}</Badge>;
+    }
+  };
+
+  const filteredProjects = projects.filter(project => {
+    // Search filter
+    const matchesSearch = project.projectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         project.client?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         project.client?.lastName?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (!matchesSearch) return false;
+
+    // Status filter
+    if (statusFilter !== "all") {
+      const projectStatus = project.proposalStatus || project.status;
+      if (statusFilter === "reviewing" && projectStatus !== "CONTRACTOR_REVIEWING") return false;
+      if (statusFilter === "accepted" && projectStatus !== "ACCEPTED" && project.proposalStatus !== "ACCEPTED") return false;
+      if (statusFilter === "completed" && projectStatus !== "COMPLETED") return false;
+      if (statusFilter === "rejected" && projectStatus !== "REJECTED" && project.proposalStatus !== "REJECTED") return false;
+    }
+
+    // Cost filter
+    if (minCost && project.totalCost < parseFloat(minCost)) return false;
+    if (maxCost && project.totalCost > parseFloat(maxCost)) return false;
+
+    // Date filter
+    if (dateFrom) {
+      const projectDate = new Date(project.createdAt);
+      const fromDate = new Date(dateFrom);
+      if (projectDate < fromDate) return false;
+    }
+    if (dateTo) {
+      const projectDate = new Date(project.createdAt);
+      const toDate = new Date(dateTo);
+      toDate.setHours(23, 59, 59, 999); // End of day
+      if (projectDate > toDate) return false;
+    }
+
+    return true;
+  });
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency: 'PHP',
+    }).format(amount);
+  };
+
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }).format(new Date(date));
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-4 md:gap-6">
+        <div className="flex flex-col gap-2 px-4 lg:px-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+              <FileTextIcon className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">
+                Manage and track your roofing projects
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="px-4 lg:px-6">
+          <div className="space-y-4">
+            <div className="h-8 bg-muted rounded animate-pulse" />
+            <div className="h-64 bg-muted rounded animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4 md:gap-6">
+      {/* Header */}
+      <div className="flex flex-col gap-2 px-4 lg:px-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <FileTextIcon className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Assigned Projects</h1>
+            <p className="text-sm text-muted-foreground">
+              Manage and track your roofing projects
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="px-4 lg:px-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FilterIcon className="h-5 w-5" />
+              Filters
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="search">Search</Label>
+                <Input
+                  id="search"
+                  placeholder="Search projects..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="reviewing">Action Required</SelectItem>
+                    <SelectItem value="accepted">Accepted</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="rejected">Declined</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="minCost">Min Cost</Label>
+                <Input
+                  id="minCost"
+                  type="number"
+                  placeholder="₱0"
+                  value={minCost}
+                  onChange={(e) => setMinCost(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="maxCost">Max Cost</Label>
+                <Input
+                  id="maxCost"
+                  type="number"
+                  placeholder="₱0"
+                  value={maxCost}
+                  onChange={(e) => setMaxCost(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="dateFrom">From Date</Label>
+                <Input
+                  id="dateFrom"
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dateTo">To Date</Label>
+                <Input
+                  id="dateTo"
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Projects Table */}
+      <div className="px-4 lg:px-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Projects ({filteredProjects.length})</CardTitle>
+            <CardDescription>
+              Manage your roofing projects and track their progress
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {filteredProjects.length === 0 ? (
+              <div className="text-center py-8">
+                <FileTextIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No projects found</h3>
+                <p className="text-muted-foreground">
+                  {searchQuery || statusFilter !== "all" || minCost || maxCost || dateFrom || dateTo
+                    ? "Try adjusting your filters to see more projects."
+                    : "You don't have any projects yet."}
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Project</TableHead>
+                      <TableHead>Client</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Cost</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredProjects.map((project) => (
+                      <TableRow key={project.id}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{project.projectName}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {project.material} • {project.area} sqm
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {project.client ? (
+                            <div>
+                              <div className="font-medium">
+                                {project.client.firstName} {project.client.lastName}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {project.client.email}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">No client info</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {getStatusBadge(project.status, project.proposalStatus)}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {formatCurrency(project.totalCost)}
+                        </TableCell>
+                        <TableCell>
+                          {formatDate(project.createdAt)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewProject(project)}
+                            >
+                              <EyeIcon className="h-4 w-4" />
+                            </Button>
+                            {(project.status === "CONTRACTOR_REVIEWING" || project.proposalStatus === "SENT") && (
+                              <>
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  onClick={() => handleAcceptProject(project.id)}
+                                  disabled={loadingProjectId === project.id}
+                                >
+                                  {loadingProjectId === project.id ? (
+                                    <Loader2Icon className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <CheckIcon className="h-4 w-4" />
+                                  )}
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => handleDeclineProject(project.id)}
+                                  disabled={loadingProjectId === project.id}
+                                >
+                                  <XIcon className="h-4 w-4" />
+                                </Button>
+                              </>
+                            )}
+                            {project.status === "ACCEPTED" && (
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => handleFinishProject(project.id)}
+                                disabled={loadingProjectId === project.id}
+                              >
+                                {loadingProjectId === project.id ? (
+                                  <Loader2Icon className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <CheckCircleIcon className="h-4 w-4" />
+                                )}
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Project Details Dialog */}
+      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileTextIcon className="h-5 w-5" />
+              Project Details
+            </DialogTitle>
+            <DialogDescription>
+              View detailed information about this roofing project
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedProject && (
+            <div className="space-y-6">
+              {/* Project Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Project Information</h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Project Name:</span>
+                        <span className="font-medium">{selectedProject.projectName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Status:</span>
+                        {getStatusBadge(selectedProject.status, selectedProject.proposalStatus)}
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Material:</span>
+                        <span className="font-medium">{selectedProject.material}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Area:</span>
+                        <span className="font-medium">{selectedProject.area} sqm</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Client Information */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Client Information</h3>
+                    {selectedProject.client ? (
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Name:</span>
+                          <span className="font-medium">
+                            {selectedProject.client.firstName} {selectedProject.client.lastName}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Email:</span>
+                          <span className="font-medium">{selectedProject.client.email}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground">No client information available</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Location */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Location</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-start gap-2">
+                        <MapPinIcon className="h-4 w-4 text-muted-foreground mt-0.5" />
+                        <div>
+                          <p className="font-medium">
+                            {selectedProject.address || "Address not provided"}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {[selectedProject.city, selectedProject.state, selectedProject.zipCode]
+                              .filter(Boolean)
+                              .join(", ") || "Location details not available"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Map */}
+                  <LocationMap
+                    latitude={selectedProject.latitude ?? null}
+                    longitude={selectedProject.longitude ?? null}
+                    address={selectedProject.address}
+                  />
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Price Breakdown */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <DollarSignIcon className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-semibold">Price Breakdown</h3>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-muted-foreground">Material Costs</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Main Material:</span>
+                        <span className="font-medium">{formatCurrency(selectedProject.materialCost || 0)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Gutters:</span>
+                        <span className="font-medium">{formatCurrency(selectedProject.gutterCost || 0)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Ridge:</span>
+                        <span className="font-medium">{formatCurrency(selectedProject.ridgeCost || 0)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Screws:</span>
+                        <span className="font-medium">{formatCurrency(selectedProject.screwsCost || 0)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Insulation:</span>
+                        <span className="font-medium">{formatCurrency(selectedProject.insulationCost || 0)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Ventilation:</span>
+                        <span className="font-medium">{formatCurrency(selectedProject.ventilationCost || 0)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-muted-foreground">Service Costs</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Labor:</span>
+                        <span className="font-medium">{formatCurrency(selectedProject.laborCost || 0)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Removal:</span>
+                        <span className="font-medium">{formatCurrency(selectedProject.removalCost || 0)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Delivery:</span>
+                        <span className="font-medium">
+                          {selectedProject.deliveryCost ? formatCurrency(selectedProject.deliveryCost) : "Included"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="flex justify-between items-center text-lg font-semibold">
+                  <span>Total Cost:</span>
+                  <span className="text-primary">{formatCurrency(selectedProject.totalCost)}</span>
+                </div>
+              </div>
+
+              {/* Project Details */}
+              {(selectedProject.length || selectedProject.width || selectedProject.pitch) && (
+                <>
+                  <Separator />
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <RulerIcon className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold">Project Specifications</h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {selectedProject.length && (
+                        <div className="text-center p-4 border rounded-lg">
+                          <p className="text-sm text-muted-foreground">Length</p>
+                          <p className="text-lg font-semibold">{selectedProject.length}m</p>
+                        </div>
+                      )}
+                      {selectedProject.width && (
+                        <div className="text-center p-4 border rounded-lg">
+                          <p className="text-sm text-muted-foreground">Width</p>
+                          <p className="text-lg font-semibold">{selectedProject.width}m</p>
+                        </div>
+                      )}
+                      {selectedProject.pitch && (
+                        <div className="text-center p-4 border rounded-lg">
+                          <p className="text-sm text-muted-foreground">Pitch</p>
+                          <p className="text-lg font-semibold">{selectedProject.pitch}°</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Notes */}
+              {selectedProject.notes && (
+                <>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-semibold">Notes</h3>
+                    <p className="text-muted-foreground">{selectedProject.notes}</p>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Decline Project Dialog */}
+      <Dialog open={declineDialogOpen} onOpenChange={setDeclineDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Decline Project</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for declining this project. This will be shared with the client.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="declineReason">Reason for declining</Label>
+              <Textarea
+                id="declineReason"
+                placeholder="Enter your reason for declining this project..."
+                value={declineReason}
+                onChange={(e) => setDeclineReason(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeclineDialogOpen(false);
+                setSelectedProjectId(null);
+                setDeclineReason("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDeclineProject}
+              disabled={!declineReason.trim() || loadingProjectId === selectedProjectId}
+            >
+              {loadingProjectId === selectedProjectId ? (
+                <>
+                  <Loader2Icon className="h-4 w-4 animate-spin mr-2" />
+                  Declining...
+                </>
+              ) : (
+                <>
+                  <XIcon className="h-4 w-4 mr-2" />
+                  Decline Project
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
