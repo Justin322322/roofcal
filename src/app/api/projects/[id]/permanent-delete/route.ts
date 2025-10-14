@@ -27,9 +27,7 @@ export async function DELETE(
       where: {
         id,
         userId: session.user.id,
-        deletedAt: {
-          not: null, // Only allow permanent deletion of archived projects
-        },
+        status: 'ARCHIVED', // Only allow permanent deletion of archived projects
       },
     });
 

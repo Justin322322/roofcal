@@ -17,16 +17,14 @@ export async function GET() {
       );
     }
 
-    // Get archived projects (projects with deletedAt set)
+    // Get archived projects (projects with ARCHIVED status)
     const projects = await prisma.project.findMany({
       where: {
         userId: session.user.id,
-        deletedAt: {
-          not: null,
-        },
+        status: 'ARCHIVED',
       },
       orderBy: {
-        deletedAt: 'desc',
+        updated_at: 'desc',
       },
       include: {
         user_project_contractorIdTouser: {

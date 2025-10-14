@@ -61,7 +61,6 @@ interface Project {
   materialCost?: number;
   laborCost?: number;
   deliveryCost?: number;
-  deletedAt?: Date | null;
 }
 
 type SortField = "projectName" | "material" | "area" | "totalCost" | "createdAt" | "status";
@@ -103,7 +102,6 @@ export default function ArchivedProjectsContent() {
             totalCost: Number(p.totalCost),
             area: Number(p.area),
             createdAt: p.createdAt ? new Date(p.createdAt) : new Date(),
-            deletedAt: p.deletedAt ? new Date(p.deletedAt) : null,
           }));
           setProjects(formattedProjects);
           
