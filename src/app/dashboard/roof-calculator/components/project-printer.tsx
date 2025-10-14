@@ -41,6 +41,14 @@ interface Project {
   width?: number;
   pitch?: number;
   deliveryDistance?: number | null;
+  // Material details for print preview
+  screwType?: string;
+  ridgeType?: string;
+  gutterSize?: string;
+  gutterMaterial?: string;
+  insulationType?: string;
+  ventilationType?: string;
+  materialThickness?: string;
   contractor?: {
     id: string;
     firstName: string;
@@ -127,10 +135,7 @@ export function ProjectPrinter({ project, isOpen, onClose }: ProjectPrinterProps
             <div className="kv"><span className="label">Material:</span> {project.material.replace(/-/g, ' ')}</div>
             <div className="kv"><span className="label">Roof Area:</span> {formatArea(project.area)}</div>
             {project.address && (
-              <>
-                <div className="kv"><span className="label">Address:</span> {project.address}</div>
-                <div className="kv"><span className="label">City/State:</span> {project.city}, {project.state}</div>
-              </>
+              <div className="kv"><span className="label">Address:</span> {project.address}</div>
             )}
             <div className="kv"><span className="label">Created:</span> {project.createdAt instanceof Date && !isNaN(project.createdAt.getTime())
               ? project.createdAt.toLocaleDateString()
@@ -142,19 +147,11 @@ export function ProjectPrinter({ project, isOpen, onClose }: ProjectPrinterProps
             )}
           </div>
 
-          {(project.address || project.city || project.state || (project.deliveryDistance !== null && project.deliveryDistance !== undefined)) && (
+          {project.deliveryDistance !== null && project.deliveryDistance !== undefined && (
             <>
-              <h2>Location</h2>
+              <h2>Delivery Information</h2>
               <div className="section">
-                {project.address && (
-                  <div className="kv"><span className="label">Address:</span> {project.address}</div>
-                )}
-                {(project.city || project.state) && (
-                  <div className="kv"><span className="label">City/State:</span> {project.city}, {project.state}</div>
-                )}
-                {project.deliveryDistance !== null && project.deliveryDistance !== undefined && (
-                  <div className="kv"><span className="label">Delivery Distance:</span> {project.deliveryDistance.toFixed(2)} miles</div>
-                )}
+                <div className="kv"><span className="label">Delivery Distance:</span> {project.deliveryDistance.toFixed(2)} miles</div>
               </div>
             </>
           )}
@@ -179,22 +176,53 @@ export function ProjectPrinter({ project, isOpen, onClose }: ProjectPrinterProps
           <h2>Cost Breakdown</h2>
           <div className="section">
             {project.materialCost !== undefined && (
-              <div className="kv"><span className="label">Roofing Material:</span> ₱{project.materialCost.toLocaleString()}</div>
+              <div className="kv">
+                <span className="label">
+                  Roofing Material ({project.material.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  {project.materialThickness && ` - ${project.materialThickness}`}):
+                </span> ₱{project.materialCost.toLocaleString()}
+              </div>
             )}
             {project.gutterCost !== undefined && project.gutterCost > 0 && (
-              <div className="kv"><span className="label">Gutter System:</span> ₱{project.gutterCost.toLocaleString()}</div>
+              <div className="kv">
+                <span className="label">
+                  Gutter System
+                  {project.gutterSize && ` (${project.gutterSize})`}
+                  {project.gutterMaterial && ` - ${project.gutterMaterial.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`}:
+                </span> ₱{project.gutterCost.toLocaleString()}
+              </div>
             )}
             {project.ridgeCost !== undefined && project.ridgeCost > 0 && (
-              <div className="kv"><span className="label">Ridge Cap:</span> ₱{project.ridgeCost.toLocaleString()}</div>
+              <div className="kv">
+                <span className="label">
+                  Ridge Cap
+                  {project.ridgeType && ` (${project.ridgeType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())})`}:
+                </span> ₱{project.ridgeCost.toLocaleString()}
+              </div>
             )}
             {project.screwsCost !== undefined && project.screwsCost > 0 && (
-              <div className="kv"><span className="label">Screws & Fasteners:</span> ₱{project.screwsCost.toLocaleString()}</div>
+              <div className="kv">
+                <span className="label">
+                  Screws & Fasteners
+                  {project.screwType && ` (${project.screwType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())})`}:
+                </span> ₱{project.screwsCost.toLocaleString()}
+              </div>
             )}
             {project.insulationCost !== undefined && project.insulationCost > 0 && (
-              <div className="kv"><span className="label">Insulation:</span> ₱{project.insulationCost.toLocaleString()}</div>
+              <div className="kv">
+                <span className="label">
+                  Insulation
+                  {project.insulationType && ` (${project.insulationType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())})`}:
+                </span> ₱{project.insulationCost.toLocaleString()}
+              </div>
             )}
             {project.ventilationCost !== undefined && project.ventilationCost > 0 && (
-              <div className="kv"><span className="label">Ventilation:</span> ₱{project.ventilationCost.toLocaleString()}</div>
+              <div className="kv">
+                <span className="label">
+                  Ventilation
+                  {project.ventilationType && ` (${project.ventilationType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())})`}:
+                </span> ₱{project.ventilationCost.toLocaleString()}
+              </div>
             )}
             {project.totalMaterialsCost !== undefined && project.totalMaterialsCost > 0 && (
               <div className="kv"><span className="label">Subtotal - Materials:</span> ₱{project.totalMaterialsCost.toLocaleString()}</div>

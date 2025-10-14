@@ -125,9 +125,8 @@ export default function DashboardClient() {
       case "system-control":
         return userRole === UserRole.DEVELOPER; // Only developers can access dev tools
       case "admin-management":
-        // Dev-only convenience: allow developers in development env
-        if (process.env.NODE_ENV === "development") return userRole === UserRole.DEVELOPER;
-        return false;
+        // Allow developers to access Admin Management in all environments
+        return userRole === UserRole.DEVELOPER;
       default:
         return false;
     }
