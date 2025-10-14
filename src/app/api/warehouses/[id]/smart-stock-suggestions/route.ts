@@ -6,6 +6,9 @@ import { prisma } from "@/lib/prisma";
 import { calculateSmartStockSuggestions } from "@/lib/smart-stock-planner";
 
 // GET /api/warehouses/[id]/smart-stock-suggestions - Get smart stock suggestions for a warehouse
+
+export const runtime = 'nodejs';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

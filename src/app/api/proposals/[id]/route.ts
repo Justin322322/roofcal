@@ -4,6 +4,8 @@ import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
 import { notifyProposalAccepted, notifyProposalRejected } from "@/lib/notifications";
 
+export const runtime = 'nodejs';
+
 // PATCH /api/proposals/[id] - Client accepts/rejects proposal
 export async function PATCH(
   request: NextRequest,

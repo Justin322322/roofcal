@@ -29,6 +29,8 @@ const reorderSchema = z.object({
     .min(1),
 });
 
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);

@@ -5,6 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { UserRole } from "@/types/user-role";
 
 // GET /api/warehouses/[id] - Get specific warehouse details
+
+export const runtime = 'nodejs';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

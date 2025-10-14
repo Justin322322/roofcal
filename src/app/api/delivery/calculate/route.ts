@@ -3,6 +3,8 @@ import { calculateRoute } from "@/lib/route-calculator";
 import { calculateDeliveryCost } from "@/lib/delivery-pricing";
 import type { Coordinates } from "@/types/location";
 
+export const runtime = 'nodejs';
+
 // POST /api/delivery/calculate - Calculate delivery route and cost
 export async function POST(request: NextRequest) {
   try {

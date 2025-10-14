@@ -1,40 +1,11 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 import { UserRole } from "@/types/user-role";
-import { getMaintenanceStatus } from "@/lib/maintenance-utils";
 
 export default withAuth(
   async function middleware(req) {
     const token = req.nextauth.token;
     const { pathname } = req.nextUrl;
-
-    // Check maintenance mode - allow DEVELOPER to bypass
-    if (token?.role !== UserRole.DEVELOPER) {
-      try {
-        const maintenanceStatus = await getMaintenanceStatus();
-        
-        if (maintenanceStatus.maintenanceMode) {
-          // Allow access to maintenance page and auth pages
-          if (
-            pathname === "/maintenance" ||
-            pathname.startsWith("/login") ||
-            pathname.startsWith("/signup") ||
-            pathname.startsWith("/verify") ||
-            pathname.startsWith("/forgot-password") ||
-            pathname.startsWith("/reset-password")
-          ) {
-            // Allow access to these pages
-          } else {
-            // Redirect to maintenance page
-            return NextResponse.redirect(new URL("/maintenance", req.url));
-          }
-        }
-      } catch (error) {
-        // If maintenance check fails, log error but allow access
-        console.error("Error checking maintenance status:", error);
-        // Continue with normal flow
-      }
-    }
 
     // Developer-only routes
     if (

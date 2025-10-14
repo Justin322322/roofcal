@@ -9,6 +9,8 @@ const schema = z.object({
   newPassword: z.string().min(8),
 });
 
+export const runtime = 'nodejs';
+
 export async function POST(req: Request) {
   const body = await req.json();
   const { token, newPassword } = schema.parse(body);

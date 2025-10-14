@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
+export const runtime = 'nodejs';
+
 // GET /api/contractor/projects - Fetch all projects assigned to contractor (admin)
 export async function GET(request: NextRequest) {
   try {
@@ -85,6 +87,7 @@ export async function GET(request: NextRequest) {
       longitude: project.longitude ? Number(project.longitude) : null,
       deliveryCost: project.deliveryCost ? Number(project.deliveryCost) : null,
       deliveryDistance: project.deliveryDistance ? Number(project.deliveryDistance) : null,
+      client: project.user_project_clientIdTouser || project.user_project_userIdTouser,
     }));
 
     return NextResponse.json({

@@ -4,6 +4,8 @@ import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
 import { getProjectMaterialSummary, returnProjectMaterials } from "@/lib/material-consumption";
 
+export const runtime = 'nodejs';
+
 // GET /api/projects/[id]/materials - Get material consumption summary
 export async function GET(
   request: NextRequest,

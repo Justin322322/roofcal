@@ -38,12 +38,12 @@ interface Project {
   city: string | null;
   state: string | null;
   createdAt: Date;
-  client: {
+  client?: {
     id: string;
     firstName: string;
     lastName: string;
     email: string;
-  };
+  } | null;
 }
 
 export function ContractorProjectsContent() {
@@ -172,8 +172,8 @@ export function ContractorProjectsContent() {
 
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.projectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.client.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.client.lastName.toLowerCase().includes(searchQuery.toLowerCase());
+                         project.client?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         project.client?.lastName?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesSearch;
   });
 
@@ -252,7 +252,7 @@ export function ContractorProjectsContent() {
                     <TableRow key={project.id}>
                       <TableCell className="font-medium">{project.projectName}</TableCell>
                       <TableCell>
-                        {project.client.firstName} {project.client.lastName}
+                        {project.client ? `${project.client.firstName} ${project.client.lastName}` : 'N/A'}
                       </TableCell>
                       <TableCell>
                         {project.address ? (

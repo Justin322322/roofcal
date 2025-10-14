@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { notifyProposalSent } from "@/lib/notifications";
 import { UserRole } from "@/types/user-role";
 
+export const runtime = 'nodejs';
+
 // POST /api/proposals - Create or update proposal for a project
 export async function POST(request: NextRequest) {
   try {

@@ -14,6 +14,9 @@ const AddMaterialToWarehouseSchema = z.object({
 
 
 // GET /api/warehouses/[id]/materials - Get materials for a warehouse
+
+export const runtime = 'nodejs';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

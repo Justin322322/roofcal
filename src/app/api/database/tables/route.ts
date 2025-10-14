@@ -4,6 +4,9 @@ import { authOptions } from "@/auth/config";
 import { UserRole } from "@/types/user-role";
 import { getAllTableNames } from "@/lib/database-utils";
 
+
+export const runtime = 'nodejs';
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);

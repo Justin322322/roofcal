@@ -4,6 +4,9 @@ import { authOptions } from "@/auth/config";
 import { UserRole } from "@/types/user-role";
 import { getTableSchema } from "@/lib/database-utils";
 
+
+export const runtime = 'nodejs';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ table: string }> }

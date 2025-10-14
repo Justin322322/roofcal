@@ -4,6 +4,8 @@ import { authOptions } from "@/auth/config";
 import { UserRole } from "@/types/user-role";
 import { prisma } from "@/lib/prisma";
 
+export const runtime = 'nodejs';
+
 // Only allow ADMIN users to seed data
 export async function POST() {
   try {

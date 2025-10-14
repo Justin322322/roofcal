@@ -4,6 +4,8 @@ import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
 import { UserRole } from "@/types/user-role";
 
+export const runtime = 'nodejs';
+
 // GET /api/warehouses - List all warehouse locations
 export async function GET() {
   try {

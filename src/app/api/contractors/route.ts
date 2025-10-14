@@ -3,6 +3,8 @@ import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { UserRole } from "@/types/user-role";
 
+export const runtime = 'nodejs';
+
 // GET /api/contractors - Get list of available contractors (ADMIN users)
 export async function GET() {
   try {

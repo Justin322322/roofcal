@@ -6,6 +6,9 @@ import { validateCSRFToken, clearCSRFTokenCookie } from "@/lib/csrf";
 import { logger } from "@/lib/logger";
 import crypto from "crypto";
 
+
+export const runtime = 'nodejs';
+
 export async function POST(request: Request) {
   try {
     logger.api("logout", "starting_process");

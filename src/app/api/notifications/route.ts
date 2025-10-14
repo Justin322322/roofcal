@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
 
+export const runtime = 'nodejs';
+
 // GET /api/notifications - Get notifications for current user
 export async function GET(request: NextRequest) {
   try {

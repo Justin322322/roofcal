@@ -6,6 +6,8 @@ import { generateHandoffToken } from "@/lib/handoff-token";
 import { sendCustomEmail } from "@/lib/email";
 import { notifyQuoteRequested } from "@/lib/notifications";
 
+export const runtime = 'nodejs';
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

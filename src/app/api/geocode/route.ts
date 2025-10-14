@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { geocodeAddress, reverseGeocode } from "@/lib/geocoding";
 import type { Coordinates } from "@/types/location";
 
+export const runtime = 'nodejs';
+
 // POST /api/geocode - Geocode an address to coordinates
 export async function POST(request: NextRequest) {
   try {

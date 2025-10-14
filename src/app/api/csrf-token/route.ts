@@ -7,6 +7,9 @@ import { generateAndSetCSRFToken } from "@/lib/csrf";
  * GET /api/csrf-token
  * Returns a CSRF token for authenticated users
  */
+
+export const runtime = 'nodejs';
+
 export async function GET() {
   try {
     // Check if user is authenticated

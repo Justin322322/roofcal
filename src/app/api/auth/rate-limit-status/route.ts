@@ -6,6 +6,9 @@ import { authOptions } from "@/auth/config";
 
 const schema = z.object({ email: z.string().email() });
 
+
+export const runtime = 'nodejs';
+
 export async function POST(req: Request) {
   try {
     // Authenticate the request

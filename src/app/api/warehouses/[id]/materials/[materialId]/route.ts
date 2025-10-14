@@ -13,6 +13,9 @@ const UpdateMaterialInWarehouseSchema = z.object({
 });
 
 // PUT /api/warehouses/[id]/materials/[materialId] - Update warehouse material
+
+export const runtime = 'nodejs';
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; materialId: string }> }

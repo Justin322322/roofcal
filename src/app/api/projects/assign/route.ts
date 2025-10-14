@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { UserRole } from "@/types/user-role";
 import { notifyProjectAssigned } from "@/lib/notifications";
 
+export const runtime = 'nodejs';
+
 // POST /api/projects/assign - Assign a project to a contractor
 export async function POST(request: NextRequest) {
   try {

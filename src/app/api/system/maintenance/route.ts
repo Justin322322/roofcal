@@ -9,6 +9,8 @@ import {
   updateMaintenanceSettings,
 } from "@/lib/maintenance-utils";
 
+export const runtime = 'nodejs';
+
 export async function GET() {
   try {
     const settings = await getMaintenanceStatus();

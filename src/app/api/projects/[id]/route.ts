@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { reserveProjectMaterials, consumeProjectMaterials, returnProjectMaterials } from "@/lib/material-consumption";
 import type { UpdateProjectInput } from "@/types/project";
 
+export const runtime = 'nodejs';
+
 // GET /api/projects/[id] - Get single project
 export async function GET(
   request: NextRequest,

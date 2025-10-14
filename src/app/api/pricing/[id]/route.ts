@@ -9,6 +9,8 @@ import {
 } from "@/lib/pricing";
 import { z } from "zod";
 
+export const runtime = 'nodejs';
+
 interface RouteParams {
   params: Promise<{
     id: string;

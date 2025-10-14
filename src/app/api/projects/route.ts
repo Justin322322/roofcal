@@ -9,6 +9,8 @@ import type {
   ProjectListResponse,
 } from "@/types/project";
 
+export const runtime = 'nodejs';
+
 // POST /api/projects - Create new project
 export async function POST(request: NextRequest) {
   try {

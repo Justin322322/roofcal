@@ -4,6 +4,8 @@ import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
 import { UserRole } from "@/types/user-role";
 
+export const runtime = 'nodejs';
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);

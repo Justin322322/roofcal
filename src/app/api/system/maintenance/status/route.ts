@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getMaintenanceStatus } from "@/lib/maintenance-utils";
 
+export const runtime = 'nodejs';
+
 export async function GET() {
   try {
     const settings = await getMaintenanceStatus();

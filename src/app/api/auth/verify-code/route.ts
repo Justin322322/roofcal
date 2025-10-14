@@ -9,6 +9,9 @@ const schema = z.object({
   code: z.string().length(6),
 });
 
+
+export const runtime = 'nodejs';
+
 export async function POST(req: Request) {
   const body = await req.json();
   const { email, code } = schema.parse(body);

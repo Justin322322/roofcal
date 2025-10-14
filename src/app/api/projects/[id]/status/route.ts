@@ -8,6 +8,9 @@ import type { ProjectStatus } from "@/types/project";
 import { UserRole } from "@/types/user-role";
 
 // PATCH /api/projects/[id]/status - Update project status
+
+export const runtime = 'nodejs';
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
