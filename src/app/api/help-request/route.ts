@@ -27,11 +27,19 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { message } = body;
+    const { message, contractorId } = body;
 
-    // Get all active ADMIN users (contractors) to notify
-    const adminUsers = await prisma.user.findMany({
+    if (!contractorId) {
+      return NextResponse.json(
+        { error: "Contractor selection is required" },
+        { status: 400 }
+      );
+    }
+
+    // Get the specific contractor to notify
+    const contractor = await prisma.user.findFirst({
       where: {
+        id: contractorId,
         role: UserRole.ADMIN,
         isDisabled: false,
       },
@@ -43,39 +51,36 @@ export async function POST(request: Request) {
       },
     });
 
-    if (adminUsers.length === 0) {
+    if (!contractor) {
       return NextResponse.json(
-        { error: "No contractors available to help" },
-        { status: 503 }
+        { error: "Selected contractor not found or not available" },
+        { status: 404 }
       );
     }
 
-    // Create notifications for all admin users
-    const notifications = await Promise.all(
-      adminUsers.map((admin) =>
-        prisma.notification.create({
-          data: {
-            id: crypto.randomUUID(),
-            userId: admin.id,
-            type: "HELP_REQUEST",
-            title: "Client Needs Help",
-            message: `${session.user.name} (${session.user.email}) needs assistance with creating a project${message ? `: "${message}"` : ""}`,
-            projectId: null,
-            projectName: null,
-            actionUrl: `/dashboard?tab=roof-calculator&helpRequest=true&clientId=${session.user.id}`,
-            read: false,
-            created_at: new Date(),
-          },
-        })
-      )
-    );
+    // Create notification for the selected contractor
+    const notification = await prisma.notification.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: contractor.id,
+        type: "HELP_REQUEST",
+        title: "Client Needs Help",
+        message: `${session.user.name} (${session.user.email}) needs assistance with creating a project${message ? `: "${message}"` : ""}`,
+        projectId: null,
+        projectName: null,
+        actionUrl: `/dashboard?tab=roof-calculator&helpRequest=true&clientId=${session.user.id}`,
+        read: false,
+        created_at: new Date(),
+      },
+    });
 
-    console.log(`Help request notifications sent to ${adminUsers.length} contractors for client ${session.user.id}`);
+    console.log(`Help request notification sent to contractor ${contractor.id} for client ${session.user.id}`);
 
     return NextResponse.json({
       success: true,
       message: "Help request sent successfully",
-      notificationsSent: notifications.length,
+      contractorId: contractor.id,
+      contractorName: `${contractor.firstName} ${contractor.lastName}`,
     });
   } catch (error) {
     console.error("Error creating help request:", error);

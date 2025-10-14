@@ -90,7 +90,7 @@ export default function RequestHelpContent() {
                   </div>
                   <div>
                     <p className="font-medium">Click &quot;Request Contractor Help&quot;</p>
-                    <p className="text-sm text-muted-foreground">Fill out the form with any specific questions or requirements</p>
+                    <p className="text-sm text-muted-foreground">Select a contractor and fill out the form with any specific questions or requirements</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -98,8 +98,8 @@ export default function RequestHelpContent() {
                     2
                   </div>
                   <div>
-                    <p className="font-medium">Contractors get notified</p>
-                    <p className="text-sm text-muted-foreground">All available contractors receive your request immediately</p>
+                    <p className="font-medium">Contractor gets notified</p>
+                    <p className="text-sm text-muted-foreground">The selected contractor receives your request immediately</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
