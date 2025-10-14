@@ -3,7 +3,7 @@ import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 
 export interface NotificationData {
-  type: "status_change" | "proposal_sent" | "proposal_accepted" | "proposal_rejected" | "project_assigned" | "quote_requested" | "low_stock";
+  type: "status_change" | "proposal_sent" | "proposal_accepted" | "proposal_rejected" | "project_assigned" | "quote_requested" | "low_stock" | "project_completed" | "project_accepted";
   projectId: string;
   projectName: string;
   fromUserId: string;
@@ -67,6 +67,10 @@ function generateInAppMessage(notification: NotificationData): string {
       return `Project "${notification.projectName}" ready for review from ${notification.fromUserName}`;
     case "quote_requested":
       return `New quote request for "${notification.projectName}" from ${notification.fromUserName}`;
+    case "project_completed":
+      return `Project "${notification.projectName}" has been completed by ${notification.fromUserName}`;
+    case "project_accepted":
+      return `Project "${notification.projectName}" has been accepted by ${notification.fromUserName}`;
     case "low_stock":
       return `Low stock: ${notification.materialName} at ${notification.warehouseName} (current: ${notification.currentStock})`;
     default:
@@ -195,6 +199,44 @@ function generateEmailContent(notification: NotificationData): {
           securityNotice: "Please respond to this quote request within 48 hours to maintain good client relationships.",
         },
         text: `New Quote Request\n\nHello ${notification.toUserName},\n\nYou have received a new quote request for the project "${notification.projectName}" from ${notification.fromUserName}.\n\nPlease review the project details and create a custom proposal for the client.\n\nReview project: ${projectUrl}\n\nPlease respond to this quote request within 48 hours to maintain good client relationships.`,
+      };
+
+    case "project_completed":
+      return {
+        subject: `Project Completed: ${notification.projectName}`,
+        templateData: {
+          title: "Project Completed",
+          heading: "Project Completed",
+          content: `Hello ${notification.toUserName},<br/><br/>Great news! Your project <strong>"${notification.projectName}"</strong> has been completed by ${notification.fromUserName}.<br/>The roofing work is now finished and ready for your review.`,
+          actionContent: `
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${projectUrl}" style="display: inline-block; background: linear-gradient(135deg, #16a34a, #15803d); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                View Completed Project
+              </a>
+            </div>
+          `,
+          securityNotice: "Please review the completed work and contact your contractor if you have any questions.",
+        },
+        text: `Project Completed\n\nHello ${notification.toUserName},\n\nGreat news! Your project "${notification.projectName}" has been completed by ${notification.fromUserName}.\n\nThe roofing work is now finished and ready for your review.\n\nView project: ${projectUrl}\n\nPlease review the completed work and contact your contractor if you have any questions.`,
+      };
+
+    case "project_accepted":
+      return {
+        subject: `Project Accepted: ${notification.projectName}`,
+        templateData: {
+          title: "Project Accepted",
+          heading: "Project Accepted",
+          content: `Hello ${notification.toUserName},<br/><br/>Your project <strong>"${notification.projectName}"</strong> has been accepted by ${notification.fromUserName}.<br/>The contractor is now ready to begin work on your roofing project.`,
+          actionContent: `
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${projectUrl}" style="display: inline-block; background: linear-gradient(135deg, #16a34a, #15803d); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                View Project
+              </a>
+            </div>
+          `,
+          securityNotice: "Your contractor will contact you soon to schedule the project start date.",
+        },
+        text: `Project Accepted\n\nHello ${notification.toUserName},\n\nYour project "${notification.projectName}" has been accepted by ${notification.fromUserName}.\n\nThe contractor is now ready to begin work on your roofing project.\n\nView project: ${projectUrl}\n\nYour contractor will contact you soon to schedule the project start date.`,
       };
 
     case "low_stock": {
@@ -344,6 +386,48 @@ export async function notifyQuoteRequested(
 ) {
   return sendProjectNotification({
     type: "quote_requested",
+    projectId,
+    projectName,
+    fromUserId,
+    fromUserName,
+    toUserId,
+    toUserName,
+    toUserEmail,
+  });
+}
+
+export async function notifyProjectCompleted(
+  projectId: string,
+  projectName: string,
+  fromUserId: string,
+  fromUserName: string,
+  toUserId: string,
+  toUserName: string,
+  toUserEmail: string
+) {
+  return sendProjectNotification({
+    type: "project_completed",
+    projectId,
+    projectName,
+    fromUserId,
+    fromUserName,
+    toUserId,
+    toUserName,
+    toUserEmail,
+  });
+}
+
+export async function notifyProjectAccepted(
+  projectId: string,
+  projectName: string,
+  fromUserId: string,
+  fromUserName: string,
+  toUserId: string,
+  toUserName: string,
+  toUserEmail: string
+) {
+  return sendProjectNotification({
+    type: "project_accepted",
     projectId,
     projectName,
     fromUserId,

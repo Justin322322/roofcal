@@ -68,6 +68,7 @@ export async function getAccounts(): Promise<Account[]> {
         email: true,
         firstName: true,
         lastName: true,
+        isDisabled: true,
         created_at: true,
         updated_at: true,
       },
@@ -113,7 +114,7 @@ export async function getAccounts(): Promise<Account[]> {
         email: user.email,
         phone: undefined, // Will be added when user completes profile
         company: undefined, // Will be added when user completes profile
-        status: "Active" as const,
+        status: user.isDisabled ? "Disabled" as const : "Active" as const,
         joinDate: user.created_at.toISOString(),
         lastActivity: user.updated_at.toISOString(),
         totalProjects,
@@ -436,25 +437,45 @@ export async function updateAccount(
 }
 
 /**
- * Delete an account
+ * Disable an account
  */
-export async function deleteAccount(
+export async function disableAccount(
   id: string
 ): Promise<{ success: boolean; errors?: string[] }> {
   try {
     // Check if user exists
     const user = await prisma.user.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, email: true, firstName: true, lastName: true, isDisabled: true },
     });
 
     if (!user) {
       return { success: false, errors: ["Account not found"] };
     }
 
-    // Delete user from database
-    await prisma.user.delete({
+    if (user.isDisabled) {
+      return { success: false, errors: ["Account is already disabled"] };
+    }
+
+    // Update user to disabled status
+    await prisma.user.update({
       where: { id },
+      data: { isDisabled: true, updated_at: new Date() },
+    });
+
+    // Log the disable action
+    await prisma.activity.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: id,
+        type: "PROFILE_UPDATE",
+        description: "Account disabled by administrator",
+        metadata: JSON.stringify({
+          action: "account_disabled",
+          disabledAt: new Date().toISOString(),
+          email: user.email,
+        }),
+      },
     });
 
     // Revalidate the dashboard page
@@ -462,9 +483,72 @@ export async function deleteAccount(
 
     return { success: true };
   } catch (error) {
-    console.error("Error deleting account:", error);
-    return { success: false, errors: ["Failed to delete account"] };
+    console.error("Error disabling account:", error);
+    return { success: false, errors: ["Failed to disable account"] };
   }
+}
+
+/**
+ * Enable an account
+ */
+export async function enableAccount(
+  id: string
+): Promise<{ success: boolean; errors?: string[] }> {
+  try {
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { id: true, email: true, firstName: true, lastName: true, isDisabled: true },
+    });
+
+    if (!user) {
+      return { success: false, errors: ["Account not found"] };
+    }
+
+    if (!user.isDisabled) {
+      return { success: false, errors: ["Account is already enabled"] };
+    }
+
+    // Update user to enabled status
+    await prisma.user.update({
+      where: { id },
+      data: { isDisabled: false, updated_at: new Date() },
+    });
+
+    // Log the enable action
+    await prisma.activity.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: id,
+        type: "PROFILE_UPDATE",
+        description: "Account enabled by administrator",
+        metadata: JSON.stringify({
+          action: "account_enabled",
+          enabledAt: new Date().toISOString(),
+          email: user.email,
+        }),
+      },
+    });
+
+    // Revalidate the dashboard page
+    revalidatePath("/dashboard");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error enabling account:", error);
+    return { success: false, errors: ["Failed to enable account"] };
+  }
+}
+
+/**
+ * Delete an account (kept for backward compatibility but now calls disable)
+ */
+export async function deleteAccount(
+  id: string
+): Promise<{ success: boolean; errors?: string[] }> {
+  // For now, we'll just disable the account instead of deleting it
+  // This maintains data integrity and allows for potential recovery
+  return disableAccount(id);
 }
 
 /**

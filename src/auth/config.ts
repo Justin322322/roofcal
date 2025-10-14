@@ -35,6 +35,11 @@ export const authOptions: AuthOptions = {
           throw new Error("EMAIL_NOT_FOUND");
         }
 
+        // Check if user is disabled
+        if (user.isDisabled) {
+          throw new Error("ACCOUNT_DISABLED");
+        }
+
         // Allow login for unverified users - they'll be redirected to verify page
 
         const valid = await bcrypt.compare(
@@ -125,9 +130,16 @@ export const authOptions: AuthOptions = {
         });
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { email_verified: true, role: true },
+          select: { email_verified: true, role: true, isDisabled: true },
         });
         if (dbUser) {
+          // Check if user is disabled
+          if (dbUser.isDisabled) {
+            safeLog("JWT callback - user disabled, invalidating token");
+            // Return a token with disabled flag to be handled by session callback
+            token.isDisabled = true;
+            return token;
+          }
           token.emailVerified = dbUser.email_verified ? new Date() : null;
           token.role = dbUser.role as UserRole;
           safeLog("JWT callback - token updated:", {
@@ -145,6 +157,12 @@ export const authOptions: AuthOptions = {
       return token;
     },
     async session({ session, token }: { session: Session; token: JWT }) {
+      // Check if user is disabled - throw error to invalidate session
+      if (token.isDisabled) {
+        safeLog("Session callback - user disabled, throwing error");
+        throw new Error("ACCOUNT_DISABLED");
+      }
+
       if (session.user) {
         (
           session.user as User & {

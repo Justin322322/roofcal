@@ -7,6 +7,27 @@ export default withAuth(
     const token = req.nextauth.token;
     const { pathname } = req.nextUrl;
 
+    // Check if user is disabled - this will be handled by JWT callback returning null
+    // But we add an extra check here for security
+    if (token && pathname.startsWith("/dashboard")) {
+      const { prisma } = await import("@/lib/prisma");
+      try {
+        const user = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { isDisabled: true },
+        });
+        
+        if (user?.isDisabled) {
+          // Clear the session and redirect to login
+          return NextResponse.redirect(new URL("/login?error=AccountDisabled", req.url));
+        }
+      } catch (error) {
+        // If we can't check the user status, allow the request to continue
+        // The JWT callback will handle this case
+        console.warn("Could not check user disabled status:", error);
+      }
+    }
+
     // Developer-only routes
     if (
       pathname.startsWith("/dashboard/database-management") ||

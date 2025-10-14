@@ -70,6 +70,10 @@ export default function LoginForm() {
             errorMsg = "Invalid password";
             toastMsg = "Invalid password";
             break;
+          case "ACCOUNT_DISABLED":
+            errorMsg = "Your account has been disabled. Please contact support.";
+            toastMsg = "Account disabled";
+            break;
           case "CredentialsSignin":
             // Fallback for generic credential errors
             const emailSchema = z.string().email();

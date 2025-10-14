@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
+import { notifyProjectCompleted } from "@/lib/notifications";
 
 export const runtime = 'nodejs';
 
@@ -20,7 +21,10 @@ export async function POST(
 
     const project = await prisma.project.findUnique({ 
       where: { id },
-      include: { user_project_clientIdTouser: true }
+      include: { 
+        user_project_clientIdTouser: true,
+        user_project_contractorIdTouser: true
+      }
     });
 
     if (!project) {
@@ -38,8 +42,30 @@ export async function POST(
       data: {
         status: "COMPLETED",
         contractorStatus: "completed",
+        proposalStatus: "COMPLETED", // Also update proposal status
       },
     });
+
+    // Send notification to client
+    if (project.user_project_clientIdTouser) {
+      const client = project.user_project_clientIdTouser;
+      const contractor = project.user_project_contractorIdTouser;
+      
+      try {
+        await notifyProjectCompleted(
+          id,
+          project.projectName,
+          session.user.id,
+          contractor ? `${contractor.firstName} ${contractor.lastName}` : "Contractor",
+          client.id,
+          `${client.firstName} ${client.lastName}`,
+          client.email
+        );
+      } catch (notificationError) {
+        console.error("Failed to send completion notification:", notificationError);
+        // Don't fail the request if notification fails
+      }
+    }
 
     return NextResponse.json({ 
       success: true, 

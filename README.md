@@ -27,10 +27,9 @@
 
 - **Intelligent Roof Calculator**: AI-powered cost estimation with decision tree algorithms
 - **Project Management**: Complete workflow from draft to completion
-- **Warehouse Management**: Multi-warehouse inventory tracking with smart stock balancing
-- **Material Consumption Tracking**: Real-time material reservation and consumption monitoring
 - **Role-Based Access**: Secure access control for Clients, Admins, and Developers
-- **Real-Time Notifications**: Instant alerts for project updates and material warnings
+- **User Account Management**: Complete user lifecycle management with enable/disable functionality
+- **Real-Time Notifications**: Instant alerts for project updates and system events
 - **Dark Mode Support**: Complete light/dark theme system with system preference detection
 
 ### Technology Stack
@@ -60,7 +59,6 @@ flowchart TB
         AUTH[Authentication Module]
         CALC[Roof Calculator]
         PROJ[Project Management]
-        WARE[Warehouse Management]
         NOTIF[Notification System]
         TUTORIAL[Tutorial System]
     end
@@ -80,14 +78,12 @@ flowchart TB
     NEXT --> AUTH
     NEXT --> CALC
     NEXT --> PROJ
-    NEXT --> WARE
     NEXT --> NOTIF
     NEXT --> TUTORIAL
     
     AUTH --> PRISMA
     CALC --> PRISMA
     PROJ --> PRISMA
-    WARE --> PRISMA
     NOTIF --> PRISMA
     
     PRISMA --> DB
@@ -135,8 +131,6 @@ flowchart TB
 **Access:**
 - All CLIENT features
 - Account Management (user administration)
-- Warehouse Management
-- Material Inventory
 - Contractor Functions
 - Project Assignment
 - Proposal Creation
@@ -147,9 +141,10 @@ flowchart TB
 - Review client projects
 - Create and send proposals
 - Assign contractors
-- Manage warehouse stock
 - Configure system settings
 - View all projects
+- Manage user accounts (enable/disable users)
+- Monitor user activity and access
 
 ### 3. DEVELOPER Role
 
@@ -163,6 +158,7 @@ flowchart TB
 - System Logs
 - Advanced Configuration
 - Admin Management (create admin accounts)
+- Complete user account control (enable/disable/delete)
 - Tutorial Guide access
 
 ---
@@ -232,7 +228,79 @@ sequenceDiagram
 
 ---
 
-### B. Roof Calculator Module
+### B. User Account Management System
+
+Comprehensive user lifecycle management with administrative controls and security features.
+
+#### Features
+
+- **Account Status Control**: Enable/disable user accounts with immediate effect
+- **Administrative Actions**: Admins and Developers can manage user accounts
+- **Security Enforcement**: Disabled users are immediately logged out and blocked from access
+- **Activity Logging**: All account management actions are logged for audit trails
+- **Session Invalidation**: Disabled accounts have their sessions immediately terminated
+- **Role-Based Management**: Only ADMIN and DEVELOPER roles can manage user accounts
+
+#### Account Management Flow
+
+```mermaid
+sequenceDiagram
+    participant A as Admin/Developer
+    participant UI as Account Management UI
+    participant API as API Routes
+    participant DB as Database
+    participant M as Middleware
+    participant U as User
+
+    Note over A,U: Disable Account Flow
+    A->>UI: Click "Disable Account"
+    UI->>API: POST /api/accounts/[id]/disable
+    API->>DB: Update user.isDisabled = true
+    API->>DB: Log disable action
+    API->>UI: Success response
+    UI->>A: Show success message
+    
+    Note over A,U: Security Enforcement
+    U->>M: Try to access dashboard
+    M->>DB: Check user.isDisabled status
+    DB->>M: User is disabled
+    M->>U: Redirect to login with error
+    U->>U: Session invalidated
+    
+    Note over A,U: Enable Account Flow
+    A->>UI: Click "Enable Account"
+    UI->>API: POST /api/accounts/[id]/enable
+    API->>DB: Update user.isDisabled = false
+    API->>DB: Log enable action
+    API->>UI: Success response
+    UI->>A: Show success message
+    U->>U: Can now log in again
+```
+
+#### Account Status Management
+
+- **Active**: User can log in and access all permitted features
+- **Disabled**: User is blocked from login and all system access
+- **Automatic Logout**: Disabled users are immediately logged out on next request
+- **Session Invalidation**: All existing sessions for disabled users are terminated
+
+#### Security Features
+
+- **Middleware Protection**: Real-time checking of user status on dashboard access
+- **JWT Validation**: Session tokens are invalidated for disabled users
+- **Authentication Blocking**: Disabled users cannot authenticate even with correct credentials
+- **Activity Tracking**: All enable/disable actions are logged with timestamps and admin details
+
+#### Administrative Controls
+
+- **Account Management UI**: Visual interface for managing user accounts
+- **Bulk Operations**: Support for multiple account management actions
+- **Status Indicators**: Clear visual indicators of account status (Active/Disabled)
+- **Audit Trail**: Complete history of account management actions
+
+---
+
+### C. Roof Calculator Module
 
 Intelligent roofing cost estimation with decision tree algorithms and complexity analysis.
 
@@ -318,7 +386,7 @@ finalScore = min(max(score, 1), 10);
 
 ---
 
-### C. Project Management System
+### D. Project Management System
 
 Complete project lifecycle management with workflow automation and Kanban boards.
 
@@ -334,8 +402,7 @@ stateDiagram-v2
     CONTRACTOR_REVIEWING --> REJECTED: Withdraw
     PROPOSAL_SENT --> ACCEPTED: Client Accepts
     PROPOSAL_SENT --> REJECTED: Client Rejects
-    ACCEPTED --> IN_PROGRESS: Start Work
-    IN_PROGRESS --> COMPLETED: Finish Project
+    ACCEPTED --> COMPLETED: Finish Project
     COMPLETED --> ARCHIVED: Archive
     REJECTED --> DRAFT: Reset for New Quote
     REJECTED --> CONTRACTOR_REVIEWING: Revise Proposal
@@ -345,11 +412,14 @@ stateDiagram-v2
 
 #### Project Stages
 
-1. **INSPECTION**: Initial project review
-2. **ESTIMATE**: Cost calculation and proposal
-3. **MATERIALS**: Material reservation and ordering
-4. **INSTALL**: Installation in progress
-5. **FINALIZE**: Project completion and handoff
+1. **DRAFT**: Project created and being prepared
+2. **CLIENT_PENDING**: Awaiting client quote request
+3. **CONTRACTOR_REVIEWING**: Admin reviewing project details
+4. **PROPOSAL_SENT**: Proposal sent to client
+5. **ACCEPTED**: Client accepted proposal
+6. **COMPLETED**: Project finished
+7. **REJECTED**: Project declined
+8. **ARCHIVED**: Project archived
 
 #### Project Management Features
 
@@ -361,133 +431,8 @@ stateDiagram-v2
 
 ---
 
-### D. Warehouse Management
 
-Multi-warehouse inventory tracking with intelligent stock balancing.
-
-#### Warehouse Features
-
-- **Multi-Warehouse Support**: Manage multiple warehouse locations
-- **Material Inventory**: Track stock levels for all materials
-- **Location-Based Management**: Manage materials by warehouse location
-- **Capacity Management**: Monitor warehouse capacity utilization
-- **Stock Warnings**: Automatic alerts for low stock
-- **Smart Stock Planner**: AI-powered restocking recommendations
-- **Stock Balancer**: Automatic redistribution suggestions
-
-#### Warehouse Stock Balancer Algorithm
-
-```mermaid
-flowchart TD
-    START[Start Stock Analysis] --> GET[Get Warehouse Materials]
-    GET --> CALC[Calculate Utilization]
-    CALC --> CHECK{Utilization > 85%?}
-    
-    CHECK -->|No| OPTIMAL[Optimal Utilization]
-    CHECK -->|Yes| OVERLOAD[Overloaded - Generate Reduction Plan]
-    
-    OVERLOAD --> EXCESS[Calculate Excess Volume]
-    EXCESS --> TARGET[Set Target Reduction<br/>Excess × 1.1]
-    TARGET --> SORT[Sort Materials by Quantity]
-    
-    SORT --> LOOP[For Each Material]
-    LOOP --> MAX[Max Reduction = 50%]
-    MAX --> REDUCE[Calculate Suggested Reduction]
-    REDUCE --> VALID{Valid Reduction?}
-    
-    VALID -->|Yes| ADD[Add to Reduction Plan]
-    VALID -->|No| SKIP[Skip Material]
-    
-    ADD --> MORE{More Materials?}
-    SKIP --> MORE
-    MORE -->|Yes| LOOP
-    MORE -->|No| PLAN[Generate Reduction Plan]
-    
-    PLAN --> EXEC[Execute Reductions]
-    EXEC --> UPDATE[Update Warehouse Stock]
-    UPDATE --> DONE[Complete]
-    
-    OPTIMAL --> DONE
-
-    style OVERLOAD fill:#ef4444,stroke:#fff,stroke-width:2px,color:#fff
-    style OPTIMAL fill:#22c55e,stroke:#fff,stroke-width:2px,color:#fff
-```
-
-#### Utilization Status
-
-| Utilization | Status | Color | Action Required |
-|-------------|--------|-------|-----------------|
-| ≥80% | Overloaded | Red | Immediate reduction needed |
-| 60-79% | High | Orange | Monitor closely |
-| 40-59% | Medium | Blue | Optimal range |
-| <40% | Low | Green | Can accept more materials |
-
----
-
-### E. Material Consumption System
-
-Real-time material tracking from reservation to consumption.
-
-#### Material Lifecycle
-
-```mermaid
-stateDiagram-v2
-    [*] --> AVAILABLE: Material in Warehouse
-    AVAILABLE --> RESERVED: Project Accepted
-    RESERVED --> CONSUMED: Project Started
-    RESERVED --> CANCELLED: Project Rejected
-    CONSUMED --> RETURNED: Project Cancelled
-    CONSUMED --> [*]: Project Completed
-    RETURNED --> AVAILABLE: Return to Stock
-    CANCELLED --> AVAILABLE: Release Reservation
-```
-
-#### Material Consumption Flow
-
-```mermaid
-sequenceDiagram
-    participant P as Project
-    participant PM as Project Material
-    participant WM as Warehouse Material
-    participant DB as Database
-
-    Note over P,DB: Material Reservation (Project Accepted)
-    P->>PM: Create Reservation
-    PM->>DB: Insert ProjectMaterial (RESERVED)
-    PM->>WM: Check Availability
-    WM->>DB: Validate Stock
-    DB->>PM: Stock Available
-    PM->>P: Materials Reserved
-    
-    Note over P,DB: Material Consumption (Project Started)
-    P->>PM: Start Project
-    PM->>WM: Deduct from Stock
-    WM->>DB: Update WarehouseMaterial
-    DB->>WM: Stock Decremented
-    WM->>PM: Update Status to CONSUMED
-    PM->>P: Materials Consumed
-    
-    Note over P,DB: Material Return (Project Cancelled)
-    P->>PM: Cancel Project
-    PM->>WM: Return to Stock
-    WM->>DB: Update WarehouseMaterial
-    DB->>WM: Stock Incremented
-    WM->>PM: Update Status to RETURNED
-    PM->>P: Materials Returned
-```
-
-#### Functions
-
-- **validateMaterialAvailability**: Check warehouse stock before reservation
-- **reserveProjectMaterials**: Reserve materials on project acceptance
-- **consumeProjectMaterials**: Deduct materials when project starts
-- **returnProjectMaterials**: Return materials on project cancellation
-- **getProjectMaterialSummary**: Get consumption summary for a project
-
----
-
-
-### G. Notification System
+### E. Notification System
 
 Real-time notifications for project updates and system events.
 
@@ -495,7 +440,6 @@ Real-time notifications for project updates and system events.
 
 - **Project Status Changes**: Updates when project status changes
 - **Proposal Notifications**: New proposals sent/received
-- **Material Warnings**: Low stock alerts
 - **Assignment Notifications**: Contractor assigned to project
 - **System Alerts**: Maintenance mode, updates
 
@@ -520,7 +464,7 @@ sequenceDiagram
 
 ---
 
-### H. Tutorial & Onboarding System
+### F. Tutorial & Onboarding System
 
 Interactive tutorial system providing comprehensive guidance and learning resources for all users.
 
@@ -540,7 +484,6 @@ Interactive tutorial system providing comprehensive guidance and learning resour
 - **Calculator Workflow**: Step-by-step estimation process guidance
 - **Manual Entry Options**: Alternative input methods and calculations
 - **Project Management**: Complete project lifecycle management guide
-- **Warehouse Management**: Inventory tracking and material management
 - **AI Recommendations System**: Understanding intelligent decision support
 
 #### Material Visual Database
@@ -601,17 +544,13 @@ flowchart TB
         P1[1.0<br/>Authentication]
         P2[2.0<br/>Roof Calculator]
         P3[3.0<br/>Project Management]
-        P4[4.0<br/>Warehouse Management]
-        P5[5.0<br/>Material Consumption]
-        P6[6.0<br/>Notifications]
+        P4[4.0<br/>Notifications]
     end
 
     subgraph "Data Stores"
         D1[(D1: Users)]
         D2[(D2: Projects)]
-        D3[(D3: Warehouses)]
-        D4[(D4: Materials)]
-        D5[(D5: Notifications)]
+        D3[(D3: Notifications)]
     end
 
     USER -->|Login/Signup| P1
@@ -625,18 +564,9 @@ flowchart TB
     P3 -->|Read/Write| D2
     P3 -->|Read| D1
     
-    USER -->|Manage Inventory| P4
-    P4 -->|Read/Write| D3
-    P4 -->|Read/Write| D4
-    
-    P3 -->|Reserve/Consume| P5
-    P5 -->|Update| D4
-    P5 -->|Update| D3
-    
-    P3 -->|Send Alerts| P6
-    P4 -->|Send Alerts| P6
-    P6 -->|Create| D5
-    P6 -->|Send| EMAIL
+    P3 -->|Send Alerts| P4
+    P4 -->|Create| D3
+    P4 -->|Send| EMAIL
 ```
 
 ---
@@ -648,20 +578,12 @@ flowchart TB
 ```mermaid
 erDiagram
     USER ||--o{ PROJECT : creates
-    USER ||--o{ WAREHOUSE : manages
     USER ||--o{ NOTIFICATION : receives
     USER ||--o{ ACTIVITY : generates
     USER ||--o{ VERIFICATIONCODE : has
 
-    PROJECT ||--o{ PROJECTMATERIAL : requires
     PROJECT }o--|| USER : assigned_to_client
     PROJECT }o--|| USER : assigned_to_contractor
-    PROJECT }o--|| WAREHOUSE : uses
-
-    WAREHOUSE ||--o{ WAREHOUSEMATERIAL : contains
-    WAREHOUSE ||--o{ PROJECT : serves
-
-    WAREHOUSEMATERIAL ||--o{ PROJECTMATERIAL : linked_to
 
     USER {
         string id PK
@@ -671,6 +593,8 @@ erDiagram
         string lastName
         enum role
         datetime email_verified
+        boolean passwordChangeRequired
+        boolean isDisabled
         datetime created_at
         datetime updated_at
     }
@@ -680,7 +604,6 @@ erDiagram
         string userId FK
         string clientId FK
         string contractorId FK
-        string warehouseId FK
         string projectName
         string status
         decimal length
@@ -691,45 +614,6 @@ erDiagram
         decimal area
         decimal totalCost
         string currentStage
-        datetime created_at
-        datetime updated_at
-    }
-
-    WAREHOUSE {
-        string id PK
-        string created_by FK
-        string name
-        string address
-        string city
-        string state
-        decimal latitude
-        decimal longitude
-        decimal capacity
-        datetime created_at
-        datetime updated_at
-    }
-
-    WAREHOUSEMATERIAL {
-        string id PK
-        string warehouseId FK
-        string materialId FK
-        int quantity
-        decimal locationAdjustment
-        boolean isActive
-        datetime created_at
-        datetime updated_at
-    }
-
-
-    PROJECTMATERIAL {
-        string id PK
-        string projectId FK
-        string warehouseMaterialId FK
-        int quantity
-        enum status
-        datetime reservedAt
-        datetime consumedAt
-        datetime returnedAt
         datetime created_at
         datetime updated_at
     }
@@ -754,38 +638,20 @@ erDiagram
 - **role**: CLIENT, ADMIN, or DEVELOPER
 - **email_verified**: Email verification timestamp
 - **passwordChangeRequired**: Boolean flag for forced password changes
+- **isDisabled**: Boolean flag for account status (true = disabled, false = active)
 
 #### Project Table
 - **id**: Unique identifier
 - **userId**: Project creator
 - **clientId**: Assigned client
 - **contractorId**: Assigned contractor
-- **warehouseId**: Assigned warehouse
-- **status**: Project workflow status
-- **currentStage**: Current project stage (INSPECTION, ESTIMATE, MATERIALS, INSTALL, FINALIZE)
+- **status**: Project workflow status (DRAFT, CLIENT_PENDING, CONTRACTOR_REVIEWING, PROPOSAL_SENT, ACCEPTED, COMPLETED, REJECTED, ARCHIVED)
+- **currentStage**: Current project stage
 - **materialCost**: Calculated material cost
 - **totalCost**: Total project cost
 - **boardPosition**: Integer for Kanban card ordering
 - **proposalPosition**: Integer for proposal view ordering
 - **stageProgress**: JSON field for stage completion tracking
-
-#### WarehouseMaterial Table
-- **id**: Unique identifier
-- **warehouseId**: Warehouse reference
-- **materialId**: Material reference
-- **quantity**: Current stock level
-- **locationAdjustment**: Price adjustment percentage
-- **isActive**: Active status
-
-#### ProjectMaterial Table
-- **id**: Unique identifier
-- **projectId**: Project reference
-- **warehouseMaterialId**: Material reference
-- **quantity**: Reserved/consumed quantity
-- **status**: RESERVED, CONSUMED, RETURNED, CANCELLED
-- **reservedAt**: Reservation timestamp
-- **consumedAt**: Consumption timestamp
-- **returnedAt**: Return timestamp
 
 ---
 
@@ -889,32 +755,6 @@ Decline project proposal.
 #### POST /api/projects/[id]/finish
 Mark project as completed.
 
-### Warehouse Endpoints
-
-#### GET /api/warehouses
-Get all warehouses.
-
-#### POST /api/warehouses
-Create new warehouse.
-
-#### GET /api/warehouses/[id]
-Get warehouse details.
-
-#### GET /api/warehouses/[id]/materials
-Get warehouse materials.
-
-#### POST /api/warehouses/[id]/materials
-Add material to warehouse.
-
-#### PUT /api/warehouses/[id]/materials/[materialId]
-Update material quantity.
-
-#### POST /api/warehouses/[id]/materials/[materialId]/replenish
-Replenish material stock.
-
-#### GET /api/warehouses/warnings
-Get stock warnings.
-
 ### Notification Endpoints
 
 #### GET /api/notifications
@@ -960,6 +800,51 @@ Create new admin account with temporary password.
 }
 ```
 
+### Account Management Endpoints
+
+#### GET /api/accounts
+Get all user accounts with filtering and pagination.
+
+**Query Parameters:**
+- `status`: Filter by account status (active, disabled)
+- `role`: Filter by user role
+- `search`: Search by name or email
+- `page`: Page number
+- `limit`: Results per page
+
+#### POST /api/accounts/[id]/disable
+Disable a user account.
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Account disabled successfully"
+}
+```
+
+#### POST /api/accounts/[id]/enable
+Enable a user account.
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Account enabled successfully"
+}
+```
+
+#### DELETE /api/accounts/[id]
+Delete a user account (permanent removal).
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Account deleted successfully"
+}
+```
+
 ---
 
 ## Key Features
@@ -978,30 +863,22 @@ Create new admin account with temporary password.
 - **Stage Tracking**: 5-stage project lifecycle
 - **Proposal Management**: Complete proposal creation and approval flow
 
-### 3. Warehouse Management
+### 3. User Account Management
 
-- **Multi-Warehouse**: Support for multiple warehouse locations
-- **Stock Monitoring**: Real-time inventory tracking
-- **Capacity Management**: Utilization monitoring with color-coded status
-- **Smart Stock Planner**: AI-powered restocking recommendations
-- **Stock Balancer**: Automatic redistribution suggestions
+- **Account Status Control**: Enable/disable user accounts with immediate effect
+- **Administrative Interface**: Visual management interface for user accounts
+- **Security Enforcement**: Disabled users are immediately logged out and blocked
+- **Activity Logging**: Complete audit trail of account management actions
+- **Role-Based Access**: Only ADMIN and DEVELOPER roles can manage accounts
 
-### 4. Material Consumption Tracking
-
-- **Reservation System**: Reserve materials on project acceptance
-- **Consumption Tracking**: Real-time stock deduction
-- **Return Management**: Handle material returns on cancellation
-- **Availability Validation**: Check stock before reservation
-
-
-### 5. Notification System
+### 4. Notification System
 
 - **Real-Time Alerts**: Instant notifications for key events
 - **Email Notifications**: Verification codes and alerts
 - **In-App Notifications**: Real-time dashboard updates
 - **Read/Unread Tracking**: Notification management
 
-### 6. Dark Mode & Theming
+### 5. Dark Mode & Theming
 
 - **Light/Dark Mode**: Complete theme system with smooth transitions
 - **System Preference**: Automatic detection of OS theme preference
@@ -1009,7 +886,7 @@ Create new admin account with temporary password.
 - **Accessible Toggle**: Available on all pages (dashboard, auth, landing)
 - **CSS Variables**: Comprehensive design token system
 
-### 7. Dashboard Sections by Role
+### 6. Dashboard Sections by Role
 
 The application provides role-based dashboard sections with specific functionality:
 
@@ -1021,7 +898,6 @@ The application provides role-based dashboard sections with specific functionali
 #### ADMIN Dashboard Sections
 - **Contractor Projects**: Project management and workflow
 - **Account Management**: User administration and account controls
-- **Warehouse Management**: Multi-warehouse inventory tracking and management
 - **System Maintenance**: System health monitoring and maintenance controls
 
 #### DEVELOPER Dashboard Sections
@@ -1060,7 +936,6 @@ sequenceDiagram
     C->>RC: Review proposal
     C->>RC: Accept proposal
     RC->>DB: Update status (ACCEPTED)
-    RC->>DB: Reserve materials
 ```
 
 ### Journey 2: Admin Reviews and Executes Project
@@ -1069,57 +944,19 @@ sequenceDiagram
 sequenceDiagram
     participant A as Admin
     participant DB as Database
-    participant W as Warehouse
-    participant M as Materials
     participant C as Client
 
     A->>DB: Get pending projects
     A->>DB: Review project details
-    A->>W: Check material availability
-    W->>M: Validate stock
-    M->>A: Stock available
     A->>DB: Create proposal
     A->>DB: Update status (PROPOSAL_SENT)
     A->>C: Send proposal
     C->>DB: Accept proposal
     DB->>A: Notify acceptance
     A->>DB: Update status (ACCEPTED)
-    A->>M: Reserve materials
-    M->>DB: Create reservations
-    A->>DB: Update status (IN_PROGRESS)
-    A->>M: Consume materials
-    M->>DB: Deduct from warehouse
     A->>DB: Update status (COMPLETED)
 ```
 
-### Journey 3: Material Consumption Lifecycle
-
-```mermaid
-sequenceDiagram
-    participant P as Project
-    participant PM as Project Material
-    participant WM as Warehouse Material
-    participant DB as Database
-
-    Note over P,DB: 1. Reservation (Project Accepted)
-    P->>PM: Create reservation
-    PM->>WM: Check availability
-    WM->>DB: Validate stock
-    DB->>PM: Stock available
-    PM->>DB: Insert (RESERVED)
-    
-    Note over P,DB: 2. Consumption (Project Started)
-    P->>PM: Start project
-    PM->>WM: Deduct stock
-    WM->>DB: Update quantity
-    PM->>DB: Update status (CONSUMED)
-    
-    Note over P,DB: 3. Return (Project Cancelled)
-    P->>PM: Cancel project
-    PM->>WM: Return stock
-    WM->>DB: Increment quantity
-    PM->>DB: Update status (RETURNED)
-```
 
 ---
 

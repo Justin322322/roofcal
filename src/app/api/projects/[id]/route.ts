@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
+import { notifyProjectAccepted } from "@/lib/notifications";
 import type { UpdateProjectInput } from "@/types/project";
 
 export const runtime = 'nodejs';
@@ -346,6 +347,10 @@ export async function PATCH(
           { clientId: session.user.id }, // Assigned client
         ],
       },
+      include: {
+        user_project_clientIdTouser: true,
+        user_project_contractorIdTouser: true
+      }
     });
 
     if (!existingProject) {
@@ -372,6 +377,27 @@ export async function PATCH(
           ...(body.proposalStatus && { proposalStatus: body.proposalStatus }),
         },
       });
+
+      // Send notification to client when contractor accepts project
+      if (newStatus === "ACCEPTED" && existingProject.user_project_clientIdTouser) {
+        const client = existingProject.user_project_clientIdTouser;
+        const contractor = existingProject.user_project_contractorIdTouser;
+        
+        try {
+          await notifyProjectAccepted(
+            id,
+            existingProject.projectName,
+            session.user.id,
+            contractor ? `${contractor.firstName} ${contractor.lastName}` : "Contractor",
+            client.id,
+            `${client.firstName} ${client.lastName}`,
+            client.email
+          );
+        } catch (notificationError) {
+          console.error("Failed to send acceptance notification:", notificationError);
+          // Don't fail the request if notification fails
+        }
+      }
 
       return NextResponse.json({ 
         message: "Project status updated successfully",

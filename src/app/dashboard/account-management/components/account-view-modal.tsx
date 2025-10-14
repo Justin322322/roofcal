@@ -27,6 +27,8 @@ import {
   BarChart3Icon,
   RefreshCwIcon,
   XIcon,
+  UserXIcon,
+  UserCheckIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Account } from "../types";
@@ -34,6 +36,8 @@ import { getStatusBadgeVariant, formatCurrency } from "../utils";
 import {
   getUserActivities,
   getUserByEmail,
+  disableAccount,
+  enableAccount,
   type ActivityLog,
 } from "../actions";
 import DeleteAccountDialog from "@/components/auth/delete-account-dialog";
@@ -43,6 +47,8 @@ interface AccountViewModalProps {
   isOpen: boolean;
   onClose: () => void;
   onDelete?: (accountId: string) => Promise<void>;
+  onDisable?: () => Promise<void>;
+  onEnable?: () => Promise<void>;
 }
 
 export function AccountViewModal({
@@ -50,11 +56,15 @@ export function AccountViewModal({
   isOpen,
   onClose,
   onDelete,
+  onDisable,
+  onEnable,
 }: AccountViewModalProps) {
   const [activeTab, setActiveTab] = useState("details");
   const [activityLog, setActivityLog] = useState<ActivityLog[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [disablingAccount, setDisablingAccount] = useState(false);
+  const [enablingAccount, setEnablingAccount] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [activityPage, setActivityPage] = useState(1);
   const [hasMoreActivities, setHasMoreActivities] = useState(false);
@@ -122,6 +132,56 @@ export function AccountViewModal({
       toast.error("Failed to delete account. Please try again.");
     } finally {
       setDeletingAccount(false);
+    }
+  };
+
+  const handleDisable = async () => {
+    if (!account) return;
+
+    setDisablingAccount(true);
+
+    try {
+      const result = await disableAccount(account.id);
+      if (result.success) {
+        toast.success("Account disabled successfully");
+        onClose();
+        // Call the onDisable callback if provided
+        if (onDisable) {
+          await onDisable();
+        }
+      } else {
+        toast.error(result.errors?.[0] || "Failed to disable account");
+      }
+    } catch (error) {
+      console.error("Error disabling account:", error);
+      toast.error("Failed to disable account. Please try again.");
+    } finally {
+      setDisablingAccount(false);
+    }
+  };
+
+  const handleEnable = async () => {
+    if (!account) return;
+
+    setEnablingAccount(true);
+
+    try {
+      const result = await enableAccount(account.id);
+      if (result.success) {
+        toast.success("Account enabled successfully");
+        onClose();
+        // Call the onEnable callback if provided
+        if (onEnable) {
+          await onEnable();
+        }
+      } else {
+        toast.error(result.errors?.[0] || "Failed to enable account");
+      }
+    } catch (error) {
+      console.error("Error enabling account:", error);
+      toast.error("Failed to enable account. Please try again.");
+    } finally {
+      setEnablingAccount(false);
     }
   };
 
@@ -464,25 +524,50 @@ export function AccountViewModal({
         <Separator />
 
         <DialogFooter className="px-6 py-4 flex-shrink-0 bg-background">
-          {onDelete && (
-            <DeleteAccountDialog
-              trigger={
-                <Button
-                  variant="destructive"
-                  className="sm:mr-auto"
-                  disabled={deletingAccount}
-                >
-                  <TrashIcon className="h-4 w-4 mr-2" />
-                  {deletingAccount ? "Deleting..." : "Delete Account"}
-                </Button>
-              }
-              accountName={account.clientName}
-              accountEmail={account.email}
-              onConfirm={handleDelete}
-              disabled={deletingAccount}
-              disableInternalErrorHandling={true}
-            />
-          )}
+          <div className="flex gap-2 w-full">
+            {account.status === "Active" && (
+              <Button
+                variant="destructive"
+                onClick={handleDisable}
+                disabled={disablingAccount}
+                className="sm:mr-auto"
+              >
+                <UserXIcon className="h-4 w-4 mr-2" />
+                {disablingAccount ? "Disabling..." : "Disable Account"}
+              </Button>
+            )}
+            
+            {account.status === "Disabled" && (
+              <Button
+                variant="default"
+                onClick={handleEnable}
+                disabled={enablingAccount}
+                className="sm:mr-auto"
+              >
+                <UserCheckIcon className="h-4 w-4 mr-2" />
+                {enablingAccount ? "Enabling..." : "Enable Account"}
+              </Button>
+            )}
+
+            {onDelete && account.status === "Disabled" && (
+              <DeleteAccountDialog
+                trigger={
+                  <Button
+                    variant="destructive"
+                    disabled={deletingAccount}
+                  >
+                    <TrashIcon className="h-4 w-4 mr-2" />
+                    {deletingAccount ? "Deleting..." : "Delete Account"}
+                  </Button>
+                }
+                accountName={account.clientName}
+                accountEmail={account.email}
+                onConfirm={handleDelete}
+                disabled={deletingAccount}
+                disableInternalErrorHandling={true}
+              />
+            )}
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

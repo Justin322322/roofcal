@@ -38,22 +38,33 @@ export function MeasurementForm({
       return;
     }
 
-    // Validation for length and width
+    // Validation for length and width with guardrails
     if (field === "length" || field === "width") {
       const numericValue = parseFloat(value);
-      if (value === "" || (!isNaN(numericValue) && numericValue >= 0)) {
-        const newMeasurements = {
+      if (value === "" || (!isNaN(numericValue) && numericValue >= 1)) {
+        let newMeasurements = {
           ...measurements,
           [field]: value,
         };
         
-        // Check if length is lower than width
+        // Apply guardrails: Length should not be lower than width
         const length = parseFloat(newMeasurements.length) || 0;
         const width = parseFloat(newMeasurements.width) || 0;
         
-        if (length > 0 && width > 0 && length < width) {
-          // You can add a warning here if needed
-          console.warn("Length should not be lower than width");
+        // If user is entering length and it's lower than width, auto-adjust width
+        if (field === "length" && length > 0 && width > 0 && length < width) {
+          newMeasurements = {
+            ...newMeasurements,
+            width: length.toString(), // Set width to match length
+          };
+        }
+        
+        // If user is entering width and it's higher than length, auto-adjust length
+        if (field === "width" && width > 0 && length > 0 && length < width) {
+          newMeasurements = {
+            ...newMeasurements,
+            length: width.toString(), // Set length to match width
+          };
         }
         
         onMeasurementsChange(newMeasurements);
@@ -67,10 +78,11 @@ export function MeasurementForm({
     });
   };
 
-  // Check if length is lower than width for warning display
+  // Check for validation warnings
   const length = parseFloat(measurements.length) || 0;
   const width = parseFloat(measurements.width) || 0;
   const showLengthWarning = length > 0 && width > 0 && length < width;
+  const showUnrealisticWarning = (length > 0 && length < 1) || (width > 0 && width < 1);
 
   return (
     <div className="space-y-4">
@@ -78,7 +90,16 @@ export function MeasurementForm({
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            Warning: Length ({length}m) is lower than width ({width}m). Please verify your measurements.
+            ⚠️ Length ({length}m) was lower than width ({width}m). The system has automatically adjusted the values to maintain proper proportions.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {showUnrealisticWarning && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            ⚠️ Warning: Very small dimensions detected. Please verify your measurements are in meters and realistic for a roofing project.
           </AlertDescription>
         </Alert>
       )}
@@ -89,12 +110,16 @@ export function MeasurementForm({
           <Input
             id="length"
             type="number"
-            placeholder="Enter length"
+            placeholder="Enter length (min: 1m)"
             value={measurements.length}
             onChange={(e) => handleChange("length", e.target.value)}
-            min="0"
+            min="1"
+            max="1000"
             step="0.1"
           />
+          <p className="text-xs text-muted-foreground">
+            Length should be ≥ width for proper roof proportions
+          </p>
         </div>
 
         <div className="space-y-2">
@@ -102,12 +127,16 @@ export function MeasurementForm({
           <Input
             id="width"
             type="number"
-            placeholder="Enter width"
+            placeholder="Enter width (min: 1m)"
             value={measurements.width}
             onChange={(e) => handleChange("width", e.target.value)}
-            min="0"
+            min="1"
+            max="1000"
             step="0.1"
           />
+          <p className="text-xs text-muted-foreground">
+            Width should be ≤ length for proper roof proportions
+          </p>
         </div>
       </div>
 

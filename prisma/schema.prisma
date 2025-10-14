@@ -220,6 +220,7 @@ model user {
   role                               user_role          @default(CLIENT)
   email_verified                     DateTime?
   passwordChangeRequired             Boolean            @default(false)
+  isDisabled                         Boolean            @default(false)
   created_at                         DateTime           @default(now())
   updated_at                         DateTime
   Notification                       Notification[]
@@ -231,6 +232,7 @@ model user {
   warehouse                          warehouse[]
 
   @@index([email], map: "User_email_idx")
+  @@index([isDisabled], map: "User_isDisabled_idx")
 }
 
 model verificationcode {

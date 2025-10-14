@@ -2,6 +2,7 @@ import type { AccountStatus, AccountFilters } from "../types";
 
 export const ACCOUNT_STATUSES: readonly AccountStatus[] = [
   "Active",
+  "Disabled",
   "Inactive",
   "Pending",
 ] as const;
@@ -22,9 +23,10 @@ export const SORT_FIELDS = [
 
 export const STATUS_BADGE_VARIANTS: Record<
   AccountStatus,
-  "default" | "secondary" | "outline"
+  "default" | "secondary" | "destructive" | "outline"
 > = {
   Active: "default",
+  Disabled: "destructive",
   Inactive: "secondary",
   Pending: "outline",
 } as const;

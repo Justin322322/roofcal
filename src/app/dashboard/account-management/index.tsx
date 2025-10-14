@@ -137,6 +137,26 @@ export function AccountManagementContent() {
     }
   };
 
+  const handleDisableAccount = async (): Promise<void> => {
+    try {
+      // The disableAccount function is called directly from the modal
+      // This handler is just for refreshing the accounts list
+      refreshAccounts();
+    } catch (error) {
+      console.error("Error refreshing accounts after disable:", error);
+    }
+  };
+
+  const handleEnableAccount = async (): Promise<void> => {
+    try {
+      // The enableAccount function is called directly from the modal
+      // This handler is just for refreshing the accounts list
+      refreshAccounts();
+    } catch (error) {
+      console.error("Error refreshing accounts after enable:", error);
+    }
+  };
+
   const handleViewAccount = (accountId: string) => {
     const account = accounts.find((acc) => acc.id === accountId);
     if (!account) {
@@ -205,6 +225,8 @@ export function AccountManagementContent() {
         isOpen={isViewModalOpen}
         onClose={closeModals}
         onDelete={handleDeleteAccount}
+        onDisable={handleDisableAccount}
+        onEnable={handleEnableAccount}
       />
     </>
   );
