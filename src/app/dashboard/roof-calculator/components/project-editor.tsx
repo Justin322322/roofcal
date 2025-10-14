@@ -62,7 +62,7 @@ export function ProjectEditor({ project, isOpen, onClose, onSave }: ProjectEdito
     setIsSaving(true);
     try {
       const response = await fetch(`/api/projects/${project.id}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },

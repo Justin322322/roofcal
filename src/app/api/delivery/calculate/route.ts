@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { calculateRoute } from "@/lib/route-calculator";
-import { calculateDeliveryCost } from "@/lib/delivery-pricing";
+import { calculateDeliveryCost, validatePricing, getPricingFromEnv } from "@/lib/delivery-pricing";
 import type { Coordinates } from "@/types/location";
 
 export const runtime = 'nodejs';
@@ -41,8 +41,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate and get pricing configuration
+    let validPricing = pricing;
+    if (!pricing || !validatePricing(pricing)) {
+      console.warn('Invalid pricing provided, using default pricing from environment');
+      validPricing = getPricingFromEnv();
+    }
+
     // Calculate delivery cost
-    const deliveryCalculation = calculateDeliveryCost(route.distance, pricing);
+    const deliveryCalculation = calculateDeliveryCost(route.distance, validPricing);
 
     return NextResponse.json({
       success: true,

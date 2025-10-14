@@ -510,10 +510,7 @@ export function ProjectActions({
                                   longitude: selectedWarehouse.longitude,
                                 },
                                 destination: coordinates,
-                                pricing: {
-                                  baseRate: 50,
-                                  perKmRate: 10,
-                                }
+                                // pricing will be validated and defaulted in the API if invalid
                               }),
                             });
                             
