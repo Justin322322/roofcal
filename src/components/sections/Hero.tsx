@@ -26,7 +26,7 @@ export default function Hero() {
             results in seconds.
           </p>
           <div className="flex justify-center gap-4 mb-16">
-            <Button size="lg" variant="accent" asChild>
+            <Button size="lg" variant="default" className="text-lg px-8 py-6 h-auto font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105" asChild>
               <Link href="/signup">Get Started</Link>
             </Button>
           </div>
