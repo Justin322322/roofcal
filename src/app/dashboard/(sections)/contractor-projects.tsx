@@ -32,6 +32,7 @@ import {
   CheckCircleIcon,
   FilterIcon,
   XCircleIcon,
+  MessageSquareIcon,
 } from "lucide-react";
 
 interface Project {
@@ -152,6 +153,28 @@ export function ContractorProjectsContent() {
       console.error("Failed to finish project:", error);
       toast.error("Failed to finish project");
     }
+  };
+
+  const handleAcceptAndSendProposal = async (projectId: string) => {
+    try {
+      // First approve the project
+      const approveResponse = await fetch(`/api/projects/${projectId}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!approveResponse.ok) throw new Error("Failed to approve project");
+
+      toast.success("Project approved and ready for proposal");
+      fetchProjects();
+    } catch (error) {
+      console.error("Failed to accept project:", error);
+      toast.error("Failed to accept project");
+    }
+  };
+
+  const handleRequestMoreInfo = async () => {
+    toast.info("Request more info functionality coming soon");
   };
 
   const getStatusBadge = (status: string, proposalStatus: string | null) => {
@@ -450,7 +473,7 @@ export function ContractorProjectsContent() {
                       </TableCell>
                       <TableCell>
                         <span className="font-medium">
-                          {project.totalCost.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          {project.totalCost.toLocaleString()}
                         </span>
                       </TableCell>
                       <TableCell>{getStatusBadge(project.status, project.proposalStatus)}</TableCell>
@@ -502,8 +525,35 @@ export function ContractorProjectsContent() {
                               Finish
                             </Button>
                           )}
-                          {(project.status === "CONTRACTOR_REVIEWING" || 
-                            project.status === "PROPOSAL_SENT" || 
+                          {project.status === "CONTRACTOR_REVIEWING" && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="default"
+                                onClick={() => handleAcceptAndSendProposal(project.id)}
+                              >
+                                <CheckIcon className="h-4 w-4 mr-1" />
+                                Accept & Send Proposal
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={handleRequestMoreInfo}
+                              >
+                                <MessageSquareIcon className="h-4 w-4 mr-1" />
+                                Request Info
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeclineProject(project.id)}
+                              >
+                                <XIcon className="h-4 w-4 mr-1" />
+                                Decline
+                              </Button>
+                            </>
+                          )}
+                          {(project.status === "PROPOSAL_SENT" || 
                             project.status === "COMPLETED" ||
                             (project.proposalStatus === "SENT" || project.proposalStatus === "ACCEPTED" || project.proposalStatus === "REJECTED")) && (
                             <span className="text-sm text-muted-foreground">No actions available</span>

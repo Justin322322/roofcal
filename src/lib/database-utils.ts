@@ -7,7 +7,7 @@ export const EDITABLE_TABLES = [
   "user",
   "project",
   "warehouse",
-  "pricingconfig",
+  "pricingConfig",
   "warehousematerial",
   "projectmaterial",
   "notification",

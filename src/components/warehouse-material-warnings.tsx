@@ -214,6 +214,17 @@ export function WarehouseMaterialWarnings({
     }
   };
 
+  const getWarningLabel = (warning: WarehouseMaterialWarning['warnings'][0]) => {
+    const level = getWarningLevel(warning);
+    if (level === 'critical') {
+      return 'CRITICAL - Stock Depleted';
+    } else if (level === 'warning') {
+      return 'LOW - Reorder Soon';
+    } else {
+      return 'MONITOR - Below Threshold';
+    }
+  };
+
   const handleReplenish = async (warehouseId: string, materialId: string, materialName: string) => {
     try {
       setReplenishing(materialId);
@@ -342,8 +353,11 @@ export function WarehouseMaterialWarnings({
                           {warning.materialName}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={warningLevel === 'critical' ? 'destructive' : 'secondary'}>
-                            {warningLevel.toUpperCase()}
+                          <Badge 
+                            variant={warningLevel === 'critical' ? 'destructive' : warningLevel === 'warning' ? 'default' : 'secondary'}
+                            className="whitespace-nowrap"
+                          >
+                            {getWarningLabel(warning)}
                           </Badge>
                         </TableCell>
                         <TableCell>{warning.currentStock} units</TableCell>

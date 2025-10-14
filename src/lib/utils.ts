@@ -18,10 +18,10 @@ export function formatStatus(status: string): string {
 }
 
 /**
- * Format a number with thousands separators (e.g., 1.000)
+ * Format a number with thousands separators (e.g., 1,000)
  */
 export function formatNumber(num: number): string {
-  return num.toLocaleString('de-DE');
+  return num.toLocaleString();
 }
 
 /**
