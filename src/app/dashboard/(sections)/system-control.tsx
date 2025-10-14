@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, AlertTriangle, CheckCircle2, Calendar, User } from "lucide-react";
+import { Loader2, AlertTriangle, CheckCircle2, Calendar } from "lucide-react";
 
 interface MaintenanceSettings {
   maintenanceMode: boolean;
@@ -45,7 +45,7 @@ export default function SystemControlContent() {
           ? new Date(data.maintenanceScheduledEnd).toISOString().slice(0, 16)
           : ""
       );
-    } catch (err) {
+    } catch {
       setError("Failed to load maintenance settings");
     } finally {
       setLoading(false);
@@ -76,7 +76,7 @@ export default function SystemControlContent() {
       setSuccess(
         `Maintenance mode ${action === "enable" ? "enabled" : "disabled"} successfully`
       );
-    } catch (err) {
+    } catch {
       setError("Failed to update maintenance mode");
     } finally {
       setSaving(false);
@@ -102,7 +102,7 @@ export default function SystemControlContent() {
       const data = await response.json();
       setSettings(data);
       setSuccess("Maintenance mode lifted successfully");
-    } catch (err) {
+    } catch {
       setError("Failed to lift maintenance mode");
     } finally {
       setSaving(false);

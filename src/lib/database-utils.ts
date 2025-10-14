@@ -26,7 +26,7 @@ export const READ_ONLY_TABLES = [
 /**
  * All available table names in the database
  */
-export const ALL_TABLES = [...EDITABLE_TABLES, ...READ_ONLY_TABLES] as const;
+export const ALL_TABLES = [...EDITABLE_TABLES, ...READ_ONLY_TABLES] as readonly string[];
 
 export type TableName = (typeof ALL_TABLES)[number];
 
@@ -34,7 +34,7 @@ export type TableName = (typeof ALL_TABLES)[number];
  * Check if a table is editable
  */
 export function isTableEditable(tableName: string): boolean {
-  return EDITABLE_TABLES.includes(tableName as TableName);
+  return EDITABLE_TABLES.includes(tableName as (typeof EDITABLE_TABLES)[number]);
 }
 
 /**
@@ -97,6 +97,7 @@ export async function getTableData(
   // Build the query dynamically based on table name
   // This is a simplified version - in production, you'd want more robust handling
   let whereClause = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let orderBy: any = {};
 
   // Add search functionality if search term is provided
@@ -119,11 +120,13 @@ export async function getTableData(
   }
 
   // Get total count for pagination
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const totalCount = await (prisma as any)[tableName].count({
     where: whereClause,
   });
 
   // Get paginated data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data = await (prisma as any)[tableName].findMany({
     where: whereClause,
     skip,
@@ -148,6 +151,7 @@ export async function getTableData(
 export async function updateTableRecord(
   tableName: string,
   id: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>
 ) {
   // Validate that the table is editable
@@ -156,9 +160,11 @@ export async function updateTableRecord(
   }
 
   // Remove id from data if present (shouldn't be updated)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { id: _, ...updateData } = data;
 
   // Update the record
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updated = await (prisma as any)[tableName].update({
     where: { id },
     data: updateData,
@@ -177,6 +183,7 @@ export async function deleteTableRecord(tableName: string, id: string) {
   }
 
   // Delete the record
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const deleted = await (prisma as any)[tableName].delete({
     where: { id },
   });
@@ -188,6 +195,7 @@ export async function deleteTableRecord(tableName: string, id: string) {
  * Get a single record by ID
  */
 export async function getTableRecord(tableName: string, id: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const record = await (prisma as any)[tableName].findUnique({
     where: { id },
   });
@@ -198,13 +206,18 @@ export async function getTableRecord(tableName: string, id: string) {
 /**
  * Create a new record in a table
  */
-export async function createTableRecord(tableName: string, data: Record<string, any>) {
+export async function createTableRecord(
+  tableName: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: Record<string, any>
+) {
   // Validate that the table is editable
   if (!isTableEditable(tableName)) {
     throw new Error(`Table ${tableName} is not editable`);
   }
 
   // Create the record
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const created = await (prisma as any)[tableName].create({
     data,
   });
@@ -216,9 +229,11 @@ export async function createTableRecord(tableName: string, data: Record<string, 
  * Get table statistics
  */
 export async function getTableStats(tableName: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const count = await (prisma as any)[tableName].count();
   
   // Get the most recent record
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const latest = await (prisma as any)[tableName].findFirst({
     orderBy: { created_at: "desc" },
   });

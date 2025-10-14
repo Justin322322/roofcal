@@ -7,7 +7,6 @@ import {
   updateTableRecord,
   deleteTableRecord,
   createTableRecord,
-  getTableRecord,
 } from "@/lib/database-utils";
 
 export async function GET(
@@ -70,13 +69,15 @@ export async function POST(
     const { table } = await params;
     const body = await request.json();
 
-    const result = await createTableRecord(table, body);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await createTableRecord(table, body as any);
 
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating record:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to create record";
     return NextResponse.json(
-      { error: error.message || "Failed to create record" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
@@ -105,13 +106,15 @@ export async function PUT(
       return NextResponse.json({ error: "ID is required" }, { status: 400 });
     }
 
-    const result = await updateTableRecord(table, id, data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await updateTableRecord(table, id, data as any);
 
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error updating record:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to update record";
     return NextResponse.json(
-      { error: error.message || "Failed to update record" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
@@ -140,13 +143,15 @@ export async function DELETE(
       return NextResponse.json({ error: "ID is required" }, { status: 400 });
     }
 
-    const result = await deleteTableRecord(table, id);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await deleteTableRecord(table, id as any);
 
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error deleting record:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to delete record";
     return NextResponse.json(
-      { error: error.message || "Failed to delete record" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
