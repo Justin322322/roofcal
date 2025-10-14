@@ -31,12 +31,14 @@ export function useRoofCalculator() {
     gutterSlope: "",
     gutterLengthC: "",
     insulationThickness: "10mm",
+    includeInsulation: false,
     ventilationType: "ridge-vent",
     ventilationPieces: "0",
+    includeVentilation: false,
     screwType: "roofing-with-washer",
   });
 
-  const [material, setMaterial] = useState("corrugated-0.4"); // Default to low budget variant
+  const [material, setMaterial] = useState("corrugated-0.4"); // Default material
   const [isLoadingPricing, setIsLoadingPricing] = useState(true);
   const [pricingError, setPricingError] = useState<string | null>(null);
 
@@ -162,13 +164,19 @@ export function useRoofCalculator() {
       // Screw type: basic for low budget, premium for high budget
       const nextScrew = isLow ? "roofing-with-washer" : "tek-screw";
 
-      // Insulation: type + thickness vary by budget
-      const nextInsulationType = isLow ? "fiberglass-batt" : "spray-foam";
-      const nextInsulationThickness = isLow ? "10mm" : "20mm";
+      // Insulation: type + thickness vary by budget (only update if already included)
+      const nextInsulationType = prev.includeInsulation
+        ? (isLow ? "fiberglass-batt" : "spray-foam")
+        : prev.insulationType;
+      const nextInsulationThickness = prev.includeInsulation
+        ? (isLow ? "10mm" : "20mm")
+        : prev.insulationThickness;
 
-      // Ventilation: default ridge vent; pieces based on area
-      const nextVentType = "ridge-vent";
-      const nextVentPieces = area > 0 ? String(Math.max(0, Math.ceil(area / 50))) : prev.ventilationPieces;
+      // Ventilation: default ridge vent; pieces based on area (only update if already included)
+      const nextVentType = prev.includeVentilation ? "ridge-vent" : prev.ventilationType;
+      const nextVentPieces = prev.includeVentilation && area > 0
+        ? String(Math.max(0, Math.ceil(area / 50)))
+        : prev.ventilationPieces;
 
       return {
         ...prev,
@@ -266,17 +274,24 @@ export function useRoofCalculator() {
     const selectedScrewPrice = CONSTANTS.SCREW_TYPES[measurements.screwType as keyof typeof CONSTANTS.SCREW_TYPES]?.price || CONSTANTS.SCREW_TYPES["roofing-with-washer"].price;
     const screwsCost = Math.round(screwsQuantity * selectedScrewPrice);
 
-    // 6. Calculate insulation cost (100% coverage)
-    const insulationPricePerSqm =
-      CONSTANTS.INSULATION_PRICES[
-        measurements.insulationThickness as keyof typeof CONSTANTS.INSULATION_PRICES
-      ] || CONSTANTS.INSULATION_PRICES["10mm"];
-    const insulationCost = Math.round(totalArea * insulationPricePerSqm);
+    // 6. Calculate insulation cost (100% coverage) - only if included
+    const insulationCost = measurements.includeInsulation
+      ? (() => {
+          const insulationPricePerSqm =
+            CONSTANTS.INSULATION_PRICES[
+              measurements.insulationThickness as keyof typeof CONSTANTS.INSULATION_PRICES
+            ] || CONSTANTS.INSULATION_PRICES["10mm"];
+          return Math.round(totalArea * insulationPricePerSqm);
+        })()
+      : 0;
 
-    // 7. Calculate ventilation cost
-    const ventilationPieces = parseFloat(measurements.ventilationPieces) || 0;
-    const ventilationCost =
-      ventilationPieces * CONSTANTS.VENTILATION_PRICE_PER_PIECE;
+    // 7. Calculate ventilation cost - only if included
+    const ventilationCost = measurements.includeVentilation
+      ? (() => {
+          const ventilationPieces = parseFloat(measurements.ventilationPieces) || 0;
+          return ventilationPieces * CONSTANTS.VENTILATION_PRICE_PER_PIECE;
+        })()
+      : 0;
 
     // 8. Calculate total materials cost
     const totalMaterialsCost =
@@ -364,11 +379,13 @@ export function useRoofCalculator() {
       gutterSlope: "",
       gutterLengthC: "",
       insulationThickness: "10mm",
+      includeInsulation: false,
       ventilationType: "ridge-vent",
       ventilationPieces: "0",
+      includeVentilation: false,
       screwType: "roofing-with-washer",
     });
-    setMaterial("corrugated-0.4"); // Reset to low budget variant
+    setMaterial("corrugated-0.4"); // Reset to default material
     setResults({
       area: 0,
       materialCost: 0,
@@ -465,16 +482,7 @@ export function useRoofCalculator() {
       // Small/medium areas: Keep current material if it's tile/slate
     }
 
-    // 3. OPTIMIZE MATERIAL THICKNESS - Align with budget (low->0.4, high->0.5)
-    if (measurements.budgetLevel === "low") {
-      optimizations.materialThickness = "0.4";
-      changesCount++;
-    } else if (measurements.budgetLevel === "high") {
-      optimizations.materialThickness = "0.5";
-      changesCount++;
-    }
-
-    // 4. OPTIMIZE RIDGE TYPE - Reduce complexity
+    // 3. OPTIMIZE RIDGE TYPE - Reduce complexity
     const optimizedPitch = parseFloat(
       optimizations.pitch || measurements.pitch
     );

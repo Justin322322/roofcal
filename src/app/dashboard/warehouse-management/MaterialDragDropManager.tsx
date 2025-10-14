@@ -96,6 +96,7 @@ interface MaterialDragDropManagerProps {
   onWarehouseUpdate?: () => void;
   onMaterialsRefresh?: () => void;
   allWarehouseMaterials?: Record<string, WarehouseMaterial[]>; // Real-time materials data
+  highlightedMaterialIds?: string[]; // Material IDs to highlight
 }
 
 interface DraggableMaterial extends Material {
@@ -188,18 +189,20 @@ function WarehouseMaterialRow({
   onEdit, 
   onRemove,
   isSelected,
-  onSelect
+  onSelect,
+  isHighlighted
 }: { 
   material: WarehouseMaterial;
   onEdit: (material: WarehouseMaterial) => void;
   onRemove: (materialId: string) => void;
   isSelected: boolean;
   onSelect: (materialId: string) => void;
+  isHighlighted?: boolean;
 }) {
   const finalPrice = material.material.price * (1 + material.locationAdjustment / 100);
 
   return (
-    <TableRow>
+    <TableRow className={isHighlighted ? "bg-yellow-50 dark:bg-yellow-950/20 animate-pulse" : ""}>
       <TableCell>
         <Checkbox
           checked={isSelected}
@@ -256,7 +259,7 @@ function WarehouseMaterialRow({
   );
 }
 
-export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onChangeWarehouse, onMaterialsUpdate, onWarehouseUpdate, onMaterialsRefresh, allWarehouseMaterials }: MaterialDragDropManagerProps) {
+export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onChangeWarehouse, onMaterialsUpdate, onWarehouseUpdate, onMaterialsRefresh, allWarehouseMaterials, highlightedMaterialIds = [] }: MaterialDragDropManagerProps) {
   const [materials, setMaterials] = useState<DraggableMaterial[]>([]);
   const [warehouseMaterials, setWarehouseMaterials] = useState<WarehouseMaterial[]>([]);
   const [selectedMaterials, setSelectedMaterials] = useState<Set<string>>(new Set());
@@ -1197,6 +1200,7 @@ export function MaterialDragDropManager({ warehouse, warehouses, onUpdate, onCha
                         onRemove={handleRemoveMaterial}
                         isSelected={selectedWarehouseMaterials.has(material.id)}
                         onSelect={handleToggleWarehouseMaterial}
+                        isHighlighted={highlightedMaterialIds.includes(material.materialId)}
                       />
                     ))}
                   </TableBody>

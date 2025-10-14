@@ -55,6 +55,14 @@ export interface MaterialConsumptionResult {
     remainingStock: number;
   }>;
   error?: string;
+  insufficientMaterials?: Array<{
+    materialId: string;
+    materialName: string;
+    required: number;
+    available: number;
+    shortage: number;
+  }>;
+  warehouseId?: string;
 }
 
 /**
@@ -163,7 +171,9 @@ export async function reserveProjectMaterials(
       return {
         success: false,
         message: errorMessage,
-        error: "INSUFFICIENT_MATERIALS"
+        error: "INSUFFICIENT_MATERIALS",
+        insufficientMaterials: availability.insufficientMaterials,
+        warehouseId: availability.warehouseId
       };
     }
 

@@ -61,51 +61,27 @@ interface PricingConfigAPIResponse {
 const fallbackMaterials: Material[] = [
   {
     value: "corrugated-0.4",
-    name: "Long Span (0.4mm)",
-    price: 650,
-    description: "Lightweight, weather-resistant, 30-50 year lifespan - Low budget option",
+    name: "Corrugated (0.4mm)",
+    price: 450,
+    description: "Lightweight, weather-resistant, 30-50 year lifespan - 0.4mm thickness",
   },
   {
     value: "corrugated-0.5",
+    name: "Corrugated (0.5mm)",
+    price: 520,
+    description: "Durable, weather-resistant, 30-50 year lifespan - 0.5mm thickness",
+  },
+  {
+    value: "longspan-0.4",
+    name: "Long Span (0.4mm)",
+    price: 520,
+    description: "Durable, weather-resistant, excellent water drainage - 0.4mm thickness",
+  },
+  {
+    value: "longspan-0.5",
     name: "Long Span (0.5mm)",
-    price: 800,
-    description: "Lightweight, weather-resistant, 30-50 year lifespan - High budget option",
-  },
-  {
-    value: "corrugated",
-    name: "Long Span (Default)",
-    price: 800,
-    description: "Lightweight, weather-resistant, 30-50 year lifespan",
-  },
-  {
-    value: "asphalt",
-    name: "Asphalt Shingles",
-    price: 450,
-    description: "Cost-effective and durable, 15-30 year lifespan",
-  },
-  {
-    value: "metal",
-    name: "Metal Roofing",
-    price: 1200,
-    description: "Long-lasting, energy efficient, 40-70 year lifespan",
-  },
-  {
-    value: "tile",
-    name: "Clay/Concrete Tile",
-    price: 1800,
-    description: "Premium durability, 50+ year lifespan",
-  },
-  {
-    value: "slate",
-    name: "Slate",
-    price: 2500,
-    description: "Highest quality, 100+ year lifespan",
-  },
-  {
-    value: "wood",
-    name: "Wood Shakes",
-    price: 900,
-    description: "Natural aesthetic, 20-40 year lifespan",
+    price: 600,
+    description: "Durable, weather-resistant, excellent water drainage - 0.5mm thickness",
   },
 ];
 

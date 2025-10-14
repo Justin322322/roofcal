@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { Measurements } from "../types";
 
 interface ConsolidatedAdditionalSpecsProps {
@@ -153,103 +154,159 @@ export function ConsolidatedAdditionalSpecs({
 
       <Separator />
 
-      {/* Insulation & Ventilation */}
+      {/* Insulation & Ventilation - Optional */}
       <div className="space-y-4">
-        <h4 className="text-sm font-semibold">Insulation & Ventilation</h4>
+        <h4 className="text-sm font-semibold">Optional Additions</h4>
         
-        <div className="grid gap-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            {/* Insulation Type */}
-            <div className="space-y-2">
-              <Label htmlFor="insulationType">Insulation</Label>
-              <Select
-                value={measurements.insulationType}
-                onValueChange={(value) => handleChange("insulationType", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select insulation type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fiberglass-batt">Fiberglass batt</SelectItem>
-                  <SelectItem value="foam-board">Foam board</SelectItem>
-                  <SelectItem value="reflective-roll">Reflective roll</SelectItem>
-                  <SelectItem value="spray-foam">Spray foam</SelectItem>
-                  <SelectItem value="mineral-wool">Mineral wool</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Insulation Thickness */}
-            <div className="space-y-2">
-              <Label htmlFor="insulationThickness">Insulation Thickness (100% Coverage)</Label>
-              <Select
-                value={measurements.insulationThickness}
-                onValueChange={(value) => handleChange("insulationThickness", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select thickness" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5mm">5mm</SelectItem>
-                  <SelectItem value="10mm">10mm</SelectItem>
-                  <SelectItem value="15mm">15mm</SelectItem>
-                  <SelectItem value="20mm">20mm</SelectItem>
-                  <SelectItem value="25mm">25mm</SelectItem>
-                </SelectContent>
-              </Select>
-              {roofArea > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  Coverage: {roofArea.toFixed(2)} sq.m (100% roof area)
-                </p>
-              )}
-            </div>
+        <div className="space-y-4">
+          {/* Insulation Toggle */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="includeInsulation"
+              checked={measurements.includeInsulation || false}
+              onCheckedChange={(checked) => {
+                handleChange("includeInsulation", checked ? "true" : "false");
+                // Reset insulation values when unchecked
+                if (!checked) {
+                  handleChange("insulationType", "");
+                  handleChange("insulationThickness", "");
+                }
+              }}
+            />
+            <Label
+              htmlFor="includeInsulation"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              Include Insulation
+            </Label>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            {/* Ventilation Type */}
-            <div className="space-y-2">
-              <Label htmlFor="ventilationType">Ventilation</Label>
-              <Select
-                value={measurements.ventilationType}
-                onValueChange={(value) => handleChange("ventilationType", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select ventilation type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ridge-vent">Ridge vent</SelectItem>
-                  <SelectItem value="turbine-vent">Turbine vent</SelectItem>
-                  <SelectItem value="static-vent">Static roof vent</SelectItem>
-                  <SelectItem value="soffit-vent">Soffit vent</SelectItem>
-                  <SelectItem value="exhaust-fan">Exhaust fan</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Insulation Fields - Only show when enabled */}
+          {measurements.includeInsulation && (
+            <div className="ml-6 space-y-4 border-l-2 border-primary/20 pl-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                {/* Insulation Type */}
+                <div className="space-y-2">
+                  <Label htmlFor="insulationType">Insulation Type</Label>
+                  <Select
+                    value={measurements.insulationType}
+                    onValueChange={(value) => handleChange("insulationType", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select insulation type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="fiberglass-batt">Fiberglass batt</SelectItem>
+                      <SelectItem value="foam-board">Foam board</SelectItem>
+                      <SelectItem value="reflective-roll">Reflective roll</SelectItem>
+                      <SelectItem value="spray-foam">Spray foam</SelectItem>
+                      <SelectItem value="mineral-wool">Mineral wool</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            {/* Ventilation Pieces */}
-            <div className="space-y-2">
-              <Label htmlFor="ventilationPieces">Number of Ventilation Pieces</Label>
-              <Input
-                id="ventilationPieces"
-                type="number"
-                placeholder="0"
-                value={measurements.ventilationPieces}
-                onChange={(e) => handleChange("ventilationPieces", e.target.value)}
-                min="0"
-              />
-              <p className="text-xs text-muted-foreground">
-                Recommended: 1 piece per 50 sq.m (Approx. {recommendedVentilationPieces} pieces for your roof)
-              </p>
+                {/* Insulation Thickness */}
+                <div className="space-y-2">
+                  <Label htmlFor="insulationThickness">Insulation Thickness (100% Coverage)</Label>
+                  <Select
+                    value={measurements.insulationThickness}
+                    onValueChange={(value) => handleChange("insulationThickness", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select thickness" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5mm">5mm</SelectItem>
+                      <SelectItem value="10mm">10mm</SelectItem>
+                      <SelectItem value="15mm">15mm</SelectItem>
+                      <SelectItem value="20mm">20mm</SelectItem>
+                      <SelectItem value="25mm">25mm</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {roofArea > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      Coverage: {roofArea.toFixed(2)} sq.m (100% roof area)
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
+          )}
+
+          {/* Ventilation Toggle */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="includeVentilation"
+              checked={measurements.includeVentilation || false}
+              onCheckedChange={(checked) => {
+                handleChange("includeVentilation", checked ? "true" : "false");
+                // Reset ventilation values when unchecked
+                if (!checked) {
+                  handleChange("ventilationType", "");
+                  handleChange("ventilationPieces", "");
+                }
+              }}
+            />
+            <Label
+              htmlFor="includeVentilation"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              Include Ventilation
+            </Label>
           </div>
+
+          {/* Ventilation Fields - Only show when enabled */}
+          {measurements.includeVentilation && (
+            <div className="ml-6 space-y-4 border-l-2 border-primary/20 pl-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                {/* Ventilation Type */}
+                <div className="space-y-2">
+                  <Label htmlFor="ventilationType">Ventilation Type</Label>
+                  <Select
+                    value={measurements.ventilationType}
+                    onValueChange={(value) => handleChange("ventilationType", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select ventilation type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ridge-vent">Ridge vent</SelectItem>
+                      <SelectItem value="turbine-vent">Turbine vent</SelectItem>
+                      <SelectItem value="static-vent">Static roof vent</SelectItem>
+                      <SelectItem value="soffit-vent">Soffit vent</SelectItem>
+                      <SelectItem value="exhaust-fan">Exhaust fan</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Ventilation Pieces */}
+                <div className="space-y-2">
+                  <Label htmlFor="ventilationPieces">Number of Ventilation Pieces</Label>
+                  <Input
+                    id="ventilationPieces"
+                    type="number"
+                    placeholder="0"
+                    value={measurements.ventilationPieces}
+                    onChange={(e) => handleChange("ventilationPieces", e.target.value)}
+                    min="0"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Recommended: 1 piece per 50 sq.m (Approx. {recommendedVentilationPieces} pieces for your roof)
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Tips and Notes */}
       <div className="pt-2 text-xs text-muted-foreground space-y-1">
         <p>
-          <strong>Tip:</strong> Ventilated ridge caps improve attic ventilation
-          and reduce moisture buildup
+          <strong>Tip:</strong> Insulation helps regulate temperature and reduce energy costs
+        </p>
+        <p>
+          <strong>Tip:</strong> Ventilation reduces moisture buildup and extends roof life
         </p>
         <p>
           <strong>Note:</strong> Large gutters (6&quot;) handle 50% more water

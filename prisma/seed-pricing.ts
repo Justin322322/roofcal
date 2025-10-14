@@ -13,17 +13,13 @@ async function seedPricingData() {
 
     // Seed material prices with thickness variants
     const materials = [
-      // Corrugated materials (main focus since it's the only allowed material)
-      { name: 'corrugated-0.4', label: 'Long Span (0.4mm)', price: 650, description: 'Lightweight, weather-resistant, 30-50 year lifespan - Low budget option' },
-      { name: 'corrugated-0.5', label: 'Long Span (0.5mm)', price: 800, description: 'Lightweight, weather-resistant, 30-50 year lifespan - High budget option' },
+      // Corrugated materials with thickness options
+      { name: 'corrugated-0.4', label: 'Corrugated (0.4mm)', price: 450, description: 'Lightweight, weather-resistant, 30-50 year lifespan - 0.4mm thickness' },
+      { name: 'corrugated-0.5', label: 'Corrugated (0.5mm)', price: 520, description: 'Durable, weather-resistant, 30-50 year lifespan - 0.5mm thickness' },
       
-      // Other materials for reference (though currently restricted)
-      { name: 'asphalt', label: 'Asphalt Shingles', price: 450, description: 'Cost-effective and durable, 15-30 year lifespan' },
-      { name: 'metal', label: 'Metal Roofing', price: 1200, description: 'Long-lasting, energy efficient, 40-70 year lifespan' },
-      { name: 'corrugated', label: 'Long Span (Default)', price: 800, description: 'Lightweight, weather-resistant, 30-50 year lifespan' },
-      { name: 'tile', label: 'Clay/Concrete Tile', price: 1800, description: 'Premium durability, 50+ year lifespan' },
-      { name: 'slate', label: 'Slate', price: 2500, description: 'Highest quality, 100+ year lifespan' },
-      { name: 'wood', label: 'Wood Shakes', price: 900, description: 'Natural aesthetic, 20-40 year lifespan' },
+      // Long Span materials with thickness options
+      { name: 'longspan-0.4', label: 'Long Span (0.4mm)', price: 520, description: 'Durable, weather-resistant, excellent water drainage - 0.4mm thickness' },
+      { name: 'longspan-0.5', label: 'Long Span (0.5mm)', price: 600, description: 'Durable, weather-resistant, excellent water drainage - 0.5mm thickness' },
     ];
 
     for (const material of materials) {

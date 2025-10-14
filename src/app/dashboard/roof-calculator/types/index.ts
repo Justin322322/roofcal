@@ -27,9 +27,11 @@ export interface Measurements {
   gutterLengthC: string;
   // Insulation
   insulationThickness: string;
+  includeInsulation?: boolean;
   // Ventilation
   ventilationType?: "ridge-vent" | "turbine-vent" | "static-vent" | "soffit-vent" | "exhaust-fan";
   ventilationPieces: string;
+  includeVentilation?: boolean;
   // Screw selection
   screwType: string;
 }

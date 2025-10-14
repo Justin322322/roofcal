@@ -157,21 +157,16 @@ export function calculateComplexityScore(
     score += 1;
   }
 
-  // Factor 2: Roof type complexity (0-3 points)
+  // Factor 2: Roof type complexity (0-2 points)
   const typeScores: Record<string, number> = {
-    flat: 0,
+    shed: 0,
     gable: 1,
-    hip: 2,
-    mansard: 3,
-    gambrel: 3,
   };
   const typeScore = typeScores[roofType] || 1;
   score += typeScore;
 
-  if (roofType === "mansard" || roofType === "gambrel") {
-    factors.push(`Complex ${roofType} roof`);
-  } else if (roofType === "hip") {
-    factors.push("Hip roof");
+  if (roofType === "gable") {
+    factors.push("Gable roof (+5% cost)");
   }
 
   // Factor 3: Area complexity (1-3 points)

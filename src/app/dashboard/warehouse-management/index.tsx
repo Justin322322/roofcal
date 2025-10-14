@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -594,6 +595,7 @@ function WarehouseSetupForm({ onSave }: { onSave: (warehouse: Partial<Warehouse>
 
 export function WarehouseManagementPage() {
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
   const { warehouses, fetchWarehouses } = useWarehouseData();
   const [showSetupForm, setShowSetupForm] = useState(false);
   const [selectedWarehouse, setSelectedWarehouse] = useState<Warehouse | null>(null);
@@ -602,6 +604,7 @@ export function WarehouseManagementPage() {
   const [editingWarehouse, setEditingWarehouse] = useState<Warehouse | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [allWarehouseMaterials, setAllWarehouseMaterials] = useState<Record<string, WarehouseMaterial[]>>({});
+  const [highlightedMaterialIds, setHighlightedMaterialIds] = useState<string[]>([]);
   
   // Function to refresh warehouse materials for a specific warehouse
   const refreshWarehouseMaterials = useCallback(async (warehouseId: string) => {
@@ -659,6 +662,39 @@ export function WarehouseManagementPage() {
 
   console.log('WarehouseManagementPage - Session:', session);
   console.log('WarehouseManagementPage - User role:', session?.user?.role);
+
+  // Handle URL parameters for auto-selecting warehouse and highlighting materials
+  useEffect(() => {
+    const warehouseParam = searchParams.get('warehouse');
+    const materialsParam = searchParams.get('materials');
+    const highlightParam = searchParams.get('highlight');
+
+    if (warehouseParam && warehouses.length > 0) {
+      // Find and select the warehouse
+      const warehouse = warehouses.find(w => w.id === warehouseParam);
+      if (warehouse) {
+        setSelectedWarehouse(warehouse);
+        setActiveTab("materials");
+        
+        // If materials are specified and highlight is true, highlight those materials
+        if (materialsParam && highlightParam === 'true') {
+          const materialIds = materialsParam.split(',');
+          setHighlightedMaterialIds(materialIds);
+          
+          // Show a toast to guide the user
+          toast.info("Materials highlighted", {
+            description: `${materialIds.length} material(s) need to be updated. Please update their quantities.`,
+            duration: 5000,
+          });
+          
+          // Clear the highlight after 10 seconds
+          setTimeout(() => {
+            setHighlightedMaterialIds([]);
+          }, 10000);
+        }
+      }
+    }
+  }, [searchParams, warehouses]);
 
   const handleWarehouseSave = (warehouseData: Partial<Warehouse>) => {
     // The warehouse creation is handled in the form component
@@ -1100,6 +1136,7 @@ export function WarehouseManagementPage() {
                           }, 1000);
                         }}
                         allWarehouseMaterials={allWarehouseMaterials}
+                        highlightedMaterialIds={highlightedMaterialIds}
                       />
                     </>
                   ) : (

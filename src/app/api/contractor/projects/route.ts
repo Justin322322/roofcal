@@ -54,6 +54,22 @@ export async function GET(request: NextRequest) {
             lastName: true,
           },
         },
+        ProjectMaterial: {
+          include: {
+            WarehouseMaterial: {
+              include: {
+                PricingConfig: {
+                  select: {
+                    id: true,
+                    name: true,
+                    category: true,
+                    unit: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       orderBy: [
         { status: "asc" },

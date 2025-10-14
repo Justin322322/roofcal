@@ -28,10 +28,6 @@ interface RoofStatsCardsProps {
 
 // Helper function to get material name with fallback for thickness variants
 function getMaterialName(materialValue: string): string {
-  // Handle corrugated thickness variants
-  if (materialValue === "corrugated-0.4") return "Long Span (0.4mm)";
-  if (materialValue === "corrugated-0.5") return "Long Span (0.5mm)";
-  
   // Find in materials array
   const material = materials.find((m) => m.value === materialValue);
   return material?.name || materialValue;
@@ -39,10 +35,6 @@ function getMaterialName(materialValue: string): string {
 
 // Helper function to get material price
 function getMaterialPrice(materialValue: string): number {
-  // Handle corrugated thickness variants
-  if (materialValue === "corrugated-0.4") return 650;
-  if (materialValue === "corrugated-0.5") return 800;
-  
   // Find in materials array
   const material = materials.find((m) => m.value === materialValue);
   return material?.price || 0;

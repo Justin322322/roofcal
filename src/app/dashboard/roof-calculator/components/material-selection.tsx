@@ -50,40 +50,28 @@ interface PricingConfigAPIResponse {
 // Fallback materials for when database is unavailable
 const fallbackMaterials: Material[] = [
   {
-    value: "asphalt",
-    name: "Asphalt Shingles",
+    value: "corrugated-0.4",
+    name: "Corrugated (0.4mm)",
     price: 450,
-    description: "Cost-effective and durable, 15-30 year lifespan",
+    description: "Lightweight, weather-resistant, 30-50 year lifespan - 0.4mm thickness",
   },
   {
-    value: "metal",
-    name: "Metal Roofing",
-    price: 1200,
-    description: "Long-lasting, energy efficient, 40-70 year lifespan",
+    value: "corrugated-0.5",
+    name: "Corrugated (0.5mm)",
+    price: 520,
+    description: "Durable, weather-resistant, 30-50 year lifespan - 0.5mm thickness",
   },
   {
-    value: "corrugated",
-    name: "Long Span",
-    price: 800,
-    description: "Lightweight, weather-resistant, 30-50 year lifespan",
+    value: "longspan-0.4",
+    name: "Long Span (0.4mm)",
+    price: 520,
+    description: "Durable, weather-resistant, excellent water drainage - 0.4mm thickness",
   },
   {
-    value: "tile",
-    name: "Clay/Concrete Tile",
-    price: 1800,
-    description: "Premium durability, 50+ year lifespan",
-  },
-  {
-    value: "slate",
-    name: "Slate",
-    price: 2500,
-    description: "Highest quality, 100+ year lifespan",
-  },
-  {
-    value: "wood",
-    name: "Wood Shakes",
-    price: 900,
-    description: "Natural aesthetic, 20-40 year lifespan",
+    value: "longspan-0.5",
+    name: "Long Span (0.5mm)",
+    price: 600,
+    description: "Durable, weather-resistant, excellent water drainage - 0.5mm thickness",
   },
 ];
 

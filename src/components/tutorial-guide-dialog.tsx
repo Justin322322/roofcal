@@ -35,13 +35,7 @@ export function TutorialGuideDialog() {
 
   const roofTypeImages: { [key: string]: string } = {
     gable: "https://unex0yvstmuqs1jv.public.blob.vercel-storage.com/roof/gable.jpg",
-    hip: "https://unex0yvstmuqs1jv.public.blob.vercel-storage.com/roof/hip-roof.avif",
-    mansard: "https://unex0yvstmuqs1jv.public.blob.vercel-storage.com/roof/mansard-roof.webp",
     shed: "https://unex0yvstmuqs1jv.public.blob.vercel-storage.com/roof/shed-roof.jpg",
-    gambrel: "https://unex0yvstmuqs1jv.public.blob.vercel-storage.com/roof/gabrel-roof.png",
-    "cross-gabled": "https://unex0yvstmuqs1jv.public.blob.vercel-storage.com/roof/cross-gabled.jpeg",
-    saltbox: "https://unex0yvstmuqs1jv.public.blob.vercel-storage.com/roof/salt-box.webp",
-    butterfly: "https://unex0yvstmuqs1jv.public.blob.vercel-storage.com/roof/buttlefly-roof.avif",
   };
 
   return (
@@ -518,7 +512,7 @@ export function TutorialGuideDialog() {
                             Business Management
                           </h5>
                           <ul className="text-sm space-y-1">
-                            {content.tabs.contractor.features?.businessManagement?.map((feature, index) => (
+                            {(content.tabs.contractor.features as Record<string, string[]>)?.businessManagement?.map((feature, index) => (
                               <li key={index}>• {feature}</li>
                             ))}
                           </ul>
@@ -529,7 +523,7 @@ export function TutorialGuideDialog() {
                             Pricing & Estimates
                           </h5>
                           <ul className="text-sm space-y-1">
-                            {content.tabs.contractor.features?.pricingEstimates?.map((feature, index) => (
+                            {(content.tabs.contractor.features as Record<string, string[]>)?.pricingEstimates?.map((feature, index) => (
                               <li key={index}>• {feature}</li>
                             ))}
                           </ul>
@@ -542,7 +536,7 @@ export function TutorialGuideDialog() {
                             Client Communication
                           </h5>
                           <ul className="text-sm space-y-1">
-                            {content.tabs.contractor.features?.clientCommunication?.map((feature, index) => (
+                            {(content.tabs.contractor.features as Record<string, string[]>)?.clientCommunication?.map((feature, index) => (
                               <li key={index}>• {feature}</li>
                             ))}
                           </ul>
@@ -553,7 +547,7 @@ export function TutorialGuideDialog() {
                             Reporting & Analytics
                           </h5>
                           <ul className="text-sm space-y-1">
-                            {content.tabs.contractor.features?.reportingAnalytics?.map((feature, index) => (
+                            {(content.tabs.contractor.features as Record<string, string[]>)?.reportingAnalytics?.map((feature, index) => (
                               <li key={index}>• {feature}</li>
                             ))}
                           </ul>
@@ -572,7 +566,7 @@ export function TutorialGuideDialog() {
                           Business Tools:
                         </h5>
                         <ul className="text-sm text-muted-foreground space-y-1">
-                          {content.tabs.contractor.integrations?.businessTools?.map((tool, index) => (
+                          {(content.tabs.contractor.integrations as Record<string, string[]>)?.businessTools?.map((tool, index) => (
                             <li key={index}>• {tool}</li>
                           ))}
                         </ul>
@@ -582,7 +576,7 @@ export function TutorialGuideDialog() {
                           Industry Resources:
                         </h5>
                         <ul className="text-sm text-muted-foreground space-y-1">
-                          {content.tabs.contractor.integrations?.industryResources?.map((resource, index) => (
+                          {(content.tabs.contractor.integrations as Record<string, string[]>)?.industryResources?.map((resource, index) => (
                             <li key={index}>• {resource}</li>
                           ))}
                         </ul>
@@ -597,7 +591,7 @@ export function TutorialGuideDialog() {
                     <ul className="text-sm text-muted-foreground space-y-1">
                       {content.tabs.contractor.benefits?.map((benefit, index) => (
                         <li key={index}>
-                          • <strong>{benefit.benefit}:</strong> {benefit.description}
+                          • {typeof benefit === 'string' ? benefit : <><strong>{benefit.benefit}:</strong> {benefit.description}</>}
                         </li>
                       ))}
                     </ul>
@@ -625,7 +619,7 @@ export function TutorialGuideDialog() {
                             Smart Recommendations
                           </h5>
                           <ul className="text-sm space-y-1">
-                            {content.tabs["ai-system"].features?.smartRecommendations?.map((feature, index) => (
+                            {(content.tabs["ai-system"].features as Record<string, string[]>)?.smartRecommendations?.map((feature: string, index: number) => (
                               <li key={index}>• {feature}</li>
                             ))}
                           </ul>
@@ -636,7 +630,7 @@ export function TutorialGuideDialog() {
                             Predictive Analytics
                           </h5>
                           <ul className="text-sm space-y-1">
-                            {content.tabs["ai-system"].features?.predictiveAnalytics?.map((feature, index) => (
+                            {(content.tabs["ai-system"].features as Record<string, string[]>)?.predictiveAnalytics?.map((feature: string, index: number) => (
                               <li key={index}>• {feature}</li>
                             ))}
                           </ul>
@@ -649,7 +643,7 @@ export function TutorialGuideDialog() {
                             Intelligent Calculations
                           </h5>
                           <ul className="text-sm space-y-1">
-                            {content.tabs["ai-system"].features?.intelligentCalculations?.map((feature, index) => (
+                            {(content.tabs["ai-system"].features as Record<string, string[]>)?.intelligentCalculations?.map((feature: string, index: number) => (
                               <li key={index}>• {feature}</li>
                             ))}
                           </ul>
@@ -660,7 +654,7 @@ export function TutorialGuideDialog() {
                             Quality Assurance
                           </h5>
                           <ul className="text-sm space-y-1">
-                            {content.tabs["ai-system"].features?.qualityAssurance?.map((feature, index) => (
+                            {(content.tabs["ai-system"].features as Record<string, string[]>)?.qualityAssurance?.map((feature: string, index: number) => (
                               <li key={index}>• {feature}</li>
                             ))}
                           </ul>
@@ -718,7 +712,7 @@ export function TutorialGuideDialog() {
                             Project Organization
                           </h5>
                           <ul className="text-sm space-y-1">
-                            {content.tabs.projects.features?.projectOrganization?.map((feature, index) => (
+                            {(content.tabs.projects.features as Record<string, string[]>)?.projectOrganization?.map((feature: string, index: number) => (
                               <li key={index}>• {feature}</li>
                             ))}
                           </ul>
@@ -729,7 +723,7 @@ export function TutorialGuideDialog() {
                             Progress Tracking
                           </h5>
                           <ul className="text-sm space-y-1">
-                            {content.tabs.projects.features?.progressTracking?.map((feature, index) => (
+                            {(content.tabs.projects.features as Record<string, string[]>)?.progressTracking?.map((feature: string, index: number) => (
                               <li key={index}>• {feature}</li>
                             ))}
                           </ul>
@@ -742,7 +736,7 @@ export function TutorialGuideDialog() {
                             Documentation
                           </h5>
                           <ul className="text-sm space-y-1">
-                            {content.tabs.projects.features?.documentation?.map((feature, index) => (
+                            {(content.tabs.projects.features as Record<string, string[]>)?.documentation?.map((feature: string, index: number) => (
                               <li key={index}>• {feature}</li>
                             ))}
                           </ul>
@@ -753,7 +747,7 @@ export function TutorialGuideDialog() {
                             Collaboration
                           </h5>
                           <ul className="text-sm space-y-1">
-                            {content.tabs.projects.features?.collaboration?.map((feature, index) => (
+                            {(content.tabs.projects.features as Record<string, string[]>)?.collaboration?.map((feature: string, index: number) => (
                               <li key={index}>• {feature}</li>
                             ))}
                           </ul>
@@ -816,7 +810,7 @@ export function TutorialGuideDialog() {
                             Project Storage
                           </h5>
                           <ul className="text-sm space-y-1">
-                            {content.tabs.archive.features?.projectStorage?.map((feature, index) => (
+                            {(content.tabs.archive.features as Record<string, string[]>)?.projectStorage?.map((feature: string, index: number) => (
                               <li key={index}>• {feature}</li>
                             ))}
                           </ul>
@@ -827,7 +821,7 @@ export function TutorialGuideDialog() {
                             Search & Retrieval
                           </h5>
                           <ul className="text-sm space-y-1">
-                            {content.tabs.archive.features?.searchRetrieval?.map((feature, index) => (
+                            {(content.tabs.archive.features as Record<string, string[]>)?.searchRetrieval?.map((feature: string, index: number) => (
                               <li key={index}>• {feature}</li>
                             ))}
                           </ul>
@@ -840,7 +834,7 @@ export function TutorialGuideDialog() {
                             Data Management
                           </h5>
                           <ul className="text-sm space-y-1">
-                            {content.tabs.archive.features?.dataManagement?.map((feature, index) => (
+                            {(content.tabs.archive.features as Record<string, string[]>)?.dataManagement?.map((feature: string, index: number) => (
                               <li key={index}>• {feature}</li>
                             ))}
                           </ul>
@@ -851,7 +845,7 @@ export function TutorialGuideDialog() {
                             Restoration & Reference
                           </h5>
                           <ul className="text-sm space-y-1">
-                            {content.tabs.archive.features?.restorationReference?.map((feature, index) => (
+                            {(content.tabs.archive.features as Record<string, string[]>)?.restorationReference?.map((feature: string, index: number) => (
                               <li key={index}>• {feature}</li>
                             ))}
                           </ul>

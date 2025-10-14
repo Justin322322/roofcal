@@ -124,7 +124,12 @@ export async function PUT(
         const reserveResult = await reserveProjectMaterials(id);
         if (!reserveResult.success) {
           return NextResponse.json(
-            { error: reserveResult.message },
+            { 
+              error: reserveResult.message,
+              errorCode: reserveResult.error,
+              insufficientMaterials: 'insufficientMaterials' in reserveResult ? reserveResult.insufficientMaterials : undefined,
+              warehouseId: 'warehouseId' in reserveResult ? reserveResult.warehouseId : undefined
+            },
             { status: 400 }
           );
         }
@@ -388,7 +393,12 @@ export async function PATCH(
           const reserveResult = await reserveProjectMaterials(id);
           if (!reserveResult.success) {
             return NextResponse.json(
-              { error: reserveResult.message },
+              { 
+                error: reserveResult.message,
+                errorCode: reserveResult.error,
+                insufficientMaterials: 'insufficientMaterials' in reserveResult ? reserveResult.insufficientMaterials : undefined,
+                warehouseId: 'warehouseId' in reserveResult ? reserveResult.warehouseId : undefined
+              },
               { status: 400 }
             );
           }

@@ -75,6 +75,11 @@ export interface ProjectWorkflow {
   description: string;
 }
 
+export interface ProjectStatus {
+  status: string;
+  description: string;
+}
+
 export interface TabContent {
   title: string;
   description: string;
@@ -91,9 +96,9 @@ export interface TabContent {
   whenToUse?: string[];
   manualEntryOptions?: ManualEntryOption[];
   bestPractices?: string[];
-  features?: BusinessFeature;
+  features?: BusinessFeature | KeyFeature[] | Record<string, string[]>;
   integrations?: Integration;
-  benefits?: Benefit[];
+  benefits?: Benefit[] | string[];
   learning?: {
     description: string;
     dataSources: string[];
@@ -102,6 +107,13 @@ export interface TabContent {
   configuration?: BusinessFeature;
   regionalCustomization?: Integration;
   considerations?: Consideration[];
+  projectStatuses?: ProjectStatus[];
+  costComponents?: {
+    component: string;
+    description: string;
+    factors?: string[];
+  }[];
+  [key: string]: string | string[] | KeyFeature[] | MaterialInfo[] | SelectionGuide[] | WorkflowStep[] | ProTip[] | AdvancedFeature[] | ManualEntryOption[] | BusinessFeature | Integration | Benefit[] | ProjectStatus[] | ProjectWorkflow[] | Consideration[] | RoofTypeCard[] | TabContent["learning"] | TabContent["costComponents"] | undefined;
 }
 
 export interface TutorialContent {

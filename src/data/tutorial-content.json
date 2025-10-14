@@ -1,25 +1,11 @@
 {
   "roofTypes": {
     "gable": {
-      "name": "Gable Roof",
-      "description": "Simple triangular shape formed by two sloping sides meeting at a ridge. Most cost-effective and suitable for most climates.",
+      "name": "Gable Roof (+5%)",
+      "description": "Simple triangular shape formed by two sloping sides meeting at a ridge. Most cost-effective and suitable for most climates. Includes a 5% cost adjustment for complexity.",
       "bestFor": "Most residential applications, budget-conscious projects, areas with moderate weather",
-      "costRange": "₱4,500-6,700 per square meter",
-      "complexity": "Low - Simple construction and installation"
-    },
-    "hip": {
-      "name": "Hip Roof",
-      "description": "Four sloping sides that meet at the top, providing excellent wind resistance and a more complex but elegant appearance.",
-      "bestFor": "High-wind areas, modern homes, architectural variety",
-      "costRange": "₱6,700-10,000 per square meter",
-      "complexity": "Medium - More complex framing and material requirements"
-    },
-    "mansard": {
-      "name": "Mansard Roof",
-      "description": "French architectural style with steep lower slopes and flatter upper slopes, maximizing living space and providing distinctive character.",
-      "bestFor": "French colonial homes, maximizing attic space, historic renovations",
-      "costRange": "₱11,200-19,600 per square meter",
-      "complexity": "High - Complex framing and specialized installation"
+      "costRange": "₱4,500-6,700 per square meter (+5%)",
+      "complexity": "Low - Simple construction and installation with 5% cost premium"
     },
     "shed": {
       "name": "Shed Roof",
@@ -27,34 +13,6 @@
       "bestFor": "Modern homes, additions, excellent water drainage needs",
       "costRange": "₱5,000-7,800 per square meter",
       "complexity": "Low - Simple single-slope construction"
-    },
-    "gambrel": {
-      "name": "Gambrel Roof",
-      "description": "Two slopes per side, creating a barn-like appearance. Provides more space than a simple gable while maintaining structural simplicity.",
-      "bestFor": "Barn conversions, Dutch colonial homes, maximizing attic space",
-      "costRange": "₱8,400-14,000 per square meter",
-      "complexity": "Medium - More complex framing than simple gable"
-    },
-    "cross-gabled": {
-      "name": "Cross-Gabled Roof",
-      "description": "Multiple gables intersecting at different angles, creating complex valleys and architectural interest with varied rooflines.",
-      "bestFor": "Complex architectural designs, multi-wing homes, Victorian styles",
-      "costRange": "₱10,000-16,800 per square meter",
-      "complexity": "High - Complex valley installation and water management"
-    },
-    "saltbox": {
-      "name": "Saltbox Roof",
-      "description": "Asymmetrical gable with one long sloping side and one short side, creating a distinctive colonial American appearance.",
-      "bestFor": "Colonial homes, historic renovations, unique architectural character",
-      "costRange": "₱6,700-11,200 per square meter",
-      "complexity": "Medium - Asymmetrical framing requirements"
-    },
-    "butterfly": {
-      "name": "Butterfly Roof",
-      "description": "Inverted gable that creates a V-shape, allowing for unique drainage patterns and modern architectural expression.",
-      "bestFor": "Modern homes, rainwater collection, contemporary design",
-      "costRange": "₱11,200-22,400 per square meter",
-      "complexity": "High - Specialized drainage and structural requirements"
     }
   },
   "tabs": {
@@ -64,7 +22,7 @@
       "keyFeatures": [
         {
           "title": "Smart Calculator",
-          "description": "AI-powered calculations with multiple roof types and materials"
+          "description": "AI-powered calculations with gable and shed roof types"
         },
         {
           "title": "Project Management",
@@ -75,8 +33,8 @@
           "description": "Comprehensive material options with real-time pricing"
         },
         {
-          "title": "Export & Reports",
-          "description": "Generate detailed reports for clients and documentation"
+          "title": "Warehouse Integration",
+          "description": "Manage materials and track inventory"
         },
         {
           "title": "Contractor Tools",
@@ -91,45 +49,13 @@
       "commonRoofs": [
         {
           "type": "gable",
-          "name": "Gable Roof",
-          "description": "Simple triangular shape"
-        },
-        {
-          "type": "hip",
-          "name": "Hip Roof",
-          "description": "Four sloping sides"
-        },
-        {
-          "type": "mansard",
-          "name": "Mansard Roof",
-          "description": "French style design"
+          "name": "Gable Roof (+5%)",
+          "description": "Simple triangular shape with 5% cost adjustment"
         },
         {
           "type": "shed",
           "name": "Shed Roof",
           "description": "Single sloping plane"
-        }
-      ],
-      "complexRoofs": [
-        {
-          "type": "gambrel",
-          "name": "Gambrel Roof",
-          "description": "Barn-style design"
-        },
-        {
-          "type": "cross-gabled",
-          "name": "Cross-Gabled",
-          "description": "Multiple gables"
-        },
-        {
-          "type": "saltbox",
-          "name": "Saltbox Roof",
-          "description": "Asymmetrical gable"
-        },
-        {
-          "type": "butterfly",
-          "name": "Butterfly Roof",
-          "description": "Inverted gable"
         }
       ],
       "selectionTips": [
@@ -145,52 +71,36 @@
       "description": "Choosing the right roofing material is crucial for longevity, cost-effectiveness, and aesthetic appeal. Each material has unique properties, installation requirements, and cost implications.",
       "materialList": [
         {
-          "name": "Asphalt Shingles",
-          "cost": "₱4,500-6,700 per square meter",
-          "lifespan": "15-30 years",
-          "pros": "Affordable, easy installation, variety of colors",
-          "cons": "Shorter lifespan, weather sensitive",
-          "bestFor": "Most residential applications, budget-conscious projects"
-        },
-        {
-          "name": "Metal Roofing",
-          "cost": "₱6,700-50,400 per square meter",
-          "lifespan": "40-70 years",
-          "pros": "Durable, energy efficient, recyclable",
-          "cons": "Higher initial cost, noise during rain",
-          "bestFor": "Long-term investments, modern aesthetics"
-        },
-        {
-          "name": "Clay Tiles",
-          "cost": "₱16,800-28,000 per square meter",
-          "lifespan": "50-100 years",
-          "pros": "Fire resistant, energy efficient, timeless appeal",
-          "cons": "Heavy, requires strong structure, fragile",
-          "bestFor": "Mediterranean/Spanish style homes, warm climates"
-        },
-        {
-          "name": "Slate",
-          "cost": "₱33,600-84,000 per square meter",
-          "lifespan": "75-200 years",
-          "pros": "Extremely durable, fire resistant, natural beauty",
-          "cons": "Very heavy, expensive, requires skilled installation",
-          "bestFor": "Premium homes, historic restoration"
-        },
-        {
-          "name": "Wood Shingles/Shakes",
-          "cost": "₱22,400-39,200 per square meter",
+          "name": "Corrugated (0.4mm)",
+          "cost": "₱450 per square meter",
           "lifespan": "30-50 years",
-          "pros": "Natural beauty, good insulation, renewable",
-          "cons": "Fire risk, maintenance required, insect prone",
-          "bestFor": "Rustic/cottage styles, forested areas"
+          "pros": "Lightweight, weather-resistant, easy installation, affordable",
+          "cons": "May require more maintenance",
+          "bestFor": "Residential and commercial buildings, budget-conscious projects"
         },
         {
-          "name": "Synthetic Materials",
-          "cost": "₱11,200-33,600 per square meter",
+          "name": "Corrugated (0.5mm)",
+          "cost": "₱520 per square meter",
           "lifespan": "30-50 years",
-          "pros": "Lightweight, versatile, weather resistant",
-          "cons": "Newer technology, varying quality",
-          "bestFor": "Eco-conscious projects, modern designs"
+          "pros": "Durable, weather-resistant, better structural integrity",
+          "cons": "Slightly higher cost than 0.4mm",
+          "bestFor": "Residential and commercial buildings, areas with heavy weather"
+        },
+        {
+          "name": "Long Span (0.4mm)",
+          "cost": "₱520 per square meter",
+          "lifespan": "30-50 years",
+          "pros": "Durable, weather-resistant, excellent water drainage, modern appearance",
+          "cons": "Slightly higher cost than corrugated",
+          "bestFor": "Modern homes, commercial buildings, areas with heavy rainfall"
+        },
+        {
+          "name": "Long Span (0.5mm)",
+          "cost": "₱600 per square meter",
+          "lifespan": "30-50 years",
+          "pros": "Maximum durability, excellent water drainage, superior structural integrity",
+          "cons": "Higher cost than other options",
+          "bestFor": "Premium projects, commercial buildings, extreme weather conditions"
         }
       ],
       "selectionGuide": [
@@ -230,7 +140,7 @@
         },
         {
           "step": "Step 2: Roof Type Selection",
-          "description": "Choose from our comprehensive list of roof types. The system automatically adjusts calculations based on complexity and material requirements."
+          "description": "Choose from our available roof types (Gable or Shed). Gable roofs include a 5% cost adjustment for complexity."
         },
         {
           "step": "Step 3: Measurements",
@@ -238,8 +148,7 @@
           "details": [
             "Length & Width: Basic rectangular measurements",
             "Pitch/Slope: Roof angle for accurate surface area calculation",
-            "Complex Shapes: Break down into sections for irregular roofs",
-            "Waste Factor: Automatic 10-15% addition for cuts and overlaps"
+            "Waste Factor: Automatic 10% addition for cuts and overlaps"
           ]
         },
         {
@@ -247,18 +156,18 @@
           "description": "Choose roofing materials with real-time pricing updates. Compare options with cost breakdowns and lifespan projections."
         },
         {
-          "step": "Step 5: Labor & Additional Costs",
-          "description": "Configure labor rates, permit costs, and additional features like:",
+          "step": "Step 5: Additional Specifications",
+          "description": "Configure additional features like:",
           "details": [
-            "Underlayment and insulation",
-            "Gutters and downspouts",
+            "Gutter systems and downspouts",
+            "Ridge caps",
             "Ventilation systems",
-            "Skylights and roof access"
+            "Insulation options"
           ]
         },
         {
-          "step": "Step 6: Review & Export",
-          "description": "Review the detailed cost breakdown, save the project, and export professional reports for clients or documentation."
+          "step": "Step 6: Review & Save",
+          "description": "Review the detailed cost breakdown and save your project for future reference or client presentation."
         }
       ],
       "proTips": [
@@ -267,364 +176,232 @@
           "description": "Double-check all dimensions for accuracy"
         },
         {
-          "tip": "Account for Complexity",
-          "description": "Include dormers, valleys, and architectural features"
+          "tip": "Account for Waste",
+          "description": "System automatically adds 10% waste factor"
         },
         {
-          "tip": "Consider Access",
-          "description": "Factor in scaffolding or equipment rental costs"
+          "tip": "Consider Climate",
+          "description": "Factor in local weather conditions when choosing materials"
         },
         {
-          "tip": "Local Factors",
-          "description": "Include permit fees and local labor rates"
+          "tip": "Budget Planning",
+          "description": "Use the budget validator to ensure your selections fit your budget"
         },
         {
-          "tip": "Seasonal Pricing",
-          "description": "Material costs may vary by season and demand"
+          "tip": "Save Projects",
+          "description": "Save your calculations for future reference and client presentations"
         }
-      ],
-      "advancedFeatures": [
-        {
-          "feature": "Multiple Quotes",
-          "description": "Compare different material and contractor options"
-        },
-        {
-          "feature": "Cost History",
-          "description": "Track pricing trends and seasonal variations"
-        },
-        {
-          "feature": "What-If Analysis",
-          "description": "Test different scenarios and material combinations"
-        },
-        {
-          "feature": "Integration",
-          "description": "Connect with contractor networks for real-time quotes"
-        }
-      ]
-    },
-    "manual-calc": {
-      "title": "Manual Calculator",
-      "description": "The manual calculator provides advanced users with precise control over calculations for complex or unique roofing scenarios that require custom measurements and specialized considerations.",
-      "whenToUse": [
-        "Complex roof geometries with multiple intersecting planes",
-        "Historical or architectural restoration projects",
-        "Commercial buildings with unique structural requirements",
-        "When you have precise architectural drawings or surveys"
-      ],
-      "manualEntryOptions": [
-        {
-          "option": "Surface Area Input",
-          "description": "Direct entry of calculated roof surface area in square feet"
-        },
-        {
-          "option": "Section-by-Section",
-          "description": "Break complex roofs into manageable sections"
-        },
-        {
-          "option": "Custom Waste Factors",
-          "description": "Override default waste percentages for specific materials"
-        }
-      ],
-      "advancedFeatures": [
-        {
-          "feature": "Material Overrides",
-          "description": "Custom pricing for specialty or imported materials"
-        },
-        {
-          "feature": "Labor Adjustments",
-          "description": "Fine-tune labor rates for specific skill requirements"
-        },
-        {
-          "feature": "Custom Formulas",
-          "description": "Apply specialized calculation methods for unique scenarios"
-        }
-      ],
-      "bestPractices": [
-        "Verify all measurements with professional surveys when possible",
-        "Document assumptions and calculation methods for future reference",
-        "Include contingency factors for unknown variables",
-        "Cross-reference manual calculations with standard estimates",
-        "Consult with structural engineers for complex architectural features"
-      ]
-    },
-    "contractor": {
-      "title": "Contractor Tools",
-      "description": "Professional contractor features designed to streamline your roofing business operations, improve client relationships, and maximize profitability through advanced tools and integrations.",
-      "features": {
-        "businessManagement": [
-          "Multi-project portfolio management",
-          "Team member access and permissions",
-          "Client relationship management (CRM)",
-          "Lead tracking and conversion analytics"
-        ],
-        "pricingEstimates": [
-          "Custom labor rates by region and skill level",
-          "Material markup and discount management",
-          "Competitive pricing analysis",
-          "Profit margin tracking and optimization"
-        ],
-        "clientCommunication": [
-          "Professional proposal generation",
-          "Client portal for project visibility",
-          "Automated status updates and notifications",
-          "Digital signature collection for contracts"
-        ],
-        "reportingAnalytics": [
-          "Revenue and profit analytics",
-          "Project completion time tracking",
-          "Material usage and waste analysis",
-          "Customer satisfaction metrics"
-        ]
-      },
-      "integrations": {
-        "businessTools": [
-          "QuickBooks and accounting software sync",
-          "CRM platform integrations",
-          "Calendar and scheduling tools",
-          "Email marketing automation"
-        ],
-        "industryResources": [
-          "Material supplier APIs and pricing",
-          "Weather monitoring for project planning",
-          "Building permit database access",
-          "Insurance and warranty tracking"
-        ]
-      },
-      "benefits": [
-        {
-          "benefit": "Increased Efficiency",
-          "description": "Streamline workflows and reduce administrative overhead"
-        },
-        {
-          "benefit": "Better Client Relations",
-          "description": "Professional presentations and transparent communication"
-        },
-        {
-          "benefit": "Improved Profitability",
-          "description": "Accurate pricing and margin optimization"
-        },
-        {
-          "benefit": "Competitive Advantage",
-          "description": "Advanced tools that set you apart from competitors"
-        },
-        {
-          "benefit": "Scalability",
-          "description": "Tools that grow with your business"
-        }
-      ]
-    },
-    "ai-system": {
-      "title": "AI System",
-      "description": "Our advanced AI system leverages machine learning and industry data to provide intelligent recommendations, optimize estimates, and enhance your roofing project planning with data-driven insights.",
-      "features": {
-        "smartRecommendations": [
-          "Optimal material selection based on climate and budget",
-          "Labor time estimates using historical project data",
-          "Cost optimization suggestions for better margins",
-          "Risk assessment for complex architectural features"
-        ],
-        "predictiveAnalytics": [
-          "Material price trend forecasting",
-          "Seasonal demand and pricing patterns",
-          "Project timeline optimization",
-          "Weather impact on project scheduling"
-        ],
-        "intelligentCalculations": [
-          "Automatic waste factor adjustments",
-          "Complex geometry surface area calculations",
-          "Material overlap and installation optimization",
-          "Structural load and wind resistance analysis"
-        ],
-        "qualityAssurance": [
-          "Error detection and correction suggestions",
-          "Best practice recommendations",
-          "Code compliance verification",
-          "Safety protocol reminders"
-        ]
-      },
-      "learning": {
-        "description": "Our AI system continuously learns from project data, industry trends, and user feedback to provide increasingly accurate and valuable insights.",
-        "dataSources": [
-          "Industry databases, weather patterns, material pricing, and project outcomes",
-          "User feedback: Incorporates contractor input to refine recommendations",
-          "Regional adaptation: Learns local market conditions and pricing patterns",
-          "Continuous updates: Regular model improvements and feature enhancements"
-        ]
-      },
-      "gettingMostFromAI": [
-        "Provide detailed project information for better recommendations",
-        "Review and provide feedback on AI suggestions",
-        "Use historical project data to train the system for your specific needs",
-        "Stay updated with new AI features and capabilities",
-        "Combine AI insights with your professional expertise for optimal results"
       ]
     },
     "projects": {
       "title": "Projects",
-      "description": "The Project Management system helps you organize, track, and manage all your roofing projects from initial estimate to completion. Keep detailed records and generate professional reports for clients.",
-      "features": {
-        "projectOrganization": [
-          "Create and categorize projects by status",
-          "Add detailed project descriptions and notes",
-          "Set project priorities and deadlines",
-          "Link related estimates and calculations"
-        ],
-        "progressTracking": [
-          "Update project status (Active, Completed, On Hold)",
-          "Track milestone completion",
-          "Monitor budget vs. actual costs",
-          "Record timeline and scheduling updates"
-        ],
-        "documentation": [
-          "Store project photos and documentation",
-          "Generate professional client reports",
-          "Export detailed cost breakdowns",
-          "Create project summaries and invoices"
-        ],
-        "collaboration": [
-          "Share projects with team members",
-          "Client portal for project visibility",
-          "Comment and communication tracking",
-          "Approval workflows and signatures"
-        ]
-      },
-      "workflow": [
+      "description": "Manage all your roofing projects in one centralized location. Track project status, view history, and generate professional reports.",
+      "features": [
         {
-          "step": "Create Project",
-          "description": "Set up new project with basic information and initial estimate"
+          "title": "Project Dashboard",
+          "description": "View all your projects in a single dashboard with status indicators and quick actions"
         },
         {
-          "step": "Track Progress",
-          "description": "Monitor status, update estimates, and manage timeline"
+          "title": "Project Details",
+          "description": "Access comprehensive project information including measurements, materials, and cost breakdowns"
         },
         {
-          "step": "Complete & Archive",
-          "description": "Finalize documentation and archive for future reference"
+          "title": "Project Status",
+          "description": "Track project progress with status indicators: Draft, Active, Completed, and Archived"
+        },
+        {
+          "title": "Client Management",
+          "description": "Assign projects to clients and track contractor assignments"
+        },
+        {
+          "title": "Print & Export",
+          "description": "Generate professional project reports for client presentations"
         }
       ],
-      "proTips": [
-        "Use consistent naming conventions for easy project identification",
-        "Regularly update project status to maintain accurate records",
-        "Export project data regularly for backup and reporting purposes",
-        "Utilize search and filter features to quickly locate specific projects",
-        "Set up project templates for common project types"
+      "projectStatuses": [
+        {
+          "status": "Draft",
+          "description": "Project is being created and calculations are being refined"
+        },
+        {
+          "status": "Active",
+          "description": "Project is approved and ready for execution"
+        },
+        {
+          "status": "Completed",
+          "description": "Project has been finished"
+        },
+        {
+          "status": "Archived",
+          "description": "Project is stored for historical reference"
+        }
       ]
     },
-    "archive": {
-      "title": "Archive",
-      "description": "The Archive system provides secure storage and easy access to completed projects, historical estimates, and reference materials. Maintain organized records for future reference, analysis, and client support.",
+    "contractor": {
+      "title": "Contractor Features",
+      "description": "Professional contractor features designed to streamline your roofing business operations, improve client relationships, and maximize profitability through advanced tools and integrations.",
       "features": {
-        "projectStorage": [
-          "Automatic archiving of completed projects",
-          "Manual archiving for inactive or cancelled projects",
-          "Bulk archive operations for project cleanup",
-          "Archive by date range or project status"
+        "businessManagement": [
+          "Project management dashboard",
+          "Client relationship management (CRM)",
+          "Team collaboration tools",
+          "Document management"
         ],
-        "searchRetrieval": [
-          "Advanced search by project name, date, or client",
-          "Filter by material type, roof style, or cost range",
-          "Quick access to recently archived projects",
-          "Export archived data for external analysis"
+        "pricingEstimates": [
+          "Accurate cost calculations",
+          "Customizable pricing templates",
+          "Real-time material pricing",
+          "Profit margin analysis"
         ],
-        "dataManagement": [
-          "Secure cloud storage with backup protection",
-          "Data retention policies and compliance",
-          "Regular backup and recovery procedures",
-          "Privacy controls and access permissions"
+        "clientCommunication": [
+          "Professional project proposals",
+          "Automated email notifications",
+          "Client portal access",
+          "Progress tracking and updates"
         ],
-        "restorationReference": [
-          "Restore archived projects to active status",
-          "Create new projects from archived templates",
-          "Reference historical pricing and material data",
-          "Generate reports from archived project data"
+        "reportingAnalytics": [
+          "Performance dashboards",
+          "Revenue tracking",
+          "Project profitability analysis",
+          "Custom report generation"
         ]
       },
-      "workflow": [
+      "integrations": {
+        "businessTools": [
+          "Accounting software integration",
+          "Calendar and scheduling",
+          "Payment processing",
+          "Cloud storage"
+        ],
+        "industryResources": [
+          "Material supplier networks",
+          "Industry pricing databases",
+          "Regulatory compliance tools",
+          "Training resources"
+        ]
+      },
+      "benefits": [
+        "Streamlined project workflow",
+        "Improved client communication",
+        "Better inventory management",
+        "Accurate cost tracking",
+        "Professional client presentations"
+      ]
+    },
+    "warehouse": {
+      "title": "Warehouse Management",
+      "description": "Efficiently manage your material inventory with our comprehensive warehouse management system. Track stock levels, monitor consumption, and ensure materials are always available when needed.",
+      "features": [
         {
-          "step": "Archive Projects",
-          "description": "Move completed or inactive projects to archive"
+          "title": "Inventory Tracking",
+          "description": "Real-time tracking of all materials in your warehouse"
         },
         {
-          "step": "Organize & Search",
-          "description": "Use filters and search to find archived projects"
+          "title": "Material Consumption",
+          "description": "Automatically track material usage as projects are completed"
         },
         {
-          "step": "Restore or Reference",
-          "description": "Access data for new projects or client support"
+          "title": "Stock Alerts",
+          "description": "Receive notifications when materials are running low"
+        },
+        {
+          "title": "Multi-Warehouse Support",
+          "description": "Manage multiple warehouse locations from a single interface"
+        },
+        {
+          "title": "Material Replenishment",
+          "description": "Easy ordering and restocking of materials"
         }
       ],
       "bestPractices": [
-        "Archive projects regularly to keep active workspace organized",
-        "Use descriptive project names and tags for easy retrieval",
-        "Review archived projects periodically for pricing trends",
-        "Maintain archive backups for data security",
-        "Set up automatic archiving rules for completed projects"
+        "Regular inventory audits",
+        "Monitor consumption patterns",
+        "Maintain minimum stock levels",
+        "Track material costs",
+        "Plan for seasonal variations"
       ]
     },
     "costs": {
-      "title": "Cost Settings",
-      "description": "Customize pricing parameters to ensure accurate, region-specific estimates. Configure material costs, labor rates, and regional adjustments to reflect your local market conditions and business requirements.",
-      "configuration": {
-        "materialPricing": [
-          "Base material costs by type and grade",
-          "Regional pricing adjustments and multipliers",
-          "Bulk purchase discounts and volume pricing",
-          "Seasonal pricing variations and trends"
-        ],
-        "laborRates": [
-          "Hourly rates by skill level and specialty",
-          "Regional wage adjustments and cost of living",
-          "Overtime and weekend premium rates",
-          "Travel time and mobilization costs"
-        ],
-        "additionalCosts": [
-          "Equipment rental and tool costs",
-          "Permit fees and inspection costs",
-          "Waste disposal and cleanup fees",
-          "Insurance and bonding requirements"
-        ],
-        "markupMargins": [
-          "Standard markup percentages by project type",
-          "Profit margin targets and analysis",
-          "Competitive pricing adjustments",
-          "Volume discount structures"
-        ]
-      },
-      "regionalCustomization": {
-        "locationFactors": [
-          "Climate and weather considerations",
-          "Local building codes and requirements",
-          "Accessibility and terrain factors",
-          "Economic conditions and market demand"
-        ],
-        "marketData": [
-          "Competitor pricing analysis",
-          "Supplier network and availability",
-          "Labor market conditions",
-          "Regulatory and compliance costs"
-        ]
-      },
-      "considerations": [
+      "title": "Cost Management",
+      "description": "Understanding and managing costs is essential for profitable roofing projects. Our system provides detailed cost breakdowns and tracking capabilities.",
+      "costComponents": [
         {
-          "consideration": "Regular Updates",
-          "description": "Keep pricing current with market fluctuations"
+          "component": "Material Costs",
+          "description": "Primary roofing materials including shingles, tiles, metal panels, etc.",
+          "factors": [
+            "Material type and quality",
+            "Roof area and complexity",
+            "Waste factor (10% automatically added)",
+            "Gable roof premium (+5%)"
+          ]
         },
         {
-          "consideration": "Accuracy",
-          "description": "Verify costs with local suppliers and contractors"
+          "component": "Labor Costs",
+          "description": "Installation and construction labor",
+          "factors": [
+            "Project complexity",
+            "Roof pitch and accessibility",
+            "Local labor rates",
+            "Project timeline"
+          ]
         },
         {
-          "consideration": "Competitiveness",
-          "description": "Balance profitability with market positioning"
+          "component": "Additional Materials",
+          "description": "Supporting materials and accessories",
+          "factors": [
+            "Gutters and downspouts",
+            "Ridge caps and flashing",
+            "Ventilation systems",
+            "Insulation materials"
+          ]
         },
         {
-          "consideration": "Documentation",
-          "description": "Maintain records of pricing decisions and changes"
-        },
-        {
-          "consideration": "Review Cycles",
-          "description": "Establish regular pricing review schedules"
+          "component": "Delivery & Transportation",
+          "description": "Material delivery and equipment costs",
+          "factors": [
+            "Distance from supplier",
+            "Material weight and volume",
+            "Accessibility of site",
+            "Equipment rental"
+          ]
         }
+      ],
+      "costOptimization": [
+        "Compare material options",
+        "Plan for bulk purchases",
+        "Schedule projects efficiently",
+        "Minimize waste through accurate measurements",
+        "Negotiate supplier contracts"
+      ]
+    },
+    "ai-system": {
+      "title": "AI-Powered Recommendations",
+      "description": "Our intelligent decision tree system analyzes your project parameters and provides expert recommendations for optimal material selection and cost optimization.",
+      "features": [
+        {
+          "title": "Material Recommendations",
+          "description": "AI analyzes your project specifications and recommends the best materials based on budget, climate, and durability requirements"
+        },
+        {
+          "title": "Complexity Scoring",
+          "description": "Automatic complexity assessment (1-10 scale) based on roof type, pitch, area, and material selection"
+        },
+        {
+          "title": "Optimization Tips",
+          "description": "Actionable tips to reduce costs while maintaining quality and durability"
+        },
+        {
+          "title": "Budget Validation",
+          "description": "Real-time budget checking to ensure your selections align with your financial constraints"
+        }
+      ],
+      "howItWorks": [
+        "Enter your project specifications",
+        "AI analyzes multiple factors (roof type, pitch, area, budget)",
+        "System generates material recommendations",
+        "Complexity score is calculated",
+        "Optimization tips are provided",
+        "Budget validation ensures affordability"
       ]
     }
   }

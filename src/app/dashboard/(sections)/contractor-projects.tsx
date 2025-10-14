@@ -40,6 +40,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { InsufficientMaterialsDialog } from "@/components/insufficient-materials-dialog";
 import {
   Loader2Icon,
   FileTextIcon,
@@ -87,6 +88,19 @@ const setupLeafletIcons = async () => {
   }
 };
 
+interface ProjectMaterial {
+  id: string;
+  quantity: number;
+  WarehouseMaterial: {
+    PricingConfig: {
+      id: string;
+      name: string;
+      category: string;
+      unit: string;
+    };
+  };
+}
+
 interface Project {
   id: string;
   projectName: string;
@@ -105,6 +119,7 @@ interface Project {
     lastName: string;
     email: string;
   } | null;
+  ProjectMaterial?: ProjectMaterial[];
   // Additional fields for detailed view
   length?: number;
   width?: number;
@@ -180,6 +195,15 @@ export function ContractorProjectsContent() {
   const [declineReason, setDeclineReason] = useState("");
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [insufficientMaterialsDialogOpen, setInsufficientMaterialsDialogOpen] = useState(false);
+  const [insufficientMaterials, setInsufficientMaterials] = useState<Array<{
+    materialId: string;
+    materialName: string;
+    required: number;
+    available: number;
+    shortage: number;
+  }>>([]);
+  const [warehouseId, setWarehouseId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     fetchProjects();
@@ -287,6 +311,15 @@ export function ContractorProjectsContent() {
 
       if (!response.ok) {
         const errorData = await response.json();
+        
+        // Check if it's an insufficient materials error
+        if (errorData.errorCode === "INSUFFICIENT_MATERIALS" && errorData.insufficientMaterials) {
+          setInsufficientMaterials(errorData.insufficientMaterials);
+          setWarehouseId(errorData.warehouseId);
+          setInsufficientMaterialsDialogOpen(true);
+          return;
+        }
+        
         throw new Error(errorData.error || "Failed to accept project");
       }
 
@@ -820,41 +853,59 @@ export function ContractorProjectsContent() {
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-muted-foreground">Material Costs</p>
                     <div className="ml-4 space-y-1">
-                      {selectedProject.materialCost !== undefined && selectedProject.materialCost > 0 && (
-                        <div className="flex justify-between text-sm">
-                          <span>Roofing Material</span>
-                          <span className="font-medium">₱{selectedProject.materialCost.toLocaleString()}</span>
-                        </div>
-                      )}
-                      {selectedProject.gutterCost !== undefined && selectedProject.gutterCost > 0 && (
-                        <div className="flex justify-between text-sm">
-                          <span>Gutter System</span>
-                          <span className="font-medium">₱{selectedProject.gutterCost.toLocaleString()}</span>
-                        </div>
-                      )}
-                      {selectedProject.ridgeCost !== undefined && selectedProject.ridgeCost > 0 && (
-                        <div className="flex justify-between text-sm">
-                          <span>Ridge Cap</span>
-                          <span className="font-medium">₱{selectedProject.ridgeCost.toLocaleString()}</span>
-                        </div>
-                      )}
-                      {selectedProject.screwsCost !== undefined && selectedProject.screwsCost > 0 && (
-                        <div className="flex justify-between text-sm">
-                          <span>Screws & Fasteners</span>
-                          <span className="font-medium">₱{selectedProject.screwsCost.toLocaleString()}</span>
-                        </div>
-                      )}
-                      {selectedProject.insulationCost !== undefined && selectedProject.insulationCost > 0 && (
-                        <div className="flex justify-between text-sm">
-                          <span>Insulation</span>
-                          <span className="font-medium">₱{selectedProject.insulationCost.toLocaleString()}</span>
-                        </div>
-                      )}
-                      {selectedProject.ventilationCost !== undefined && selectedProject.ventilationCost > 0 && (
-                        <div className="flex justify-between text-sm">
-                          <span>Ventilation</span>
-                          <span className="font-medium">₱{selectedProject.ventilationCost.toLocaleString()}</span>
-                        </div>
+                      {selectedProject.ProjectMaterial && selectedProject.ProjectMaterial.length > 0 ? (
+                        selectedProject.ProjectMaterial.map((pm) => (
+                          <div key={pm.id} className="flex justify-between text-sm">
+                            <span>
+                              {pm.WarehouseMaterial.PricingConfig.name}
+                              <span className="text-xs text-muted-foreground ml-1">
+                                ({pm.quantity} {pm.WarehouseMaterial.PricingConfig.unit})
+                              </span>
+                            </span>
+                            <span className="font-medium">
+                              {pm.WarehouseMaterial.PricingConfig.category}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <>
+                          {selectedProject.materialCost !== undefined && selectedProject.materialCost > 0 && (
+                            <div className="flex justify-between text-sm">
+                              <span>Roofing Material</span>
+                              <span className="font-medium">₱{selectedProject.materialCost.toLocaleString()}</span>
+                            </div>
+                          )}
+                          {selectedProject.gutterCost !== undefined && selectedProject.gutterCost > 0 && (
+                            <div className="flex justify-between text-sm">
+                              <span>Gutter System</span>
+                              <span className="font-medium">₱{selectedProject.gutterCost.toLocaleString()}</span>
+                            </div>
+                          )}
+                          {selectedProject.ridgeCost !== undefined && selectedProject.ridgeCost > 0 && (
+                            <div className="flex justify-between text-sm">
+                              <span>Ridge Cap</span>
+                              <span className="font-medium">₱{selectedProject.ridgeCost.toLocaleString()}</span>
+                            </div>
+                          )}
+                          {selectedProject.screwsCost !== undefined && selectedProject.screwsCost > 0 && (
+                            <div className="flex justify-between text-sm">
+                              <span>Screws & Fasteners</span>
+                              <span className="font-medium">₱{selectedProject.screwsCost.toLocaleString()}</span>
+                            </div>
+                          )}
+                          {selectedProject.insulationCost !== undefined && selectedProject.insulationCost > 0 && (
+                            <div className="flex justify-between text-sm">
+                              <span>Insulation</span>
+                              <span className="font-medium">₱{selectedProject.insulationCost.toLocaleString()}</span>
+                            </div>
+                          )}
+                          {selectedProject.ventilationCost !== undefined && selectedProject.ventilationCost > 0 && (
+                            <div className="flex justify-between text-sm">
+                              <span>Ventilation</span>
+                              <span className="font-medium">₱{selectedProject.ventilationCost.toLocaleString()}</span>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                     {selectedProject.totalMaterialsCost !== undefined && selectedProject.totalMaterialsCost > 0 && (
@@ -965,6 +1016,14 @@ export function ContractorProjectsContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Insufficient Materials Dialog */}
+      <InsufficientMaterialsDialog
+        open={insufficientMaterialsDialogOpen}
+        onOpenChange={setInsufficientMaterialsDialogOpen}
+        insufficientMaterials={insufficientMaterials}
+        warehouseId={warehouseId}
+      />
     </div>
   );
 }

@@ -36,12 +36,8 @@ import { toast } from "sonner";
 import type { Measurements } from "./types";
 import { RecommendedSelections } from "./components/recommended-selections";
 
-// Helper function to get material name with fallback for thickness variants
+// Helper function to get material name with fallback
 function getMaterialName(materialValue: string): string {
-  // Handle corrugated thickness variants
-  if (materialValue === "corrugated-0.4") return "Long Span (0.4mm)";
-  if (materialValue === "corrugated-0.5") return "Long Span (0.5mm)";
-  
   // Find in materials array
   const material = materials.find((m) => m.value === materialValue);
   return material?.name || materialValue;
@@ -249,7 +245,6 @@ export function RoofCalculatorContent() {
                 <MeasurementForm
                   measurements={measurements}
                   onMeasurementsChange={(newMeasurements) => setMeasurements(newMeasurements)}
-                  currentMaterial={material}
                 />
               </CardContent>
             </Card>
@@ -285,10 +280,6 @@ export function RoofCalculatorContent() {
                   budgetLevel={measurements.budgetLevel}
                   onBudgetLevelChange={(budgetLevel, materialThickness) => {
                     setMeasurements({ ...measurements, budgetLevel, materialThickness });
-                    
-                    // Auto-select the correct material variant based on budget level
-                    const materialVariant = budgetLevel === "low" ? "corrugated-0.4" : "corrugated-0.5";
-                    setMaterial(materialVariant);
                   }}
                   selectedWarehouseId={selectedWarehouseId}
                 />
