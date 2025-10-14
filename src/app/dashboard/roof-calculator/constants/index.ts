@@ -17,6 +17,7 @@ const FALLBACK_GUTTER_PRICES: Record<string, number> = {
 
 const FALLBACK_RIDGE_PRICES = {
   corrugated: 180,
+  longspan: 200,
   standard: 180,
   ventilated: 220,
 } as const;

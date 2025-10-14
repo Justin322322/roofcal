@@ -75,6 +75,7 @@ export function ConsolidatedAdditionalSpecs({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="corrugated">Corrugated Ridge Cap</SelectItem>
+                <SelectItem value="longspan">Long Span Ridge Cap</SelectItem>
                 <SelectItem value="standard">Standard Ridge Cap</SelectItem>
                 <SelectItem value="ventilated">Ventilated Ridge Cap</SelectItem>
               </SelectContent>

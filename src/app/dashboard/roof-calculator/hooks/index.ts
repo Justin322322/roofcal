@@ -52,7 +52,7 @@ export function useRoofCalculator() {
     if (baseMaterial === "corrugated" || baseMaterial === "longspan") {
       setMeasurements((prev) => ({
         ...prev,
-        ridgeType: "corrugated",
+        ridgeType: baseMaterial === "longspan" ? "longspan" : "corrugated",
       }));
     }
   }, [material]);
@@ -277,9 +277,12 @@ export function useRoofCalculator() {
     // 4. Calculate roof ridge cost
     // Quantity = Length (user input), auto-match material type
     const ridgeLength = length; // Ridge follows the length of the roof
+    // Price ridge by selected ridge type (fallback to corrugated)
     const ridgePricePerMeter =
-      CONSTANTS.RIDGE_PRICES[material as keyof typeof CONSTANTS.RIDGE_PRICES] ||
-      CONSTANTS.RIDGE_PRICES.corrugated;
+      CONSTANTS.RIDGE_PRICES[
+        (measurements.ridgeType as keyof typeof CONSTANTS.RIDGE_PRICES) ||
+          "corrugated"
+      ] || CONSTANTS.RIDGE_PRICES.corrugated;
     const ridgeCost = Math.round(ridgeLength * ridgePricePerMeter);
 
     // 5. Calculate screws cost and quantity

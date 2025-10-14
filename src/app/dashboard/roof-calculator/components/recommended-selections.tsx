@@ -12,7 +12,7 @@ interface RecommendedSelectionsProps {
 export function RecommendedSelections({ measurements, materialName }: RecommendedSelectionsProps) {
   const items: { label: string; value: string }[] = [
     { label: "Roof material", value: materialName },
-    { label: "Roof ridge", value: measurements.ridgeType === "ventilated" ? "Ventilated ridge cap" : measurements.ridgeType === "standard" ? "Standard ridge cap" : "Corrugated ridge cap" },
+    { label: "Roof ridge", value: measurements.ridgeType === "ventilated" ? "Ventilated ridge cap" : measurements.ridgeType === "standard" ? "Standard ridge cap" : measurements.ridgeType === "longspan" ? "Long Span ridge cap" : "Corrugated ridge cap" },
     { label: "Gutter", value: measurements.gutterSize === "cut-24" ? "Cut 24 (24 inches)" : "Cut 16 (16 inches)" },
     { label: "Screws", value: measurements.screwType.replaceAll("-", " ") },
     { label: "Insulation", value: `${(measurements.insulationType || "").replaceAll("-", " ")}${measurements.insulationThickness ? `, ${measurements.insulationThickness}` : ""}`.trim() },
