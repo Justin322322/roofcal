@@ -139,35 +139,35 @@
       ]
       ,
       "ridgeCaps": [
-        { "name": "Corrugated Ridge Cap", "image": "/roof/corrugated-ridge.jpg" },
-        { "name": "Long Span Ridge Cap", "image": "/roof/long-span-ridge.jpg" }
+        { "name": "Corrugated Ridge Cap", "image": "/roof/corrugated-ridge.jpg", "description": "Traditional ridge cap designed for corrugated roofing sheets. Provides weather protection and proper ventilation at roof peaks." },
+        { "name": "Long Span Ridge Cap", "image": "/roof/long-span-ridge.jpg", "description": "Modern ridge cap for long span roofing profiles. Features enhanced water drainage and contemporary appearance." }
       ],
       "gutters": [
-        { "name": "Pre-painted GI Gutter", "image": "/roof/pre-painted-GI-Gutter.jpg" },
-        { "name": "Stainless Gutter", "image": "/roof/stainless-gutter.jpg" },
-        { "name": "PVC Gutter", "image": "/roof/pvg-gutter.jpg" }
+        { "name": "Pre-painted GI Gutter", "image": "/roof/pre-painted-GI-Gutter.jpg", "description": "Galvanized iron gutter with factory-applied paint coating. Offers durability and color options for aesthetic appeal." },
+        { "name": "Stainless Gutter", "image": "/roof/stainless-gutter.jpg", "description": "Premium stainless steel gutter system. Highly corrosion-resistant and ideal for coastal or high-humidity environments." },
+        { "name": "PVC Gutter", "image": "/roof/pvg-gutter.jpg", "description": "Lightweight plastic gutter system. Easy to install, maintenance-free, and available in various colors to match your roof." }
       ],
       "screws": [
-        { "name": "Roofing Screw with Washer", "image": "/roof/roofing-screw-with-washer.jpg" },
-        { "name": "Self-Drilling Hex Head", "image": "/roof/Self-Drilling-Hex.jpg" },
-        { "name": "Self-Tapping Hex Head", "image": "/roof/self-tapping-hex-head.jpg" },
-        { "name": "TEK Screw", "image": "/roof/tek-screw.jpg" },
-        { "name": "Tile Screw", "image": "/roof/tile-screw.jpg" },
-        { "name": "Concrete Screw", "image": "/roof/concrete-screw.jpg" }
+        { "name": "Roofing Screw with Washer", "image": "/roof/roofing-screw-with-washer.jpg", "description": "Standard roofing screw with rubber washer for watertight seal. Essential for securing roofing sheets to structural supports." },
+        { "name": "Self-Drilling Hex Head", "image": "/roof/Self-Drilling-Hex.jpg", "description": "Self-drilling screw with hex head for easy installation. Drills through metal without pre-drilling, saving time and effort." },
+        { "name": "Self-Tapping Hex Head", "image": "/roof/self-tapping-hex-head.jpg", "description": "Self-tapping screw with hex head design. Creates threads in pre-drilled holes for secure fastening in metal applications." },
+        { "name": "TEK Screw", "image": "/roof/tek-screw.jpg", "description": "High-performance self-drilling screw with sharp point. Ideal for fastening metal roofing to steel purlins and structural members." },
+        { "name": "Tile Screw", "image": "/roof/tile-screw.jpg", "description": "Specialized screw for tile roofing applications. Designed to securely fasten tiles without cracking or damaging the material." },
+        { "name": "Concrete Screw", "image": "/roof/concrete-screw.jpg", "description": "Heavy-duty screw for concrete applications. Used for securing roofing components to concrete walls or foundations." }
       ],
       "insulation": [
-        { "name": "Fiberglass Batt", "image": "/roof/fiber-glass-batt.jpg" },
-        { "name": "Foam Board", "image": "/roof/foam-board.jpg" },
-        { "name": "Reflective Roll", "image": "/roof/reflective-roll.jpg" },
-        { "name": "Spray Foam", "image": "/roof/sray-foam.jpg" },
-        { "name": "Mineral Wool", "image": "/roof/mineral-wool.jpg" }
+        { "name": "Fiberglass Batt", "image": "/roof/fiber-glass-batt.jpg", "description": "Traditional fiberglass insulation in batt form. Easy to install between roof joists, provides excellent thermal resistance and sound dampening." },
+        { "name": "Foam Board", "image": "/roof/foam-board.jpg", "description": "Rigid foam insulation boards with high R-value per inch. Moisture-resistant and ideal for continuous insulation applications." },
+        { "name": "Reflective Roll", "image": "/roof/reflective-roll.jpg", "description": "Reflective insulation roll that reflects radiant heat. Lightweight, easy to install, and particularly effective in hot climates." },
+        { "name": "Spray Foam", "image": "/roof/sray-foam.jpg", "description": "Expanding spray foam insulation that fills gaps and provides air sealing. High R-value and excellent for irregular spaces." },
+        { "name": "Mineral Wool", "image": "/roof/mineral-wool.jpg", "description": "Fire-resistant mineral wool insulation made from rock or slag. Excellent thermal and acoustic properties with superior fire resistance." }
       ],
       "ventilation": [
-        { "name": "Ridge Vent", "image": "/roof/ridge-vent.jpg" },
-        { "name": "Turbine Vent", "image": "/roof/turbine-vent.jpg" },
-        { "name": "Static Roof Vent", "image": "/roof/static-roof-vent.jpg" },
-        { "name": "Soffit Vent", "image": "/roof/soffit-vent.jpg" },
-        { "name": "Exhaust Fan", "image": "/roof/exhaust-fan.jpg" }
+        { "name": "Ridge Vent", "image": "/roof/ridge-vent.jpg", "description": "Continuous ventilation system installed along the roof ridge. Provides maximum airflow while maintaining weather protection." },
+        { "name": "Turbine Vent", "image": "/roof/turbine-vent.jpg", "description": "Wind-powered rotating vent that extracts hot air from attic space. Self-powered and highly effective in windy conditions." },
+        { "name": "Static Roof Vent", "image": "/roof/static-roof-vent.jpg", "description": "Fixed roof vent that provides passive ventilation. Simple design with weather-resistant construction for reliable performance." },
+        { "name": "Soffit Vent", "image": "/roof/soffit-vent.jpg", "description": "Intake vent installed in the soffit area. Allows fresh air to enter the attic and creates proper airflow circulation." },
+        { "name": "Exhaust Fan", "image": "/roof/exhaust-fan.jpg", "description": "Powered ventilation fan for active air extraction. Ideal for high-moisture areas and can be controlled with timers or humidistats." }
       ]
     },
     "calculator": {

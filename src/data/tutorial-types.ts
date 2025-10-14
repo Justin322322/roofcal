@@ -31,6 +31,7 @@ export interface MaterialInfo {
 export interface NamedImageItem {
   name: string;
   image: string;
+  description?: string;
 }
 
 export interface SelectionGuide {

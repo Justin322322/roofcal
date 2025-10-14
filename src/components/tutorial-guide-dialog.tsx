@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import tutorialContent from "@/data/tutorial-content.json";
 import type { TutorialContent, RoofTypeDetails } from "@/data/tutorial-types";
 
@@ -40,8 +41,9 @@ export function TutorialGuideDialog() {
   };
 
   return (
-    <DialogPrimitive.Root>
-      <DialogPrimitive.Trigger asChild>
+    <TooltipProvider>
+      <DialogPrimitive.Root>
+        <DialogPrimitive.Trigger asChild>
         <button
           className={cn(
             "w-full bg-primary text-primary-foreground duration-200 ease-linear",
@@ -309,22 +311,24 @@ export function TutorialGuideDialog() {
                       <div className="grid gap-4 md:grid-cols-2">
                         {groups.map((group) => (
                           <div key={group.key} className="border rounded-lg p-4 group">
-                          <div className="grid grid-cols-[120px_1fr] gap-4 items-start">
-                              <div className="aspect-square bg-muted/30 rounded-lg overflow-hidden group-hover:bg-muted/50 transition-colors">
+                            <div className="text-center mb-4">
+                              <div className="aspect-video bg-muted/30 rounded-lg overflow-hidden group-hover:bg-muted/50 transition-colors mb-3">
                                 <Image
                                   src={group.image}
                                   alt={group.key}
-                                  width={120}
+                                  width={200}
                                   height={120}
                                   className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
                                 />
                               </div>
-                              <div>
-                                <h4 className="text-lg font-semibold text-foreground mb-2">{group.key}</h4>
-                                <Separator className="my-3" />
-                                <div className="space-y-3">
-                                  {group.items.map((material, idx) => (
-                                    <div key={idx} className="rounded-md border p-3">
+                              <h4 className="text-lg font-semibold text-foreground">{group.key}</h4>
+                            </div>
+                            <Separator className="my-4" />
+                            <div className="space-y-3">
+                              {group.items.map((material, idx) => (
+                                <Tooltip key={idx}>
+                                  <TooltipTrigger asChild>
+                                    <div className="rounded-md border p-3 cursor-help hover:bg-muted/50 transition-colors">
                                       <div className="font-medium text-sm">{material.name}</div>
                                       {material.description && (
                                         <p className="text-xs text-muted-foreground mt-0.5">{material.description}</p>
@@ -337,9 +341,12 @@ export function TutorialGuideDialog() {
                                         <p className="sm:col-span-2"><strong>Best for:</strong> {material.bestFor}</p>
                                       </div>
                                     </div>
-                                  ))}
-                                </div>
-                              </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-xs">
+                                    <p className="text-sm">{material.description}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              ))}
                             </div>
                           </div>
                         ))}
@@ -374,21 +381,33 @@ export function TutorialGuideDialog() {
                           <h4 className="text-base font-medium text-foreground mb-2">{section.title}</h4>
                           <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                             {(() => {
-                              const raw = (content.tabs.materials as unknown as { [k: string]: { name: string; image: string }[] })[section.key];
+                              const raw = (content.tabs.materials as unknown as { [k: string]: { name: string; image: string; description?: string }[] })[section.key];
                               const items = raw.filter((itm, idx, arr) => arr.findIndex((x) => x.name === itm.name) === idx);
-                              return items.map((item: { name: string; image: string }, idx: number) => (
-                                <div key={`${section.key}-${idx}-${item.name}`} className="group border rounded-lg p-3">
-                                  <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
-                                    <Image
-                                      src={item.image?.startsWith("/roof/") ? `${BLOB_BASE}${item.image.replace("/roof/", "")}` : item.image}
-                                      alt={item.name}
-                                      width={200}
-                                      height={200}
-                                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
-                                    />
-                                  </div>
-                                  <div className="text-sm font-medium text-foreground text-center">{item.name}</div>
-                                </div>
+                              return items.map((item: { name: string; image: string; description?: string }, idx: number) => (
+                                <Tooltip key={`${section.key}-${idx}-${item.name}`}>
+                                  <TooltipTrigger asChild>
+                                    <div className="group border rounded-lg p-3 cursor-help hover:bg-muted/50 transition-colors">
+                                      <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden group-hover:bg-muted/50 transition-colors">
+                                        <Image
+                                          src={item.image?.startsWith("/roof/") ? `${BLOB_BASE}${item.image.replace("/roof/", "")}` : item.image}
+                                          alt={item.name}
+                                          width={200}
+                                          height={200}
+                                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
+                                        />
+                                      </div>
+                                      <div className="text-sm font-medium text-foreground text-center">{item.name}</div>
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-xs">
+                                    <p className="text-sm font-medium">{item.name}</p>
+                                    {item.description && (
+                                      <p className="text-xs text-muted-foreground mt-1">
+                                        {item.description}
+                                      </p>
+                                    )}
+                                  </TooltipContent>
+                                </Tooltip>
                               ));
                             })()}
                           </div>
@@ -839,6 +858,7 @@ export function TutorialGuideDialog() {
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
+    </TooltipProvider>
   );
 }
 
