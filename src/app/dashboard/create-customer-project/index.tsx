@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react";
 import { UserRole } from "@/types/user-role";
 import { CustomerSelector } from "./components/customer-selector";
 import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
 import { 
   ArrowLeftIcon, 
   CheckIcon, 
@@ -37,12 +38,22 @@ type Step = "customer" | "calculator" | "complete";
 export default function CreateCustomerProjectPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   
   const [currentStep, setCurrentStep] = useState<Step>("customer");
   const [selectedCustomer, setSelectedCustomer] = useState<Client | null>(null);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
   const [projectCreated, setProjectCreated] = useState(false);
   const [, setCreatedProjectId] = useState<string>("");
+
+  // Handle URL parameter for pre-selected client
+  useEffect(() => {
+    const clientId = searchParams.get('clientId');
+    if (clientId && clientId !== selectedCustomerId) {
+      setSelectedCustomerId(clientId);
+      // The CustomerSelector component will handle loading the client data
+    }
+  }, [searchParams, selectedCustomerId]);
 
   // Access control - only ADMIN users can access this page
   if (!session?.user || session.user.role !== UserRole.ADMIN) {
@@ -55,7 +66,7 @@ export default function CreateCustomerProjectPage() {
               <div>
                 <h3 className="text-lg font-semibold">Access Denied</h3>
                 <p className="text-sm text-muted-foreground">
-                  Only administrators can create projects for customers.
+                  Only contractors can create projects for customers.
                 </p>
               </div>
               <Button 

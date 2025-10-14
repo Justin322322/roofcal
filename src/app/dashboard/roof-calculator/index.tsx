@@ -35,6 +35,9 @@ import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import type { Measurements } from "./types";
 import { RecommendedSelections } from "./components/recommended-selections";
+import { useSession } from "next-auth/react";
+import { UserRole } from "@/types/user-role";
+import { HelpRequestDialog } from "@/components/help-request-dialog";
 
 // Helper function to get material name with fallback
 function getMaterialName(materialValue: string): string {
@@ -44,6 +47,7 @@ function getMaterialName(materialValue: string): string {
 }
 
 export function RoofCalculatorContent() {
+  const { data: session } = useSession();
   const {
     measurements,
     setMeasurements,
@@ -121,32 +125,39 @@ export function RoofCalculatorContent() {
     <div className="px-3 sm:px-4 lg:px-6">
       <div className="space-y-4 sm:space-y-6">
         {/* Action Buttons */}
-        <div className="mb-4 flex flex-col sm:flex-row sm:justify-end gap-2">
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <ProjectActions
-                measurements={measurements}
-                results={results}
-                decisionTree={decisionTree}
-                material={material}
-                currentProjectId={currentProjectId}
-                saveDialogOpen={saveDialogOpen}
-                onSaveDialogChange={setSaveDialogOpen}
-                saveEnabled={saveEnabled}
-                selectedWarehouseId={selectedWarehouseId}
-                onWarehouseChange={setSelectedWarehouseId}
-                projectAddress={projectAddress}
-                onAddressChange={setProjectAddress}
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={isResetting}
-                onClick={async () => {
-                  setIsResetting(true);
-                  try {
-                    // Add a small delay to show the loading state
-                    await new Promise((resolve) => setTimeout(resolve, 500));
-                    handleReset();
+        <div className="mb-4 flex flex-col sm:flex-row sm:justify-between gap-2">
+          {/* Help Request Button for CLIENT users */}
+          {session?.user?.role === UserRole.CLIENT && (
+            <div className="flex items-center gap-2">
+              <HelpRequestDialog />
+            </div>
+          )}
+          
+          <div className="flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
+            <ProjectActions
+              measurements={measurements}
+              results={results}
+              decisionTree={decisionTree}
+              material={material}
+              currentProjectId={currentProjectId}
+              saveDialogOpen={saveDialogOpen}
+              onSaveDialogChange={setSaveDialogOpen}
+              saveEnabled={saveEnabled}
+              selectedWarehouseId={selectedWarehouseId}
+              onWarehouseChange={setSelectedWarehouseId}
+              projectAddress={projectAddress}
+              onAddressChange={setProjectAddress}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isResetting}
+              onClick={async () => {
+                setIsResetting(true);
+                try {
+                  // Add a small delay to show the loading state
+                  await new Promise((resolve) => setTimeout(resolve, 500));
+                  handleReset();
                     setCurrentProjectId(undefined); // Clear current project on reset
                     setSaveEnabled(false); // Reset save enabled state
                     toast.success("Calculator reset successfully", {

@@ -118,6 +118,7 @@ export default function DashboardClient() {
         return userRole === UserRole.ADMIN; // Only contractors (admins) can access project management
       case "account-management":
       case "pricing-maintenance":
+      case "create-customer-project":
         return userRole === UserRole.ADMIN;
       case "database-management":
       case "system-control":

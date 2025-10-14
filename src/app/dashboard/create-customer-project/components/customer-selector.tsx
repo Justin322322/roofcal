@@ -47,6 +47,16 @@ export function CustomerSelector({
     fetchClients();
   }, []);
 
+  // Auto-select customer when selectedCustomerId changes (e.g., from URL parameter)
+  useEffect(() => {
+    if (selectedCustomerId && clients.length > 0) {
+      const customer = clients.find(client => client.id === selectedCustomerId);
+      if (customer) {
+        onCustomerSelected(customer);
+      }
+    }
+  }, [selectedCustomerId, clients, onCustomerSelected]);
+
   const fetchClients = async () => {
     try {
       setIsLoading(true);

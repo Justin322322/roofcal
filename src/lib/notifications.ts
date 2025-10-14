@@ -528,3 +528,58 @@ export async function notifyCustomerProjectCreated(
     console.error("Error creating admin project creation notification:", error);
   }
 }
+
+/**
+ * Send notifications to all ADMIN users (contractors) when a CLIENT requests help
+ */
+export async function notifyAdminsHelpRequest(
+  clientId: string,
+  clientName: string,
+  clientEmail: string,
+  message?: string
+) {
+  try {
+    // Get all active ADMIN users (contractors)
+    const adminUsers = await prisma.user.findMany({
+      where: {
+        role: "ADMIN",
+        isDisabled: false,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+      },
+    });
+
+    if (adminUsers.length === 0) {
+      console.warn("No contractors found to notify about help request");
+      return;
+    }
+
+    // Create notifications for all admin users
+    await Promise.all(
+      adminUsers.map((admin) =>
+        prisma.notification.create({
+          data: {
+            id: crypto.randomUUID(),
+            userId: admin.id,
+            type: "HELP_REQUEST",
+            title: "Client Needs Help",
+            message: `${clientName} (${clientEmail}) needs assistance with creating a project${message ? `: "${message}"` : ""}`,
+            projectId: null,
+            projectName: null,
+            actionUrl: `/dashboard?tab=create-customer-project&clientId=${clientId}`,
+            read: false,
+            created_at: new Date(),
+          },
+        })
+      )
+    );
+
+    console.log(`Help request notifications sent to ${adminUsers.length} contractors for client ${clientId}`);
+  } catch (error) {
+    console.error("Error creating help request notifications:", error);
+  }
+}
