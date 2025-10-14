@@ -7,177 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model activity {
-  id          String        @id @default(uuid())
-  userId      String
-  type        activity_type
-  description String
-  metadata    String?       @db.LongText
-  created_at  DateTime      @default(now())
-  user        user          @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Activity_userId_fkey")
-
-  @@index([created_at], map: "Activity_created_at_idx")
-  @@index([type], map: "Activity_type_idx")
-  @@index([userId], map: "Activity_userId_idx")
-}
-
-model user {
-  id                 String             @id @default(uuid())
-  email              String             @unique(map: "User_email_key")
-  passwordHash       String
-  firstName          String
-  lastName           String
-  role               user_role          @default(CLIENT)
-  email_verified     DateTime?
-  created_at         DateTime           @default(now())
-  updated_at         DateTime           @updatedAt
-  activity           activity[]
-  notification       notification[]
-  clientProjects     project[]          @relation("ClientProjects")
-  contractorProjects project[]          @relation("ContractorProjects")
-  projects           project[]          @relation("ProjectOwner")
-  verificationcode   verificationcode[]
-  warehouses         warehouse[]        @relation("WarehouseOwner")
-
-  @@index([email], map: "User_email_idx")
-}
-
-model verificationcode {
-  id         String   @id @default(uuid())
-  code       String   @db.VarChar(6)
-  email      String
-  type       String   @default("email_verification")
-  expiresAt  DateTime
-  used       Boolean  @default(false)
-  created_at DateTime @default(now())
-  user       user     @relation(fields: [email], references: [email], onDelete: Cascade, map: "VerificationCode_email_fkey")
-
-  @@index([code], map: "VerificationCode_code_idx")
-  @@index([email], map: "VerificationCode_email_idx")
-  @@index([expiresAt], map: "VerificationCode_expiresAt_idx")
-}
-
-model ratelimit {
-  id           String    @id @default(uuid())
-  email        String
-  action       String    @default("otp_generation")
-  attempts     Int       @default(0)
-  lastAttempt  DateTime
-  blockedUntil DateTime?
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
-
-  @@unique([email, action], map: "RateLimit_email_action_key")
-  @@index([created_at], map: "RateLimit_created_at_idx")
-  @@index([blockedUntil], map: "RateLimit_blockedUntil_idx")
-}
-
-model project {
-  id                  String            @id @default(uuid())
-  userId              String
-  projectName         String
-  clientName          String?
-  status              project_status    @default(DRAFT)
-  length              Decimal           @db.Decimal(10, 2)
-  width               Decimal           @db.Decimal(10, 2)
-  pitch               Decimal           @db.Decimal(5, 2)
-  roofType            String
-  floors              Int
-  materialThickness   String
-  ridgeType           String
-  gutterSize          String
-  budgetLevel         String
-  budgetAmount        Decimal?          @db.Decimal(12, 2)
-  constructionMode    construction_mode @default(NEW)
-  gutterLengthA       Decimal?          @db.Decimal(10, 2)
-  gutterSlope         Decimal?          @db.Decimal(10, 2)
-  gutterLengthC       Decimal?          @db.Decimal(10, 2)
-  insulationThickness String
-  ventilationPieces   Int
-  material            String
-  area                Decimal           @db.Decimal(10, 2)
-  materialCost        Decimal           @db.Decimal(12, 2)
-  gutterCost          Decimal           @db.Decimal(12, 2)
-  ridgeCost           Decimal           @db.Decimal(12, 2)
-  screwsCost          Decimal           @db.Decimal(12, 2)
-  insulationCost      Decimal           @db.Decimal(12, 2)
-  ventilationCost     Decimal           @db.Decimal(12, 2)
-  totalMaterialsCost  Decimal           @db.Decimal(12, 2)
-  laborCost           Decimal           @db.Decimal(12, 2)
-  removalCost         Decimal           @db.Decimal(12, 2)
-  totalCost           Decimal           @db.Decimal(12, 2)
-  gutterPieces        Int
-  ridgeLength         Decimal           @db.Decimal(10, 2)
-  complexityScore     Int
-  complexityLevel     String
-  recommendedMaterial String?
-  optimizationTips    String?           @db.LongText
-  notes               String?           @db.LongText
-  created_at          DateTime          @default(now())
-  updated_at          DateTime          @updatedAt
-  address             String?
-  assignedAt          DateTime?
-  city                String?
-  clientId            String?
-  contractorId        String?
-  deliveryCost        Decimal?          @db.Decimal(12, 2)
-  deliveryDistance    Decimal?          @db.Decimal(8, 2)
-  latitude            Decimal?          @db.Decimal(10, 8)
-  longitude           Decimal?          @db.Decimal(11, 8)
-  proposalSent        DateTime?
-  proposalStatus      ProposalStatus?   @default(DRAFT)
-  state               String?
-  warehouseId         String?
-  zipCode             String?
-  materialsConsumed   Boolean           @default(false)
-  materialsConsumedAt DateTime?
-  boardPosition       Int               @default(0)
-  proposalPosition    Int               @default(0)
-  currentStage        ProjectStage      @default(INSPECTION)
-  stageProgress       String?           @db.LongText
-  sentToContractorAt  DateTime?         @db.DateTime(0)
-  contractorStatus    String?
-  handoffNote         String?           @db.LongText
-  client              user?             @relation("ClientProjects", fields: [clientId], references: [id])
-  contractor          user?             @relation("ContractorProjects", fields: [contractorId], references: [id])
-  user                user              @relation("ProjectOwner", fields: [userId], references: [id], onDelete: Cascade)
-  warehouse           warehouse?        @relation(fields: [warehouseId], references: [id])
-  projectmaterial     projectmaterial[]
-
-  @@index([userId], map: "Project_userId_idx")
-  @@index([contractorId], map: "Project_contractorId_idx")
-  @@index([clientId], map: "Project_clientId_idx")
-  @@index([status], map: "Project_status_idx")
-  @@index([created_at], map: "Project_created_at_idx")
-  @@index([projectName], map: "Project_name_idx")
-  @@index([warehouseId], map: "project_warehouseId_fkey")
-}
-
-model warehouse {
-  id                String              @id @default(uuid())
-  name              String
-  address           String
-  city              String
-  state             String
-  zipCode           String
-  latitude          Decimal             @db.Decimal(10, 8)
-  longitude         Decimal             @db.Decimal(11, 8)
-  isDefault         Boolean             @default(false)
-  created_by        String
-  created_at        DateTime            @default(now())
-  updated_at        DateTime            @updatedAt
-  capacity          Decimal?            @db.Decimal(12, 2)
-  height            Decimal?            @db.Decimal(8, 2)
-  length            Decimal?            @db.Decimal(8, 2)
-  width             Decimal?            @db.Decimal(8, 2)
-  projects          project[]
-  creator           user                @relation("WarehouseOwner", fields: [created_by], references: [id], onDelete: Cascade)
-  warehousematerial warehousematerial[]
-
-  @@index([created_by], map: "Warehouse_created_by_idx")
-}
-
-model notification {
+model Notification {
   id          String   @id
   userId      String
   type        String
@@ -188,14 +18,14 @@ model notification {
   actionUrl   String?
   read        Boolean  @default(false)
   created_at  DateTime @default(now())
-  user        user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Notification_userId_fkey")
+  user        user     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([created_at], map: "Notification_created_at_idx")
-  @@index([read], map: "Notification_read_idx")
-  @@index([userId], map: "Notification_userId_idx")
+  @@index([created_at])
+  @@index([read])
+  @@index([userId])
 }
 
-model pricingconfig {
+model PricingConfig {
   id                String              @id
   category          String
   name              String
@@ -211,37 +41,36 @@ model pricingconfig {
   length            Decimal?            @db.Decimal(8, 2)
   volume            Decimal?            @db.Decimal(10, 4)
   width             Decimal?            @db.Decimal(8, 2)
-  warehousematerial warehousematerial[]
+  WarehouseMaterial WarehouseMaterial[]
 
-  @@unique([category, name], map: "PricingConfig_category_name_key")
-  @@index([category], map: "PricingConfig_category_idx")
-  @@index([isActive], map: "PricingConfig_isActive_idx")
-  @@map("PricingConfig")
+  @@unique([category, name])
+  @@index([category])
+  @@index([isActive])
 }
 
-model projectmaterial {
+model ProjectMaterial {
   id                  String                 @id
   projectId           String
   warehouseMaterialId String
   quantity            Int                    @default(0)
-  status              projectmaterial_status @default(RESERVED)
+  status              ProjectMaterial_status @default(RESERVED)
   reservedAt          DateTime               @default(now())
   consumedAt          DateTime?
   returnedAt          DateTime?
   notes               String?                @db.LongText
   created_at          DateTime               @default(now())
   updated_at          DateTime
-  project             project                @relation(fields: [projectId], references: [id], onDelete: Cascade, map: "ProjectMaterial_projectId_fkey")
-  warehousematerial   warehousematerial      @relation(fields: [warehouseMaterialId], references: [id], onDelete: Cascade, map: "ProjectMaterial_warehouseMaterialId_fkey")
+  project             project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  WarehouseMaterial   WarehouseMaterial      @relation(fields: [warehouseMaterialId], references: [id], onDelete: Cascade)
 
-  @@unique([projectId, warehouseMaterialId], map: "ProjectMaterial_projectId_warehouseMaterialId_key")
-  @@index([consumedAt], map: "ProjectMaterial_consumedAt_idx")
-  @@index([projectId], map: "ProjectMaterial_projectId_idx")
-  @@index([status], map: "ProjectMaterial_status_idx")
-  @@index([warehouseMaterialId], map: "ProjectMaterial_warehouseMaterialId_idx")
+  @@unique([projectId, warehouseMaterialId])
+  @@index([consumedAt])
+  @@index([projectId])
+  @@index([status])
+  @@index([warehouseMaterialId])
 }
 
-model warehousematerial {
+model WarehouseMaterial {
   id                 String            @id
   warehouseId        String
   materialId         String
@@ -250,35 +79,196 @@ model warehousematerial {
   isActive           Boolean           @default(true)
   created_at         DateTime          @default(now())
   updated_at         DateTime
-  projectmaterial    projectmaterial[]
-  pricingconfig      pricingconfig     @relation(fields: [materialId], references: [id], onDelete: Cascade, map: "WarehouseMaterial_materialId_fkey")
-  warehouse          warehouse         @relation(fields: [warehouseId], references: [id], onDelete: Cascade, map: "WarehouseMaterial_warehouseId_fkey")
+  ProjectMaterial    ProjectMaterial[]
+  PricingConfig      PricingConfig     @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  warehouse          warehouse         @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
 
-  @@unique([warehouseId, materialId], map: "WarehouseMaterial_warehouseId_materialId_key")
-  @@index([isActive], map: "WarehouseMaterial_isActive_idx")
-  @@index([materialId], map: "WarehouseMaterial_materialId_idx")
-  @@index([warehouseId], map: "WarehouseMaterial_warehouseId_idx")
-  @@map("WarehouseMaterial")
+  @@unique([warehouseId, materialId])
+  @@index([isActive])
+  @@index([materialId])
+  @@index([warehouseId])
+}
+
+model activity {
+  id          String        @id
+  userId      String
+  type        activity_type
+  description String
+  metadata    String?       @db.LongText
+  created_at  DateTime      @default(now())
+  user        user          @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Activity_userId_fkey")
+
+  @@index([created_at], map: "Activity_created_at_idx")
+  @@index([type], map: "Activity_type_idx")
+  @@index([userId], map: "Activity_userId_idx")
+}
+
+model project {
+  id                              String                   @id
+  userId                          String
+  projectName                     String
+  clientName                      String?
+  status                          project_status           @default(DRAFT)
+  length                          Decimal                  @db.Decimal(10, 2)
+  width                           Decimal                  @db.Decimal(10, 2)
+  pitch                           Decimal                  @db.Decimal(5, 2)
+  roofType                        String
+  floors                          Int
+  materialThickness               String
+  ridgeType                       String
+  gutterSize                      String
+  budgetLevel                     String
+  budgetAmount                    Decimal?                 @db.Decimal(12, 2)
+  constructionMode                project_constructionMode @default(NEW)
+  gutterLengthA                   Decimal?                 @db.Decimal(10, 2)
+  gutterSlope                     Decimal?                 @db.Decimal(10, 2)
+  gutterLengthC                   Decimal?                 @db.Decimal(10, 2)
+  insulationThickness             String
+  ventilationPieces               Int
+  material                        String
+  area                            Decimal                  @db.Decimal(10, 2)
+  materialCost                    Decimal                  @db.Decimal(12, 2)
+  gutterCost                      Decimal                  @db.Decimal(12, 2)
+  ridgeCost                       Decimal                  @db.Decimal(12, 2)
+  screwsCost                      Decimal                  @db.Decimal(12, 2)
+  insulationCost                  Decimal                  @db.Decimal(12, 2)
+  ventilationCost                 Decimal                  @db.Decimal(12, 2)
+  totalMaterialsCost              Decimal                  @db.Decimal(12, 2)
+  laborCost                       Decimal                  @db.Decimal(12, 2)
+  removalCost                     Decimal                  @db.Decimal(12, 2)
+  totalCost                       Decimal                  @db.Decimal(12, 2)
+  gutterPieces                    Int
+  ridgeLength                     Decimal                  @db.Decimal(10, 2)
+  complexityScore                 Int
+  complexityLevel                 String
+  recommendedMaterial             String?
+  optimizationTips                String?                  @db.LongText
+  notes                           String?                  @db.LongText
+  created_at                      DateTime                 @default(now())
+  updated_at                      DateTime
+  address                         String?
+  assignedAt                      DateTime?
+  city                            String?
+  clientId                        String?
+  contractorId                    String?
+  deliveryCost                    Decimal?                 @db.Decimal(12, 2)
+  deliveryDistance                Decimal?                 @db.Decimal(8, 2)
+  latitude                        Decimal?                 @db.Decimal(10, 8)
+  longitude                       Decimal?                 @db.Decimal(11, 8)
+  proposalSent                    DateTime?
+  proposalStatus                  project_proposalStatus?  @default(DRAFT)
+  state                           String?
+  warehouseId                     String?
+  zipCode                         String?
+  materialsConsumed               Boolean                  @default(false)
+  materialsConsumedAt             DateTime?
+  boardPosition                   Int                      @default(0)
+  proposalPosition                Int                      @default(0)
+  currentStage                    project_currentStage     @default(INSPECTION)
+  stageProgress                   Json?
+  sentToContractorAt              DateTime?                @db.DateTime(0)
+  contractorStatus                String?
+  handoffNote                     String?                  @db.LongText
+  ProjectMaterial                 ProjectMaterial[]
+  user_project_clientIdTouser     user?                    @relation("project_clientIdTouser", fields: [clientId], references: [id])
+  user_project_contractorIdTouser user?                    @relation("project_contractorIdTouser", fields: [contractorId], references: [id])
+  user_project_userIdTouser       user                     @relation("project_userIdTouser", fields: [userId], references: [id], onDelete: Cascade)
+  warehouse                       warehouse?               @relation(fields: [warehouseId], references: [id])
+
+  @@index([clientId], map: "Project_clientId_idx")
+  @@index([contractorId], map: "Project_contractorId_idx")
+  @@index([created_at], map: "Project_created_at_idx")
+  @@index([projectName], map: "Project_name_idx")
+  @@index([status], map: "Project_status_idx")
+  @@index([userId], map: "Project_userId_idx")
+  @@index([warehouseId], map: "project_warehouseId_fkey")
+}
+
+model ratelimit {
+  id           String    @id
+  email        String
+  action       String    @default("otp_generation")
+  attempts     Int       @default(0)
+  lastAttempt  DateTime
+  blockedUntil DateTime?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime
+
+  @@unique([email, action], map: "RateLimit_email_action_key")
+  @@index([blockedUntil], map: "RateLimit_blockedUntil_idx")
+  @@index([created_at], map: "RateLimit_created_at_idx")
 }
 
 model systemsettings {
-  id                        String    @id @default(uuid())
-  maintenanceMode           Boolean   @default(false)
-  maintenanceMessage        String?   @db.Text
-  maintenanceScheduledEnd   DateTime?
-  maintenanceStartedBy      String?
-  maintenanceStartedAt      DateTime?
-  updated_at                DateTime  @updatedAt
+  id                      String    @id
+  maintenanceMode         Boolean   @default(false)
+  maintenanceMessage      String?   @db.Text
+  maintenanceScheduledEnd DateTime?
+  maintenanceStartedBy    String?
+  maintenanceStartedAt    DateTime?
+  updated_at              DateTime
 
   @@index([maintenanceMode], map: "SystemSettings_maintenanceMode_idx")
 }
 
-enum ProjectStage {
-  INSPECTION
-  ESTIMATE
-  MATERIALS
-  INSTALL
-  FINALIZE
+model user {
+  id                                 String             @id
+  email                              String             @unique(map: "User_email_key")
+  passwordHash                       String
+  firstName                          String
+  lastName                           String
+  role                               user_role          @default(CLIENT)
+  email_verified                     DateTime?
+  created_at                         DateTime           @default(now())
+  updated_at                         DateTime
+  Notification                       Notification[]
+  activity                           activity[]
+  project_project_clientIdTouser     project[]          @relation("project_clientIdTouser")
+  project_project_contractorIdTouser project[]          @relation("project_contractorIdTouser")
+  project_project_userIdTouser       project[]          @relation("project_userIdTouser")
+  verificationcode                   verificationcode[]
+  warehouse                          warehouse[]
+
+  @@index([email], map: "User_email_idx")
+}
+
+model verificationcode {
+  id         String   @id
+  code       String   @db.VarChar(6)
+  email      String
+  type       String   @default("email_verification")
+  expiresAt  DateTime
+  used       Boolean  @default(false)
+  created_at DateTime @default(now())
+  user       user     @relation(fields: [email], references: [email], onDelete: Cascade, map: "VerificationCode_email_fkey")
+
+  @@index([code], map: "VerificationCode_code_idx")
+  @@index([email], map: "VerificationCode_email_idx")
+  @@index([expiresAt], map: "VerificationCode_expiresAt_idx")
+}
+
+model warehouse {
+  id                String              @id
+  name              String
+  address           String
+  city              String
+  state             String
+  zipCode           String
+  latitude          Decimal             @db.Decimal(10, 8)
+  longitude         Decimal             @db.Decimal(11, 8)
+  isDefault         Boolean             @default(false)
+  created_by        String
+  created_at        DateTime            @default(now())
+  updated_at        DateTime
+  capacity          Decimal?            @db.Decimal(12, 2)
+  height            Decimal?            @db.Decimal(8, 2)
+  length            Decimal?            @db.Decimal(8, 2)
+  width             Decimal?            @db.Decimal(8, 2)
+  WarehouseMaterial WarehouseMaterial[]
+  project           project[]
+  user              user                @relation(fields: [created_by], references: [id], onDelete: Cascade)
+
+  @@index([created_by], map: "Warehouse_created_by_idx")
 }
 
 enum activity_type {
@@ -291,6 +281,13 @@ enum activity_type {
   PROJECT_UPDATED
   PAYMENT_RECEIVED
   EMAIL_VERIFIED
+}
+
+enum ProjectMaterial_status {
+  RESERVED
+  CONSUMED
+  RETURNED
+  CANCELLED
 }
 
 enum project_status {
@@ -306,12 +303,18 @@ enum project_status {
   REJECTED
 }
 
-enum construction_mode {
+enum user_role {
+  CLIENT
+  ADMIN
+  DEVELOPER
+}
+
+enum project_constructionMode {
   NEW
   REPAIR
 }
 
-enum ProposalStatus {
+enum project_proposalStatus {
   DRAFT
   SENT
   ACCEPTED
@@ -320,15 +323,10 @@ enum ProposalStatus {
   COMPLETED
 }
 
-enum user_role {
-  CLIENT
-  ADMIN
-  DEVELOPER
-}
-
-enum projectmaterial_status {
-  RESERVED
-  CONSUMED
-  RETURNED
-  CANCELLED
+enum project_currentStage {
+  INSPECTION
+  ESTIMATE
+  MATERIALS
+  INSTALL
+  FINALIZE
 }
