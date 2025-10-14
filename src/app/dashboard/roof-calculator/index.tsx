@@ -184,8 +184,8 @@ export function RoofCalculatorContent() {
       {/* Main Content Grid */}
       <div>
         <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-          {/* Left Column - Inputs (Sticky) */}
-          <div className="space-y-4 sm:space-y-6 lg:sticky lg:top-4 lg:self-start">
+          {/* Left Column - Inputs */}
+          <div className="space-y-4 sm:space-y-6">
             {/* Construction Mode */}
             <Card>
               <CardHeader>
@@ -337,8 +337,8 @@ export function RoofCalculatorContent() {
             </Card>
           </div>
 
-          {/* Right Column - Results & Analysis */}
-          <div className="space-y-4 sm:space-y-6">
+          {/* Right Column - Results & Analysis (Sticky) */}
+          <div className="space-y-4 sm:space-y-6 lg:sticky lg:top-4 lg:self-start">
             <CalculationResults
               area={results.area}
               materialCost={results.materialCost}
