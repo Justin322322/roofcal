@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { PrinterIcon } from "lucide-react";
-import { formatCurrency, formatArea } from "@/lib/utils";
+import { formatArea } from "@/lib/utils";
 
 interface Project {
   id: string;
@@ -29,7 +29,18 @@ interface Project {
   notes?: string | null;
   materialCost?: number;
   laborCost?: number;
-  deliveryCost?: number;
+  deliveryCost?: number | null;
+  // Optional fields to mirror drawer details
+  gutterCost?: number;
+  ridgeCost?: number;
+  screwsCost?: number;
+  insulationCost?: number;
+  ventilationCost?: number;
+  totalMaterialsCost?: number;
+  length?: number;
+  width?: number;
+  pitch?: number;
+  deliveryDistance?: number | null;
   contractor?: {
     id: string;
     firstName: string;
@@ -46,6 +57,8 @@ interface ProjectPrinterProps {
 
 export function ProjectPrinter({ project, isOpen, onClose }: ProjectPrinterProps) {
   const printRef = useRef<HTMLDivElement>(null);
+
+  
 
   const handlePrint = () => {
     if (!printRef.current) return;
@@ -106,6 +119,7 @@ export function ProjectPrinter({ project, isOpen, onClose }: ProjectPrinterProps
               margin-bottom: 16px;
               overflow: hidden;
             }
+            
             .card-header {
               background: hsl(210 40% 96.1%);
               padding: 12px 16px;
@@ -266,7 +280,7 @@ export function ProjectPrinter({ project, isOpen, onClose }: ProjectPrinterProps
                 </div>
                 <div className="info-item">
                   <span className="info-label">Material:</span>
-                  <span className="info-value capitalize">{project.material}</span>
+                  <span className="info-value capitalize">{project.material.replace(/-/g, ' ')}</span>
                 </div>
                 <div className="info-item">
                   <span className="info-label">Roof Area:</span>
@@ -305,6 +319,66 @@ export function ProjectPrinter({ project, isOpen, onClose }: ProjectPrinterProps
             </div>
           </div>
 
+          {(project.address || project.city || project.state || (project.deliveryDistance !== null && project.deliveryDistance !== undefined)) && (
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">Location</div>
+              </div>
+              <div className="card-content">
+                <div className="info-grid">
+                  {project.address && (
+                    <div className="info-item">
+                      <span className="info-label">Address:</span>
+                      <span className="info-value">{project.address}</span>
+                    </div>
+                  )}
+                  {(project.city || project.state) && (
+                    <div className="info-item">
+                      <span className="info-label">City/State:</span>
+                      <span className="info-value">{project.city}, {project.state}</span>
+                    </div>
+                  )}
+                  {project.deliveryDistance !== null && project.deliveryDistance !== undefined && (
+                    <div className="info-item">
+                      <span className="info-label">Delivery Distance:</span>
+                      <span className="info-value">{project.deliveryDistance.toFixed(2)} miles</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {(project.length || project.width || project.pitch) && (
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">Dimensions</div>
+              </div>
+              <div className="card-content">
+                <div className="info-grid">
+                  {project.length && (
+                    <div className="info-item">
+                      <span className="info-label">Length:</span>
+                      <span className="info-value">{project.length} ft</span>
+                    </div>
+                  )}
+                  {project.width && (
+                    <div className="info-item">
+                      <span className="info-label">Width:</span>
+                      <span className="info-value">{project.width} ft</span>
+                    </div>
+                  )}
+                  {project.pitch && (
+                    <div className="info-item">
+                      <span className="info-label">Pitch:</span>
+                      <span className="info-value">{project.pitch}°</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="card">
             <div className="card-header">
               <div className="card-title">Cost Breakdown</div>
@@ -313,25 +387,61 @@ export function ProjectPrinter({ project, isOpen, onClose }: ProjectPrinterProps
               <div className="cost-breakdown">
                 {project.materialCost !== undefined && (
                   <div className="cost-item">
-                    <span>Material Cost:</span>
-                    <span>{formatCurrency(project.materialCost)}</span>
+                    <span>Roofing Material</span>
+                    <span>₱{project.materialCost.toLocaleString()}</span>
+                  </div>
+                )}
+                {project.gutterCost !== undefined && project.gutterCost > 0 && (
+                  <div className="cost-item">
+                    <span>Gutter System</span>
+                    <span>₱{project.gutterCost.toLocaleString()}</span>
+                  </div>
+                )}
+                {project.ridgeCost !== undefined && project.ridgeCost > 0 && (
+                  <div className="cost-item">
+                    <span>Ridge Cap</span>
+                    <span>₱{project.ridgeCost.toLocaleString()}</span>
+                  </div>
+                )}
+                {project.screwsCost !== undefined && project.screwsCost > 0 && (
+                  <div className="cost-item">
+                    <span>Screws & Fasteners</span>
+                    <span>₱{project.screwsCost.toLocaleString()}</span>
+                  </div>
+                )}
+                {project.insulationCost !== undefined && project.insulationCost > 0 && (
+                  <div className="cost-item">
+                    <span>Insulation</span>
+                    <span>₱{project.insulationCost.toLocaleString()}</span>
+                  </div>
+                )}
+                {project.ventilationCost !== undefined && project.ventilationCost > 0 && (
+                  <div className="cost-item">
+                    <span>Ventilation</span>
+                    <span>₱{project.ventilationCost.toLocaleString()}</span>
+                  </div>
+                )}
+                {project.totalMaterialsCost !== undefined && project.totalMaterialsCost > 0 && (
+                  <div className="cost-item" style={{ borderTop: '1px solid hsl(214.3 31.8% 91.4%)', marginTop: 8, paddingTop: 8 }}>
+                    <span className="font-medium">Subtotal - Materials</span>
+                    <span className="font-medium">₱{project.totalMaterialsCost.toLocaleString()}</span>
                   </div>
                 )}
                 {project.laborCost !== undefined && (
                   <div className="cost-item">
-                    <span>Labor Cost:</span>
-                    <span>{formatCurrency(project.laborCost)}</span>
+                    <span>Labor</span>
+                    <span>₱{project.laborCost.toLocaleString()}</span>
                   </div>
                 )}
-                {project.deliveryCost !== undefined && (
+                {project.deliveryCost !== null && project.deliveryCost !== undefined && (
                   <div className="cost-item">
-                    <span>Delivery Cost:</span>
-                    <span>{formatCurrency(project.deliveryCost)}</span>
+                    <span>Delivery</span>
+                    <span>₱{project.deliveryCost.toLocaleString()}</span>
                   </div>
                 )}
                 <div className="total-cost">
                   <span>Total Cost:</span>
-                  <span>{formatCurrency(project.totalCost)}</span>
+                  <span>₱{project.totalCost.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -372,7 +482,10 @@ export function ProjectPrinter({ project, isOpen, onClose }: ProjectPrinterProps
 
           <div className="footer">
             <p>This document was generated from RoofCalc Project Management System</p>
-            <p>© ${new Date().getFullYear()} RoofCalc. All rights reserved.</p>
+            <p>
+              {'\u00A9 '}
+              {new Date().getFullYear()} RoofCalc. All rights reserved.
+            </p>
           </div>
         </div>
       </div>

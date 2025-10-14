@@ -13,6 +13,13 @@ export interface EmailData {
   text: string;
 }
 
+export interface AdminCredentialsData {
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+}
+
 export async function sendEmail(emailData: EmailData): Promise<void> {
   // In development, just log the email
   if (process.env.NODE_ENV === "development") {
@@ -263,6 +270,136 @@ export async function sendCustomEmail(
     text: textContent
   };
   
+  try {
+    await sendEmail(emailData);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
+  }
+}
+
+/**
+ * Send admin credentials email to newly created admin
+ */
+export async function sendAdminCredentialsEmail(data: AdminCredentialsData): Promise<{ success: boolean; error?: string }> {
+  const subject = "Your Admin Account Credentials - RoofCal";
+  
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Admin Account Created</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
+        .credentials { background: #fff; border: 2px solid #e9ecef; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .credential-item { margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+        .label { font-weight: bold; color: #495057; }
+        .value { font-family: monospace; background: #e9ecef; padding: 5px 10px; border-radius: 3px; word-break: break-all; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 30px; color: #6c757d; font-size: 14px; }
+        .button { display: inline-block; background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>🔐 Admin Account Created</h1>
+        <p>Welcome to RoofCal Admin Panel</p>
+      </div>
+      
+      <div class="content">
+        <h2>Hello ${data.firstName} ${data.lastName}!</h2>
+        
+        <p>Your admin account has been successfully created. Below are your login credentials:</p>
+        
+        <div class="credentials">
+          <h3>Login Credentials</h3>
+          
+          <div class="credential-item">
+            <div class="label">Email Address:</div>
+            <div class="value">${data.email}</div>
+          </div>
+          
+          <div class="credential-item">
+            <div class="label">Temporary Password:</div>
+            <div class="value">${data.password}</div>
+          </div>
+        </div>
+        
+        <div class="warning">
+          <strong>⚠️ Important Security Notice:</strong>
+          <ul>
+            <li>You will be required to change your password on first login</li>
+            <li>Keep these credentials secure and do not share them</li>
+            <li>Log in immediately and set a strong, unique password</li>
+          </ul>
+        </div>
+        
+        <p>To access your admin panel, please visit:</p>
+        <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/login" class="button">Login to Admin Panel</a>
+        
+        <h3>Admin Capabilities</h3>
+        <p>As an admin, you will have access to:</p>
+        <ul>
+          <li>User account management</li>
+          <li>System configuration</li>
+          <li>Project oversight</li>
+          <li>Material inventory management</li>
+          <li>Reporting and analytics</li>
+        </ul>
+        
+        <p>If you have any questions or need assistance, please contact your system administrator.</p>
+      </div>
+      
+      <div class="footer">
+        <p>This email was sent from RoofCal Admin System</p>
+        <p>Please do not reply to this email</p>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const textContent = `
+    Admin Account Created - RoofCal
+    
+    Hello ${data.firstName} ${data.lastName}!
+    
+    Your admin account has been successfully created. Below are your login credentials:
+    
+    Email Address: ${data.email}
+    Temporary Password: ${data.password}
+    
+    IMPORTANT SECURITY NOTICE:
+    - You will be required to change your password on first login
+    - Keep these credentials secure and do not share them
+    - Log in immediately and set a strong, unique password
+    
+    Login URL: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/login
+    
+    Admin Capabilities:
+    As an admin, you will have access to:
+    - User account management
+    - System configuration
+    - Project oversight
+    - Material inventory management
+    - Reporting and analytics
+    
+    If you have any questions or need assistance, please contact your system administrator.
+    
+    This email was sent from RoofCal Admin System
+    Please do not reply to this email
+  `;
+
+  const emailData: EmailData = {
+    to: data.email,
+    subject: subject,
+    html: htmlContent,
+    text: textContent
+  };
+
   try {
     await sendEmail(emailData);
     return { success: true };
