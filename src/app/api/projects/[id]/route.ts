@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
-import { reserveProjectMaterials, consumeProjectMaterials, returnProjectMaterials } from "@/lib/material-consumption";
 import type { UpdateProjectInput } from "@/types/project";
 
 export const runtime = 'nodejs';
@@ -126,45 +125,7 @@ export async function PUT(
 
     // Handle material consumption based on status changes
     if (body.status && body.status !== existingProject.status) {
-      const oldStatus = existingProject.status;
       const newStatus = body.status;
-
-      // When project is accepted, reserve materials
-      if (newStatus === "ACCEPTED" && !existingProject.materialsConsumed) {
-        const reserveResult = await reserveProjectMaterials(id);
-        if (!reserveResult.success) {
-          return NextResponse.json(
-            { 
-              error: reserveResult.message,
-              errorCode: reserveResult.error,
-              insufficientMaterials: 'insufficientMaterials' in reserveResult ? reserveResult.insufficientMaterials : undefined,
-              warehouseId: 'warehouseId' in reserveResult ? reserveResult.warehouseId : undefined
-            },
-            { status: 400 }
-          );
-        }
-      }
-
-      // When project starts work, consume reserved materials
-      if (newStatus === "IN_PROGRESS" && oldStatus === "ACCEPTED") {
-        const consumeResult = await consumeProjectMaterials(id);
-        if (!consumeResult.success) {
-          return NextResponse.json(
-            { error: consumeResult.message },
-            { status: 400 }
-          );
-        }
-      }
-
-      // When project is rejected, cancelled, or archived, return materials
-      if ((newStatus === "REJECTED" || newStatus === "ARCHIVED") && 
-          (oldStatus === "ACCEPTED" || oldStatus === "IN_PROGRESS")) {
-        const returnResult = await returnProjectMaterials(id, `Status changed from ${oldStatus} to ${newStatus}`);
-        if (!returnResult.success) {
-          console.error("Failed to return materials:", returnResult.message);
-          // Don't fail the status update, just log the error
-        }
-      }
 
       // When project is completed, automatically update proposalStatus to COMPLETED if it was ACCEPTED
       if (newStatus === "COMPLETED" && existingProject.proposalStatus === "ACCEPTED") {
@@ -393,48 +354,10 @@ export async function PATCH(
 
     // Handle status updates
     if (body.status) {
-      const oldStatus = existingProject.status;
       const newStatus = body.status;
 
       // Handle material consumption based on status changes
-      if (newStatus !== oldStatus) {
-        // When project is accepted, reserve materials
-        if (newStatus === "ACCEPTED" && !existingProject.materialsConsumed) {
-          const reserveResult = await reserveProjectMaterials(id);
-          if (!reserveResult.success) {
-            return NextResponse.json(
-              { 
-                error: reserveResult.message,
-                errorCode: reserveResult.error,
-                insufficientMaterials: 'insufficientMaterials' in reserveResult ? reserveResult.insufficientMaterials : undefined,
-                warehouseId: 'warehouseId' in reserveResult ? reserveResult.warehouseId : undefined
-              },
-              { status: 400 }
-            );
-          }
-        }
-
-        // When project starts work, consume reserved materials
-        if (newStatus === "IN_PROGRESS" && oldStatus === "ACCEPTED") {
-          const consumeResult = await consumeProjectMaterials(id);
-          if (!consumeResult.success) {
-            return NextResponse.json(
-              { error: consumeResult.message },
-              { status: 400 }
-            );
-          }
-        }
-
-        // When project is rejected, cancelled, or archived, return materials
-        if ((newStatus === "REJECTED" || newStatus === "ARCHIVED") && 
-            (oldStatus === "ACCEPTED" || oldStatus === "IN_PROGRESS")) {
-          const returnResult = await returnProjectMaterials(id, `Status changed from ${oldStatus} to ${newStatus}`);
-          if (!returnResult.success) {
-            console.error("Failed to return materials:", returnResult.message);
-            // Don't fail the status update, just log the error
-          }
-        }
-
+      if (newStatus !== existingProject.status) {
         // When project is completed, automatically update proposalStatus to COMPLETED if it was ACCEPTED
         if (newStatus === "COMPLETED" && existingProject.proposalStatus === "ACCEPTED") {
           body.proposalStatus = "COMPLETED";

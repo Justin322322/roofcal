@@ -256,58 +256,60 @@ export default function DatabaseManagementContent() {
                 </div>
               ) : (
                 <>
-                  <div className="rounded-md border overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          {tableColumns.slice(0, 10).map((col) => (
-                            <TableHead key={col.name} className="capitalize whitespace-nowrap">
-                              {col.name}
-                            </TableHead>
-                          ))}
-                          {isEditable(selectedTable) && (
-                            <TableHead className="w-24 whitespace-nowrap">Actions</TableHead>
-                          )}
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {tableData.data.length === 0 ? (
+                  <div className="w-full overflow-x-auto">
+                    <div className="min-w-full rounded-md border">
+                      <Table className="min-w-full">
+                        <TableHeader>
                           <TableRow>
-                            <TableCell
-                              colSpan={tableColumns.length + 1}
-                              className="text-center text-muted-foreground"
-                            >
-                              No records found
-                            </TableCell>
+                            {tableColumns.slice(0, 10).map((col) => (
+                              <TableHead key={col.name} className="capitalize whitespace-nowrap min-w-[150px]">
+                                {col.name}
+                              </TableHead>
+                            ))}
+                            {isEditable(selectedTable) && (
+                              <TableHead className="w-24 whitespace-nowrap sticky right-0 bg-background">Actions</TableHead>
+                            )}
                           </TableRow>
-                        ) : (
-                          tableData.data.map((record, idx) => (
-                            <TableRow key={(record.id as string) || idx}>
-                              {tableColumns.slice(0, 10).map((col) => (
-                                <TableCell key={col.name} className="whitespace-nowrap">
-                                  <div className="min-w-[120px] max-w-[300px] px-2">
-                                    <div className="truncate" title={formatValue(record[col.name])}>
-                                      {formatValue(record[col.name])}
-                                    </div>
-                                  </div>
-                                </TableCell>
-                              ))}
-                              {isEditable(selectedTable) && (
-                                <TableCell className="whitespace-nowrap">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleEdit(record)}
-                                  >
-                                    Edit
-                                  </Button>
-                                </TableCell>
-                              )}
+                        </TableHeader>
+                        <TableBody>
+                          {tableData.data.length === 0 ? (
+                            <TableRow>
+                              <TableCell
+                                colSpan={tableColumns.length + 1}
+                                className="text-center text-muted-foreground"
+                              >
+                                No records found
+                              </TableCell>
                             </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
+                          ) : (
+                            tableData.data.map((record, idx) => (
+                              <TableRow key={(record.id as string) || idx}>
+                                {tableColumns.slice(0, 10).map((col) => (
+                                  <TableCell key={col.name} className="whitespace-nowrap min-w-[150px]">
+                                    <div className="max-w-[300px]">
+                                      <div className="truncate" title={formatValue(record[col.name])}>
+                                        {formatValue(record[col.name])}
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                ))}
+                                {isEditable(selectedTable) && (
+                                  <TableCell className="whitespace-nowrap sticky right-0 bg-background border-l">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleEdit(record)}
+                                    >
+                                      Edit
+                                    </Button>
+                                  </TableCell>
+                                )}
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </div>
 
                   {/* Pagination */}
