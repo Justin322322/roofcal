@@ -10,7 +10,10 @@ import {
   WarehouseIcon, 
   AlertTriangleIcon, 
   PackageIcon,
+  RefreshCwIcon,
+  Loader2Icon,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface WarehouseMaterialWarning {
   warehouseId: string;
@@ -92,6 +95,7 @@ export function WarehouseMaterialWarnings({
 }: WarehouseMaterialWarningsProps) {
   const [warnings, setWarnings] = useState<WarehouseMaterialWarning[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [replenishing, setReplenishing] = useState<string | null>(null);
 
   const calculateLocalWarnings = useCallback(() => {
     // Calculate warnings from real warehouse data as fallback
@@ -104,6 +108,11 @@ export function WarehouseMaterialWarnings({
       const warehouseWarnings: WarehouseMaterialWarning['warnings'] = [];
       
       activeMaterials.forEach(material => {
+        // Skip Labor materials - they are fixed costs, not physical inventory
+        if (material.material.category === 'Labor') {
+          return;
+        }
+        
         const currentStock = material.quantity;
         
         // Define warning thresholds based on material category
@@ -111,15 +120,15 @@ export function WarehouseMaterialWarnings({
         let criticalThreshold = 5; // Default critical threshold
         
         // Adjust thresholds based on material type
-        if (material.material.category === 'Labor') {
-          warningThreshold = 1; // Labor is typically fixed
-          criticalThreshold = 0;
-        } else if (material.material.category === 'Insulation' || material.material.category === 'Ventilation') {
+        if (material.material.category === 'Insulation' || material.material.category === 'Ventilation') {
           warningThreshold = 5;
           criticalThreshold = 2;
         } else if (material.material.category === 'Gutter') {
           warningThreshold = 15;
           criticalThreshold = 8;
+        } else if (material.material.category === 'Screws' || material.material.category === 'Hardware') {
+          warningThreshold = 20;
+          criticalThreshold = 10;
         }
         
         // Check if material needs warning
@@ -202,6 +211,34 @@ export function WarehouseMaterialWarnings({
         return <AlertTriangleIcon className="h-4 w-4 text-yellow-500" />;
       default:
         return <PackageIcon className="h-4 w-4 text-blue-500" />;
+    }
+  };
+
+  const handleReplenish = async (warehouseId: string, materialId: string, materialName: string) => {
+    try {
+      setReplenishing(materialId);
+      
+      const response = await fetch(`/api/warehouses/${warehouseId}/materials/${materialId}/replenish`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast.success(`Successfully replenished ${data.quantity} units of ${materialName}`);
+        // Refresh warnings to show updated stock levels
+        await fetchWarnings();
+      } else {
+        toast.error(data.error || 'Failed to replenish stock');
+      }
+    } catch (error) {
+      console.error('Error replenishing stock:', error);
+      toast.error('Failed to replenish stock');
+    } finally {
+      setReplenishing(null);
     }
   };
 
@@ -335,6 +372,26 @@ export function WarehouseMaterialWarnings({
                           ) : (
                             <span className="text-muted-foreground text-sm">—</span>
                           )}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleReplenish(warehouse.warehouseId, warning.materialId, warning.materialName)}
+                            disabled={replenishing === warning.materialId}
+                          >
+                            {replenishing === warning.materialId ? (
+                              <>
+                                <Loader2Icon className="h-3 w-3 mr-1 animate-spin" />
+                                Replenishing...
+                              </>
+                            ) : (
+                              <>
+                                <RefreshCwIcon className="h-3 w-3 mr-1" />
+                                Replenish
+                              </>
+                            )}
+                          </Button>
                         </TableCell>
                       </TableRow>
                     );
