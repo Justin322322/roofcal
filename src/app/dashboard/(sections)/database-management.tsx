@@ -163,22 +163,35 @@ export default function DatabaseManagementContent() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Database Management</h2>
-        <p className="text-muted-foreground">
-          View and manage database tables with read-only and limited edit capabilities
-        </p>
+    <div className="flex flex-col gap-4 md:gap-6">
+      {/* Header */}
+      <div className="flex flex-col gap-2 px-4 lg:px-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <Database className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Database Management</h1>
+            <p className="text-sm text-muted-foreground">
+              View and manage database tables with read-only and limited edit capabilities
+            </p>
+          </div>
+        </div>
       </div>
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+      {/* Alerts */}
+      <div className="px-4 lg:px-6">
+        {error && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+      </div>
 
-      <Card>
+      {/* Main Content */}
+      <div className="px-4 lg:px-6">
+        <Card>
         <CardHeader>
           <CardTitle>Select Table</CardTitle>
           <CardDescription>Choose a database table to view and manage</CardDescription>
@@ -210,9 +223,10 @@ export default function DatabaseManagementContent() {
           </Select>
         </CardContent>
       </Card>
+      </div>
 
       {selectedTable && tableData && (
-        <>
+        <div className="px-4 lg:px-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -329,7 +343,7 @@ export default function DatabaseManagementContent() {
               )}
             </CardContent>
           </Card>
-        </>
+        </div>
       )}
 
       {/* Edit Dialog */}

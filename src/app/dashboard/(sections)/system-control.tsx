@@ -9,7 +9,8 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, AlertTriangle, CheckCircle2, Calendar } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Loader2, AlertTriangle, CheckCircle2, Calendar, Settings2, ShieldAlert } from "lucide-react";
 
 interface MaintenanceSettings {
   maintenanceMode: boolean;
@@ -118,41 +119,57 @@ export default function SystemControlContent() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">System Control</h2>
-        <p className="text-muted-foreground">
-          Manage system-wide maintenance mode and scheduled downtime
-        </p>
+    <div className="flex flex-col gap-4 md:gap-6">
+      {/* Header */}
+      <div className="flex flex-col gap-2 px-4 lg:px-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <Settings2 className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">System Control</h1>
+            <p className="text-sm text-muted-foreground">
+              Manage system-wide maintenance mode and scheduled downtime
+            </p>
+          </div>
+        </div>
       </div>
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+      {/* Alerts */}
+      <div className="px-4 lg:px-6">
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-      {success && (
-        <Alert className="border-green-500 bg-green-50 dark:bg-green-900/10">
-          <CheckCircle2 className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800 dark:text-green-200">
-            {success}
-          </AlertDescription>
-        </Alert>
-      )}
+        {success && (
+          <Alert className="mb-4 border-green-500 bg-green-50 dark:bg-green-900/10">
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800 dark:text-green-200">
+              {success}
+            </AlertDescription>
+          </Alert>
+        )}
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Maintenance Mode</CardTitle>
-          <CardDescription>
-            Enable or disable system-wide maintenance mode. When enabled, only
-            DEVELOPER users can access the system.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Maintenance Status */}
-          <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+      {/* Main Content */}
+      <div className="px-4 lg:px-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <ShieldAlert className="h-5 w-5 text-muted-foreground" />
+              <CardTitle>Maintenance Mode</CardTitle>
+            </div>
+            <CardDescription>
+              Enable or disable system-wide maintenance mode. When enabled, only
+              DEVELOPER users can access the system.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Maintenance Status */}
+            <div className="flex items-center justify-between rounded-lg border bg-card p-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <p className="font-medium">Current Status</p>
@@ -179,8 +196,10 @@ export default function SystemControlContent() {
             />
           </div>
 
-          {/* Maintenance Message */}
-          <div className="space-y-2">
+            <Separator />
+
+            {/* Maintenance Message */}
+            <div className="space-y-2">
             <Label htmlFor="message">Maintenance Message (Optional)</Label>
             <Textarea
               id="message"
@@ -195,8 +214,8 @@ export default function SystemControlContent() {
             </p>
           </div>
 
-          {/* Scheduled End Time */}
-          <div className="space-y-2">
+            {/* Scheduled End Time */}
+            <div className="space-y-2">
             <Label htmlFor="scheduledEnd">Scheduled End Time (Optional)</Label>
             <Input
               id="scheduledEnd"
@@ -210,8 +229,10 @@ export default function SystemControlContent() {
             </p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-2">
+            <Separator />
+
+            {/* Action Buttons */}
+            <div className="flex gap-2">
             <Button
               onClick={handleToggleMaintenance}
               disabled={saving}
@@ -233,34 +254,37 @@ export default function SystemControlContent() {
           </div>
         </CardContent>
       </Card>
+      </div>
 
       {/* Current Settings Display */}
       {settings?.maintenanceMode && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Current Maintenance Settings</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">Message</p>
-                <p className="text-sm">
-                  {settings.maintenanceMessage || "No custom message set"}
-                </p>
+        <div className="px-4 lg:px-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Current Maintenance Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-muted-foreground">Message</p>
+                  <p className="text-sm">
+                    {settings.maintenanceMessage || "No custom message set"}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Scheduled End
+                  </p>
+                  <p className="text-sm">
+                    {settings.maintenanceScheduledEnd
+                      ? new Date(settings.maintenanceScheduledEnd).toLocaleString()
+                      : "No scheduled end time"}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">
-                  Scheduled End
-                </p>
-                <p className="text-sm">
-                  {settings.maintenanceScheduledEnd
-                    ? new Date(settings.maintenanceScheduledEnd).toLocaleString()
-                    : "No scheduled end time"}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );
