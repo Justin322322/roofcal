@@ -15,12 +15,14 @@ import { RoofCalculatorContent } from "./roof-calculator";
 import WarehouseManagementSection from "./(sections)/warehouse-management";
 import { ContractorProjectsContent } from "./(sections)/contractor-projects";
 import MyProjectsContent from "./(sections)/my-projects";
+import ArchivedProjectsContent from "./(sections)/archived-projects";
 import DatabaseManagementContent from "./(sections)/database-management";
 import SystemControlContent from "./(sections)/system-control";
 
 type DashboardSection =
   | "roof-calculator"
   | "my-projects"
+  | "archived-projects"
   | "contractor-projects"
   | "account-management"
   | "system-maintenance"
@@ -109,6 +111,8 @@ export default function DashboardClient() {
         return userRole === UserRole.CLIENT; // Only clients can access roof calculator
       case "my-projects":
         return userRole === UserRole.CLIENT; // Only clients can access my projects
+      case "archived-projects":
+        return userRole === UserRole.CLIENT; // Only clients can access archived projects
       case "contractor-projects":
         return userRole === UserRole.ADMIN; // Only contractors (admins) can access project management
       case "account-management":
@@ -190,6 +194,8 @@ export default function DashboardClient() {
         return <RoofCalculatorContent />;
       case "my-projects":
         return <MyProjectsContent />;
+      case "archived-projects":
+        return <ArchivedProjectsContent />;
       case "contractor-projects":
         return <ContractorProjectsContent />;
       case "account-management":

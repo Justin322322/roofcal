@@ -226,34 +226,34 @@ export function ProjectList() {
 
   const getStatusBadge = (status: string, proposalStatus: string | null) => {
     if (proposalStatus === "SENT") {
-      return <Badge variant="default" className="bg-blue-100 text-blue-800">Proposal Sent</Badge>;
+      return <Badge variant="outline" className="bg-blue-100 text-blue-700">Proposal Sent</Badge>;
     }
     if (proposalStatus === "ACCEPTED") {
-      return <Badge variant="default" className="bg-green-100 text-green-800">Accepted</Badge>;
+      return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
     }
     if (proposalStatus === "REJECTED") {
-      return <Badge variant="destructive">Rejected</Badge>;
+      return <Badge variant="outline" className="bg-red-100 text-red-700">Rejected</Badge>;
     }
     
     switch (status) {
       case "DRAFT":
-        return <Badge variant="secondary">Draft</Badge>;
+        return <Badge variant="outline" className="bg-slate-100 text-slate-600">Draft</Badge>;
       case "CLIENT_PENDING":
-        return <Badge variant="outline">Pending Contractor</Badge>;
+        return <Badge variant="outline" className="bg-slate-100 text-slate-600">Pending Contractor</Badge>;
       case "CONTRACTOR_REVIEWING":
-        return <Badge variant="default" className="bg-yellow-100 text-yellow-800">Under Review</Badge>;
+        return <Badge variant="outline" className="bg-yellow-100 text-yellow-700">Under Review</Badge>;
       case "ACCEPTED":
-        return <Badge variant="default" className="bg-green-100 text-green-800">Accepted</Badge>;
+        return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
       case "IN_PROGRESS":
-        return <Badge variant="default" className="bg-purple-100 text-purple-800">In Progress</Badge>;
+        return <Badge variant="outline" className="bg-blue-100 text-blue-700">In Progress</Badge>;
       case "COMPLETED":
-        return <Badge variant="default" className="bg-gray-100 text-gray-800">Completed</Badge>;
+        return <Badge variant="outline" className="bg-green-100 text-green-700">Completed</Badge>;
       case "REJECTED":
-        return <Badge variant="destructive">Rejected</Badge>;
+        return <Badge variant="outline" className="bg-red-100 text-red-700">Rejected</Badge>;
       case "ARCHIVED":
         return <Badge variant="outline" className="bg-slate-100 text-slate-600">Archived</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline" className="bg-slate-100 text-slate-600">{status}</Badge>;
     }
   };
 
@@ -411,10 +411,10 @@ export function ProjectList() {
                     <SelectItem value="DRAFT">Draft</SelectItem>
                     <SelectItem value="CLIENT_PENDING">Pending Contractor</SelectItem>
                     <SelectItem value="CONTRACTOR_REVIEWING">Under Review</SelectItem>
-                    <SelectItem value="proposal">Proposal Sent</SelectItem>
                     <SelectItem value="ACCEPTED">Accepted</SelectItem>
-                    <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
                     <SelectItem value="COMPLETED">Completed</SelectItem>
+                    <SelectItem value="REJECTED">Declined</SelectItem>
+                    <SelectItem value="ARCHIVED">Archived</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

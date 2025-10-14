@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import {
   Sheet,
   SheetContent,
@@ -16,6 +18,37 @@ import {
   RulerIcon,
   PackageIcon,
 } from "lucide-react";
+
+// Dynamically import Leaflet components to avoid SSR issues
+const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), {
+  ssr: false,
+});
+
+const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), {
+  ssr: false,
+});
+
+const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), {
+  ssr: false,
+});
+
+const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
+  ssr: false,
+});
+
+// Fix for default markers in React Leaflet - only on client side
+const setupLeafletIcons = async () => {
+  if (typeof window !== "undefined") {
+    const L = await import("leaflet");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (L.Icon.Default.prototype as any)._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+      iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+      shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+    });
+  }
+};
 
 interface Project {
   id: string;
@@ -62,35 +95,73 @@ interface ProjectDetailsViewerProps {
   onClose: () => void;
 }
 
+// Simple Location Map Component
+function LocationMap({ latitude, longitude, address }: { latitude: number | null; longitude: number | null; address?: string | null }) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    setupLeafletIcons();
+  }, []);
+
+  if (!isClient || !latitude || !longitude) {
+    return null;
+  }
+
+  return (
+    <div className="mt-4 rounded-lg overflow-hidden border" style={{ height: "250px" }}>
+      <MapContainer
+        center={[latitude, longitude]}
+        zoom={13}
+        className="h-full w-full"
+        scrollWheelZoom={false}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <Marker position={[latitude, longitude]}>
+          <Popup>
+            <div className="text-sm">
+              <div className="font-semibold">Project Location</div>
+              {address && <div className="text-gray-600">{address}</div>}
+            </div>
+          </Popup>
+        </Marker>
+      </MapContainer>
+    </div>
+  );
+}
+
 export function ProjectDetailsViewer({ project, isOpen, onClose }: ProjectDetailsViewerProps) {
   const getStatusBadge = (status: string, proposalStatus: string | null) => {
     if (proposalStatus === "SENT") {
-      return <Badge variant="default" className="bg-blue-100 text-blue-800">Proposal Sent</Badge>;
+      return <Badge variant="outline" className="bg-blue-100 text-blue-700">Proposal Sent</Badge>;
     }
     if (proposalStatus === "ACCEPTED") {
-      return <Badge variant="default" className="bg-green-100 text-green-800">Accepted</Badge>;
+      return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
     }
     if (proposalStatus === "REJECTED") {
-      return <Badge variant="destructive">Rejected</Badge>;
+      return <Badge variant="outline" className="bg-red-100 text-red-700">Rejected</Badge>;
     }
     
     switch (status) {
       case "DRAFT":
-        return <Badge variant="secondary">Draft</Badge>;
+        return <Badge variant="outline" className="bg-slate-100 text-slate-600">Draft</Badge>;
       case "CLIENT_PENDING":
-        return <Badge variant="outline">Pending Contractor</Badge>;
+        return <Badge variant="outline" className="bg-slate-100 text-slate-600">Pending Contractor</Badge>;
       case "CONTRACTOR_REVIEWING":
-        return <Badge variant="default" className="bg-yellow-100 text-yellow-800">Action Required</Badge>;
+        return <Badge variant="outline" className="bg-yellow-100 text-yellow-700">Action Required</Badge>;
       case "ACCEPTED":
-        return <Badge variant="default" className="bg-green-100 text-green-800">Accepted</Badge>;
+        return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
       case "IN_PROGRESS":
-        return <Badge variant="default" className="bg-purple-100 text-purple-800">In Progress</Badge>;
+        return <Badge variant="outline" className="bg-blue-100 text-blue-700">In Progress</Badge>;
       case "COMPLETED":
-        return <Badge variant="default" className="bg-gray-100 text-gray-800">Completed</Badge>;
+        return <Badge variant="outline" className="bg-green-100 text-green-700">Completed</Badge>;
       case "REJECTED":
-        return <Badge variant="destructive">Declined</Badge>;
+        return <Badge variant="outline" className="bg-red-100 text-red-700">Declined</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline" className="bg-slate-100 text-slate-600">{status}</Badge>;
     }
   };
 
@@ -179,6 +250,14 @@ export function ProjectDetailsViewer({ project, isOpen, onClose }: ProjectDetail
                     </p>
                   )}
                 </div>
+                {/* Location Map */}
+                {project.latitude && project.longitude && (
+                  <LocationMap
+                    latitude={project.latitude}
+                    longitude={project.longitude}
+                    address={project.address}
+                  />
+                )}
               </div>
               <Separator />
             </>
@@ -232,44 +311,44 @@ export function ProjectDetailsViewer({ project, isOpen, onClose }: ProjectDetail
                   {project.materialCost !== undefined && project.materialCost > 0 && (
                     <div className="flex justify-between text-sm">
                       <span>Roofing Material</span>
-                      <span className="font-medium">${project.materialCost.toLocaleString()}</span>
+                      <span className="font-medium">₱{project.materialCost.toLocaleString()}</span>
                     </div>
                   )}
                   {project.gutterCost !== undefined && project.gutterCost > 0 && (
                     <div className="flex justify-between text-sm">
                       <span>Gutter System</span>
-                      <span className="font-medium">${project.gutterCost.toLocaleString()}</span>
+                      <span className="font-medium">₱{project.gutterCost.toLocaleString()}</span>
                     </div>
                   )}
                   {project.ridgeCost !== undefined && project.ridgeCost > 0 && (
                     <div className="flex justify-between text-sm">
                       <span>Ridge Cap</span>
-                      <span className="font-medium">${project.ridgeCost.toLocaleString()}</span>
+                      <span className="font-medium">₱{project.ridgeCost.toLocaleString()}</span>
                     </div>
                   )}
                   {project.screwsCost !== undefined && project.screwsCost > 0 && (
                     <div className="flex justify-between text-sm">
                       <span>Screws & Fasteners</span>
-                      <span className="font-medium">${project.screwsCost.toLocaleString()}</span>
+                      <span className="font-medium">₱{project.screwsCost.toLocaleString()}</span>
                     </div>
                   )}
                   {project.insulationCost !== undefined && project.insulationCost > 0 && (
                     <div className="flex justify-between text-sm">
                       <span>Insulation</span>
-                      <span className="font-medium">${project.insulationCost.toLocaleString()}</span>
+                      <span className="font-medium">₱{project.insulationCost.toLocaleString()}</span>
                     </div>
                   )}
                   {project.ventilationCost !== undefined && project.ventilationCost > 0 && (
                     <div className="flex justify-between text-sm">
                       <span>Ventilation</span>
-                      <span className="font-medium">${project.ventilationCost.toLocaleString()}</span>
+                      <span className="font-medium">₱{project.ventilationCost.toLocaleString()}</span>
                     </div>
                   )}
                 </div>
                 {project.totalMaterialsCost !== undefined && project.totalMaterialsCost > 0 && (
                   <div className="flex justify-between text-sm font-medium pt-1 border-t">
                     <span>Subtotal - Materials</span>
-                    <span>${project.totalMaterialsCost.toLocaleString()}</span>
+                    <span>₱{project.totalMaterialsCost.toLocaleString()}</span>
                   </div>
                 )}
               </div>
@@ -281,19 +360,19 @@ export function ProjectDetailsViewer({ project, isOpen, onClose }: ProjectDetail
                   {project.laborCost !== undefined && project.laborCost > 0 && (
                     <div className="flex justify-between text-sm">
                       <span>Labor</span>
-                      <span className="font-medium">${project.laborCost.toLocaleString()}</span>
+                      <span className="font-medium">₱{project.laborCost.toLocaleString()}</span>
                     </div>
                   )}
                   {project.removalCost !== undefined && project.removalCost > 0 && (
                     <div className="flex justify-between text-sm">
                       <span>Removal & Disposal</span>
-                      <span className="font-medium">${project.removalCost.toLocaleString()}</span>
+                      <span className="font-medium">₱{project.removalCost.toLocaleString()}</span>
                     </div>
                   )}
                   {project.deliveryCost !== null && project.deliveryCost !== undefined && project.deliveryCost > 0 && (
                     <div className="flex justify-between text-sm">
                       <span>Delivery</span>
-                      <span className="font-medium">${project.deliveryCost.toLocaleString()}</span>
+                      <span className="font-medium">₱{project.deliveryCost.toLocaleString()}</span>
                     </div>
                   )}
                 </div>
@@ -303,7 +382,7 @@ export function ProjectDetailsViewer({ project, isOpen, onClose }: ProjectDetail
               <div className="pt-3 border-t-2">
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total Project Cost</span>
-                  <span className="text-primary">${project.totalCost.toLocaleString()}</span>
+                  <span className="text-primary">₱{project.totalCost.toLocaleString()}</span>
                 </div>
               </div>
             </div>

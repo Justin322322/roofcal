@@ -307,28 +307,28 @@ export function ContractorProjectsContent() {
 
   const getStatusBadge = (status: string, proposalStatus: string | null) => {
     if (proposalStatus === "SENT") {
-      return <Badge variant="default" className="bg-blue-100 text-blue-800">Proposal Sent</Badge>;
+      return <Badge variant="outline" className="bg-blue-100 text-blue-700">Proposal Sent</Badge>;
     }
     if (proposalStatus === "ACCEPTED") {
-      return <Badge variant="default" className="bg-green-100 text-green-800">Accepted</Badge>;
+      return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
     }
     if (proposalStatus === "REJECTED") {
-      return <Badge variant="destructive">Rejected</Badge>;
+      return <Badge variant="outline" className="bg-red-100 text-red-700">Rejected</Badge>;
     }
     
     switch (status) {
       case "CONTRACTOR_REVIEWING":
-        return <Badge variant="default" className="bg-yellow-100 text-yellow-800">Action Required</Badge>;
+        return <Badge variant="outline" className="bg-yellow-100 text-yellow-700">Action Required</Badge>;
       case "PROPOSAL_SENT":
-        return <Badge variant="default" className="bg-blue-100 text-blue-800">Proposal Sent</Badge>;
+        return <Badge variant="outline" className="bg-blue-100 text-blue-700">Proposal Sent</Badge>;
       case "ACCEPTED":
-        return <Badge variant="default" className="bg-green-100 text-green-800">Accepted</Badge>;
+        return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
       case "COMPLETED":
-        return <Badge variant="default" className="bg-gray-100 text-gray-800">Completed</Badge>;
+        return <Badge variant="outline" className="bg-green-100 text-green-700">Completed</Badge>;
       case "REJECTED":
-        return <Badge variant="destructive">Declined</Badge>;
+        return <Badge variant="outline" className="bg-red-100 text-red-700">Declined</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline" className="bg-slate-100 text-slate-600">{status}</Badge>;
     }
   };
 
@@ -440,7 +440,7 @@ export function ContractorProjectsContent() {
                     <SelectValue placeholder="All Statuses" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="all">All Projects</SelectItem>
                     <SelectItem value="reviewing">Action Required</SelectItem>
                     <SelectItem value="accepted">Accepted</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
@@ -663,11 +663,6 @@ export function ContractorProjectsContent() {
                                 </>
                               )}
                             </Button>
-                          )}
-                          {(project.status === "PROPOSAL_SENT" || 
-                            project.status === "COMPLETED" ||
-                            (project.proposalStatus === "SENT" || project.proposalStatus === "ACCEPTED" || project.proposalStatus === "REJECTED")) && (
-                            <span className="text-sm text-muted-foreground">No actions available</span>
                           )}
                         </div>
                       </TableCell>

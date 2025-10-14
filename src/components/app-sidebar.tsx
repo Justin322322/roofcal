@@ -9,6 +9,7 @@ import {
   WarehouseIcon,
   DatabaseIcon,
   SettingsIcon,
+  ArchiveIcon,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { UserRole } from "@/types/user-role";
@@ -88,6 +89,12 @@ export function AppSidebar({
         title: "My Projects",
         url: "my-projects",
         icon: FileTextIcon,
+        roles: [UserRole.CLIENT],
+      },
+      {
+        title: "Archived Projects",
+        url: "archived-projects",
+        icon: ArchiveIcon,
         roles: [UserRole.CLIENT],
       },
     ];
