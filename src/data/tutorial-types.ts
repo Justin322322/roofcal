@@ -19,11 +19,17 @@ export interface RoofTypeCard {
 
 export interface MaterialInfo {
   name: string;
+  image?: string;
   cost: string;
   lifespan: string;
   pros: string;
   cons: string;
   bestFor: string;
+}
+
+export interface NamedImageItem {
+  name: string;
+  image: string;
 }
 
 export interface SelectionGuide {
@@ -90,6 +96,12 @@ export interface TabContent {
   selectionTips?: string[];
   materialList?: MaterialInfo[];
   selectionGuide?: SelectionGuide[];
+  // Extended materials/media sections using /roof blob assets
+  ridgeCaps?: NamedImageItem[];
+  gutters?: NamedImageItem[];
+  screws?: NamedImageItem[];
+  insulation?: NamedImageItem[];
+  ventilation?: NamedImageItem[];
   workflow?: WorkflowStep[];
   proTips?: ProTip[] | string[];
   advancedFeatures?: AdvancedFeature[];
@@ -113,7 +125,27 @@ export interface TabContent {
     description: string;
     factors?: string[];
   }[];
-  [key: string]: string | string[] | KeyFeature[] | MaterialInfo[] | SelectionGuide[] | WorkflowStep[] | ProTip[] | AdvancedFeature[] | ManualEntryOption[] | BusinessFeature | Integration | Benefit[] | ProjectStatus[] | ProjectWorkflow[] | Consideration[] | RoofTypeCard[] | TabContent["learning"] | TabContent["costComponents"] | undefined;
+  [key: string]:
+    | string
+    | string[]
+    | KeyFeature[]
+    | MaterialInfo[]
+    | SelectionGuide[]
+    | WorkflowStep[]
+    | ProTip[]
+    | AdvancedFeature[]
+    | ManualEntryOption[]
+    | BusinessFeature
+    | Integration
+    | Benefit[]
+    | ProjectStatus[]
+    | ProjectWorkflow[]
+    | Consideration[]
+    | RoofTypeCard[]
+    | TabContent["learning"]
+    | TabContent["costComponents"]
+    | NamedImageItem[]
+    | undefined;
 }
 
 export interface TutorialContent {

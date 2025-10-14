@@ -72,6 +72,7 @@
       "materialList": [
         {
           "name": "Corrugated (0.4mm)",
+          "image": "/roof/corrugated.jpg",
           "cost": "₱450 per square meter",
           "lifespan": "30-50 years",
           "pros": "Lightweight, weather-resistant, easy installation, affordable",
@@ -80,6 +81,7 @@
         },
         {
           "name": "Corrugated (0.5mm)",
+          "image": "/roof/corrugated.jpg",
           "cost": "₱520 per square meter",
           "lifespan": "30-50 years",
           "pros": "Durable, weather-resistant, better structural integrity",
@@ -88,6 +90,7 @@
         },
         {
           "name": "Long Span (0.4mm)",
+          "image": "/roof/long-span.jpg",
           "cost": "₱520 per square meter",
           "lifespan": "30-50 years",
           "pros": "Durable, weather-resistant, excellent water drainage, modern appearance",
@@ -96,6 +99,7 @@
         },
         {
           "name": "Long Span (0.5mm)",
+          "image": "/roof/long-span.jpg",
           "cost": "₱600 per square meter",
           "lifespan": "30-50 years",
           "pros": "Maximum durability, excellent water drainage, superior structural integrity",
@@ -128,6 +132,38 @@
           "factor": "Local Codes",
           "description": "Check building regulations and fire safety requirements"
         }
+      ]
+      ,
+      "ridgeCaps": [
+        { "name": "Corrugated Ridge Cap", "image": "/roof/corrugated-ridge.jpg" },
+        { "name": "Long Span Ridge Cap", "image": "/roof/long-span-ridge.jpg" }
+      ],
+      "gutters": [
+        { "name": "Pre-painted GI Gutter", "image": "/roof/pre-painted-GI-Gutter.jpg" },
+        { "name": "Stainless Gutter", "image": "/roof/stainless-gutter.jpg" },
+        { "name": "PVC Gutter", "image": "/roof/pvg-gutter.jpg" }
+      ],
+      "screws": [
+        { "name": "Roofing Screw with Washer", "image": "/roof/roofing-screw-with-washer.jpg" },
+        { "name": "Self-Drilling Hex Head", "image": "/roof/Self-Drilling-Hex.jpg" },
+        { "name": "Self-Tapping Hex Head", "image": "/roof/self-tapping-hex-head.jpg" },
+        { "name": "TEK Screw", "image": "/roof/tek-screw.jpg" },
+        { "name": "Tile Screw", "image": "/roof/tile-screw.jpg" },
+        { "name": "Concrete Screw", "image": "/roof/concrete-screw.jpg" }
+      ],
+      "insulation": [
+        { "name": "Fiberglass Batt", "image": "/roof/fiber-glass-batt.jpg" },
+        { "name": "Foam Board", "image": "/roof/foam-board.jpg" },
+        { "name": "Reflective Roll", "image": "/roof/reflective-roll.jpg" },
+        { "name": "Spray Foam", "image": "/roof/sray-foam.jpg" },
+        { "name": "Mineral Wool", "image": "/roof/mineral-wool.jpg" }
+      ],
+      "ventilation": [
+        { "name": "Ridge Vent", "image": "/roof/ridge-vent.jpg" },
+        { "name": "Turbine Vent", "image": "/roof/turbine-vent.jpg" },
+        { "name": "Static Roof Vent", "image": "/roof/static-roof-vent.jpg" },
+        { "name": "Soffit Vent", "image": "/roof/soffit-vent.jpg" },
+        { "name": "Exhaust Fan", "image": "/roof/exhaust-fan.jpg" }
       ]
     },
     "calculator": {

@@ -31,9 +31,11 @@ export function TutorialGuideDialog() {
     return content.roofTypes[type as keyof typeof content.roofTypes] || content.roofTypes.gable;
   };
 
+  // Use same blob base for all tutorial media
+  const BLOB_BASE = "https://unex0yvstmuqs1jv.public.blob.vercel-storage.com/roof/" as const;
   const roofTypeImages: { [key: string]: string } = {
-    gable: "https://unex0yvstmuqs1jv.public.blob.vercel-storage.com/roof/gable.jpg",
-    shed: "https://unex0yvstmuqs1jv.public.blob.vercel-storage.com/roof/shed-roof.jpg",
+    gable: `${BLOB_BASE}gable.jpg`,
+    shed: `${BLOB_BASE}shed-roof.jpg`,
   };
 
   return (
@@ -287,13 +289,22 @@ export function TutorialGuideDialog() {
                   <p>{content.tabs.materials.description}</p>
 
                   <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-4">
-                      {content.tabs.materials.materialList?.slice(0, 3).map((material, index) => (
-                        <div key={index} className="border rounded-lg p-4">
-                          <h4 className="text-base font-medium text-foreground mb-2">
+                    {content.tabs.materials.materialList?.map((material, index) => (
+                      <div key={index} className="border rounded-lg p-4 grid grid-cols-[96px_1fr] gap-3 items-start">
+                        <div className="aspect-square bg-muted/30 rounded-lg overflow-hidden">
+                          <Image
+                            src={(material.image?.startsWith("/roof/") ? `${BLOB_BASE}${material.image.replace("/roof/", "")}` : material.image) || `${BLOB_BASE}corrugated.jpg`}
+                            alt={material.name}
+                            width={96}
+                            height={96}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <h4 className="text-base font-medium text-foreground">
                             {material.name}
                           </h4>
-                          <div className="space-y-2 text-sm">
+                          <div className="space-y-1 text-sm">
                             <p><strong>Cost:</strong> {material.cost}</p>
                             <p><strong>Lifespan:</strong> {material.lifespan}</p>
                             <p><strong>Pros:</strong> {material.pros}</p>
@@ -301,25 +312,8 @@ export function TutorialGuideDialog() {
                             <p><strong>Best for:</strong> {material.bestFor}</p>
                           </div>
                         </div>
-                      ))}
-                    </div>
-
-                    <div className="space-y-4">
-                      {content.tabs.materials.materialList?.slice(3).map((material, index) => (
-                        <div key={index} className="border rounded-lg p-4">
-                          <h4 className="text-base font-medium text-foreground mb-2">
-                            {material.name}
-                          </h4>
-                          <div className="space-y-2 text-sm">
-                            <p><strong>Cost:</strong> {material.cost}</p>
-                            <p><strong>Lifespan:</strong> {material.lifespan}</p>
-                            <p><strong>Pros:</strong> {material.pros}</p>
-                            <p><strong>Cons:</strong> {material.cons}</p>
-                            <p><strong>Best for:</strong> {material.bestFor}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
 
                   <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
@@ -333,6 +327,39 @@ export function TutorialGuideDialog() {
                         </li>
                       ))}
                     </ul>
+                  </div>
+
+                  {/* Extended Materials from /roof */}
+                  <div className="space-y-6 mt-4">
+                    {[
+                      { key: "ridgeCaps", title: "Ridge Caps" },
+                      { key: "gutters", title: "Gutters" },
+                      { key: "screws", title: "Screws" },
+                      { key: "insulation", title: "Insulation" },
+                      { key: "ventilation", title: "Ventilation" },
+                    ].map((section) => (
+                      ((content.tabs.materials as unknown as { [k: string]: { name: string; image: string }[] })[section.key])?.length ? (
+                        <div key={section.key}>
+                          <h4 className="text-base font-medium text-foreground mb-2">{section.title}</h4>
+                          <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                            {(content.tabs.materials as unknown as { [k: string]: { name: string; image: string }[] })[section.key].map((item: { name: string; image: string }, idx: number) => (
+                              <div key={idx} className="border rounded-lg p-3">
+                                <div className="aspect-square bg-muted/30 rounded-lg mb-2 overflow-hidden">
+                                  <Image
+                                    src={item.image?.startsWith("/roof/") ? `${BLOB_BASE}${item.image.replace("/roof/", "")}` : item.image}
+                                    alt={item.name}
+                                    width={200}
+                                    height={200}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <div className="text-sm font-medium text-foreground text-center">{item.name}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null
+                    ))}
                   </div>
                 </div>
               </TabsContent>
