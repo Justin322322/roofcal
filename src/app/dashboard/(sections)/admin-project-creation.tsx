@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -15,9 +15,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Loader2, Calculator, UserPlus, AlertTriangle, Users, ArrowRight } from "lucide-react";
+import { Loader2, Calculator, UserPlus, AlertTriangle, Users, ArrowRight, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { UserRole } from "@/types/user-role";
+import { RoofCalculatorContent } from "../roof-calculator";
 
 interface Client {
   id: string;
@@ -30,12 +31,14 @@ interface Client {
 export default function AdminProjectCreationContent() {
   const { data: session } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const [loading, setLoading] = useState(false);
   const [clientsLoading, setClientsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [isHelpRequest, setIsHelpRequest] = useState(false);
 
   // Check if user is admin
   useEffect(() => {
@@ -70,27 +73,43 @@ export default function AdminProjectCreationContent() {
     fetchClients();
   }, []);
 
-  const handleCreateProject = async () => {
+  // Handle URL parameters for help requests
+  useEffect(() => {
+    const helpRequest = searchParams.get('helpRequest');
+    const clientId = searchParams.get('clientId');
+    
+    if (helpRequest === 'true' && clientId && clients.length > 0) {
+      setIsHelpRequest(true);
+      const client = clients.find(c => c.id === clientId);
+      if (client) {
+        setSelectedClient(client);
+      }
+    }
+  }, [searchParams, clients]);
+
+  const handleCreateProject = () => {
     if (!selectedClient) {
       toast.error("Please select a client first");
       return;
     }
 
-    setLoading(true);
-    try {
-      // Navigate to roof calculator with client information
-      const url = `/dashboard?tab=roof-calculator&helpRequest=true&clientId=${selectedClient.id}`;
-      router.push(url);
-      
-      toast.success("Redirecting to project creation", {
-        description: `Creating project for ${selectedClient.fullName}. The client will need to approve it before you can proceed.`,
-      });
-    } catch (err) {
-      console.error("Error creating project:", err);
-      toast.error("Failed to create project");
-    } finally {
-      setLoading(false);
-    }
+    setShowCalculator(true);
+    toast.success("Starting project creation", {
+      description: `Creating project for ${selectedClient.fullName}. The project will be immediately active and ready for work.`,
+    });
+  };
+
+  const handleProjectCreated = () => {
+    setShowCalculator(false);
+    setSelectedClient(null);
+    setIsHelpRequest(false);
+    toast.success("Project created successfully", {
+      description: `Project has been created and activated for ${selectedClient?.fullName}. The client will receive a notification.`,
+    });
+  };
+
+  const handleBackToClientSelection = () => {
+    setShowCalculator(false);
   };
 
   const handleSelectClient = (clientId: string) => {
@@ -114,13 +133,52 @@ export default function AdminProjectCreationContent() {
             <Calculator className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Create Client Project</h1>
+            <h1 className="text-2xl font-bold tracking-tight">
+              {showCalculator ? "Create Project" : "Create Client Project"}
+            </h1>
             <p className="text-sm text-muted-foreground">
-              Create a new roofing project on behalf of a client
+              {showCalculator 
+                ? `Creating project for ${selectedClient?.fullName}`
+                : "Create a new roofing project on behalf of a client"
+              }
             </p>
           </div>
+          {showCalculator && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBackToClientSelection}
+              className="ml-auto"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Client Selection
+            </Button>
+          )}
         </div>
       </div>
+
+      {/* Help Request Banner */}
+      {isHelpRequest && selectedClient && !showCalculator && (
+        <div className="px-4 lg:px-6">
+          <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                  <span className="text-blue-600 dark:text-blue-400 text-sm font-medium">!</span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  Responding to Help Request
+                </h3>
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  Client <strong>{selectedClient.fullName}</strong> ({selectedClient.email}) has requested assistance with creating a project.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Alerts */}
       <div className="px-4 lg:px-6">
@@ -134,6 +192,38 @@ export default function AdminProjectCreationContent() {
 
       {/* Main Content */}
       <div className="px-4 lg:px-6">
+        {showCalculator && selectedClient ? (
+          <div className="space-y-4">
+            {/* Calculator Banner for Admin Mode */}
+            <div className="bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
+                    <Calculator className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-orange-900 dark:text-orange-100">
+                    Admin Project Creation Mode
+                  </h3>
+                  <p className="text-sm text-orange-700 dark:text-orange-300">
+                    You are creating a project on behalf of <strong>{selectedClient.fullName}</strong>. The project will be immediately active and ready for work.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Embedded Roof Calculator */}
+            <div className="bg-background border rounded-lg">
+              <RoofCalculatorContent 
+                isAdminMode={true}
+                selectedClientId={selectedClient.id}
+                selectedClientName={selectedClient.fullName}
+                onProjectCreated={handleProjectCreated}
+              />
+            </div>
+          </div>
+        ) : (
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Client Selection */}
           <Card>
@@ -215,21 +305,11 @@ export default function AdminProjectCreationContent() {
                   
                   <Button
                     onClick={handleCreateProject}
-                    disabled={loading}
                     className="w-full"
                     size="lg"
                   >
-                    {loading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Creating Project...
-                      </>
-                    ) : (
-                      <>
-                        Create Project
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </>
-                    )}
+                    Create Project
+                    <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </div>
               ) : (
@@ -242,10 +322,9 @@ export default function AdminProjectCreationContent() {
               )}
             </CardContent>
           </Card>
-        </div>
 
-        {/* Instructions */}
-        <Card className="mt-6">
+          {/* Instructions */}
+          <Card className="mt-6">
           <CardHeader>
             <CardTitle className="text-lg">How it works</CardTitle>
           </CardHeader>
@@ -273,8 +352,8 @@ export default function AdminProjectCreationContent() {
                 <span className="text-xs font-medium text-primary">3</span>
               </div>
               <div>
-                <p className="font-medium text-foreground">Client approval</p>
-                <p>The client receives a notification and must approve the project</p>
+                <p className="font-medium text-foreground">Project activation</p>
+                <p>The project is immediately active and ready for work</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -282,13 +361,14 @@ export default function AdminProjectCreationContent() {
                 <span className="text-xs font-medium text-primary">4</span>
               </div>
               <div>
-                <p className="font-medium text-foreground">Process project</p>
-                <p>Once approved, you can process the project as normal</p>
+                <p className="font-medium text-foreground">Complete project</p>
+                <p>You can now complete the project when work is finished</p>
               </div>
             </div>
           </CardContent>
         </Card>
-      </div>
+        </div>
+        )}
 
       {/* Client Selection Dialog */}
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
@@ -337,6 +417,7 @@ export default function AdminProjectCreationContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
     </div>
   );
 }

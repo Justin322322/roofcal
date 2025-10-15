@@ -27,7 +27,6 @@ interface ConsolidatedMaterialSelectionProps {
   onScrewTypeChange: (screwType: string) => void;
   budgetLevel: string;
   onBudgetLevelChange: (budgetLevel: string, materialThickness: string) => void;
-  selectedWarehouseId?: string;
 }
 
 interface Material {
@@ -99,7 +98,6 @@ export function ConsolidatedMaterialSelection({
   onScrewTypeChange,
   budgetLevel,
   onBudgetLevelChange,
-  selectedWarehouseId,
 }: ConsolidatedMaterialSelectionProps) {
   const [materials, setMaterials] = useState<Material[]>(fallbackMaterials);
   const [screwTypes, setScrewTypes] = useState<ScrewType[]>(fallbackScrewTypes);
@@ -112,65 +110,27 @@ export function ConsolidatedMaterialSelection({
       try {
         setIsLoadingMaterials(true);
         
-        if (selectedWarehouseId) {
-          // Load materials from specific warehouse
-          const response = await fetch(`/api/warehouses/${selectedWarehouseId}/materials`);
-          
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          
-          const result = await response.json();
-          
-          if (result.success && result.data) {
-            interface WarehouseMaterial {
-              isActive: boolean;
-              quantity: number;
-              locationAdjustment: number;
-              material: {
-                name: string;
-                label: string;
-                price: number;
-                description: string | null;
-              };
-            }
-
-            const warehouseMaterials = result.data
-              .filter((wm: WarehouseMaterial) => wm.isActive && wm.quantity > 0)
-              .map((wm: WarehouseMaterial) => ({
-                value: wm.material.name,
-                name: wm.material.label,
-                price: wm.material.price * (1 + wm.locationAdjustment / 100),
-                description: wm.material.description || '',
-              }));
-            // Show all available materials from warehouse
-            setMaterials(warehouseMaterials);
-          } else {
-            throw new Error('Invalid API response format');
-          }
+        // Load all materials from pricing config
+        const response = await fetch('/api/pricing?category=materials');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+          // Transform API data to match expected format
+          const dbMaterials = result.data.map((material: PricingConfigAPIResponse) => ({
+            value: material.name,
+            name: material.label,
+            price: material.price,
+            description: material.description || '',
+          }));
+          // Show all available materials from database
+          setMaterials(dbMaterials);
         } else {
-          // Load all materials from pricing config (default behavior)
-          const response = await fetch('/api/pricing?category=materials');
-          
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          
-          const result = await response.json();
-          
-          if (result.success && result.data) {
-            // Transform API data to match expected format
-            const dbMaterials = result.data.map((material: PricingConfigAPIResponse) => ({
-              value: material.name,
-              name: material.label,
-              price: material.price,
-              description: material.description || '',
-            }));
-            // Show all available materials from database
-            setMaterials(dbMaterials);
-          } else {
-            throw new Error('Invalid API response format');
-          }
+          throw new Error('Invalid API response format');
         }
       } catch (error) {
         console.error('Failed to load materials from API, using fallback:', error);
@@ -182,7 +142,7 @@ export function ConsolidatedMaterialSelection({
     };
 
     loadMaterials();
-  }, [selectedWarehouseId]);
+  }, []);
 
   // Load screw types from API
   useEffect(() => {
@@ -279,11 +239,9 @@ export function ConsolidatedMaterialSelection({
       {/* Material Selection */}
       <div className="space-y-2">
         <Label className="text-sm sm:text-base font-medium">Roofing Material</Label>
-        {selectedWarehouseId && (
-          <div className="text-xs sm:text-sm text-muted-foreground">
-            Showing {filteredMaterials.length} materials matching your budget level
-          </div>
-        )}
+        <div className="text-xs sm:text-sm text-muted-foreground">
+          Showing {filteredMaterials.length} materials matching your budget level
+        </div>
         {isLoadingMaterials ? (
           <Skeleton className="h-11 w-full" />
         ) : (

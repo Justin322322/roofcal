@@ -281,7 +281,7 @@ export interface ProjectFromCalculator {
   zipCode?: string;
   latitude?: number;
   longitude?: number;
-  warehouseId: string;
+  warehouseId?: string;
   deliveryCost?: number;
   deliveryDistance?: number;
 }

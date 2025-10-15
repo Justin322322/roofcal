@@ -21,12 +21,13 @@ import {
   AlertCircleIcon,
   CheckCircleIcon,
   ClockIcon,
+  HelpCircleIcon,
 } from "lucide-react";
 import { getNotificationUrl } from "@/lib/notification-utils";
 
 interface Notification {
   id: string;
-  type: "proposal_sent" | "proposal_accepted" | "proposal_rejected" | "status_change" | "project_assigned";
+  type: "proposal_sent" | "proposal_accepted" | "proposal_rejected" | "status_change" | "project_assigned" | "HELP_REQUEST";
   title: string;
   message: string;
   projectId: string;
@@ -202,6 +203,8 @@ export function NotificationCenter({
         return <ClockIcon className="h-4 w-4 text-orange-600" />;
       case "project_assigned":
         return <CheckIcon className="h-4 w-4 text-purple-600" />;
+      case "HELP_REQUEST":
+        return <HelpCircleIcon className="h-4 w-4 text-orange-600" />;
       default:
         return <BellIcon className="h-4 w-4 text-gray-600" />;
     }

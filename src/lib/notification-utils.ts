@@ -4,7 +4,7 @@
 
 export interface NotificationData {
   id: string;
-  type: "proposal_sent" | "proposal_accepted" | "proposal_rejected" | "status_change" | "project_assigned";
+  type: "proposal_sent" | "proposal_accepted" | "proposal_rejected" | "status_change" | "project_assigned" | "HELP_REQUEST";
   title: string;
   message: string;
   projectId: string;
@@ -55,6 +55,8 @@ export const getNotificationIcon = (type: NotificationData["type"]) => {
       return { icon: "ClockIcon", className: `${iconProps} text-orange-600` };
     case "project_assigned":
       return { icon: "CheckIcon", className: `${iconProps} text-purple-600` };
+    case "HELP_REQUEST":
+      return { icon: "HelpCircleIcon", className: `${iconProps} text-orange-600` };
     default:
       return { icon: "BellIcon", className: `${iconProps} text-gray-600` };
   }

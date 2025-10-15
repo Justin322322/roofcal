@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getStatusBadge } from "@/lib/badge-utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -278,37 +279,8 @@ export function ProjectList() {
   };
 
 
-  const getStatusBadge = (status: string, proposalStatus: string | null) => {
-    if (proposalStatus === "SENT") {
-      return <Badge variant="outline" className="bg-blue-100 text-blue-700">Proposal Sent</Badge>;
-    }
-    if (proposalStatus === "ACCEPTED") {
-      return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
-    }
-    if (proposalStatus === "REJECTED") {
-      return <Badge variant="outline" className="bg-red-100 text-red-700">Rejected</Badge>;
-    }
-    
-    switch (status) {
-      case "DRAFT":
-        return <Badge variant="outline" className="bg-slate-100 text-slate-600">Draft</Badge>;
-      case "CLIENT_PENDING":
-        return <Badge variant="outline" className="bg-orange-100 text-orange-700">Pending Approval</Badge>;
-      case "CONTRACTOR_REVIEWING":
-        return <Badge variant="outline" className="bg-yellow-100 text-yellow-700">Under Review</Badge>;
-      case "ACCEPTED":
-        return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
-      case "IN_PROGRESS":
-        return <Badge variant="outline" className="bg-blue-100 text-blue-700">In Progress</Badge>;
-      case "COMPLETED":
-        return <Badge variant="outline" className="bg-green-100 text-green-700">Completed</Badge>;
-      case "REJECTED":
-        return <Badge variant="outline" className="bg-red-100 text-red-700">Rejected</Badge>;
-      case "ARCHIVED":
-        return <Badge variant="outline" className="bg-slate-100 text-slate-600">Archived</Badge>;
-      default:
-        return <Badge variant="outline" className="bg-slate-100 text-slate-600">{status}</Badge>;
-    }
+  const getProjectStatusBadge = (status: string, proposalStatus: string | null) => {
+    return getStatusBadge(status, proposalStatus ?? undefined);
   };
 
   const filteredProjects = projects.filter(project => {
@@ -679,7 +651,7 @@ export function ProjectList() {
                   <TableCell className="capitalize">{project.material}</TableCell>
                   <TableCell>{formatArea(project.area)}</TableCell>
                   <TableCell className="font-medium">{formatCurrency(project.totalCost)}</TableCell>
-                  <TableCell>{getStatusBadge(project.status, project.proposalStatus)}</TableCell>
+                  <TableCell>{getProjectStatusBadge(project.status, project.proposalStatus)}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <CalendarIcon className="h-3 w-3" />

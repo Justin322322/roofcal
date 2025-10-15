@@ -28,8 +28,9 @@
  */
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { getStatusBadge } from "@/lib/badge-utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -131,6 +132,7 @@ interface Project {
 
 
 export function ContractorProjectsContent() {
+  const searchParams = useSearchParams();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -147,6 +149,34 @@ export function ContractorProjectsContent() {
   const [declineReason, setDeclineReason] = useState("");
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isHelpRequest, setIsHelpRequest] = useState(false);
+
+  // Initialize filters from URL parameters
+  useEffect(() => {
+    const urlStatusFilter = searchParams.get("status");
+    const urlSearch = searchParams.get("search");
+    const urlMinCost = searchParams.get("minCost");
+    const urlMaxCost = searchParams.get("maxCost");
+    const urlDateFrom = searchParams.get("dateFrom");
+    const urlDateTo = searchParams.get("dateTo");
+    const helpRequest = searchParams.get("helpRequest");
+
+    // Set help request flag
+    setIsHelpRequest(helpRequest === "true");
+
+    // If this is a help request, default to showing projects that need attention
+    if (helpRequest === "true" && !urlStatusFilter) {
+      setStatusFilter("reviewing");
+    } else if (urlStatusFilter) {
+      setStatusFilter(urlStatusFilter);
+    }
+    
+    if (urlSearch) setSearchQuery(urlSearch);
+    if (urlMinCost) setMinCost(urlMinCost);
+    if (urlMaxCost) setMaxCost(urlMaxCost);
+    if (urlDateFrom) setDateFrom(urlDateFrom);
+    if (urlDateTo) setDateTo(urlDateTo);
+  }, [searchParams]);
 
   useEffect(() => {
     fetchProjects();
@@ -201,10 +231,18 @@ export function ContractorProjectsContent() {
         description: "The project has been marked as declined",
       });
       
+      // Update local state instead of refreshing
+      setProjects(prevProjects => 
+        prevProjects.map(project => 
+          project.id === selectedProjectId 
+            ? { ...project, status: "REJECTED", proposalStatus: "REJECTED" }
+            : project
+        )
+      );
+      
       setDeclineDialogOpen(false);
       setSelectedProjectId(null);
       setDeclineReason("");
-      await fetchProjects();
     } catch (error) {
       console.error("Failed to decline project:", error);
       toast.error("Failed to decline project", {
@@ -232,7 +270,15 @@ export function ContractorProjectsContent() {
       toast.success(result.message || "Project completed", {
         description: "The project has been marked as completed",
       });
-      await fetchProjects();
+      
+      // Update local state instead of refreshing
+      setProjects(prevProjects => 
+        prevProjects.map(project => 
+          project.id === projectId 
+            ? { ...project, status: "COMPLETED", proposalStatus: "COMPLETED" }
+            : project
+        )
+      );
     } catch (error) {
       console.error("Failed to finish project:", error);
       toast.error("Failed to finish project", {
@@ -261,7 +307,15 @@ export function ContractorProjectsContent() {
       toast.success(result.message || "Project accepted", {
         description: "The project has been accepted and is ready to work on",
       });
-      await fetchProjects();
+      
+      // Update local state instead of refreshing
+      setProjects(prevProjects => 
+        prevProjects.map(project => 
+          project.id === projectId 
+            ? { ...project, status: "ACCEPTED" }
+            : project
+        )
+      );
     } catch (error) {
       console.error("Failed to accept project:", error);
       toast.error("Failed to accept project", {
@@ -272,31 +326,8 @@ export function ContractorProjectsContent() {
     }
   };
 
-  const getStatusBadge = (status: string, proposalStatus: string | null) => {
-    if (proposalStatus === "SENT") {
-      return <Badge variant="outline" className="bg-blue-100 text-blue-700">Proposal Sent</Badge>;
-    }
-    if (proposalStatus === "ACCEPTED") {
-      return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
-    }
-    if (proposalStatus === "REJECTED") {
-      return <Badge variant="outline" className="bg-red-100 text-red-700">Rejected</Badge>;
-    }
-    
-    switch (status) {
-      case "CONTRACTOR_REVIEWING":
-        return <Badge variant="outline" className="bg-yellow-100 text-yellow-700">Action Required</Badge>;
-      case "PROPOSAL_SENT":
-        return <Badge variant="outline" className="bg-blue-100 text-blue-700">Proposal Sent</Badge>;
-      case "ACCEPTED":
-        return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
-      case "COMPLETED":
-        return <Badge variant="outline" className="bg-green-100 text-green-700">Completed</Badge>;
-      case "REJECTED":
-        return <Badge variant="outline" className="bg-red-100 text-red-700">Declined</Badge>;
-      default:
-        return <Badge variant="outline" className="bg-slate-100 text-slate-600">{status}</Badge>;
-    }
+  const getProjectStatusBadge = (status: string, proposalStatus: string | null) => {
+    return getStatusBadge(status, proposalStatus ?? undefined);
   };
 
   const filteredProjects = projects.filter(project => {
@@ -311,7 +342,7 @@ export function ContractorProjectsContent() {
     if (statusFilter !== "all") {
       const projectStatus = project.proposalStatus || project.status;
       if (statusFilter === "reviewing" && projectStatus !== "CONTRACTOR_REVIEWING") return false;
-      if (statusFilter === "accepted" && projectStatus !== "ACCEPTED" && project.proposalStatus !== "ACCEPTED") return false;
+      if (statusFilter === "accepted" && projectStatus !== "ACCEPTED" && projectStatus !== "ACTIVE" && projectStatus !== "DRAFT" && project.proposalStatus !== "ACCEPTED") return false;
       if (statusFilter === "completed" && projectStatus !== "COMPLETED") return false;
       if (statusFilter === "rejected" && projectStatus !== "REJECTED" && project.proposalStatus !== "REJECTED") return false;
     }
@@ -387,10 +418,23 @@ export function ContractorProjectsContent() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Assigned Projects</h1>
             <p className="text-sm text-muted-foreground">
-              Manage and track your roofing projects
+              {isHelpRequest 
+                ? "Help request mode - showing projects that need attention"
+                : "Manage and track your roofing projects"
+              }
             </p>
           </div>
         </div>
+        {isHelpRequest && (
+          <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                You&apos;re viewing projects in help request mode. Projects requiring action are highlighted.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Filters */}
@@ -422,7 +466,7 @@ export function ContractorProjectsContent() {
                   <SelectContent>
                     <SelectItem value="all">All Statuses</SelectItem>
                     <SelectItem value="reviewing">Action Required</SelectItem>
-                    <SelectItem value="accepted">Accepted</SelectItem>
+                    <SelectItem value="accepted">Accepted & Active</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
                     <SelectItem value="rejected">Declined</SelectItem>
                   </SelectContent>
@@ -532,7 +576,7 @@ export function ContractorProjectsContent() {
                           )}
                         </TableCell>
                         <TableCell>
-                          {getStatusBadge(project.status, project.proposalStatus)}
+                          {getProjectStatusBadge(project.status, project.proposalStatus)}
                         </TableCell>
                         <TableCell className="font-medium">
                           {formatCurrency(project.totalCost)}
@@ -581,7 +625,7 @@ export function ContractorProjectsContent() {
                                 </Button>
                               </>
                             )}
-                            {project.status === "ACCEPTED" && (
+                            {(project.status === "ACCEPTED" || project.status === "ACTIVE" || project.status === "DRAFT") && (
                               <Button
                                 size="sm"
                                 variant="default"
@@ -596,7 +640,7 @@ export function ContractorProjectsContent() {
                                 ) : (
                                   <>
                                     <CheckCircleIcon className="h-4 w-4 mr-1" />
-                                    Finish
+                                    Complete Project
                                   </>
                                 )}
                               </Button>
@@ -637,7 +681,7 @@ export function ContractorProjectsContent() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Status</p>
-                    <p className="text-sm font-medium">{getStatusBadge(selectedProject.status, selectedProject.proposalStatus)}</p>
+                    <div className="text-sm font-medium">{getProjectStatusBadge(selectedProject.status, selectedProject.proposalStatus)}</div>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Material</p>

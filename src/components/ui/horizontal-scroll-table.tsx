@@ -70,10 +70,11 @@ export function HorizontalScrollTable({
             variant="outline"
             size="sm"
             className={cn(
-              "absolute left-2 top-1/2 z-10 -translate-y-1/2 h-8 w-8 p-0 rounded-full shadow-lg",
-              "bg-background/80 backdrop-blur-sm border-border/50",
-              "hover:bg-background hover:shadow-md transition-all duration-200",
-              !canScrollLeft && "opacity-50 cursor-not-allowed"
+              "absolute left-2 top-1/2 z-20 -translate-y-1/2 h-8 w-8 p-0 rounded-full shadow-lg",
+              "bg-background border-border",
+              "hover:bg-accent hover:text-accent-foreground transition-all duration-200",
+              "focus:ring-2 focus:ring-ring focus:ring-offset-2",
+              !canScrollLeft && "opacity-40 cursor-not-allowed"
             )}
             onClick={scrollLeft}
             disabled={!canScrollLeft}
@@ -84,10 +85,11 @@ export function HorizontalScrollTable({
             variant="outline"
             size="sm"
             className={cn(
-              "absolute right-2 top-1/2 z-10 -translate-y-1/2 h-8 w-8 p-0 rounded-full shadow-lg",
-              "bg-background/80 backdrop-blur-sm border-border/50",
-              "hover:bg-background hover:shadow-md transition-all duration-200",
-              !canScrollRight && "opacity-50 cursor-not-allowed"
+              "absolute right-2 top-1/2 z-20 -translate-y-1/2 h-8 w-8 p-0 rounded-full shadow-lg",
+              "bg-background border-border",
+              "hover:bg-accent hover:text-accent-foreground transition-all duration-200",
+              "focus:ring-2 focus:ring-ring focus:ring-offset-2",
+              !canScrollRight && "opacity-40 cursor-not-allowed"
             )}
             onClick={scrollRight}
             disabled={!canScrollRight}
@@ -102,7 +104,7 @@ export function HorizontalScrollTable({
         ref={scrollContainerRef}
         className={cn(
           "overflow-x-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent",
-          "scroll-smooth",
+          "scroll-smooth relative z-0",
           className
         )}
         style={{
@@ -118,12 +120,12 @@ export function HorizontalScrollTable({
         <>
           {/* Left fade indicator */}
           {canScrollLeft && (
-            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent pointer-events-none z-5" />
+            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent pointer-events-none z-10" />
           )}
           
           {/* Right fade indicator */}
           {canScrollRight && (
-            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none z-5" />
+            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none z-10" />
           )}
         </>
       )}

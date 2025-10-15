@@ -47,7 +47,7 @@ export async function saveProject(
       longitude: data.longitude,
       deliveryCost: data.deliveryCost,
       deliveryDistance: data.deliveryDistance,
-      warehouseId: data.warehouseId,
+      // warehouseId: undefined, // No warehouse needed, contractor is assigned separately
 
       // Measurements
       length: parseFloat(data.measurements.length) || 0,
@@ -98,9 +98,13 @@ export async function saveProject(
       notes: data.notes,
     };
 
-    // For client-created projects, don't auto-assign to contractor immediately
-    // Projects should remain in DRAFT status until client explicitly requests contractor assignment
-    const contractorId = null;
+    // Use the selected contractor from projectData
+    const contractorId = data.warehouseId;
+    
+    // Validate contractor selection
+    if (!contractorId) {
+      return { success: false, error: "Contractor selection is required" };
+    }
 
     const project = await prisma.project.create({
       data: {
@@ -108,9 +112,9 @@ export async function saveProject(
         userId: session.user.id,
         clientId: session.user.role === UserRole.CLIENT ? session.user.id : null,
         contractorId: contractorId,
-        status: "DRAFT", // Always start as DRAFT, regardless of user role
+        status: "CLIENT_PENDING", // Projects need client approval
         proposalStatus: "DRAFT",
-        assignedAt: null, // No assignment initially
+        assignedAt: new Date(), // Auto-assign when project is created
         updated_at: new Date(),
         ...projectData,
       },
@@ -260,7 +264,8 @@ export async function updateProject(
  */
 export async function saveProjectForCustomer(
   data: ProjectFromCalculator,
-  customerId: string
+  customerId: string,
+  contractorId: string
 ): Promise<{ success: boolean; projectId?: string; error?: string }> {
   try {
     const session = await getServerSession(authOptions);
@@ -288,8 +293,8 @@ export async function saveProjectForCustomer(
     }
 
     // Validate required fields
-    if (!data.warehouseId) {
-      return { success: false, error: "Warehouse selection is required" };
+    if (!contractorId) {
+      return { success: false, error: "Contractor selection is required" };
     }
 
     // Convert calculator data to project format
@@ -307,7 +312,7 @@ export async function saveProjectForCustomer(
       longitude: data.longitude,
       deliveryCost: data.deliveryCost,
       deliveryDistance: data.deliveryDistance,
-      warehouseId: data.warehouseId,
+        // warehouseId: undefined, // No warehouse needed, contractor is assigned separately
 
       // Measurements
       length: parseFloat(data.measurements.length) || 0,
@@ -364,23 +369,23 @@ export async function saveProjectForCustomer(
         id: crypto.randomUUID(),
         userId: customerId, // Customer owns the project
         clientId: customerId, // Customer is the client
-        contractorId: null, // No contractor assigned initially
-        status: "DRAFT",
-        proposalStatus: "DRAFT",
-        assignedAt: null,
+        contractorId: contractorId, // Use selected contractor
+        status: "ACTIVE", // Admin-created projects are immediately active
+        proposalStatus: "ACCEPTED", // No approval needed for admin-created projects
+        assignedAt: new Date(), // Auto-assign when project is created
         updated_at: new Date(),
         ...projectData,
       },
     });
 
-    // Create notification for customer about admin-created project requiring approval
+    // Create notification for customer about admin-created project being ready
     await prisma.notification.create({
       data: {
         id: crypto.randomUUID(),
         userId: customerId,
         type: "PROJECT_CREATED_BY_ADMIN",
-        title: "Project Approval Required",
-        message: `${session.user.name} created a roofing project for you. Please review and approve it to proceed.`,
+        title: "Project Created",
+        message: `${session.user.name} created and activated a roofing project for you. The project is ready for work to begin.`,
         projectId: project.id,
         projectName: project.projectName,
         actionUrl: `/dashboard?tab=my-projects&projectId=${project.id}`,

@@ -46,7 +46,20 @@ function getMaterialName(materialValue: string): string {
   return material?.name || materialValue;
 }
 
-export function RoofCalculatorContent() {
+interface RoofCalculatorContentProps {
+  isAdminMode?: boolean;
+  selectedClientId?: string;
+  selectedClientName?: string;
+  onProjectCreated?: () => void;
+}
+
+export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
+  const { 
+    isAdminMode = false, 
+    selectedClientId, 
+    selectedClientName, 
+    onProjectCreated 
+  } = props;
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const {
@@ -60,9 +73,9 @@ export function RoofCalculatorContent() {
     handleAutoOptimize,
   } = useRoofCalculator();
 
-  // Check if this is a help request from a client
-  const isHelpRequest = searchParams.get('helpRequest') === 'true';
-  const helpRequestClientId = searchParams.get('clientId');
+  // Check if this is a help request from a client or admin mode
+  const isHelpRequest = searchParams.get('helpRequest') === 'true' || isAdminMode;
+  const helpRequestClientId = isAdminMode ? selectedClientId : searchParams.get('clientId');
   const [helpRequestClient, setHelpRequestClient] = useState<{name: string, email: string} | null>(null);
 
   const [isAdditionalSpecsOpen, setIsAdditionalSpecsOpen] = useState(false);
@@ -76,10 +89,16 @@ export function RoofCalculatorContent() {
   const [projectAddress, setProjectAddress] = useState<{ coordinates: { latitude: number; longitude: number } } | null>(null);
   const additionalSpecsRef = useRef<HTMLDivElement>(null);
 
-  // Fetch client information if this is a help request
+  // Set client information for admin mode or fetch for help requests
   useEffect(() => {
-    if (isHelpRequest && helpRequestClientId && session?.user?.role === UserRole.ADMIN) {
-      // Fetch client information
+    if (isAdminMode && selectedClientName && selectedClientId) {
+      // Use provided client info for admin mode
+      setHelpRequestClient({
+        name: selectedClientName,
+        email: selectedClientId // We'll use the ID as a placeholder, could be improved
+      });
+    } else if (isHelpRequest && helpRequestClientId && session?.user?.role === UserRole.ADMIN) {
+      // Fetch client information for help requests
       fetch(`/api/clients`)
         .then(response => response.json())
         .then(result => {
@@ -97,7 +116,7 @@ export function RoofCalculatorContent() {
           console.error('Failed to fetch client information:', error);
         });
     }
-  }, [isHelpRequest, helpRequestClientId, session?.user?.role]);
+  }, [isAdminMode, selectedClientName, selectedClientId, isHelpRequest, helpRequestClientId, session?.user?.role]);
 
   // Scroll to the end of Additional Specifications when expanded
   useEffect(() => {
@@ -153,26 +172,6 @@ export function RoofCalculatorContent() {
   return (
     <div className="px-3 sm:px-4 lg:px-6">
       <div className="space-y-4 sm:space-y-6">
-        {/* Help Request Banner */}
-        {isHelpRequest && helpRequestClient && session?.user?.role === UserRole.ADMIN && (
-          <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                  <span className="text-blue-600 dark:text-blue-400 text-sm font-medium">!</span>
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                  Creating Project for Client
-                </h3>
-                <p className="text-sm text-blue-700 dark:text-blue-300">
-                  You are creating a project for <strong>{helpRequestClient.name}</strong> ({helpRequestClient.email})
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
         {/* Action Buttons */}
         <div className="mb-4 flex flex-col sm:flex-row sm:justify-end gap-2">
           <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -192,6 +191,9 @@ export function RoofCalculatorContent() {
               isHelpRequest={isHelpRequest}
               helpRequestClientId={helpRequestClientId}
               helpRequestClient={helpRequestClient}
+              isAdminMode={isAdminMode}
+              selectedClientId={selectedClientId}
+              onProjectCreated={onProjectCreated}
             />
             <Button
               variant="outline"
@@ -339,7 +341,6 @@ export function RoofCalculatorContent() {
                   onBudgetLevelChange={(budgetLevel, materialThickness) => {
                     setMeasurements({ ...measurements, budgetLevel, materialThickness });
                   }}
-                  selectedWarehouseId={selectedWarehouseId}
                 />
 
                 {/* Recommended Selections */}

@@ -25,7 +25,6 @@ import { toast } from "sonner";
 import { SaveIcon, Loader2Icon, SendIcon, UsersIcon } from "lucide-react";
 import { saveProject, updateProject, getProjectDetails, saveProjectForCustomer } from "../actions";
 import { AddressInput } from "@/components/map/address-input";
-import { WarehouseSelector } from "@/components/map/warehouse-selector";
 import { formatCurrency, formatArea } from "@/lib/utils";
 import type {
   Measurements,
@@ -33,7 +32,7 @@ import type {
   DecisionTreeResult,
 } from "../types";
 import type { ProjectFromCalculator } from "@/types/project";
-import type { Warehouse, Coordinates } from "@/types/location";
+import type { Coordinates } from "@/types/location";
 
 interface ProjectActionsProps {
   measurements: Measurements;
@@ -51,6 +50,9 @@ interface ProjectActionsProps {
   isHelpRequest?: boolean;
   helpRequestClientId?: string | null;
   helpRequestClient?: { name: string; email: string } | null;
+  isAdminMode?: boolean;
+  selectedClientId?: string;
+  onProjectCreated?: () => void;
 }
 
 interface Contractor {
@@ -78,6 +80,9 @@ export function ProjectActions({
   isHelpRequest = false,
   helpRequestClientId,
   helpRequestClient,
+  isAdminMode = false,
+  selectedClientId,
+  onProjectCreated,
 }: ProjectActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -97,28 +102,27 @@ export function ProjectActions({
   // Address and warehouse state
   const [address, setAddress] = useState("");
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
-  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [isValidated, setIsValidated] = useState(false);
   const [deliveryCost, setDeliveryCost] = useState<number | null>(null);
   const [deliveryDistance, setDeliveryDistance] = useState<number | null>(null);
 
-  // Fetch warehouses when dialog opens
+  // Fetch contractors when dialog opens
   useEffect(() => {
     if (saveDialogOpen) {
-      const fetchWarehouses = async () => {
+      const fetchContractors = async () => {
         try {
-          const response = await fetch('/api/warehouses');
+          const response = await fetch('/api/contractors');
           if (response.ok) {
             const result = await response.json();
-            if (result.success && result.data) {
-              setWarehouses(result.data);
+            if (result.success && result.contractors) {
+              setContractors(result.contractors);
             }
           }
         } catch (error) {
-          console.error("Failed to fetch warehouses:", error);
+          console.error("Failed to fetch contractors:", error);
         }
       };
-      fetchWarehouses();
+      fetchContractors();
     }
   }, [saveDialogOpen]);
 
@@ -201,7 +205,7 @@ export function ProjectActions({
     }
 
     if (!selectedWarehouseId) {
-      toast.error("Please select a warehouse");
+      toast.error("Please select a contractor");
       return;
     }
 
@@ -228,17 +232,19 @@ export function ProjectActions({
       if (currentProjectId) {
         // Update existing project
         result = await updateProject(currentProjectId, projectData);
-      } else if (isHelpRequest && helpRequestClientId) {
-        // Save project for customer (help request)
-        result = await saveProjectForCustomer(projectData, helpRequestClientId);
+      } else if ((isHelpRequest && helpRequestClientId) || (isAdminMode && selectedClientId)) {
+        // Save project for customer (help request or admin mode)
+        const clientId = isAdminMode ? selectedClientId : helpRequestClientId;
+        result = await saveProjectForCustomer(projectData, clientId!, selectedWarehouseId!);
       } else {
         // Save normal project
         result = await saveProject(projectData);
       }
 
       if (result.success) {
-        const action = currentProjectId ? "updated" : (isHelpRequest ? "created for client" : "saved");
-        const description = isHelpRequest 
+        const isCreatingForClient = isHelpRequest || isAdminMode;
+        const action = currentProjectId ? "updated" : (isCreatingForClient ? "created for client" : "saved");
+        const description = isCreatingForClient 
           ? `Project "${projectName}" has been created for ${helpRequestClient?.name || "the client"}`
           : `Project "${projectName}" has been ${currentProjectId ? "updated" : "saved"}`;
         
@@ -254,6 +260,11 @@ export function ProjectActions({
         setIsValidated(false);
         setDeliveryCost(null);
         setDeliveryDistance(null);
+        
+        // Call the callback for admin mode
+        if (isAdminMode && onProjectCreated) {
+          onProjectCreated();
+        }
       } else {
         const action = currentProjectId ? "update" : "save";
         toast.error(`Failed to ${action} project`, {
@@ -486,64 +497,34 @@ export function ProjectActions({
               />
             </div>
 
-            {/* Warehouse Selection */}
+            {/* Contractor Selection */}
             {isValidated && coordinates && (
               <div>
-                <Label>Warehouse Selection *</Label>
-                <WarehouseSelector
-                  warehouses={warehouses}
-                  selectedWarehouseId={selectedWarehouseId}
-                  destination={coordinates}
-                  onWarehouseSelect={(warehouseId) => {
-                    onWarehouseChange?.(warehouseId);
-                    
-                    // Calculate delivery cost when warehouse is selected
-                    if (coordinates) {
-                      const selectedWarehouse = warehouses.find(w => w.id === warehouseId);
-                      if (selectedWarehouse) {
-                        const calculateDelivery = async () => {
-                          try {
-                            const response = await fetch('/api/delivery/calculate', {
-                              method: 'POST',
-                              headers: {
-                                'Content-Type': 'application/json',
-                              },
-                              body: JSON.stringify({
-                                origin: {
-                                  latitude: selectedWarehouse.latitude,
-                                  longitude: selectedWarehouse.longitude,
-                                },
-                                destination: coordinates,
-                                // pricing will be validated and defaulted in the API if invalid
-                              }),
-                            });
-                            
-                            if (response.ok) {
-                              const result = await response.json();
-                              if (result.success && result.data) {
-                                setDeliveryCost(result.data.delivery.totalCost);
-                                setDeliveryDistance(result.data.route.distance);
-                              }
-                            }
-                          } catch (error) {
-                            console.error('Failed to calculate delivery cost:', error);
-                          }
-                        };
-                        calculateDelivery();
-                      }
-                    }
+                <Label>Contractor Selection *</Label>
+                <Select
+                  value={selectedWarehouseId || ""}
+                  onValueChange={(value) => {
+                    onWarehouseChange?.(value);
                   }}
-                  className="mt-1"
-                  showMap={false}
-                />
-                {deliveryCost && deliveryDistance && (
-                  <div className="mt-2 p-3 bg-muted rounded-lg">
-                    <div className="text-sm font-medium">Delivery Estimate</div>
-                    <div className="text-sm text-muted-foreground">
-                      Distance: {deliveryDistance.toFixed(1)} km • Cost: ₱{deliveryCost.toFixed(2)}
-                    </div>
-                  </div>
-                )}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select a contractor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {contractors.map((contractor) => (
+                      <SelectItem key={contractor.id} value={contractor.id}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">
+                            {contractor.firstName} {contractor.lastName}
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            {contractor.companyName} • {contractor.completedProjects} projects completed
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             )}
 
