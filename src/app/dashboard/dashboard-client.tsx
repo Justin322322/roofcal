@@ -12,7 +12,7 @@ import { UserRole } from "@/types/user-role";
 import { useSessionLoading } from "@/hooks/use-session-loading";
 import AccountManagementContent from "./(sections)/account-management";
 import AdminProjectCreationContent from "./(sections)/admin-project-creation";
-import AdminRoofEstimationContent from "./(sections)/admin-roof-estimation";
+import AdminRoofEstimationContent from "@/app/dashboard/(sections)/admin-roof-estimation";
 import SystemMaintenanceContent from "./(sections)/pricing-maintenance/pricing-maintenance";
 import { RoofCalculatorContent } from "./roof-calculator";
 import { ContractorProjectsContent } from "./(sections)/contractor-projects-simplified"; // Using simplified version with drawer UI
@@ -132,6 +132,7 @@ export default function DashboardClient() {
         return userRole === UserRole.ADMIN;
       case "database-management":
       case "system-control":
+      case "activity-logs":
         return userRole === UserRole.DEVELOPER; // Only developers can access dev tools
       case "admin-management":
         // Allow developers to access Admin Management in all environments

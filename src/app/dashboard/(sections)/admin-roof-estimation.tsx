@@ -3,7 +3,6 @@
 import React from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Calculator, Info } from "lucide-react";
 import { toast } from "sonner";
@@ -57,25 +56,10 @@ export default function AdminRoofEstimationContent() {
 
       {/* Main Content */}
       <div className="px-4 lg:px-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calculator className="h-5 w-5" />
-              Roof Calculator
-            </CardTitle>
-            <CardDescription>
-              Enter measurements and specifications to calculate roof costs and materials
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-background border rounded-lg">
-              <RoofCalculatorContent 
-                isAdminSelfMode={true}
-                onProjectCreated={handleProjectCreated}
-              />
-            </div>
-          </CardContent>
-        </Card>
+        <RoofCalculatorContent 
+          isAdminSelfMode={true}
+          onProjectCreated={handleProjectCreated}
+        />
       </div>
     </div>
   );
