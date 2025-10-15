@@ -26,7 +26,7 @@ export function AddressInput({
   onCoordinatesChange,
   className = "",
   required = false,
-  placeholder = "Enter complete address (e.g., 123 Main St, Manila, Metro Manila, 1000)",
+  placeholder = "Enter complete address (e.g., 123 Main St, Balanga, Bataan, 2100)",
 }: AddressInputProps) {
   const [address, setAddress] = useState(initialAddress);
 

@@ -108,50 +108,43 @@ export default function About() {
             </div>
             
             <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="h-5 w-5 text-primary" />
-                    Pitch Calculation
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Automatically calculates roof slope using rise-over-run ratios, 
-                    ensuring accurate surface area measurements regardless of roof complexity.
+              {[
+                {
+                  title: "Pitch Calculation",
+                  description:
+                    "Automatically calculates roof slope using rise-over-run ratios, ensuring accurate surface area measurements regardless of roof complexity.",
+                  icon: <Target className="h-5 w-5" />,
+                },
+                {
+                  title: "Material Optimization",
+                  description:
+                    "Factors in material dimensions, overlap requirements, and standard installation practices to minimize waste and cost.",
+                  icon: <CheckCircle className="h-5 w-5" />,
+                },
+                {
+                  title: "Quality Assurance",
+                  description:
+                    "Validates calculations against industry standards and real-world project data to ensure reliability and accuracy.",
+                  icon: <Shield className="h-5 w-5" />,
+                },
+              ].map((item) => (
+                <div key={item.title} className="relative group/feature rounded-lg border border-border py-8">
+                  <div className="mb-3 relative z-10 px-6 text-muted-foreground">
+                    <div className="inline-flex items-center justify-center rounded-md bg-muted/60 p-2 text-primary">
+                      {item.icon}
+                    </div>
+                  </div>
+                  <div className="text-lg font-bold mb-2 relative z-10 px-6">
+                    <div className="absolute left-0 inset-y-0 h-6 w-1 rounded-tr-full rounded-br-full bg-muted group-hover/feature:bg-primary transition-all duration-200 origin-center" />
+                    <span className="group-hover/feature:translate-x-1 transition duration-200 inline-block text-foreground">
+                      {item.title}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground max-w-prose relative z-10 px-6">
+                    {item.description}
                   </p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-primary" />
-                    Material Optimization
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Factors in material dimensions, overlap requirements, and standard 
-                    installation practices to minimize waste and cost.
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-primary" />
-                    Quality Assurance
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Validates calculations against industry standards and real-world 
-                    project data to ensure reliability and accuracy.
-                  </p>
-                </CardContent>
-              </Card>
+                </div>
+              ))}
             </div>
           </div>
         </div>

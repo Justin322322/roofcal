@@ -105,6 +105,9 @@ export default function Header() {
                   About
                 </Link>
                 <div className="h-px bg-border my-2" />
+                <div className="flex items-center justify-between">
+                  <ThemeToggle />
+                </div>
                 <div className="grid gap-2">
                   <Button
                     variant="accent"
@@ -121,9 +124,6 @@ export default function Header() {
                   >
                     <Link href="/signup">Sign up</Link>
                   </Button>
-                </div>
-                <div className="mt-2 flex justify-end">
-                  <ThemeToggle />
                 </div>
               </div>
             </div>
