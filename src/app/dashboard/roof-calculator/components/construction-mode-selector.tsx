@@ -130,9 +130,9 @@ export function ConstructionModeSelector({
           <RadioGroupItem value="new" id="mode-new" className="peer sr-only" />
           <Label
             htmlFor="mode-new"
-            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer h-28"
+            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer h-32"
           >
-            <HammerIcon className="mb-3 h-8 w-8 text-primary" />
+            <HammerIcon className="mb-3 h-12 w-12 text-primary" />
             <div className="text-center">
               <div className="font-semibold">New Construction</div>
               <div className="text-xs text-muted-foreground mt-1">
@@ -153,9 +153,9 @@ export function ConstructionModeSelector({
           />
           <Label
             htmlFor="mode-repair"
-            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer h-28"
+            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer h-32"
           >
-            <WrenchIcon className="mb-3 h-8 w-8 text-primary" />
+            <WrenchIcon className="mb-3 h-12 w-12 text-primary" />
             <div className="text-center">
               <div className="font-semibold">Repair</div>
               <div className="text-xs text-muted-foreground mt-1">
