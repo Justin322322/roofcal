@@ -416,7 +416,6 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
               ventilationCost={results.ventilationCost}
               totalMaterialsCost={results.totalMaterialsCost}
               laborCost={results.laborCost}
-              removalCost={results.removalCost}
               totalCost={results.totalCost}
               gutterPieces={results.gutterPieces}
               ridgeLength={results.ridgeLength}
