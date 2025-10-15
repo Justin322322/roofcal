@@ -447,7 +447,13 @@ export function useRoofCalculator() {
   const handleAutoOptimize = () => {
     // Only optimize if we have valid measurements
     if (!measurements.length || !measurements.width) {
-      return { hasChanges: false, changesCount: 0 };
+      return { 
+        hasChanges: false, 
+        changesCount: 0, 
+        changes: [],
+        totalSavings: 0,
+        performanceImprovements: []
+      };
     }
 
     const length = parseFloat(measurements.length);
@@ -456,7 +462,16 @@ export function useRoofCalculator() {
     const totalArea = length * width; // Simple area calculation
 
     // Track changes for optimization feedback
-    let changesCount = 0;
+    const changes: Array<{
+      field: string;
+      fieldLabel: string;
+      beforeValue: string | number;
+      afterValue: string | number;
+      reason: string;
+      impact: 'cost' | 'performance' | 'efficiency' | 'complexity';
+      savings?: number;
+    }> = [];
+    let totalSavings = 0;
 
     // Determine optimal settings to REDUCE complexity while maintaining quality
     const optimizations: Partial<Measurements> = {};
@@ -465,12 +480,25 @@ export function useRoofCalculator() {
     // 1. OPTIMIZE PITCH - Reduce complexity by avoiding extremes
     if (pitch < 10) {
       optimizations.pitch = "20"; // Better drainage, moderate complexity
-      changesCount++;
+      changes.push({
+        field: 'pitch',
+        fieldLabel: 'Roof Pitch',
+        beforeValue: `${pitch}°`,
+        afterValue: '20°',
+        reason: 'Improved drainage and reduced installation complexity while maintaining structural integrity',
+        impact: 'complexity'
+      });
     } else if (pitch > 45) {
       optimizations.pitch = "30"; // Reduce steepness, lower complexity
-      changesCount++;
+      changes.push({
+        field: 'pitch',
+        fieldLabel: 'Roof Pitch',
+        beforeValue: `${pitch}°`,
+        afterValue: '30°',
+        reason: 'Reduced steepness to lower installation complexity and safety requirements',
+        impact: 'complexity'
+      });
     }
-    // Keep 15-45° as they're already optimal
 
     // 2. OPTIMIZE MATERIAL - Consider budget, area, and current selection
     const materialComplexity: Record<string, number> = {
@@ -481,6 +509,14 @@ export function useRoofCalculator() {
       slate: 3,
     };
 
+    const materialLabels: Record<string, string> = {
+      asphalt: 'Asphalt Shingles',
+      wood: 'Wood Shingles',
+      metal: 'Metal Roofing',
+      tile: 'Clay Tiles',
+      slate: 'Slate Tiles',
+    };
+
     const currentComplexity = materialComplexity[material] || 1;
 
     // Optimize based on budget level
@@ -488,13 +524,31 @@ export function useRoofCalculator() {
       // Low budget: Use lowest complexity material
       if (currentComplexity > 0) {
         optimalMaterial = "asphalt"; // Lowest complexity
-        changesCount++;
+        changes.push({
+          field: 'material',
+          fieldLabel: 'Roofing Material',
+          beforeValue: materialLabels[material] || material,
+          afterValue: materialLabels.asphalt,
+          reason: 'Switched to more cost-effective material while maintaining quality for low budget projects',
+          impact: 'cost',
+          savings: Math.round(totalArea * 50) // Estimated savings per sq.m
+        });
+        totalSavings += Math.round(totalArea * 50);
       }
     } else if (measurements.budgetLevel === "medium") {
       // Medium budget: Use metal (good balance)
       if (currentComplexity > 2) {
         optimalMaterial = "metal"; // Reduce from tile/slate to metal
-        changesCount++;
+        changes.push({
+          field: 'material',
+          fieldLabel: 'Roofing Material',
+          beforeValue: materialLabels[material] || material,
+          afterValue: materialLabels.metal,
+          reason: 'Switched to metal roofing for better cost-effectiveness and durability on medium budget',
+          impact: 'cost',
+          savings: Math.round(totalArea * 80)
+        });
+        totalSavings += Math.round(totalArea * 80);
       }
     } else if (measurements.budgetLevel === "high") {
       // High budget: Can use premium materials, but optimize for large areas
@@ -502,31 +556,75 @@ export function useRoofCalculator() {
         // Large area: Metal is more cost-effective than tile/slate
         if (currentComplexity > 2) {
           optimalMaterial = "metal";
-          changesCount++;
+          changes.push({
+            field: 'material',
+            fieldLabel: 'Roofing Material',
+            beforeValue: materialLabels[material] || material,
+            afterValue: materialLabels.metal,
+            reason: 'Optimized for large area installation - metal provides better cost-effectiveness for projects over 150 sq.m',
+            impact: 'cost',
+            savings: Math.round(totalArea * 120)
+          });
+          totalSavings += Math.round(totalArea * 120);
         }
       }
-      // Small/medium areas: Keep current material if it's tile/slate
     }
 
     // 3. OPTIMIZE RIDGE TYPE - Reduce complexity
     const optimizedPitch = parseFloat(
       optimizations.pitch || measurements.pitch
     );
-    if (optimizedPitch <= 30) {
+    if (optimizedPitch <= 30 && measurements.ridgeType !== "standard") {
       optimizations.ridgeType = "standard"; // Simpler installation for moderate pitches
-      changesCount++;
+      changes.push({
+        field: 'ridgeType',
+        fieldLabel: 'Ridge Type',
+        beforeValue: measurements.ridgeType === "ventilated" ? "Ventilated Ridge" : "Standard Ridge",
+        afterValue: "Standard Ridge",
+        reason: 'Simplified ridge type for moderate pitch angles to reduce installation complexity',
+        impact: 'complexity'
+      });
     }
-    // Only keep ventilated for steep roofs that stayed steep after optimization
 
-    // 5. OPTIMIZE GUTTER SIZE - Only use cut-24 when necessary
-    if (totalArea > 200) {
+    // 4. OPTIMIZE GUTTER SIZE - Only use cut-24 when necessary
+    if (totalArea > 200 && measurements.gutterSize !== "cut-24") {
       optimizations.gutterSize = "cut-24"; // Necessary for very large roofs
-      changesCount++;
-    } else if (totalArea <= 150) {
+      changes.push({
+        field: 'gutterSize',
+        fieldLabel: 'Gutter Size',
+        beforeValue: measurements.gutterSize === "cut-16" ? "16-inch Gutter" : "Standard Gutter",
+        afterValue: "24-inch Gutter",
+        reason: 'Upgraded to larger gutter capacity for better water management on large roof areas',
+        impact: 'performance'
+      });
+    } else if (totalArea <= 150 && measurements.gutterSize !== "cut-16") {
       optimizations.gutterSize = "cut-16"; // Reduce complexity for smaller roofs
-      changesCount++;
+      changes.push({
+        field: 'gutterSize',
+        fieldLabel: 'Gutter Size',
+        beforeValue: measurements.gutterSize === "cut-24" ? "24-inch Gutter" : "Standard Gutter",
+        afterValue: "16-inch Gutter",
+        reason: 'Optimized gutter size for smaller roof area to reduce material costs',
+        impact: 'cost',
+        savings: Math.round(totalArea * 2) // Estimated savings
+      });
+      totalSavings += Math.round(totalArea * 2);
     }
-    // Keep current selection for medium roofs (150-200 sq.m)
+
+    // 5. OPTIMIZE INSULATION - Reduce thickness for small areas
+    if (totalArea < 100 && measurements.includeInsulation && measurements.insulationThickness !== "10mm") {
+      optimizations.insulationThickness = "10mm";
+      changes.push({
+        field: 'insulationThickness',
+        fieldLabel: 'Insulation Thickness',
+        beforeValue: measurements.insulationThickness,
+        afterValue: "10mm",
+        reason: 'Reduced insulation thickness for small areas to optimize costs while maintaining thermal performance',
+        impact: 'cost',
+        savings: Math.round(totalArea * 8)
+      });
+      totalSavings += Math.round(totalArea * 8);
+    }
 
     // Apply material optimization
     if (optimalMaterial !== material) {
@@ -539,7 +637,28 @@ export function useRoofCalculator() {
       ...optimizations,
     }));
 
-    return { hasChanges: changesCount > 0, changesCount };
+    // Generate performance improvements summary
+    const performanceImprovements: string[] = [];
+    if (changes.some(c => c.impact === 'complexity')) {
+      performanceImprovements.push('Reduced installation complexity');
+    }
+    if (changes.some(c => c.impact === 'performance')) {
+      performanceImprovements.push('Enhanced roof performance');
+    }
+    if (changes.some(c => c.impact === 'efficiency')) {
+      performanceImprovements.push('Improved material efficiency');
+    }
+    if (totalSavings > 0) {
+      performanceImprovements.push('Reduced overall project costs');
+    }
+
+    return { 
+      hasChanges: changes.length > 0, 
+      changesCount: changes.length,
+      changes,
+      totalSavings,
+      performanceImprovements
+    };
   };
 
   return {

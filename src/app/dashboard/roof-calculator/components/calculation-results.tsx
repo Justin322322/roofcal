@@ -8,7 +8,7 @@ import { SparklesIcon, Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import { formatNumberWithCommas } from "../utils/format";
 import { getSlopeMultiplier, SCREW_TYPES } from "../constants";
-import { toast } from "sonner";
+import { OptimizationResultsDialog, type OptimizationResult } from "./optimization-results-dialog";
 
 interface CalculationResultsProps {
   area: number;
@@ -29,7 +29,7 @@ interface CalculationResultsProps {
   screwType?: string;
   constructionMode: "new" | "repair";
   budgetAmount?: number;
-  onAutoOptimize?: () => { hasChanges: boolean; changesCount: number };
+  onAutoOptimize?: () => OptimizationResult;
   // For area breakdown
   length?: number;
   width?: number;
@@ -63,6 +63,8 @@ export function CalculationResults({
   roofTypeLabel,
 }: CalculationResultsProps) {
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [optimizationDialogOpen, setOptimizationDialogOpen] = useState(false);
+  const [optimizationResult, setOptimizationResult] = useState<OptimizationResult | null>(null);
 
   // Compute area breakdown based on provided inputs
   const planArea =
@@ -80,26 +82,16 @@ export function CalculationResults({
     // Small delay to show the animation
     await new Promise((resolve) => setTimeout(resolve, 600));
 
-    const optimizationResult = onAutoOptimize();
+    const result = onAutoOptimize();
+    setOptimizationResult(result);
 
     // Keep button in loading state briefly after optimization
     await new Promise((resolve) => setTimeout(resolve, 400));
 
     setIsOptimizing(false);
 
-    // Show appropriate toast based on optimization results
-    if (optimizationResult.hasChanges) {
-      toast.success("Optimization completed", {
-        description: `${optimizationResult.changesCount} setting${optimizationResult.changesCount > 1 ? "s" : ""} optimized for better performance and cost efficiency`,
-        duration: 4000,
-      });
-    } else {
-      toast.info("Already optimized", {
-        description:
-          "Your current settings are already optimized for the best performance and cost efficiency",
-        duration: 4000,
-      });
-    }
+    // Show the detailed optimization dialog
+    setOptimizationDialogOpen(true);
   };
 
   if (area === 0) {
@@ -118,37 +110,38 @@ export function CalculationResults({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>Calculation Results</span>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary">{material || "No material"}</Badge>
-            {onAutoOptimize && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleOptimizeClick}
-                disabled={isOptimizing}
-                className="h-7 px-3 text-xs"
-                title="Optimize settings while maintaining quality"
-              >
-                {isOptimizing ? (
-                  <>
-                    <Loader2Icon className="h-3 w-3 mr-1 animate-spin" />
-                    Optimizing...
-                  </>
-                ) : (
-                  <>
-                    <SparklesIcon className="h-3 w-3 mr-1" />
-                    Optimize
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
-        </CardTitle>
-      </CardHeader>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Calculation Results</span>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">{material || "No material"}</Badge>
+              {onAutoOptimize && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleOptimizeClick}
+                  disabled={isOptimizing}
+                  className="h-7 px-3 text-xs"
+                  title="Optimize settings while maintaining quality"
+                >
+                  {isOptimizing ? (
+                    <>
+                      <Loader2Icon className="h-3 w-3 mr-1 animate-spin" />
+                      Optimizing...
+                    </>
+                  ) : (
+                    <>
+                      <SparklesIcon className="h-3 w-3 mr-1" />
+                      Optimize
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </CardTitle>
+        </CardHeader>
       <CardContent className="space-y-4">
         {/* Roof Area */}
         <div className="space-y-2">
@@ -326,6 +319,14 @@ export function CalculationResults({
           estimate includes all materials and labor. Additional fees may apply for permits and site-specific requirements.
         </div>
       </CardContent>
-    </Card>
+      </Card>
+      
+      {/* Optimization Results Dialog */}
+      <OptimizationResultsDialog
+        open={optimizationDialogOpen}
+        onOpenChange={setOptimizationDialogOpen}
+        optimizationResult={optimizationResult}
+      />
+    </>
   );
 }

@@ -133,6 +133,12 @@ export function AppSidebar({
         icon: UsersIcon,
         roles: [UserRole.ADMIN],
       },
+      {
+        title: "Record Management",
+        url: "admin-record-management",
+        icon: FileTextIcon,
+        roles: [UserRole.ADMIN],
+      },
     ];
 
     // Combine navigation items

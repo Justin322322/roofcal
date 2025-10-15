@@ -14,6 +14,7 @@ import AccountManagementContent from "./(sections)/account-management";
 import AdminProjectCreationContent from "./(sections)/admin-project-creation";
 import AdminRoofEstimationContent from "@/app/dashboard/(sections)/admin-roof-estimation";
 import SystemMaintenanceContent from "./(sections)/pricing-maintenance/pricing-maintenance";
+import AdminRecordManagementContent from "./(sections)/admin-record-management";
 import { RoofCalculatorContent } from "./roof-calculator";
 import { ContractorProjectsContent } from "./(sections)/contractor-projects-simplified"; // Using simplified version with drawer UI
 import MyProjectsContent from "./(sections)/my-projects";
@@ -35,6 +36,7 @@ type DashboardSection =
   | "admin-roof-estimation"
   | "pricing-maintenance"
   | "admin-archive-records"
+  | "admin-record-management"
   | "database-management"
   | "system-control"
   | "activity-logs"
@@ -228,6 +230,8 @@ export default function DashboardClient() {
         return <SystemMaintenanceContent />;
       case "admin-archive-records":
         return <AdminArchiveRecordsContent />;
+      case "admin-record-management":
+        return <AdminRecordManagementContent />;
       case "database-management":
         return <DatabaseManagementContent />;
       case "system-control":

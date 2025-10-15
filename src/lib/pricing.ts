@@ -329,6 +329,7 @@ export function getPricingCategories() {
     { id: "gutters", label: "Gutters", unit: "per_piece" as PricingUnit },
     { id: "ridges", label: "Ridge Caps", unit: "per_meter" as PricingUnit },
     { id: "screws", label: "Screws & Fasteners", unit: "per_sqm" as PricingUnit },
+    { id: "screw_types", label: "Screw Types", unit: "per_piece" as PricingUnit },
     { id: "insulation", label: "Insulation", unit: "per_sqm" as PricingUnit },
     { id: "ventilation", label: "Ventilation", unit: "per_piece" as PricingUnit },
     { id: "labor", label: "Labor Rates", unit: "percentage" as PricingUnit },

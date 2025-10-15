@@ -45,7 +45,7 @@ import {
   ArrowDownIcon,
   FilterIcon,
   XCircleIcon,
-  TrashIcon,
+  ArchiveIcon,
   MoreHorizontalIcon,
   UserIcon,
 } from "lucide-react";
@@ -93,9 +93,9 @@ export default function AdminArchiveRecordsContent() {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [sortField, setSortField] = useState<SortField>("createdAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
+  const [unarchiveDialogOpen, setUnarchiveDialogOpen] = useState(false);
+  const [projectToUnarchive, setProjectToUnarchive] = useState<string | null>(null);
+  const [unarchiving, setUnarchiving] = useState(false);
 
   useEffect(() => {
     fetchArchivedProjects();
@@ -142,31 +142,35 @@ export default function AdminArchiveRecordsContent() {
     setViewDialogOpen(true);
   };
 
-  const handleDeletePermanently = (projectId: string) => {
-    setProjectToDelete(projectId);
-    setDeleteDialogOpen(true);
+  const handleUnarchive = (projectId: string) => {
+    setProjectToUnarchive(projectId);
+    setUnarchiveDialogOpen(true);
   };
 
-  const confirmDeletePermanently = async () => {
-    if (!projectToDelete) return;
+  const confirmUnarchive = async () => {
+    if (!projectToUnarchive) return;
 
-    setDeleting(true);
+    setUnarchiving(true);
     try {
-      const response = await fetch(`/api/projects/${projectToDelete}/permanent-delete`, {
-        method: 'DELETE',
+      const response = await fetch(`/api/projects/${projectToUnarchive}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ unarchive: true }),
       });
 
-      if (!response.ok) throw new Error('Failed to permanently delete project');
+      if (!response.ok) throw new Error('Failed to unarchive project');
 
-      toast.success('Project permanently deleted');
-      setDeleteDialogOpen(false);
-      setProjectToDelete(null);
+      toast.success('Project unarchived successfully');
+      setUnarchiveDialogOpen(false);
+      setProjectToUnarchive(null);
       fetchArchivedProjects();
     } catch (error) {
-      console.error('Failed to permanently delete project:', error);
-      toast.error('Failed to permanently delete project');
+      console.error('Failed to unarchive project:', error);
+      toast.error('Failed to unarchive project');
     } finally {
-      setDeleting(false);
+      setUnarchiving(false);
     }
   };
 
@@ -583,11 +587,11 @@ export default function AdminArchiveRecordsContent() {
                               View Details
                             </DropdownMenuItem>
                             <DropdownMenuItem 
-                              onClick={() => handleDeletePermanently(project.id)}
-                              className="text-red-600"
+                              onClick={() => handleUnarchive(project.id)}
+                              className="text-blue-600"
                             >
-                              <TrashIcon className="h-4 w-4 mr-2" />
-                              Delete Permanently
+                              <ArchiveIcon className="h-4 w-4 mr-2" />
+                              Unarchive
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -618,38 +622,37 @@ export default function AdminArchiveRecordsContent() {
         />
       )}
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      {/* Unarchive Confirmation Dialog */}
+      <Dialog open={unarchiveDialogOpen} onOpenChange={setUnarchiveDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Permanently Delete Project</DialogTitle>
+            <DialogTitle>Unarchive Project</DialogTitle>
             <DialogDescription>
-              Are you sure you want to permanently delete this project? This action cannot be undone.
+              Are you sure you want to unarchive this project? It will be restored to the contractor&apos;s active projects.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => {
-                setDeleteDialogOpen(false);
-                setProjectToDelete(null);
+                setUnarchiveDialogOpen(false);
+                setProjectToUnarchive(null);
               }}
-              disabled={deleting}
+              disabled={unarchiving}
             >
               Cancel
             </Button>
             <Button
-              variant="destructive"
-              onClick={confirmDeletePermanently}
-              disabled={deleting}
+              onClick={confirmUnarchive}
+              disabled={unarchiving}
             >
-              {deleting ? (
+              {unarchiving ? (
                 <>
                   <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
-                  Deleting...
+                  Unarchiving...
                 </>
               ) : (
-                "Delete Permanently"
+                "Unarchive"
               )}
             </Button>
           </DialogFooter>
