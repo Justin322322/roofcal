@@ -134,6 +134,7 @@ export default function DashboardClient() {
       case "admin-roof-estimation":
       case "pricing-maintenance":
       case "admin-archive-records":
+      case "admin-record-management":
         return userRole === UserRole.ADMIN;
       case "database-management":
       case "system-control":
