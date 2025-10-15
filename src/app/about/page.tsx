@@ -13,7 +13,7 @@ export default function About() {
       <section className="pt-24 pb-16 bg-gradient-to-b from-background to-muted/20">
         <div className="container mx-auto px-6 max-w-7xl">
           <div className="text-center max-w-4xl mx-auto">
-            <Badge variant="outline" className="mb-6">
+            <Badge variant="success" className="mb-6">
               About RoofCal
             </Badge>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 tracking-tight">
@@ -107,7 +107,7 @@ export default function About() {
               </p>
             </div>
             
-            <div className="space-y-6">
+            <div>
               {[
                 {
                   title: "Pitch Calculation",
@@ -130,25 +130,25 @@ export default function About() {
               ].map((item, index) => (
                 <div 
                   key={item.title} 
-                  className={`relative overflow-hidden group/feature py-8 ${
+                  className={`relative overflow-hidden group/feature px-6 py-8 ${
                     index === 0 ? 'border-l border-r border-b border-border' : // Pitch Calculation - no top border
                     index === 2 ? 'border-l border-r border-t border-border' : // Quality Assurance - no bottom border
                     'border border-border' // Material Optimization - all borders
                   }`}
                 >
                   <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-t from-muted/50 to-transparent pointer-events-none" />
-                  <div className="mb-3 relative z-10 px-6 text-muted-foreground">
+                  <div className="mb-3 relative z-10 text-muted-foreground">
                     <div className="inline-flex items-center justify-center rounded-md bg-muted/60 p-2 text-primary">
                       {item.icon}
                     </div>
                   </div>
-                  <div className="text-lg font-bold mb-2 relative z-10 px-6">
+                  <div className="text-lg font-bold mb-2 relative z-10">
                     <div className="absolute left-0 inset-y-0 h-6 w-1 rounded-tr-full rounded-br-full bg-muted group-hover/feature:bg-primary transition-all duration-200 origin-center" />
                     <span className="group-hover/feature:translate-x-1 transition duration-200 inline-block text-foreground">
                       {item.title}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground max-w-prose relative z-10 px-6">
+                  <p className="text-sm text-muted-foreground max-w-prose relative z-10">
                     {item.description}
                   </p>
                 </div>
