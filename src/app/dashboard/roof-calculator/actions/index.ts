@@ -491,7 +491,7 @@ export async function saveProjectForAdminSelf(
     return { success: true, projectId: project.id };
   } catch (error) {
     console.error("Error in saveProjectForAdminSelf:", error);
-    return { success: false, error: "Failed to save roof estimation" };
+    return { success: false, error: "Failed to save project estimation" };
   }
 }
 

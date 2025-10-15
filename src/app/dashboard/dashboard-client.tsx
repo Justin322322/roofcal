@@ -20,6 +20,7 @@ import MyProjectsContent from "./(sections)/my-projects";
 import ArchivedProjectsContent from "./(sections)/archived-projects";
 import DatabaseManagementContent from "./(sections)/database-management";
 import SystemControlContent from "./(sections)/system-control";
+import ActivityLogsContent from "./(sections)/activity-logs";
 import RequestHelpContent from "./(sections)/request-help";
 
 type DashboardSection =
@@ -34,6 +35,7 @@ type DashboardSection =
   | "pricing-maintenance"
   | "database-management"
   | "system-control"
+  | "activity-logs"
   | "admin-management"
 
 function DashboardSkeleton() {
@@ -224,6 +226,8 @@ export default function DashboardClient() {
         return <DatabaseManagementContent />;
       case "system-control":
         return <SystemControlContent />;
+      case "activity-logs":
+        return <ActivityLogsContent />;
       case "admin-management":
         // Inline render of Admin Management UI routed inside dashboard (dev only)
         const CreateAdminForm = dynamic(

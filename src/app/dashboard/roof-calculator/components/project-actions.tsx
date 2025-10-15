@@ -181,7 +181,7 @@ export function ProjectActions({
         const description = isCreatingForClient 
           ? `Project "${projectName}" has been created for ${helpRequestClient?.name || "the client"}`
           : isAdminSelfMode
-            ? `Roof estimation "${projectName}" has been saved as DRAFT`
+            ? `Project estimation "${projectName}" has been saved as DRAFT`
             : `Project "${projectName}" has been ${currentProjectId ? "updated" : "saved"}`;
         
         toast.success(`Project ${action} successfully`, {
@@ -242,7 +242,7 @@ export function ProjectActions({
               {currentProjectId 
                 ? "Update Project" 
                 : isAdminSelfMode
-                  ? "Save Roof Estimation"
+                  ? "Save Project Estimation"
                   : isHelpRequest 
                     ? "Create Project for Client" 
                     : "Save Project"}
@@ -251,7 +251,7 @@ export function ProjectActions({
               {currentProjectId
                 ? "Update your current roof calculation project."
                 : isAdminSelfMode
-                  ? `Save your roof estimation as a DRAFT project for your own use. No client assignment or material tracking required.`
+                  ? `Save your project estimation as a DRAFT project for your own use. No client assignment or material tracking required.`
                   : isHelpRequest
                     ? `Creating a project for ${helpRequestClient?.name || "the requesting client"}. This project will be owned by the client and they will receive a notification.`
                     : `Save your current roof calculation as a ${measurements.constructionMode === "repair" ? "repair" : "new construction"} project for future reference.`}

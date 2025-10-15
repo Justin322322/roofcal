@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
     if (statusFilter && statusFilter !== "all") {
       // Map filter values to database status values
       const statusMapping: { [key: string]: string | string[] } = {
+        "draft": "DRAFT",
         "reviewing": "CONTRACTOR_REVIEWING",
         "client-review": "FOR_CLIENT_REVIEW",
         "accepted": ["ACCEPTED", "ACTIVE"], // Include both ACCEPTED and ACTIVE for accepted filter

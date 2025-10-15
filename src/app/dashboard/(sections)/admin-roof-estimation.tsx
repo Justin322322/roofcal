@@ -21,8 +21,8 @@ export default function AdminRoofEstimationContent() {
   }
 
   const handleProjectCreated = () => {
-    toast.success("Roof estimation saved successfully", {
-      description: "Your roof estimation has been saved as a DRAFT project. You can manage it from the Assigned Projects section.",
+    toast.success("Project estimation saved successfully", {
+      description: "Your project estimation has been saved as a DRAFT project. You can manage it from the Assigned Projects section.",
     });
   };
 
@@ -35,9 +35,9 @@ export default function AdminRoofEstimationContent() {
             <Calculator className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Roof Estimation</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Project Estimation</h1>
             <p className="text-sm text-muted-foreground">
-              Create roof estimations for your own projects and calculations
+              Create project estimations for your own projects and calculations
             </p>
           </div>
         </div>
@@ -48,7 +48,7 @@ export default function AdminRoofEstimationContent() {
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            This tool allows you to create roof estimations for your own use. Projects will be saved as DRAFT status 
+            This tool allows you to create project estimations for your own use. Projects will be saved as DRAFT status 
             with no client assignment. You can later change the status to ACTIVE, IN_PROGRESS, or COMPLETED as needed.
             No material tracking or delivery validation is required for these estimations.
           </AlertDescription>

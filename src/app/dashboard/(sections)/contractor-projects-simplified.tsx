@@ -27,7 +27,7 @@
  * Last updated: [Current Date] - Simplified version without warehouse complexity
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getStatusBadge } from "@/lib/badge-utils";
@@ -188,15 +188,12 @@ export function ContractorProjectsContent() {
     if (urlDateTo) setDateTo(urlDateTo);
   }, [searchParams]);
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     setIsLoading(true);
     try {
       // Add cache-busting parameter to ensure fresh data
-      const response = await fetch(`/api/contractor/projects?t=${Date.now()}`);
+      const statusQuery = statusFilter && statusFilter !== "all" ? `&status=${encodeURIComponent(statusFilter)}` : "";
+      const response = await fetch(`/api/contractor/projects?t=${Date.now()}${statusQuery}`);
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.projects) {
@@ -209,7 +206,11 @@ export function ContractorProjectsContent() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [statusFilter]);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   const handleViewProject = (project: Project) => {
     setSelectedProject(project);
@@ -443,6 +444,7 @@ export function ContractorProjectsContent() {
     // Status filter
     if (statusFilter !== "all") {
       const projectStatus = project.proposalStatus || project.status;
+      if (statusFilter === "draft" && project.status !== "DRAFT") return false;
       if (statusFilter === "reviewing" && projectStatus !== "CONTRACTOR_REVIEWING") return false;
       if (statusFilter === "client-review" && projectStatus !== "FOR_CLIENT_REVIEW") return false;
       if (statusFilter === "accepted" && projectStatus !== "ACCEPTED" && projectStatus !== "ACTIVE" && projectStatus !== "DRAFT" && project.proposalStatus !== "ACCEPTED") return false;
@@ -574,6 +576,7 @@ export function ContractorProjectsContent() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
                     <SelectItem value="reviewing">Under Review</SelectItem>
                     <SelectItem value="client-review">Awaiting Client</SelectItem>
                     <SelectItem value="accepted">Accepted</SelectItem>

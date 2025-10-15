@@ -11,6 +11,7 @@ import {
   ArchiveIcon,
   UserPlusIcon,
   HelpCircleIcon,
+  ActivityIcon,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { UserRole } from "@/types/user-role";
@@ -55,6 +56,11 @@ const developerTools = {
       name: "System Control",
       url: "system-control",
       icon: SettingsIcon,
+    },
+    {
+      name: "Activity Logs",
+      url: "activity-logs",
+      icon: ActivityIcon,
     },
     {
       name: "Add Admin User",
@@ -117,7 +123,7 @@ export function AppSidebar({
         roles: [UserRole.ADMIN],
       },
       {
-        title: "Roof Estimation",
+        title: "Project Estimation",
         url: "admin-roof-estimation",
         icon: CalculatorIcon,
         roles: [UserRole.ADMIN],
