@@ -128,7 +128,8 @@ export default function About() {
                   icon: <Shield className="h-5 w-5" />,
                 },
               ].map((item) => (
-                <div key={item.title} className="relative group/feature rounded-lg border border-border py-8">
+                <div key={item.title} className="relative overflow-hidden group/feature rounded-lg border border-border py-8">
+                  <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-t from-muted/50 to-transparent pointer-events-none" />
                   <div className="mb-3 relative z-10 px-6 text-muted-foreground">
                     <div className="inline-flex items-center justify-center rounded-md bg-muted/60 p-2 text-primary">
                       {item.icon}
