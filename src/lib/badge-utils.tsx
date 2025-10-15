@@ -72,6 +72,15 @@ export function getStatusBadge(status: string, proposalStatus?: string) {
   
   const statusKey = normalizeStatus(status) as BadgeVariant;
   const proposalKey = proposalStatus ? normalizeStatus(proposalStatus) as BadgeVariant : null;
+
+  // Always prioritize archived status regardless of proposal state
+  if (statusKey === 'archived') {
+    return (
+      <StandardBadge variant={'archived'}>
+        {"Archived"}
+      </StandardBadge>
+    );
+  }
   
   // Only use proposal status for specific meaningful states that should override project status
   const meaningfulProposalStates = ['sent', 'accepted', 'rejected', 'completed', 'revised'];

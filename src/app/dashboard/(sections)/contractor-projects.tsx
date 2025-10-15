@@ -27,6 +27,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getStatusBadge } from "@/lib/badge-utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -307,31 +308,8 @@ export function ContractorProjectsContent() {
     }
   };
 
-  const getStatusBadge = (status: string, proposalStatus: string | null) => {
-    if (proposalStatus === "SENT") {
-      return <Badge variant="outline" className="bg-blue-100 text-blue-700">Proposal Sent</Badge>;
-    }
-    if (proposalStatus === "ACCEPTED") {
-      return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
-    }
-    if (proposalStatus === "REJECTED") {
-      return <Badge variant="outline" className="bg-red-100 text-red-700">Rejected</Badge>;
-    }
-    
-    switch (status) {
-      case "CONTRACTOR_REVIEWING":
-        return <Badge variant="outline" className="bg-yellow-100 text-yellow-700">Action Required</Badge>;
-      case "PROPOSAL_SENT":
-        return <Badge variant="outline" className="bg-blue-100 text-blue-700">Proposal Sent</Badge>;
-      case "ACCEPTED":
-        return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
-      case "COMPLETED":
-        return <Badge variant="outline" className="bg-green-100 text-green-700">Completed</Badge>;
-      case "REJECTED":
-        return <Badge variant="outline" className="bg-red-100 text-red-700">Declined</Badge>;
-      default:
-        return <Badge variant="outline" className="bg-slate-100 text-slate-600">{status}</Badge>;
-    }
+  const renderStatusBadge = (status: string, proposalStatus: string | null) => {
+    return getStatusBadge(status, proposalStatus ?? undefined);
   };
 
   const filteredProjects = projects.filter(project => {
@@ -598,7 +576,7 @@ export function ContractorProjectsContent() {
                           {project.totalCost.toLocaleString()}
                         </span>
                       </TableCell>
-                      <TableCell>{getStatusBadge(project.status, project.proposalStatus)}</TableCell>
+                      <TableCell>{renderStatusBadge(project.status, project.proposalStatus)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <CalendarIcon className="h-3 w-3" />
@@ -698,7 +676,7 @@ export function ContractorProjectsContent() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Status</p>
-                    <p className="text-sm font-medium">{getStatusBadge(selectedProject.status, selectedProject.proposalStatus)}</p>
+                    <p className="text-sm font-medium">{renderStatusBadge(selectedProject.status, selectedProject.proposalStatus)}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Material</p>

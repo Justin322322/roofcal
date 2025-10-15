@@ -321,12 +321,12 @@ export default function ActivityLogsContent() {
               {/* User Filter */}
               <div className="space-y-2">
                 <Label htmlFor="user">User</Label>
-                <Select value={filters.userId} onValueChange={(value) => handleFilterChange("userId", value)}>
+                <Select value={filters.userId || "all"} onValueChange={(value) => handleFilterChange("userId", value === "all" ? "" : value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="All users" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All users</SelectItem>
+                    <SelectItem value="all">All users</SelectItem>
                     {users.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         <div className="flex items-center gap-2">
@@ -345,12 +345,12 @@ export default function ActivityLogsContent() {
               {/* Activity Type Filter */}
               <div className="space-y-2">
                 <Label htmlFor="type">Activity Type</Label>
-                <Select value={filters.type} onValueChange={(value) => handleFilterChange("type", value)}>
+                <Select value={filters.type || "all"} onValueChange={(value) => handleFilterChange("type", value === "all" ? "" : value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="All types" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All types</SelectItem>
+                    <SelectItem value="all">All types</SelectItem>
                     {ACTIVITY_TYPES.map((type) => (
                       <SelectItem key={type.value} value={type.value}>
                         {type.label}
