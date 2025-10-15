@@ -38,36 +38,14 @@ export function MeasurementForm({
       return;
     }
 
-    // Validation for length and width with guardrails
+    // Validation for length and width
     if (field === "length" || field === "width") {
       const numericValue = parseFloat(value);
       if (value === "" || (!isNaN(numericValue) && numericValue >= 1)) {
-        let newMeasurements = {
+        onMeasurementsChange({
           ...measurements,
           [field]: value,
-        };
-        
-        // Apply guardrails: Length should not be lower than width
-        const length = parseFloat(newMeasurements.length) || 0;
-        const width = parseFloat(newMeasurements.width) || 0;
-        
-        // If user is entering length and it's lower than width, auto-adjust width
-        if (field === "length" && length > 0 && width > 0 && length < width) {
-          newMeasurements = {
-            ...newMeasurements,
-            width: length.toString(), // Set width to match length
-          };
-        }
-        
-        // If user is entering width and it's higher than length, auto-adjust length
-        if (field === "width" && width > 0 && length > 0 && length < width) {
-          newMeasurements = {
-            ...newMeasurements,
-            length: width.toString(), // Set length to match width
-          };
-        }
-        
-        onMeasurementsChange(newMeasurements);
+        });
       }
       return;
     }
@@ -81,19 +59,10 @@ export function MeasurementForm({
   // Check for validation warnings
   const length = parseFloat(measurements.length) || 0;
   const width = parseFloat(measurements.width) || 0;
-  const showLengthWarning = length > 0 && width > 0 && length < width;
   const showUnrealisticWarning = (length > 0 && length < 1) || (width > 0 && width < 1);
 
   return (
     <div className="space-y-4">
-      {showLengthWarning && (
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            ⚠️ Length ({length}m) was lower than width ({width}m). The system has automatically adjusted the values to maintain proper proportions.
-          </AlertDescription>
-        </Alert>
-      )}
       
       {showUnrealisticWarning && (
         <Alert variant="destructive">
@@ -117,9 +86,6 @@ export function MeasurementForm({
             max="1000"
             step="0.1"
           />
-          <p className="text-xs text-muted-foreground">
-            Length should be ≥ width for proper roof proportions
-          </p>
         </div>
 
         <div className="space-y-2">
@@ -134,9 +100,6 @@ export function MeasurementForm({
             max="1000"
             step="0.1"
           />
-          <p className="text-xs text-muted-foreground">
-            Width should be ≤ length for proper roof proportions
-          </p>
         </div>
       </div>
 

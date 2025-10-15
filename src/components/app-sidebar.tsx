@@ -110,9 +110,9 @@ export function AppSidebar({
     // Admin (Contractor) navigation items
     const adminNavItems = [
       {
-        title: "Assigned Projects",
-        url: "contractor-projects",
-        icon: UsersIcon,
+        title: "Project Estimation",
+        url: "admin-roof-estimation",
+        icon: CalculatorIcon,
         roles: [UserRole.ADMIN],
       },
       {
@@ -122,9 +122,9 @@ export function AppSidebar({
         roles: [UserRole.ADMIN],
       },
       {
-        title: "Project Estimation",
-        url: "admin-roof-estimation",
-        icon: CalculatorIcon,
+        title: "Assigned Projects",
+        url: "contractor-projects",
+        icon: UsersIcon,
         roles: [UserRole.ADMIN],
       },
     ];
