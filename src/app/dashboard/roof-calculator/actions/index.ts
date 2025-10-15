@@ -27,10 +27,7 @@ export async function saveProject(
       return { success: false, error: "Authentication required" };
     }
 
-    // Validate required fields
-    if (!data.warehouseId) {
-      return { success: false, error: "Warehouse selection is required" };
-    }
+    // Validate required fields - warehouse selection is no longer required
 
     // Convert calculator data to project format
     const projectData: CreateProjectInput = {
@@ -98,29 +95,28 @@ export async function saveProject(
       notes: data.notes,
     };
 
-    // Use the selected contractor from projectData
-    const contractorId = data.warehouseId;
-    
-    // Validate contractor selection
-    if (!contractorId) {
-      return { success: false, error: "Contractor selection is required" };
-    }
+    // No contractor assignment needed - projects can be created without contractors
+    const contractorId = undefined;
+
+    // If admin is creating a project for themselves, assign it immediately
+    const isAdminSelfAssignment = session.user.role === UserRole.ADMIN && !contractorId;
 
     const project = await prisma.project.create({
       data: {
         id: crypto.randomUUID(),
         userId: session.user.id,
         clientId: session.user.role === UserRole.CLIENT ? session.user.id : null,
-        contractorId: contractorId,
-        status: "CLIENT_PENDING", // Projects need client approval
-        proposalStatus: "DRAFT",
-        assignedAt: new Date(), // Auto-assign when project is created
+        contractorId: contractorId || (isAdminSelfAssignment ? session.user.id : null),
+        status: contractorId ? "CONTRACTOR_REVIEWING" : (isAdminSelfAssignment ? "ACTIVE" : "DRAFT"),
+        proposalStatus: contractorId ? "DRAFT" : (isAdminSelfAssignment ? "ACCEPTED" : "DRAFT"),
+        assignedAt: contractorId || isAdminSelfAssignment ? new Date() : null,
         updated_at: new Date(),
         ...projectData,
       },
     });
 
     // No notification sent here - projects remain in DRAFT until explicitly assigned
+    // Exception: Admin self-assigned projects are immediately ACTIVE
 
     revalidatePath("/dashboard?tab=roof-calculator");
 
@@ -265,7 +261,7 @@ export async function updateProject(
 export async function saveProjectForCustomer(
   data: ProjectFromCalculator,
   customerId: string,
-  contractorId: string
+  contractorId?: string
 ): Promise<{ success: boolean; projectId?: string; error?: string }> {
   try {
     const session = await getServerSession(authOptions);
@@ -292,16 +288,13 @@ export async function saveProjectForCustomer(
       return { success: false, error: "Customer not found or not authorized" };
     }
 
-    // Validate required fields
-    if (!contractorId) {
-      return { success: false, error: "Contractor selection is required" };
-    }
+    // No contractor validation needed - projects can be created without contractors
 
     // Convert calculator data to project format
     const projectData: CreateProjectInput = {
       projectName: data.projectName,
       clientName: data.clientName || customer.firstName + " " + customer.lastName,
-      status: "CLIENT_PENDING", // Admin-created projects need client approval
+      status: contractorId ? "CLIENT_PENDING" : "ACTIVE", // Admin-created projects without contractor are immediately active
 
       // Delivery and Location
       address: data.address,
@@ -369,10 +362,10 @@ export async function saveProjectForCustomer(
         id: crypto.randomUUID(),
         userId: customerId, // Customer owns the project
         clientId: customerId, // Customer is the client
-        contractorId: contractorId, // Use selected contractor
-        status: "ACTIVE", // Admin-created projects are immediately active
-        proposalStatus: "ACCEPTED", // No approval needed for admin-created projects
-        assignedAt: new Date(), // Auto-assign when project is created
+        contractorId: contractorId || null, // Use selected contractor if provided
+        status: projectData.status, // Use dynamic status based on contractor presence
+        proposalStatus: contractorId ? "DRAFT" : null, // Only create proposal if contractor assigned
+        assignedAt: contractorId ? new Date() : null, // Auto-assign only if contractor provided
         updated_at: new Date(),
         ...projectData,
       },
@@ -385,7 +378,9 @@ export async function saveProjectForCustomer(
         userId: customerId,
         type: "PROJECT_CREATED_BY_ADMIN",
         title: "Project Created",
-        message: `${session.user.name} created and activated a roofing project for you. The project is ready for work to begin.`,
+        message: contractorId 
+          ? `${session.user.name} created a roofing project for you and assigned it to a contractor. The contractor will review and send you a proposal.`
+          : `${session.user.name} created and activated a roofing project for you. The project is ready for work to begin.`,
         projectId: project.id,
         projectName: project.projectName,
         actionUrl: `/dashboard?tab=my-projects&projectId=${project.id}`,

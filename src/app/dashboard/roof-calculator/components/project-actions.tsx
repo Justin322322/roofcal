@@ -14,18 +14,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
-import { SaveIcon, Loader2Icon, SendIcon, UsersIcon } from "lucide-react";
+import { SaveIcon, Loader2Icon } from "lucide-react";
 import { saveProject, updateProject, getProjectDetails, saveProjectForCustomer } from "../actions";
 import { AddressInput } from "@/components/map/address-input";
-import { formatCurrency, formatArea } from "@/lib/utils";
 import type {
   Measurements,
   CalculationResults,
@@ -55,15 +47,6 @@ interface ProjectActionsProps {
   onProjectCreated?: () => void;
 }
 
-interface Contractor {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  companyName: string;
-  completedProjects: number;
-}
-
 export function ProjectActions({
   measurements,
   results,
@@ -90,14 +73,6 @@ export function ProjectActions({
   const [projectName, setProjectName] = useState("");
   const [clientName, setClientName] = useState("");
   const [notes, setNotes] = useState("");
-
-  // Quote request form state
-  const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
-  const [selectedContractorId, setSelectedContractorId] = useState("");
-  const [quoteNote, setQuoteNote] = useState("");
-  const [contractors, setContractors] = useState<Contractor[]>([]);
-  const [isLoadingContractors, setIsLoadingContractors] = useState(false);
-  const [isSendingQuote, setIsSendingQuote] = useState(false);
   
   // Address and warehouse state
   const [address, setAddress] = useState("");
@@ -105,50 +80,6 @@ export function ProjectActions({
   const [isValidated, setIsValidated] = useState(false);
   const [deliveryCost, setDeliveryCost] = useState<number | null>(null);
   const [deliveryDistance, setDeliveryDistance] = useState<number | null>(null);
-
-  // Fetch contractors when dialog opens
-  useEffect(() => {
-    if (saveDialogOpen) {
-      const fetchContractors = async () => {
-        try {
-          const response = await fetch('/api/contractors');
-          if (response.ok) {
-            const result = await response.json();
-            if (result.success && result.contractors) {
-              setContractors(result.contractors);
-            }
-          }
-        } catch (error) {
-          console.error("Failed to fetch contractors:", error);
-        }
-      };
-      fetchContractors();
-    }
-  }, [saveDialogOpen]);
-
-  // Fetch contractors when quote dialog opens
-  useEffect(() => {
-    if (quoteDialogOpen) {
-      const fetchContractors = async () => {
-        setIsLoadingContractors(true);
-        try {
-          const response = await fetch('/api/contractors');
-          if (response.ok) {
-            const result = await response.json();
-            if (result.success && result.contractors) {
-              setContractors(result.contractors);
-            }
-          }
-        } catch (error) {
-          console.error("Failed to fetch contractors:", error);
-          toast.error("Failed to load contractors");
-        } finally {
-          setIsLoadingContractors(false);
-        }
-      };
-      fetchContractors();
-    }
-  }, [quoteDialogOpen]);
 
   // Load project data when dialog opens and we have a currentProjectId
   useEffect(() => {
@@ -204,11 +135,6 @@ export function ProjectActions({
       return;
     }
 
-    if (!selectedWarehouseId) {
-      toast.error("Please select a contractor");
-      return;
-    }
-
     setIsLoading(true);
     try {
       const projectData: ProjectFromCalculator = {
@@ -222,7 +148,7 @@ export function ProjectActions({
         address: address,
         latitude: coordinates.latitude,
         longitude: coordinates.longitude,
-        warehouseId: selectedWarehouseId,
+        warehouseId: selectedWarehouseId || undefined,
         deliveryCost: deliveryCost || undefined,
         deliveryDistance: deliveryDistance || undefined,
       };
@@ -232,10 +158,12 @@ export function ProjectActions({
       if (currentProjectId) {
         // Update existing project
         result = await updateProject(currentProjectId, projectData);
-      } else if ((isHelpRequest && helpRequestClientId) || (isAdminMode && selectedClientId)) {
-        // Save project for customer (help request or admin mode)
-        const clientId = isAdminMode ? selectedClientId : helpRequestClientId;
-        result = await saveProjectForCustomer(projectData, clientId!, selectedWarehouseId!);
+      } else if (isHelpRequest && helpRequestClientId) {
+        // Save project for customer (help request) - no contractor required
+        result = await saveProjectForCustomer(projectData, helpRequestClientId, undefined);
+      } else if (isAdminMode && selectedClientId) {
+        // Save project for customer (admin mode) - no contractor required
+        result = await saveProjectForCustomer(projectData, selectedClientId, undefined);
       } else {
         // Save normal project
         result = await saveProject(projectData);
@@ -281,157 +209,10 @@ export function ProjectActions({
     }
   };
 
-  const handleRequestQuote = async () => {
-    if (!currentProjectId) {
-      toast.error("Please save the project first before requesting a quote");
-      return;
-    }
-
-    if (!selectedContractorId) {
-      toast.error("Please select a contractor");
-      return;
-    }
-
-    setIsSendingQuote(true);
-    try {
-      const response = await fetch(`/api/projects/${currentProjectId}/send-to-contractor`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contractorId: selectedContractorId,
-          note: quoteNote.trim() || undefined,
-        }),
-      });
-
-      if (response.ok) {
-        toast.success("Quote request sent successfully", {
-          description: "The contractor has been notified and will review your project",
-        });
-        setQuoteDialogOpen(false);
-        setSelectedContractorId("");
-        setQuoteNote("");
-      } else {
-        const error = await response.json();
-        toast.error("Failed to send quote request", {
-          description: error.error || "An unexpected error occurred",
-        });
-      }
-    } catch (error) {
-      console.error("Error sending quote request:", error);
-      toast.error("Failed to send quote request", {
-        description: "An unexpected error occurred",
-      });
-    } finally {
-      setIsSendingQuote(false);
-    }
-  };
-
-  const canSave = (results.totalCost > 0 || saveEnabled) && projectName.trim() && isValidated && selectedWarehouseId;
-  const canRequestQuote = currentProjectId && results.totalCost > 0;
-  const showRequestQuote = currentProjectId && results.totalCost > 0;
+  const canSave = (results.totalCost > 0 || saveEnabled) && projectName.trim() && isValidated;
 
   return (
     <>
-      {/* Request Quote - Only show if project is saved and has calculations */}
-      {showRequestQuote && (
-        <Dialog
-          open={quoteDialogOpen}
-          onOpenChange={setQuoteDialogOpen}
-        >
-          <DialogTrigger asChild>
-            <Button
-              variant="default"
-              size="sm"
-              disabled={!canRequestQuote}
-              className="bg-primary hover:bg-primary/90"
-            >
-              <SendIcon className="h-4 w-4 mr-2" />
-              Request Quote
-            </Button>
-          </DialogTrigger>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <UsersIcon className="h-5 w-5" />
-              Request Quote from Contractor
-            </DialogTitle>
-            <DialogDescription>
-              Select a contractor to review your project and provide a custom proposal.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="contractor">Select Contractor *</Label>
-              <Select
-                value={selectedContractorId}
-                onValueChange={setSelectedContractorId}
-                disabled={isLoadingContractors}
-              >
-                <SelectTrigger className="mt-1 w-full">
-                  <SelectValue placeholder={
-                    isLoadingContractors ? "Loading contractors..." : "Choose a contractor"
-                  } />
-                </SelectTrigger>
-                <SelectContent>
-                  {contractors.map((contractor) => (
-                    <SelectItem key={contractor.id} value={contractor.id}>
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-medium text-sm">{contractor.companyName}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {contractor.completedProjects} completed projects
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <Label htmlFor="quoteNote">Message to Contractor (Optional)</Label>
-              <Textarea
-                id="quoteNote"
-                value={quoteNote}
-                onChange={(e) => setQuoteNote(e.target.value)}
-                placeholder="Add any specific requirements or questions for the contractor..."
-                className="mt-1"
-                rows={3}
-              />
-            </div>
-            
-            <div className="bg-muted p-3 rounded-lg">
-              <div className="text-sm font-medium">Project Summary</div>
-              <div className="text-sm text-muted-foreground mt-1">
-                <div>Material: {material}</div>
-                <div>Total Area: {formatArea(results.area)}</div>
-                <div>Estimated Cost: {formatCurrency(results.totalCost)}</div>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setQuoteDialogOpen(false)}
-              disabled={isSendingQuote}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleRequestQuote}
-              disabled={!selectedContractorId || isSendingQuote}
-            >
-              {isSendingQuote && (
-                <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
-              )}
-              Send Quote Request
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-        </Dialog>
-      )}
-
       {/* Save Project */}
       <Dialog
         open={saveDialogOpen || false}
@@ -497,36 +278,6 @@ export function ProjectActions({
               />
             </div>
 
-            {/* Contractor Selection */}
-            {isValidated && coordinates && (
-              <div>
-                <Label>Contractor Selection *</Label>
-                <Select
-                  value={selectedWarehouseId || ""}
-                  onValueChange={(value) => {
-                    onWarehouseChange?.(value);
-                  }}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select a contractor" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {contractors.map((contractor) => (
-                      <SelectItem key={contractor.id} value={contractor.id}>
-                        <div className="flex flex-col">
-                          <span className="font-medium">
-                            {contractor.firstName} {contractor.lastName}
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            {contractor.companyName} • {contractor.completedProjects} projects completed
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
 
 
             <div>

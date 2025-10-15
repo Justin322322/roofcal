@@ -42,7 +42,10 @@ export async function PATCH(
         id,
         OR: [
           { userId: session.user.id }, // Project owner
-          { contractorId: session.user.id }, // Assigned contractor
+          { 
+            contractorId: session.user.id,
+            status: { not: "DRAFT" } // Assigned contractor (but not DRAFT projects)
+          },
           { clientId: session.user.id }, // Assigned client
         ],
       },

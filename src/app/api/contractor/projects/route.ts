@@ -35,6 +35,12 @@ export async function GET(request: NextRequest) {
       
       const dbStatus = statusMapping[statusFilter] || statusFilter;
       where.status = dbStatus;
+    } else {
+      // If no specific status filter, exclude DRAFT projects
+      // Contractors should only see assigned projects (not drafts)
+      where.status = {
+        not: "DRAFT"
+      };
     }
 
     if (search) {

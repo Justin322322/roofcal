@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     }
 
     // Create notification for the selected contractor
-    const notification = await prisma.notification.create({
+    await prisma.notification.create({
       data: {
         id: crypto.randomUUID(),
         userId: contractor.id,

@@ -29,7 +29,10 @@ export async function GET(
         id,
         OR: [
           { userId: session.user.id }, // Project owner
-          { contractorId: session.user.id }, // Assigned contractor
+          { 
+            contractorId: session.user.id,
+            status: { not: "DRAFT" } // Assigned contractor (but not DRAFT projects)
+          },
           { clientId: session.user.id }, // Assigned client
         ],
       },
@@ -75,7 +78,10 @@ export async function POST(
         id,
         OR: [
           { userId: session.user.id }, // Project owner
-          { contractorId: session.user.id }, // Assigned contractor
+          { 
+            contractorId: session.user.id,
+            status: { not: "DRAFT" } // Assigned contractor (but not DRAFT projects)
+          },
         ],
       },
     });

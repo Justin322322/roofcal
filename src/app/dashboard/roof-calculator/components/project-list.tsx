@@ -68,6 +68,7 @@ interface Project {
   projectName: string;
   status: string;
   proposalStatus: string | null;
+  contractorId: string | null;
   totalCost: number;
   area: number;
   material: string;
@@ -689,7 +690,7 @@ export function ProjectList() {
                           <EditIcon className="mr-2 h-4 w-4" />
                           Edit Project
                         </DropdownMenuItem>
-                        {project.status === "DRAFT" && (
+                        {project.status === "DRAFT" && !project.contractorId && (
                           <DropdownMenuItem
                             onClick={() => {
                               setSelectedProject(project);
@@ -835,17 +836,31 @@ export function ProjectList() {
                     onValueChange={setSelectedContractorId}
                   >
                     <SelectTrigger id="contractor" className="w-full">
-                      <SelectValue placeholder="Choose a contractor..." />
+                      <SelectValue placeholder="Choose a contractor...">
+                        {selectedContractorId && contractors.length > 0 && (() => {
+                          const contractor = contractors.find(c => c.id === selectedContractorId);
+                          return contractor ? (
+                            <div className="flex flex-col items-start gap-0.5">
+                              <span className="font-medium text-sm">
+                                {contractor.companyName || `${contractor.firstName} ${contractor.lastName}`}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {contractor.completedProjects} completed project{contractor.completedProjects !== 1 ? 's' : ''}
+                              </span>
+                            </div>
+                          ) : "Choose a contractor...";
+                        })()}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {contractors.map((contractor) => (
                         <SelectItem key={contractor.id} value={contractor.id}>
                           <div className="flex flex-col gap-0.5">
                             <span className="font-medium text-sm">
-                              {contractor.firstName} {contractor.lastName}
+                              {contractor.companyName || `${contractor.firstName} ${contractor.lastName}`}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                              {contractor.email} • {contractor.completedProjects} completed
+                              {contractor.completedProjects} completed project{contractor.completedProjects !== 1 ? 's' : ''}
                             </span>
                           </div>
                         </SelectItem>

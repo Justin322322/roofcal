@@ -29,9 +29,12 @@ export async function GET() {
         uniqueClients,
         averageProjectDuration,
       ] = await Promise.all([
-        // Total assigned projects
+        // Total assigned projects (excluding DRAFT)
         prisma.project.count({
-          where: { contractorId: session.user.id },
+          where: { 
+            contractorId: session.user.id,
+            status: { not: "DRAFT" }
+          },
         }),
         // Active assigned projects
         prisma.project.count({
@@ -76,9 +79,12 @@ export async function GET() {
             proposalStatus: "REJECTED",
           },
         }),
-        // Unique clients
+        // Unique clients (excluding DRAFT projects)
         prisma.project.findMany({
-          where: { contractorId: session.user.id },
+          where: { 
+            contractorId: session.user.id,
+            status: { not: "DRAFT" }
+          },
           select: { clientId: true },
           distinct: ["clientId"],
         }),
