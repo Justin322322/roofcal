@@ -36,10 +36,10 @@ export async function GET(request: NextRequest) {
       const dbStatus = statusMapping[statusFilter] || statusFilter;
       where.status = dbStatus;
     } else {
-      // If no specific status filter, exclude DRAFT projects
-      // Contractors should only see assigned projects (not drafts)
+      // If no specific status filter, exclude DRAFT and FOR_CLIENT_REVIEW projects
+      // Contractors should only see projects they need to work on (not drafts or projects waiting for client review)
       where.status = {
-        not: "DRAFT"
+        notIn: ["DRAFT", "FOR_CLIENT_REVIEW"]
       };
     }
 

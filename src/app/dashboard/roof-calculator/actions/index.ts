@@ -294,7 +294,7 @@ export async function saveProjectForCustomer(
     const projectData: CreateProjectInput = {
       projectName: data.projectName,
       clientName: data.clientName || customer.firstName + " " + customer.lastName,
-      status: contractorId ? "FOR_CLIENT_REVIEW" : "ACTIVE", // Contractor-created projects need client review, admin-created projects without contractor are immediately active
+      status: "FOR_CLIENT_REVIEW", // All admin-created projects for clients need client review first
 
       // Delivery and Location
       address: data.address,
@@ -380,7 +380,7 @@ export async function saveProjectForCustomer(
         title: "Project Created",
         message: contractorId 
           ? `${session.user.name} created a roofing project for you and assigned it to a contractor. Please review the project details and approve it for the contractor to proceed with the work.`
-          : `${session.user.name} created and activated a roofing project for you. The project is ready for work to begin.`,
+          : `${session.user.name} created a roofing project for you. Please review the project details and approve it to proceed.`,
         projectId: project.id,
         projectName: project.projectName,
         actionUrl: `/dashboard?tab=my-projects&projectId=${project.id}`,

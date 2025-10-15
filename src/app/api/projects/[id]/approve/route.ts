@@ -59,31 +59,53 @@ export async function PUT(
     }
 
     // Update project status based on workflow
-    const newStatus = action === "approve" ? "CONTRACTOR_REVIEWING" : "REJECTED";
+    // If approved and has contractor, go to CONTRACTOR_REVIEWING, otherwise go to ACTIVE
+    const newStatus = action === "approve" 
+      ? (project.contractorId ? "CONTRACTOR_REVIEWING" : "ACTIVE")
+      : "REJECTED";
     
     const updatedProject = await prisma.project.update({
       where: { id: id },
       data: {
         status: newStatus,
-        proposalStatus: action === "approve" ? "DRAFT" : null,
+        proposalStatus: action === "approve" && project.contractorId ? "DRAFT" : null,
         updated_at: new Date(),
       },
     });
 
-    // Create notification for the contractor who created the project
-    if (project.user_project_contractorIdTouser) {
+    // Create notification for the contractor who created the project (if there is one)
+    if (project.user_project_contractorIdTouser && action === "approve") {
       await prisma.notification.create({
         data: {
           id: crypto.randomUUID(),
           userId: project.user_project_contractorIdTouser.id,
-          type: action === "approve" ? "PROJECT_APPROVED" : "PROJECT_REJECTED",
-          title: action === "approve" ? "Project Approved by Client" : "Project Rejected by Client",
-          message: action === "approve" 
-            ? `${project.projectName} has been approved by ${project.user_project_clientIdTouser?.firstName} ${project.user_project_clientIdTouser?.lastName}. You can now proceed with the work.`
-            : `${project.projectName} has been rejected by ${project.user_project_clientIdTouser?.firstName} ${project.user_project_clientIdTouser?.lastName}.`,
+          type: "PROJECT_APPROVED",
+          title: "Project Approved by Client",
+          message: `${project.projectName} has been approved by ${project.user_project_clientIdTouser?.firstName} ${project.user_project_clientIdTouser?.lastName}. You can now proceed with the work.`,
           projectId: project.id,
           projectName: project.projectName,
           actionUrl: `/dashboard?tab=contractor-projects`,
+          read: false,
+          created_at: new Date(),
+        },
+      });
+    }
+    
+    // Create notification for the admin who created the project (if rejected or no contractor)
+    if (action === "reject" || !project.contractorId) {
+      // Find the admin who created the project (the userId field)
+      await prisma.notification.create({
+        data: {
+          id: crypto.randomUUID(),
+          userId: project.userId, // This is the admin who created the project
+          type: action === "approve" ? "PROJECT_APPROVED" : "PROJECT_REJECTED",
+          title: action === "approve" ? "Project Approved by Client" : "Project Rejected by Client",
+          message: action === "approve" 
+            ? `${project.projectName} has been approved by ${project.user_project_clientIdTouser?.firstName} ${project.user_project_clientIdTouser?.lastName}. The project is now active.`
+            : `${project.projectName} has been rejected by ${project.user_project_clientIdTouser?.firstName} ${project.user_project_clientIdTouser?.lastName}.`,
+          projectId: project.id,
+          projectName: project.projectName,
+          actionUrl: `/dashboard?tab=admin-project-creation`,
           read: false,
           created_at: new Date(),
         },
