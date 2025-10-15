@@ -208,7 +208,7 @@ export function AccountManagementTable({
                                 Call Client
                               </DropdownMenuItem>
                             )}
-                            {account.status === "Disabled" && onEnable && (
+                            {account.status === "Restricted" && onEnable && (
                               <DropdownMenuItem
                                 onSelect={async () => {
                                   try {

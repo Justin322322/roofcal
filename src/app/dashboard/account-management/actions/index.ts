@@ -114,7 +114,7 @@ export async function getAccounts(): Promise<Account[]> {
         email: user.email,
         phone: undefined, // Will be added when user completes profile
         company: undefined, // Will be added when user completes profile
-        status: user.isDisabled ? "Disabled" as const : "Active" as const,
+        status: user.isDisabled ? "Restricted" as const : "Active" as const,
         joinDate: user.created_at.toISOString(),
         lastActivity: user.updated_at.toISOString(),
         totalProjects,

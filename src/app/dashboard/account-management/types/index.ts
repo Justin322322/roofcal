@@ -1,4 +1,4 @@
-export type AccountStatus = "Active" | "Disabled" | "Inactive" | "Pending";
+export type AccountStatus = "Active" | "Restricted" | "Inactive" | "Pending";
 export type AccountStatusFilter = AccountStatus | "all";
 
 export interface Account {

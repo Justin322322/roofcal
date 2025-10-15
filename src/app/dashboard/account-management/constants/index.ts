@@ -2,7 +2,7 @@ import type { AccountStatus, AccountFilters } from "../types";
 
 export const ACCOUNT_STATUSES: readonly AccountStatus[] = [
   "Active",
-  "Disabled",
+  "Restricted",
   "Inactive",
   "Pending",
 ] as const;
@@ -26,7 +26,7 @@ export const STATUS_BADGE_VARIANTS: Record<
   "default" | "secondary" | "destructive" | "outline"
 > = {
   Active: "default",
-  Disabled: "destructive",
+  Restricted: "destructive",
   Inactive: "secondary",
   Pending: "outline",
 } as const;

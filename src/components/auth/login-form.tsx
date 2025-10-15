@@ -71,8 +71,8 @@ export default function LoginForm() {
             toastMsg = "Invalid password";
             break;
           case "ACCOUNT_DISABLED":
-            errorMsg = "Your account has been disabled. Please contact support.";
-            toastMsg = "Account disabled";
+            errorMsg = "Your account has been restricted. Please contact support.";
+            toastMsg = "Account restricted";
             break;
           case "CredentialsSignin":
             // Fallback for generic credential errors

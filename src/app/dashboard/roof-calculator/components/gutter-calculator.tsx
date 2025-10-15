@@ -75,11 +75,11 @@ export function GutterCalculator({
         </div>
 
         <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-          <Label htmlFor="gutterLengthC" className="text-sm font-medium">C - Side Length (m)</Label>
+          <Label htmlFor="gutterLengthC" className="text-sm font-medium">C - Side Width (m)</Label>
           <Input
             id="gutterLengthC"
             type="number"
-            placeholder="Enter side length"
+            placeholder="Enter side width"
             value={gutterLengthC}
             onChange={(e) => onGutterChange("gutterLengthC", e.target.value)}
             min="0"

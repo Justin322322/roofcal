@@ -143,14 +143,14 @@ export function AccountViewModal({
     try {
       const result = await disableAccount(account.id);
       if (result.success) {
-        toast.success("Account disabled successfully");
+        toast.success("Account restricted successfully");
         onClose();
         // Call the onDisable callback if provided
         if (onDisable) {
           await onDisable();
         }
       } else {
-        toast.error(result.errors?.[0] || "Failed to disable account");
+        toast.error(result.errors?.[0] || "Failed to restrict account");
       }
     } catch (error) {
       console.error("Error disabling account:", error);
@@ -537,7 +537,7 @@ export function AccountViewModal({
               </Button>
             )}
             
-            {account.status === "Disabled" && (
+            {account.status === "Restricted" && (
               <Button
                 variant="default"
                 onClick={handleEnable}
@@ -549,7 +549,7 @@ export function AccountViewModal({
               </Button>
             )}
 
-            {onDelete && account.status === "Disabled" && (
+            {onDelete && account.status === "Restricted" && (
               <DeleteAccountDialog
                 trigger={
                   <Button

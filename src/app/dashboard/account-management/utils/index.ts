@@ -299,7 +299,8 @@ function parseAccountRow(row: Record<string, unknown>): Account | null {
     // Map lowercase values to canonical Account["status"] strings
     const statusMap: Record<string, Account["status"]> = {
       active: "Active",
-      disabled: "Disabled",
+      disabled: "Restricted",
+      restricted: "Restricted",
       inactive: "Inactive",
       pending: "Pending",
     };
