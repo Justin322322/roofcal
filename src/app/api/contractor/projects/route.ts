@@ -78,16 +78,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Convert Decimal fields to numbers for JSON response
-    const formattedProjects = projects.map(project => {
-      // Debug logging to see project status
-      console.log('Project status debug:', { 
-        id: project.id, 
-        projectName: project.projectName,
-        status: project.status, 
-        proposalStatus: project.proposalStatus 
-      });
-      
-      return {
+    const formattedProjects = projects.map(project => ({
         ...project,
         length: Number(project.length),
         width: Number(project.width),
@@ -127,8 +118,7 @@ export async function GET(request: NextRequest) {
         screwType: project.materialThickness, // Using materialThickness as screwType for now
         insulationType: project.insulationThickness,
         ventilationType: project.ventilationPieces ? `${project.ventilationPieces} pieces` : undefined,
-      };
-    });
+    }));
 
     return NextResponse.json({
       success: true,
