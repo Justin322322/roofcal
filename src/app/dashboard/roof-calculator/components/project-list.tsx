@@ -907,12 +907,13 @@ export function ProjectList() {
 
                     if (!response.ok) throw new Error("Failed to send to contractor");
 
+                    const result = await response.json();
+                    console.log('Send to contractor response:', result);
+                    
                     toast.success("Project sent to contractor successfully");
                     
-                    // Small delay to ensure database update is complete
-                    setTimeout(() => {
-                      fetchProjects();
-                    }, 100);
+                    // Force immediate refresh with cache busting
+                    await fetchProjects();
                     
                     setContractorDialogOpen(false);
                     setSelectedProject(null);

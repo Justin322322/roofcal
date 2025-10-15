@@ -47,6 +47,7 @@ export async function POST(
     revalidatePath("/dashboard");
     revalidatePath("/dashboard?tab=projects");
     revalidatePath("/dashboard?tab=roof-calculator");
+    revalidatePath("/api/projects");
 
     // In-app notification
     await notifyQuoteRequested(
@@ -59,7 +60,15 @@ export async function POST(
       contractor.email
     );
 
-    return NextResponse.json({ message: "Sent to contractor" });
+    return NextResponse.json({ 
+      success: true,
+      message: "Sent to contractor",
+      project: {
+        id: updated.id,
+        status: updated.status,
+        contractorId: updated.contractorId
+      }
+    });
   } catch (error) {
     console.error("Error sending to contractor:", error);
     return NextResponse.json({ error: "Failed to send to contractor" }, { status: 500 });
