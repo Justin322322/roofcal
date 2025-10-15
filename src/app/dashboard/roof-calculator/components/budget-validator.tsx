@@ -19,6 +19,12 @@ interface BudgetValidatorProps {
   totalCost: number;
 }
 
+export interface BudgetValidationResult {
+  isBudgetSufficient: boolean;
+  budgetStatus: 'none' | 'sufficient' | 'insufficient';
+  shortfall: number;
+}
+
 export function BudgetValidator({
   budgetAmount,
   onChange,
@@ -33,9 +39,22 @@ export function BudgetValidator({
     ] || CONSTANTS.MIN_COST_PER_SQM.corrugated;
   const minimumBudget = Math.round(roofArea * minCostPerSqm);
 
-  const isBudgetSufficient = budget >= minimumBudget;
+  // Enhanced budget validation logic
+  const isBudgetSufficientForTotal = budget === 0 || budget >= totalCost;
+  const isBudgetSufficientForMinimum = budget >= minimumBudget;
   const budgetStatus =
-    budget === 0 ? "none" : isBudgetSufficient ? "sufficient" : "insufficient";
+    budget === 0 ? "none" : isBudgetSufficientForTotal ? "sufficient" : "insufficient";
+  const shortfall = Math.max(0, totalCost - budget);
+
+  // Export validation result for parent components
+  const validationResult: BudgetValidationResult = {
+    isBudgetSufficient: isBudgetSufficientForTotal,
+    budgetStatus,
+    shortfall,
+  };
+
+  // Make validation result available globally for this component instance
+  (BudgetValidator as any).__lastValidationResult = validationResult;
 
   return (
     <div className="space-y-3 min-w-0">
@@ -59,16 +78,24 @@ export function BudgetValidator({
           {budgetStatus === "insufficient" && (
             <Alert variant="destructive">
               <XCircleIcon className="h-4 w-4" />
-              <AlertTitle>Budget Insufficient</AlertTitle>
+              <AlertTitle>Budget Insufficient - Cannot Save Project</AlertTitle>
               <AlertDescription>
-                Your budget of ₱{formatNumberWithCommas(budget)} is below the
-                minimum required budget of ₱
-                {formatNumberWithCommas(minimumBudget)} for{" "}
-                {roofArea.toFixed(2)} sq.m with {selectedMaterial} roofing.
-                <br />
-                <strong>Cannot proceed with this configuration.</strong>
-                <br />
-                Please increase budget or reduce area/material quality.
+                <div className="space-y-2">
+                  <div>
+                    <strong>⛔ Project cannot be saved with current budget</strong>
+                  </div>
+                  <div>
+                    Your budget of ₱{formatNumberWithCommas(budget)} is less than the total cost of ₱{formatNumberWithCommas(totalCost)}.
+                  </div>
+                  <div>
+                    <strong>Shortfall:</strong> ₱{formatNumberWithCommas(shortfall)}
+                  </div>
+                  <div>
+                    <strong>Required actions:</strong>
+                    <br />• Increase your budget by at least ₱{formatNumberWithCommas(shortfall)}
+                    <br />• Or reduce project specifications to lower costs
+                  </div>
+                </div>
               </AlertDescription>
             </Alert>
           )}
@@ -118,4 +145,21 @@ export function BudgetValidator({
       )}
     </div>
   );
+}
+
+// Utility function to get budget validation result
+export function getBudgetValidationResult(
+  budgetAmount: string,
+  totalCost: number
+): BudgetValidationResult {
+  const budget = parseFloat(budgetAmount) || 0;
+  const isBudgetSufficient = budget === 0 || budget >= totalCost;
+  const budgetStatus = budget === 0 ? "none" : isBudgetSufficient ? "sufficient" : "insufficient";
+  const shortfall = Math.max(0, totalCost - budget);
+
+  return {
+    isBudgetSufficient,
+    budgetStatus,
+    shortfall,
+  };
 }

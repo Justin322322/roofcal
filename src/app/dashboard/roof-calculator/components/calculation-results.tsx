@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { SparklesIcon, Loader2Icon, HammerIcon, WrenchIcon } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { SparklesIcon, Loader2Icon, HammerIcon, WrenchIcon, XCircleIcon } from "lucide-react";
 import { useState } from "react";
 import { formatNumberWithCommas } from "../utils/format";
 import { getSlopeMultiplier, SCREW_TYPES } from "../constants";
@@ -312,9 +313,27 @@ export function CalculationResults({
               </div>
             )}
             {budgetAmount < totalCost && (
-              <div className="text-xs text-red-600 text-center">
-                Budget falls short of estimated cost
-              </div>
+              <Alert variant="destructive" className="mt-3">
+                <XCircleIcon className="h-4 w-4" />
+                <AlertTitle>⛔ Project Cannot Be Saved</AlertTitle>
+                <AlertDescription>
+                  <div className="space-y-2">
+                    <div>
+                      <strong>Budget falls short of estimated cost</strong>
+                    </div>
+                    <div>
+                      Your budget of ₱{formatNumberWithCommas(budgetAmount)} is insufficient for this project.
+                      <br />
+                      <strong>Shortfall:</strong> ₱{formatNumberWithCommas(totalCost - budgetAmount)}
+                    </div>
+                    <div>
+                      <strong>Required actions:</strong>
+                      <br />• Increase your budget by at least ₱{formatNumberWithCommas(totalCost - budgetAmount)}
+                      <br />• Or reduce project specifications to lower costs
+                    </div>
+                  </div>
+                </AlertDescription>
+              </Alert>
             )}
           </div>
         )}

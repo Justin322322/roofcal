@@ -589,6 +589,7 @@ export function ContractorProjectsContent() {
                     <SelectValue placeholder="All statuses" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
                     <SelectItem value="reviewing">Under Review</SelectItem>
                     <SelectItem value="client-review">Awaiting Client</SelectItem>
                     <SelectItem value="accepted">Accepted</SelectItem>

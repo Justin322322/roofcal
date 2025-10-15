@@ -29,6 +29,17 @@ export async function saveProject(
     }
 
     // Validate required fields - warehouse selection is no longer required
+    
+    // Budget validation - server-side enforcement
+    const budgetAmount = parseFloat(data.measurements.budgetAmount || "0");
+    const totalCost = data.results.totalCost;
+    
+    if (budgetAmount > 0 && budgetAmount < totalCost) {
+      return { 
+        success: false, 
+        error: `Budget validation failed: Budget (₱${budgetAmount.toLocaleString()}) must be at least ₱${totalCost.toLocaleString()}` 
+      };
+    }
 
     // Convert calculator data to project format
     const projectData: CreateProjectInput = {
@@ -140,6 +151,19 @@ export async function updateProject(
 
     if (!session?.user?.id) {
       return { success: false, error: "Authentication required" };
+    }
+
+    // Budget validation - server-side enforcement (only if measurements are provided)
+    if (data.measurements && data.results) {
+      const budgetAmount = parseFloat(data.measurements.budgetAmount || "0");
+      const totalCost = data.results.totalCost;
+      
+      if (budgetAmount > 0 && budgetAmount < totalCost) {
+        return { 
+          success: false, 
+          error: `Budget validation failed: Budget (₱${budgetAmount.toLocaleString()}) must be at least ₱${totalCost.toLocaleString()}` 
+        };
+      }
     }
 
     // Check if project exists and user owns it
@@ -272,6 +296,17 @@ export async function saveProjectForCustomer(
     // Only ADMIN users can create projects for customers
     if (session.user.role !== UserRole.ADMIN) {
       return { success: false, error: "Unauthorized - ADMIN role required" };
+    }
+
+    // Budget validation - server-side enforcement
+    const budgetAmount = parseFloat(data.measurements.budgetAmount || "0");
+    const totalCost = data.results.totalCost;
+    
+    if (budgetAmount > 0 && budgetAmount < totalCost) {
+      return { 
+        success: false, 
+        error: `Budget validation failed: Budget (₱${budgetAmount.toLocaleString()}) must be at least ₱${totalCost.toLocaleString()}` 
+      };
     }
 
     // Validate customer exists and is a CLIENT
@@ -414,6 +449,17 @@ export async function saveProjectForAdminSelf(
     // Only ADMIN users can create self-estimations
     if (session.user.role !== UserRole.ADMIN) {
       return { success: false, error: "Unauthorized - ADMIN role required" };
+    }
+
+    // Budget validation - server-side enforcement
+    const budgetAmount = parseFloat(data.measurements.budgetAmount || "0");
+    const totalCost = data.results.totalCost;
+    
+    if (budgetAmount > 0 && budgetAmount < totalCost) {
+      return { 
+        success: false, 
+        error: `Budget validation failed: Budget (₱${budgetAmount.toLocaleString()}) must be at least ₱${totalCost.toLocaleString()}` 
+      };
     }
 
     // Convert calculator data to project format

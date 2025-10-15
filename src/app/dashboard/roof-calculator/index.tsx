@@ -19,7 +19,7 @@ import { RoofStatsCards } from "./components/stats-cards";
 import { DecisionInsights } from "./components/decision-insights";
 import { ConstructionModeSelector } from "./components/construction-mode-selector";
 import { ConsolidatedAdditionalSpecs } from "./components/consolidated-additional-specs";
-import { BudgetValidator } from "./components/budget-validator";
+import { BudgetValidator, getBudgetValidationResult } from "./components/budget-validator";
 import { ProjectActions } from "./components/project-actions";
 import { ConsolidatedMaterialSelection } from "./components/consolidated-material-selection";
 import {
@@ -204,6 +204,7 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
               isAdminSelfMode={isAdminSelfMode}
               selectedClientId={selectedClientId}
               onProjectCreated={onProjectCreated}
+              isBudgetSufficient={getBudgetValidationResult(measurements.budgetAmount, results.totalCost).isBudgetSufficient}
             />
             <Button
               variant="outline"

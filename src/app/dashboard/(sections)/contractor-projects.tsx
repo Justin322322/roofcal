@@ -421,6 +421,7 @@ export function ContractorProjectsContent() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Projects</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
                     <SelectItem value="reviewing">Action Required</SelectItem>
                     <SelectItem value="accepted">Accepted</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>

@@ -14,9 +14,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { XCircleIcon } from "lucide-react";
 import { toast } from "sonner";
 import { SaveIcon, Loader2Icon } from "lucide-react";
 import { saveProject, updateProject, getProjectDetails, saveProjectForCustomer, saveProjectForAdminSelf } from "../actions";
+import { getBudgetValidationResult } from "./budget-validator";
 import { AddressInput } from "@/components/map/address-input";
 import type {
   Measurements,
@@ -46,6 +49,7 @@ interface ProjectActionsProps {
   isAdminSelfMode?: boolean;
   selectedClientId?: string;
   onProjectCreated?: () => void;
+  isBudgetSufficient?: boolean;
 }
 
 export function ProjectActions({
@@ -68,6 +72,7 @@ export function ProjectActions({
   isAdminSelfMode = false,
   selectedClientId,
   onProjectCreated,
+  isBudgetSufficient = true,
 }: ProjectActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -129,6 +134,18 @@ export function ProjectActions({
   const handleSaveProject = async () => {
     if (!projectName.trim()) {
       toast.error("Project name is required");
+      return;
+    }
+
+    // Budget validation - block save if budget is insufficient
+    if (!isBudgetSufficient) {
+      const budgetValidation = getBudgetValidationResult(measurements.budgetAmount, results.totalCost);
+      const budget = parseFloat(measurements.budgetAmount) || 0;
+      const shortfall = budgetValidation.shortfall;
+      
+      toast.error("Cannot save project: Budget insufficient", {
+        description: `Your budget (₱${budget.toLocaleString()}) is less than the total cost (₱${results.totalCost.toLocaleString()}). Please increase your budget by ₱${shortfall.toLocaleString()}.`,
+      });
       return;
     }
 
@@ -217,7 +234,7 @@ export function ProjectActions({
     }
   };
 
-  const canSave = (results.totalCost > 0 || saveEnabled) && projectName.trim() && (isAdminSelfMode || isValidated);
+  const canSave = (results.totalCost > 0 || saveEnabled) && projectName.trim() && (isAdminSelfMode || isValidated) && isBudgetSufficient;
 
   return (
     <>
@@ -231,6 +248,7 @@ export function ProjectActions({
             variant="outline"
             size="sm"
             disabled={results.totalCost <= 0 && !saveEnabled}
+            title={!isBudgetSufficient ? "Cannot save: Budget insufficient" : undefined}
           >
             <SaveIcon className="h-4 w-4 mr-2" />
             {currentProjectId ? "Update Project" : "Save Project"}
@@ -258,6 +276,31 @@ export function ProjectActions({
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6">
+            {/* Budget Insufficient Alert */}
+            {!isBudgetSufficient && (
+              <Alert variant="destructive">
+                <XCircleIcon className="h-4 w-4" />
+                <AlertTitle>⚠️ Budget Insufficient - Cannot Save Project</AlertTitle>
+                <AlertDescription>
+                  <div className="space-y-2">
+                    <div>
+                      You cannot save this project until your budget meets or exceeds the total cost.
+                    </div>
+                    <div>
+                      <strong>Budget:</strong> ₱{parseFloat(measurements.budgetAmount || "0").toLocaleString()}
+                      <br />
+                      <strong>Total Cost:</strong> ₱{results.totalCost.toLocaleString()}
+                      <br />
+                      <strong>Shortfall:</strong> ₱{getBudgetValidationResult(measurements.budgetAmount, results.totalCost).shortfall.toLocaleString()}
+                    </div>
+                    <div>
+                      <strong>Required action:</strong> Increase your budget or reduce project specifications.
+                    </div>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+
             <div>
               <Label htmlFor="projectName">Project Name *</Label>
               <Input
