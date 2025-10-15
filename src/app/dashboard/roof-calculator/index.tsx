@@ -246,9 +246,9 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
           <div className="space-y-4 sm:space-y-6">
             {/* Construction Mode */}
             <Card>
-              <CardHeader>
+              <CardHeader className="min-w-0">
                 <CardTitle className="text-base sm:text-lg">Construction Mode</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
+                <CardDescription className="text-xs sm:text-sm truncate">
                   Select project type for accurate labor calculations
                 </CardDescription>
               </CardHeader>
@@ -272,9 +272,9 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
 
             {/* Budget Validation */}
             <Card>
-              <CardHeader>
+              <CardHeader className="min-w-0">
                 <CardTitle className="text-base sm:text-lg">Budget Planning</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
+                <CardDescription className="text-xs sm:text-sm truncate">
                   Enter your budget for validation and recommendations
                 </CardDescription>
               </CardHeader>
@@ -292,12 +292,12 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
             </Card>
 
             <Card>
-              <CardHeader>
+              <CardHeader className="min-w-0">
                 <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                   <CalculatorIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                   Measurements
                 </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
+                <CardDescription className="text-xs sm:text-sm truncate">
                   Enter your roof dimensions and specifications
                 </CardDescription>
               </CardHeader>
@@ -311,9 +311,9 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
 
             {/* Consolidated Material & Screw Selection */}
             <Card>
-              <CardHeader>
+              <CardHeader className="min-w-0">
                 <CardTitle className="text-base sm:text-lg">Material & Hardware Selection</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
+                <CardDescription className="text-xs sm:text-sm truncate">
                   Choose your budget level, roofing material, and screw type
                 </CardDescription>
               </CardHeader>
@@ -359,7 +359,7 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
                 onOpenChange={setIsAdditionalSpecsOpen}
               >
                 <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                  <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors min-w-0">
                     <CardTitle className="flex items-center justify-between text-base sm:text-lg">
                       <div className="flex items-center gap-2">
                         <SettingsIcon className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -371,7 +371,7 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
                         }`}
                       />
                     </CardTitle>
-                    <CardDescription className="text-xs sm:text-sm">
+                    <CardDescription className="text-xs sm:text-sm truncate">
                       Thickness, ridge, gutter, insulation & ventilation specifications
                     </CardDescription>
                   </CardHeader>

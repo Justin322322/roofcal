@@ -38,7 +38,7 @@ export function BudgetValidator({
     budget === 0 ? "none" : isBudgetSufficient ? "sufficient" : "insufficient";
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 min-w-0">
       <div className="space-y-2">
         <Label htmlFor="budgetAmount">Budget Amount (₱)</Label>
         <Input

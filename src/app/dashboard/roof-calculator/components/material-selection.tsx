@@ -208,7 +208,7 @@ export function MaterialSelection({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 min-w-0">
       <div className="space-y-2">
         <Label htmlFor="material">Roofing Material</Label>
         {selectedWarehouseId && (
@@ -217,7 +217,7 @@ export function MaterialSelection({
           </div>
         )}
         <Select value={material} onValueChange={handleMaterialChange}>
-          <SelectTrigger>
+          <SelectTrigger className="max-w-full truncate">
             <SelectValue placeholder="Select material" />
           </SelectTrigger>
           <SelectContent>
