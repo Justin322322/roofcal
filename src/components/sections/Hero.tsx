@@ -53,9 +53,6 @@ export default function Hero() {
 
           <div className="flex justify-center relative z-10">
             <div className="rounded-2xl border-2 border-border bg-card shadow-md overflow-hidden max-w-6xl w-full">
-              <div className="bg-muted/40 px-4 py-2 text-xs font-medium text-muted-foreground">
-                Demo Calculation Preview
-              </div>
               <div className="relative w-full">
                 <Image
                   src={previewSrc}
