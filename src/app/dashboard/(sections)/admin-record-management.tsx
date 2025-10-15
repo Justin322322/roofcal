@@ -67,7 +67,7 @@ export default function AdminRecordManagementContent() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("completed");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [minCost, setMinCost] = useState<string>("");
   const [maxCost, setMaxCost] = useState<string>("");
   const [dateFrom, setDateFrom] = useState<string>("");
@@ -150,8 +150,10 @@ export default function AdminRecordManagementContent() {
     if (status !== "COMPLETED" && status !== "REJECTED") return false;
 
     // Apply selected filter
-    if (statusFilter === "completed" && status !== "COMPLETED") return false;
-    if (statusFilter === "rejected" && status !== "REJECTED") return false;
+    if (statusFilter !== "all") {
+      if (statusFilter === "completed" && status !== "COMPLETED") return false;
+      if (statusFilter === "rejected" && status !== "REJECTED") return false;
+    }
 
     // Search
     const matchesSearch = project.projectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -223,6 +225,7 @@ export default function AdminRecordManagementContent() {
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
                     <SelectItem value="rejected">Rejected</SelectItem>
                   </SelectContent>
@@ -256,7 +259,7 @@ export default function AdminRecordManagementContent() {
         <Card>
           <CardHeader>
             <CardTitle>Records ({filteredProjects.length})</CardTitle>
-            <CardDescription>Only Completed and Rejected projects are shown</CardDescription>
+            <CardDescription>Completed and Rejected projects are shown</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="rounded-md border">
@@ -355,7 +358,7 @@ export default function AdminRecordManagementContent() {
 
             {!isLoading && filteredProjects.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
-                {searchQuery || statusFilter || minCost || maxCost || dateFrom || dateTo
+                {searchQuery || statusFilter !== "all" || minCost || maxCost || dateFrom || dateTo
                   ? "No records match your current filters."
                   : "No Completed or Rejected records found."}
               </div>

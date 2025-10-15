@@ -146,7 +146,7 @@ export function ContractorProjectsContent() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("reviewing");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [minCost, setMinCost] = useState<string>("");
   const [maxCost, setMaxCost] = useState<string>("");
   const [dateFrom, setDateFrom] = useState<string>("");
@@ -182,8 +182,8 @@ export function ContractorProjectsContent() {
     } else if (urlStatusFilter) {
       setStatusFilter(urlStatusFilter);
     } else {
-      // Default to reviewing when no status filter is provided
-      setStatusFilter("reviewing");
+      // Default to all when no status filter is provided
+      setStatusFilter("all");
     }
     
     if (urlSearch) setSearchQuery(urlSearch);
@@ -441,22 +441,20 @@ export function ContractorProjectsContent() {
     
     if (!matchesSearch) return false;
 
-    // Status filter - only show active projects
+    // Status filter
     const projectStatus = project.proposalStatus || project.status;
     
-    // Always exclude inactive project statuses
-    if (projectStatus === "DRAFT" || 
-        projectStatus === "COMPLETED" || 
-        projectStatus === "REJECTED" || 
-        projectStatus === "ARCHIVED") {
-      return false;
-    }
-    
     // Apply specific status filter
-    if (statusFilter === "reviewing" && projectStatus !== "CONTRACTOR_REVIEWING") return false;
-    if (statusFilter === "client-review" && projectStatus !== "FOR_CLIENT_REVIEW") return false;
-    if (statusFilter === "accepted" && projectStatus !== "ACCEPTED" && projectStatus !== "ACTIVE" && project.proposalStatus !== "ACCEPTED") return false;
-    if (statusFilter === "in-progress" && projectStatus !== "IN_PROGRESS") return false;
+    if (statusFilter !== "all") {
+      if (statusFilter === "draft" && projectStatus !== "DRAFT") return false;
+      if (statusFilter === "reviewing" && projectStatus !== "CONTRACTOR_REVIEWING") return false;
+      if (statusFilter === "client-review" && projectStatus !== "FOR_CLIENT_REVIEW") return false;
+      if (statusFilter === "accepted" && projectStatus !== "ACCEPTED" && projectStatus !== "ACTIVE" && project.proposalStatus !== "ACCEPTED") return false;
+      if (statusFilter === "in-progress" && projectStatus !== "IN_PROGRESS") return false;
+      if (statusFilter === "completed" && projectStatus !== "COMPLETED") return false;
+      if (statusFilter === "rejected" && projectStatus !== "REJECTED") return false;
+      if (statusFilter === "archived" && projectStatus !== "ARCHIVED") return false;
+    }
 
     // Cost filter
     if (minCost && project.totalCost < parseFloat(minCost)) return false;
@@ -589,11 +587,15 @@ export function ContractorProjectsContent() {
                     <SelectValue placeholder="All statuses" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
                     <SelectItem value="draft">Draft</SelectItem>
                     <SelectItem value="reviewing">Under Review</SelectItem>
                     <SelectItem value="client-review">Awaiting Client</SelectItem>
                     <SelectItem value="accepted">Accepted</SelectItem>
                     <SelectItem value="in-progress">In Progress</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                    <SelectItem value="archived">Archived</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

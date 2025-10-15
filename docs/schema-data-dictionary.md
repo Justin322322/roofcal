@@ -7,469 +7,469 @@ This document provides a comprehensive reference for the database schema defined
 ## Table of Contents
 
 - [Models](#models)
-  - [Notification](#notification)
-  - [PricingConfig](#pricingconfig)
-  - [ProjectMaterial](#projectmaterial)
-  - [WarehouseMaterial](#warehousematerial)
-  - [activity](#activity)
-  - [project](#project)
-  - [ratelimit](#ratelimit)
-  - [systemsettings](#systemsettings)
-  - [user](#user)
-  - [verificationcode](#verificationcode)
-  - [warehouse](#warehouse)
+  - [Table 1. user](#table-1-user)
+  - [Table 2. project](#table-2-project)
+  - [Table 3. PricingConfig](#table-3-pricingconfig)
+  - [Table 4. warehouse](#table-4-warehouse)
+  - [Table 5. WarehouseMaterial](#table-5-warehousematerial)
+  - [Table 6. ProjectMaterial](#table-6-projectmaterial)
+  - [Table 7. Notification](#table-7-notification)
+  - [Table 8. activity](#table-8-activity)
+  - [Table 9. verificationcode](#table-9-verificationcode)
+  - [Table 10. ratelimit](#table-10-ratelimit)
+  - [Table 11. systemsettings](#table-11-systemsettings)
 - [Enums](#enums)
+  - [Table 12. activity_type](#table-12-activity_type)
+  - [Table 13. ProjectMaterial_status](#table-13-projectmaterial_status)
+  - [Table 14. project_status](#table-14-project_status)
+  - [Table 15. user_role](#table-15-user_role)
+  - [Table 16. project_constructionMode](#table-16-project_constructionmode)
+  - [Table 17. project_proposalStatus](#table-17-project_proposalstatus)
+  - [Table 18. project_currentStage](#table-18-project_currentstage)
 - [Relationships Diagram](#relationships-diagram)
 - [Index Reference](#index-reference)
 
 ## Models
 
-### Notification
+### Table 1. user
 
-User notification system for tracking system alerts and project updates.
-
-| Column | Type | Constraints | Default | Description |
-|--------|------|-------------|---------|-------------|
-| id | String | Primary Key | - | Unique identifier |
-| userId | String | Foreign Key → user.id | - | Reference to user receiving notification |
-| type | String | - | - | Notification type/category |
-| title | String | - | - | Notification title |
-| message | String (TEXT) | - | - | Notification message content |
-| projectId | String | Nullable | - | Reference to related project (optional) |
-| projectName | String | Nullable | - | Name of related project (optional) |
-| actionUrl | String | Nullable | - | URL for notification action (optional) |
-| read | Boolean | - | false | Whether notification has been read |
-| created_at | DateTime | - | now() | Timestamp of notification creation |
-
-**Relationships:**
-- `user` → One-to-Many → `Notification` (via userId)
-
-**Indexes:**
-- `created_at` - For chronological sorting
-- `read` - For filtering unread notifications
-- `userId` - For user-specific queries
+| Data Dictionary | | | | | | | | |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | Reference Number: | |
+| | | | | | | | Version Number: | |
+| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
+| Subject: user |
+| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+|---|---|---|---|---|---|---|---|---|
+| Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
+| No | No | Yes | email | varchar | 255 | No | - | User email address |
+| No | No | No | passwordHash | varchar | 255 | No | - | Hashed password |
+| No | No | No | firstName | varchar | 255 | No | - | User first name |
+| No | No | No | lastName | varchar | 255 | No | - | User last name |
+| No | No | No | role | enum | - | No | CLIENT | User role |
+| No | No | No | email_verified | datetime | - | Yes | - | Email verification timestamp |
+| No | No | No | passwordChangeRequired | tinyint | 1 | No | false | Whether password change required |
+| No | No | No | isDisabled | tinyint | 1 | No | false | Whether account disabled |
+| No | No | No | created_at | datetime | - | No | now() | Account creation timestamp |
+| No | No | No | updated_at | datetime | - | No | - | Last update timestamp |
 
 ---
 
-### PricingConfig
+### Table 2. project
 
-Material pricing configuration and specifications for the system.
-
-| Column | Type | Constraints | Default | Description |
-|--------|------|-------------|---------|-------------|
-| id | String | Primary Key | - | Unique identifier |
-| category | String | - | - | Material category |
-| name | String | Unique (category, name) | - | Material name |
-| label | String | - | - | Display label |
-| description | String | Nullable | - | Material description |
-| price | Decimal(10,2) | - | - | Material price |
-| unit | String | - | - | Pricing unit |
-| isActive | Boolean | - | true | Whether material is active |
-| metadata | String (LONGTEXT) | Nullable | - | Additional metadata |
-| created_at | DateTime | - | now() | Creation timestamp |
-| updated_at | DateTime | - | - | Last update timestamp |
-| height | Decimal(8,2) | Nullable | - | Material height |
-| length | Decimal(8,2) | Nullable | - | Material length |
-| volume | Decimal(10,4) | Nullable | - | Material volume |
-| width | Decimal(8,2) | Nullable | - | Material width |
-
-**Relationships:**
-- `PricingConfig` → One-to-Many → `WarehouseMaterial` (via materialId)
-
-**Indexes:**
-- `category` - For category-based queries
-- `isActive` - For filtering active materials
-
----
-
-### ProjectMaterial
-
-Material allocation and consumption tracking for projects.
-
-| Column | Type | Constraints | Default | Description |
-|--------|------|-------------|---------|-------------|
-| id | String | Primary Key | - | Unique identifier |
-| projectId | String | Foreign Key → project.id | - | Reference to project |
-| warehouseMaterialId | String | Foreign Key → WarehouseMaterial.id | - | Reference to warehouse material |
-| quantity | Int | - | 0 | Quantity allocated |
-| status | ProjectMaterial_status | - | RESERVED | Material status |
-| reservedAt | DateTime | - | now() | When material was reserved |
-| consumedAt | DateTime | Nullable | - | When material was consumed |
-| returnedAt | DateTime | Nullable | - | When material was returned |
-| notes | String (LONGTEXT) | Nullable | - | Additional notes |
-| created_at | DateTime | - | now() | Creation timestamp |
-| updated_at | DateTime | - | - | Last update timestamp |
-
-**Relationships:**
-- `project` → One-to-Many → `ProjectMaterial` (via projectId)
-- `WarehouseMaterial` → One-to-Many → `ProjectMaterial` (via warehouseMaterialId)
-
-**Indexes:**
-- `consumedAt` - For tracking consumption
-- `projectId` - For project-specific queries
-- `status` - For status-based filtering
-- `warehouseMaterialId` - For material-specific queries
-
----
-
-### WarehouseMaterial
-
-Warehouse inventory management for materials.
-
-| Column | Type | Constraints | Default | Description |
-|--------|------|-------------|---------|-------------|
-| id | String | Primary Key | - | Unique identifier |
-| warehouseId | String | Foreign Key → warehouse.id | - | Reference to warehouse |
-| materialId | String | Foreign Key → PricingConfig.id | - | Reference to material config |
-| quantity | Int | - | 0 | Available quantity |
-| locationAdjustment | Decimal(5,2) | - | 0.00 | Location-based cost adjustment |
-| isActive | Boolean | - | true | Whether material is active |
-| created_at | DateTime | - | now() | Creation timestamp |
-| updated_at | DateTime | - | - | Last update timestamp |
-
-**Relationships:**
-- `warehouse` → One-to-Many → `WarehouseMaterial` (via warehouseId)
-- `PricingConfig` → One-to-Many → `WarehouseMaterial` (via materialId)
-- `WarehouseMaterial` → One-to-Many → `ProjectMaterial` (via warehouseMaterialId)
-
-**Indexes:**
-- `isActive` - For filtering active materials
-- `materialId` - For material-specific queries
-- `warehouseId` - For warehouse-specific queries
+| Data Dictionary | | | | | | | | |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | Reference Number: | |
+| | | | | | | | Version Number: | |
+| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
+| Subject: project |
+| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+|---|---|---|---|---|---|---|---|---|
+| Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
+| No | Yes | No | userId | varchar | 255 | No | - | Project creator |
+| No | No | No | projectName | varchar | 255 | No | - | Project name |
+| No | No | No | clientName | varchar | 255 | Yes | - | Client name |
+| No | No | No | status | enum | - | No | DRAFT | Project status |
+| No | No | No | length | decimal | 10,2 | No | - | Roof length |
+| No | No | No | width | decimal | 10,2 | No | - | Roof width |
+| No | No | No | pitch | decimal | 5,2 | No | - | Roof pitch |
+| No | No | No | roofType | varchar | 255 | No | - | Type of roof |
+| No | No | No | floors | int | 11 | No | - | Number of floors |
+| No | No | No | materialThickness | varchar | 255 | No | - | Material thickness |
+| No | No | No | ridgeType | varchar | 255 | No | - | Ridge type |
+| No | No | No | gutterSize | varchar | 255 | No | - | Gutter size |
+| No | No | No | budgetLevel | varchar | 255 | No | - | Budget level |
+| No | No | No | budgetAmount | decimal | 12,2 | Yes | - | Budget amount |
+| No | No | No | constructionMode | enum | - | No | NEW | Construction mode |
+| No | No | No | gutterLengthA | decimal | 10,2 | Yes | - | Gutter length A |
+| No | No | No | gutterSlope | decimal | 10,2 | Yes | - | Gutter slope |
+| No | No | No | gutterLengthC | decimal | 10,2 | Yes | - | Gutter length C |
+| No | No | No | insulationThickness | varchar | 255 | No | - | Insulation thickness |
+| No | No | No | ventilationPieces | int | 11 | No | - | Number of ventilation pieces |
+| No | No | No | material | varchar | 255 | No | - | Primary material |
+| No | No | No | area | decimal | 10,2 | No | - | Total roof area |
+| No | No | No | materialCost | decimal | 12,2 | No | - | Material cost |
+| No | No | No | gutterCost | decimal | 12,2 | No | - | Gutter cost |
+| No | No | No | ridgeCost | decimal | 12,2 | No | - | Ridge cost |
+| No | No | No | screwsCost | decimal | 12,2 | No | - | Screws cost |
+| No | No | No | insulationCost | decimal | 12,2 | No | - | Insulation cost |
+| No | No | No | ventilationCost | decimal | 12,2 | No | - | Ventilation cost |
+| No | No | No | totalMaterialsCost | decimal | 12,2 | No | - | Total materials cost |
+| No | No | No | laborCost | decimal | 12,2 | No | - | Labor cost |
+| No | No | No | removalCost | decimal | 12,2 | No | - | Removal cost |
+| No | No | No | totalCost | decimal | 12,2 | No | - | Total project cost |
+| No | No | No | gutterPieces | int | 11 | No | - | Number of gutter pieces |
+| No | No | No | ridgeLength | decimal | 10,2 | No | - | Ridge length |
+| No | No | No | complexityScore | int | 11 | No | - | Project complexity score |
+| No | No | No | complexityLevel | varchar | 255 | No | - | Complexity level |
+| No | No | No | recommendedMaterial | varchar | 255 | Yes | - | Recommended material |
+| No | No | No | optimizationTips | longtext | - | Yes | - | Optimization suggestions |
+| No | No | No | notes | longtext | - | Yes | - | Project notes |
+| No | No | No | created_at | datetime | - | No | now() | Creation timestamp |
+| No | No | No | updated_at | datetime | - | No | - | Last update timestamp |
+| No | No | No | address | varchar | 255 | Yes | - | Project address |
+| No | No | No | assignedAt | datetime | - | Yes | - | Assignment timestamp |
+| No | No | No | city | varchar | 255 | Yes | - | Project city |
+| No | Yes | No | clientId | varchar | 255 | Yes | - | Client reference |
+| No | Yes | No | contractorId | varchar | 255 | Yes | - | Contractor reference |
+| No | No | No | deliveryCost | decimal | 12,2 | Yes | - | Delivery cost |
+| No | No | No | deliveryDistance | decimal | 8,2 | Yes | - | Delivery distance |
+| No | No | No | latitude | decimal | 10,8 | Yes | - | GPS latitude |
+| No | No | No | longitude | decimal | 11,8 | Yes | - | GPS longitude |
+| No | No | No | proposalSent | datetime | - | Yes | - | Proposal sent timestamp |
+| No | No | No | proposalStatus | enum | - | Yes | DRAFT | Proposal status |
+| No | No | No | state | varchar | 255 | Yes | - | Project state |
+| No | Yes | No | warehouseId | varchar | 255 | Yes | - | Assigned warehouse |
+| No | No | No | zipCode | varchar | 255 | Yes | - | Project zip code |
+| No | No | No | materialsConsumed | tinyint | 1 | No | false | Whether materials consumed |
+| No | No | No | materialsConsumedAt | datetime | - | Yes | - | Materials consumption timestamp |
+| No | No | No | boardPosition | int | 11 | No | 0 | Kanban board position |
+| No | No | No | proposalPosition | int | 11 | No | 0 | Proposal board position |
+| No | No | No | currentStage | enum | - | No | INSPECTION | Current project stage |
+| No | No | No | stageProgress | json | - | Yes | - | Stage progress data |
+| No | No | No | sentToContractorAt | datetime | - | Yes | - | Handoff to contractor timestamp |
+| No | No | No | contractorStatus | varchar | 255 | Yes | - | Contractor status |
+| No | No | No | handoffNote | longtext | - | Yes | - | Handoff notes |
 
 ---
 
-### activity
+### Table 3. PricingConfig
 
-User activity tracking and audit logging.
-
-| Column | Type | Constraints | Default | Description |
-|--------|------|-------------|---------|-------------|
-| id | String | Primary Key | - | Unique identifier |
-| userId | String | Foreign Key → user.id | - | Reference to user |
-| type | activity_type | - | - | Type of activity |
-| description | String | - | - | Activity description |
-| metadata | String (LONGTEXT) | Nullable | - | Additional activity metadata |
-| created_at | DateTime | - | now() | Activity timestamp |
-
-**Relationships:**
-- `user` → One-to-Many → `activity` (via userId)
-
-**Indexes:**
-- `created_at` - For chronological sorting
-- `type` - For activity type filtering
-- `userId` - For user-specific queries
-
----
-
-### project
-
-Main project entity with comprehensive roof calculation and project management data.
-
-| Column | Type | Constraints | Default | Description |
-|--------|------|-------------|---------|-------------|
-| id | String | Primary Key | - | Unique identifier |
-| userId | String | Foreign Key → user.id | - | Project creator |
-| projectName | String | - | - | Project name |
-| clientName | String | Nullable | - | Client name |
-| status | project_status | - | DRAFT | Project status |
-| length | Decimal(10,2) | - | - | Roof length |
-| width | Decimal(10,2) | - | - | Roof width |
-| pitch | Decimal(5,2) | - | - | Roof pitch |
-| roofType | String | - | - | Type of roof |
-| floors | Int | - | - | Number of floors |
-| materialThickness | String | - | - | Material thickness |
-| ridgeType | String | - | - | Ridge type |
-| gutterSize | String | - | - | Gutter size |
-| budgetLevel | String | - | - | Budget level |
-| budgetAmount | Decimal(12,2) | Nullable | - | Budget amount |
-| constructionMode | project_constructionMode | - | NEW | Construction mode |
-| gutterLengthA | Decimal(10,2) | Nullable | - | Gutter length A |
-| gutterSlope | Decimal(10,2) | Nullable | - | Gutter slope |
-| gutterLengthC | Decimal(10,2) | Nullable | - | Gutter length C |
-| insulationThickness | String | - | - | Insulation thickness |
-| ventilationPieces | Int | - | - | Number of ventilation pieces |
-| material | String | - | - | Primary material |
-| area | Decimal(10,2) | - | - | Total roof area |
-| materialCost | Decimal(12,2) | - | - | Material cost |
-| gutterCost | Decimal(12,2) | - | - | Gutter cost |
-| ridgeCost | Decimal(12,2) | - | - | Ridge cost |
-| screwsCost | Decimal(12,2) | - | - | Screws cost |
-| insulationCost | Decimal(12,2) | - | - | Insulation cost |
-| ventilationCost | Decimal(12,2) | - | - | Ventilation cost |
-| totalMaterialsCost | Decimal(12,2) | - | - | Total materials cost |
-| laborCost | Decimal(12,2) | - | - | Labor cost |
-| removalCost | Decimal(12,2) | - | - | Removal cost |
-| totalCost | Decimal(12,2) | - | - | Total project cost |
-| gutterPieces | Int | - | - | Number of gutter pieces |
-| ridgeLength | Decimal(10,2) | - | - | Ridge length |
-| complexityScore | Int | - | - | Project complexity score |
-| complexityLevel | String | - | - | Complexity level |
-| recommendedMaterial | String | Nullable | - | Recommended material |
-| optimizationTips | String (LONGTEXT) | Nullable | - | Optimization suggestions |
-| notes | String (LONGTEXT) | Nullable | - | Project notes |
-| created_at | DateTime | - | now() | Creation timestamp |
-| updated_at | DateTime | - | - | Last update timestamp |
-| address | String | Nullable | - | Project address |
-| assignedAt | DateTime | Nullable | - | Assignment timestamp |
-| city | String | Nullable | - | Project city |
-| clientId | String | Foreign Key → user.id | - | Client reference |
-| contractorId | String | Foreign Key → user.id | - | Contractor reference |
-| deliveryCost | Decimal(12,2) | Nullable | - | Delivery cost |
-| deliveryDistance | Decimal(8,2) | Nullable | - | Delivery distance |
-| latitude | Decimal(10,8) | Nullable | - | GPS latitude |
-| longitude | Decimal(11,8) | Nullable | - | GPS longitude |
-| proposalSent | DateTime | Nullable | - | Proposal sent timestamp |
-| proposalStatus | project_proposalStatus | - | DRAFT | Proposal status |
-| state | String | Nullable | - | Project state |
-| warehouseId | String | Foreign Key → warehouse.id | - | Assigned warehouse |
-| zipCode | String | Nullable | - | Project zip code |
-| materialsConsumed | Boolean | - | false | Whether materials consumed |
-| materialsConsumedAt | DateTime | Nullable | - | Materials consumption timestamp |
-| boardPosition | Int | - | 0 | Kanban board position |
-| proposalPosition | Int | - | 0 | Proposal board position |
-| currentStage | project_currentStage | - | INSPECTION | Current project stage |
-| stageProgress | Json | Nullable | - | Stage progress data |
-| sentToContractorAt | DateTime | Nullable | - | Handoff to contractor timestamp |
-| contractorStatus | String | Nullable | - | Contractor status |
-| handoffNote | String (LONGTEXT) | Nullable | - | Handoff notes |
-
-**Relationships:**
-- `user` → One-to-Many → `project` (via userId) - Project creator
-- `user` → One-to-Many → `project` (via clientId) - Project client
-- `user` → One-to-Many → `project` (via contractorId) - Project contractor
-- `warehouse` → One-to-Many → `project` (via warehouseId)
-- `project` → One-to-Many → `ProjectMaterial` (via projectId)
-
-**Indexes:**
-- `clientId` - For client-specific queries
-- `contractorId` - For contractor-specific queries
-- `created_at` - For chronological sorting
-- `projectName` - For name-based searches
-- `status` - For status-based filtering
-- `userId` - For user-specific queries
-- `warehouseId` - For warehouse-specific queries
+| Data Dictionary | | | | | | | | |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | Reference Number: | |
+| | | | | | | | Version Number: | |
+| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
+| Subject: PricingConfig |
+| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+|---|---|---|---|---|---|---|---|---|
+| Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
+| No | No | No | category | varchar | 255 | No | - | Material category |
+| No | No | Yes | name | varchar | 255 | No | - | Material name |
+| No | No | No | label | varchar | 255 | No | - | Display label |
+| No | No | No | description | varchar | 255 | Yes | - | Material description |
+| No | No | No | price | decimal | 10,2 | No | - | Material price |
+| No | No | No | unit | varchar | 255 | No | - | Pricing unit |
+| No | No | No | isActive | tinyint | 1 | No | true | Whether material is active |
+| No | No | No | metadata | longtext | - | Yes | - | Additional metadata |
+| No | No | No | created_at | datetime | - | No | now() | Creation timestamp |
+| No | No | No | updated_at | datetime | - | No | - | Last update timestamp |
+| No | No | No | height | decimal | 8,2 | Yes | - | Material height |
+| No | No | No | length | decimal | 8,2 | Yes | - | Material length |
+| No | No | No | volume | decimal | 10,4 | Yes | - | Material volume |
+| No | No | No | width | decimal | 8,2 | Yes | - | Material width |
 
 ---
 
-### ratelimit
+### Table 4. warehouse
 
-Rate limiting for user actions and security.
-
-| Column | Type | Constraints | Default | Description |
-|--------|------|-------------|---------|-------------|
-| id | String | Primary Key | - | Unique identifier |
-| email | String | Unique (email, action) | - | User email |
-| action | String | Unique (email, action) | "otp_generation" | Rate limited action |
-| attempts | Int | - | 0 | Number of attempts |
-| lastAttempt | DateTime | - | - | Last attempt timestamp |
-| blockedUntil | DateTime | Nullable | - | Block expiry timestamp |
-| created_at | DateTime | - | now() | Creation timestamp |
-| updated_at | DateTime | - | - | Last update timestamp |
-
-**Indexes:**
-- `blockedUntil` - For checking active blocks
-- `created_at` - For chronological sorting
-
----
-
-### systemsettings
-
-System-wide configuration and maintenance settings.
-
-| Column | Type | Constraints | Default | Description |
-|--------|------|-------------|---------|-------------|
-| id | String | Primary Key | - | Unique identifier |
-| maintenanceMode | Boolean | - | false | Whether system in maintenance |
-| maintenanceMessage | String (TEXT) | Nullable | - | Maintenance message |
-| maintenanceScheduledEnd | DateTime | Nullable | - | Scheduled maintenance end |
-| maintenanceStartedBy | String | Nullable | - | Who started maintenance |
-| maintenanceStartedAt | DateTime | Nullable | - | Maintenance start timestamp |
-| updated_at | DateTime | - | - | Last update timestamp |
-
-**Indexes:**
-- `maintenanceMode` - For maintenance status checks
+| Data Dictionary | | | | | | | | |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | Reference Number: | |
+| | | | | | | | Version Number: | |
+| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
+| Subject: warehouse |
+| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+|---|---|---|---|---|---|---|---|---|
+| Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
+| No | No | No | name | varchar | 255 | No | - | Warehouse name |
+| No | No | No | address | varchar | 255 | No | - | Warehouse address |
+| No | No | No | city | varchar | 255 | No | - | Warehouse city |
+| No | No | No | state | varchar | 255 | No | - | Warehouse state |
+| No | No | No | zipCode | varchar | 255 | No | - | Warehouse zip code |
+| No | No | No | latitude | decimal | 10,8 | No | - | GPS latitude |
+| No | No | No | longitude | decimal | 11,8 | No | - | GPS longitude |
+| No | No | No | isDefault | tinyint | 1 | No | false | Whether default warehouse |
+| No | Yes | No | created_by | varchar | 255 | No | - | Warehouse creator |
+| No | No | No | created_at | datetime | - | No | now() | Creation timestamp |
+| No | No | No | updated_at | datetime | - | No | - | Last update timestamp |
+| No | No | No | capacity | decimal | 12,2 | Yes | - | Warehouse capacity |
+| No | No | No | height | decimal | 8,2 | Yes | - | Warehouse height |
+| No | No | No | length | decimal | 8,2 | Yes | - | Warehouse length |
+| No | No | No | width | decimal | 8,2 | Yes | - | Warehouse width |
 
 ---
 
-### user
+### Table 5. WarehouseMaterial
 
-User accounts and authentication system.
-
-| Column | Type | Constraints | Default | Description |
-|--------|------|-------------|---------|-------------|
-| id | String | Primary Key | - | Unique identifier |
-| email | String | Unique | - | User email address |
-| passwordHash | String | - | - | Hashed password |
-| firstName | String | - | - | User first name |
-| lastName | String | - | - | User last name |
-| role | user_role | - | CLIENT | User role |
-| email_verified | DateTime | Nullable | - | Email verification timestamp |
-| passwordChangeRequired | Boolean | - | false | Whether password change required |
-| isDisabled | Boolean | - | false | Whether account disabled |
-| created_at | DateTime | - | now() | Account creation timestamp |
-| updated_at | DateTime | - | - | Last update timestamp |
-
-**Relationships:**
-- `user` → One-to-Many → `Notification` (via userId)
-- `user` → One-to-Many → `activity` (via userId)
-- `user` → One-to-Many → `project` (via userId) - As creator
-- `user` → One-to-Many → `project` (via clientId) - As client
-- `user` → One-to-Many → `project` (via contractorId) - As contractor
-- `user` → One-to-Many → `verificationcode` (via email)
-- `user` → One-to-Many → `warehouse` (via created_by)
-
-**Indexes:**
-- `email` - For email-based queries
-- `isDisabled` - For filtering disabled accounts
+| Data Dictionary | | | | | | | | |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | Reference Number: | |
+| | | | | | | | Version Number: | |
+| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
+| Subject: WarehouseMaterial |
+| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+|---|---|---|---|---|---|---|---|---|
+| Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
+| No | Yes | No | warehouseId | varchar | 255 | No | - | Reference to warehouse |
+| No | Yes | No | materialId | varchar | 255 | No | - | Reference to material config |
+| No | No | No | quantity | int | 11 | No | 0 | Available quantity |
+| No | No | No | locationAdjustment | decimal | 5,2 | No | 0.00 | Location-based cost adjustment |
+| No | No | No | isActive | tinyint | 1 | No | true | Whether material is active |
+| No | No | No | created_at | datetime | - | No | now() | Creation timestamp |
+| No | No | No | updated_at | datetime | - | No | - | Last update timestamp |
 
 ---
 
-### verificationcode
+### Table 6. ProjectMaterial
 
-Email verification codes for user registration and password reset.
-
-| Column | Type | Constraints | Default | Description |
-|--------|------|-------------|---------|-------------|
-| id | String | Primary Key | - | Unique identifier |
-| code | String (VARCHAR(6)) | - | - | 6-digit verification code |
-| email | String | Foreign Key → user.email | - | User email |
-| type | String | - | "email_verification" | Code type |
-| expiresAt | DateTime | - | - | Code expiration |
-| used | Boolean | - | false | Whether code has been used |
-| created_at | DateTime | - | now() | Creation timestamp |
-
-**Relationships:**
-- `user` → One-to-Many → `verificationcode` (via email)
-
-**Indexes:**
-- `code` - For code lookup
-- `email` - For email-based queries
-- `expiresAt` - For cleanup of expired codes
+| Data Dictionary | | | | | | | | |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | Reference Number: | |
+| | | | | | | | Version Number: | |
+| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
+| Subject: ProjectMaterial |
+| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+|---|---|---|---|---|---|---|---|---|
+| Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
+| No | Yes | No | projectId | varchar | 255 | No | - | Reference to project |
+| No | Yes | No | warehouseMaterialId | varchar | 255 | No | - | Reference to warehouse material |
+| No | No | No | quantity | int | 11 | No | 0 | Quantity allocated |
+| No | No | No | status | enum | - | No | RESERVED | Material status |
+| No | No | No | reservedAt | datetime | - | No | now() | When material was reserved |
+| No | No | No | consumedAt | datetime | - | Yes | - | When material was consumed |
+| No | No | No | returnedAt | datetime | - | Yes | - | When material was returned |
+| No | No | No | notes | longtext | - | Yes | - | Additional notes |
+| No | No | No | created_at | datetime | - | No | now() | Creation timestamp |
+| No | No | No | updated_at | datetime | - | No | - | Last update timestamp |
 
 ---
 
-### warehouse
+### Table 7. Notification
 
-Warehouse locations and specifications.
+| Data Dictionary | | | | | | | | |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | Reference Number: | |
+| | | | | | | | Version Number: | |
+| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
+| Subject: Notification |
+| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+|---|---|---|---|---|---|---|---|---|
+| Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
+| No | Yes | No | userId | varchar | 255 | No | - | Reference to user receiving notification |
+| No | No | No | type | varchar | 255 | No | - | Notification type/category |
+| No | No | No | title | varchar | 255 | No | - | Notification title |
+| No | No | No | message | text | - | No | - | Notification message content |
+| No | Yes | No | projectId | varchar | 255 | Yes | - | Reference to related project |
+| No | No | No | projectName | varchar | 255 | Yes | - | Name of related project |
+| No | No | No | actionUrl | varchar | 255 | Yes | - | URL for notification action |
+| No | No | No | read | tinyint | 1 | No | false | Whether notification has been read |
+| No | No | No | created_at | datetime | - | No | now() | Timestamp of notification creation |
 
-| Column | Type | Constraints | Default | Description |
-|--------|------|-------------|---------|-------------|
-| id | String | Primary Key | - | Unique identifier |
-| name | String | - | - | Warehouse name |
-| address | String | - | - | Warehouse address |
-| city | String | - | - | Warehouse city |
-| state | String | - | - | Warehouse state |
-| zipCode | String | - | - | Warehouse zip code |
-| latitude | Decimal(10,8) | - | - | GPS latitude |
-| longitude | Decimal(11,8) | - | - | GPS longitude |
-| isDefault | Boolean | - | false | Whether default warehouse |
-| created_by | String | Foreign Key → user.id | - | Warehouse creator |
-| created_at | DateTime | - | now() | Creation timestamp |
-| updated_at | DateTime | - | - | Last update timestamp |
-| capacity | Decimal(12,2) | Nullable | - | Warehouse capacity |
-| height | Decimal(8,2) | Nullable | - | Warehouse height |
-| length | Decimal(8,2) | Nullable | - | Warehouse length |
-| width | Decimal(8,2) | Nullable | - | Warehouse width |
+---
 
-**Relationships:**
-- `user` → One-to-Many → `warehouse` (via created_by)
-- `warehouse` → One-to-Many → `WarehouseMaterial` (via warehouseId)
-- `warehouse` → One-to-Many → `project` (via warehouseId)
+### Table 8. activity
 
-**Indexes:**
-- `created_by` - For creator-based queries
+| Data Dictionary | | | | | | | | |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | Reference Number: | |
+| | | | | | | | Version Number: | |
+| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
+| Subject: activity |
+| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+|---|---|---|---|---|---|---|---|---|
+| Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
+| No | Yes | No | userId | varchar | 255 | No | - | Reference to user |
+| No | No | No | type | enum | - | No | - | Type of activity |
+| No | No | No | description | varchar | 255 | No | - | Activity description |
+| No | No | No | metadata | longtext | - | Yes | - | Additional activity metadata |
+| No | No | No | created_at | datetime | - | No | now() | Activity timestamp |
+
+---
+
+### Table 9. verificationcode
+
+| Data Dictionary | | | | | | | | |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | Reference Number: | |
+| | | | | | | | Version Number: | |
+| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
+| Subject: verificationcode |
+| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+|---|---|---|---|---|---|---|---|---|
+| Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
+| No | No | No | code | varchar | 6 | No | - | 6-digit verification code |
+| No | Yes | No | email | varchar | 255 | No | - | User email |
+| No | No | No | type | varchar | 255 | No | email_verification | Code type |
+| No | No | No | expiresAt | datetime | - | No | - | Code expiration |
+| No | No | No | used | tinyint | 1 | No | false | Whether code has been used |
+| No | No | No | created_at | datetime | - | No | now() | Creation timestamp |
+
+---
+
+### Table 10. ratelimit
+
+| Data Dictionary | | | | | | | | |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | Reference Number: | |
+| | | | | | | | Version Number: | |
+| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
+| Subject: ratelimit |
+| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+|---|---|---|---|---|---|---|---|---|
+| Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
+| No | No | No | email | varchar | 255 | No | - | User email |
+| No | No | No | action | varchar | 255 | No | otp_generation | Rate limited action |
+| No | No | No | attempts | int | 11 | No | 0 | Number of attempts |
+| No | No | No | lastAttempt | datetime | - | No | - | Last attempt timestamp |
+| No | No | No | blockedUntil | datetime | - | Yes | - | Block expiry timestamp |
+| No | No | No | created_at | datetime | - | No | now() | Creation timestamp |
+| No | No | No | updated_at | datetime | - | No | - | Last update timestamp |
+
+---
+
+### Table 11. systemsettings
+
+| Data Dictionary | | | | | | | | |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | Reference Number: | |
+| | | | | | | | Version Number: | |
+| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
+| Subject: systemsettings |
+| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+|---|---|---|---|---|---|---|---|---|
+| Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
+| No | No | No | maintenanceMode | tinyint | 1 | No | false | Whether system in maintenance |
+| No | No | No | maintenanceMessage | text | - | Yes | - | Maintenance message |
+| No | No | No | maintenanceScheduledEnd | datetime | - | Yes | - | Scheduled maintenance end |
+| No | No | No | maintenanceStartedBy | varchar | 255 | Yes | - | Who started maintenance |
+| No | No | No | maintenanceStartedAt | datetime | - | Yes | - | Maintenance start timestamp |
+| No | No | No | updated_at | datetime | - | No | - | Last update timestamp |
+
+---
 
 ## Enums
 
-### activity_type
+### Table 12. activity_type
 
-Types of user activities tracked in the system.
+| Data Dictionary | | | | | | | | |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | Reference Number: | |
+| | | | | | | | Version Number: | |
+| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
+| Subject: activity_type |
+| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+|---|---|---|---|---|---|---|---|---|
+| No | No | No | LOGIN | enum | - | No | - | User login activity |
+| No | No | No | LOGOUT | enum | - | No | - | User logout activity |
+| No | No | No | PROFILE_UPDATE | enum | - | No | - | Profile modification |
+| No | No | No | PASSWORD_CHANGE | enum | - | No | - | Password change activity |
+| No | No | No | ACCOUNT_CREATED | enum | - | No | - | Account creation |
+| No | No | No | PROJECT_CREATED | enum | - | No | - | Project creation |
+| No | No | No | PROJECT_UPDATED | enum | - | No | - | Project modification |
+| No | No | No | PAYMENT_RECEIVED | enum | - | No | - | Payment processing |
+| No | No | No | EMAIL_VERIFIED | enum | - | No | - | Email verification |
 
-| Value | Description |
-|-------|-------------|
-| LOGIN | User login activity |
-| LOGOUT | User logout activity |
-| PROFILE_UPDATE | Profile modification |
-| PASSWORD_CHANGE | Password change activity |
-| ACCOUNT_CREATED | Account creation |
-| PROJECT_CREATED | Project creation |
-| PROJECT_UPDATED | Project modification |
-| PAYMENT_RECEIVED | Payment processing |
-| EMAIL_VERIFIED | Email verification |
+---
 
-### ProjectMaterial_status
+### Table 13. ProjectMaterial_status
 
-Material allocation and consumption states.
+| Data Dictionary | | | | | | | | |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | Reference Number: | |
+| | | | | | | | Version Number: | |
+| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
+| Subject: ProjectMaterial_status |
+| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+|---|---|---|---|---|---|---|---|---|
+| No | No | No | RESERVED | enum | - | No | - | Material reserved for project |
+| No | No | No | CONSUMED | enum | - | No | - | Material consumed/used |
+| No | No | No | RETURNED | enum | - | No | - | Material returned to warehouse |
+| No | No | No | CANCELLED | enum | - | No | - | Material reservation cancelled |
 
-| Value | Description |
-|-------|-------------|
-| RESERVED | Material reserved for project |
-| CONSUMED | Material consumed/used |
-| RETURNED | Material returned to warehouse |
-| CANCELLED | Material reservation cancelled |
+---
 
-### project_status
+### Table 14. project_status
 
-Project workflow states throughout the lifecycle.
+| Data Dictionary | | | | | | | | |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | Reference Number: | |
+| | | | | | | | Version Number: | |
+| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
+| Subject: project_status |
+| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+|---|---|---|---|---|---|---|---|---|
+| No | No | No | DRAFT | enum | - | No | - | Initial project draft |
+| No | No | No | ACTIVE | enum | - | No | - | Active project |
+| No | No | No | CLIENT_PENDING | enum | - | No | - | Awaiting client response |
+| No | No | No | CONTRACTOR_REVIEWING | enum | - | No | - | Under contractor review |
+| No | No | No | PROPOSAL_SENT | enum | - | No | - | Proposal sent to client |
+| No | No | No | ACCEPTED | enum | - | No | - | Project accepted |
+| No | No | No | IN_PROGRESS | enum | - | No | - | Project in progress |
+| No | No | No | COMPLETED | enum | - | No | - | Project completed |
+| No | No | No | ARCHIVED | enum | - | No | - | Project archived |
+| No | No | No | REJECTED | enum | - | No | - | Project rejected |
+| No | No | No | FOR_CLIENT_REVIEW | enum | - | No | - | Pending client review |
 
-| Value | Description |
-|-------|-------------|
-| DRAFT | Initial project draft |
-| ACTIVE | Active project |
-| CLIENT_PENDING | Awaiting client response |
-| CONTRACTOR_REVIEWING | Under contractor review |
-| PROPOSAL_SENT | Proposal sent to client |
-| ACCEPTED | Project accepted |
-| IN_PROGRESS | Project in progress |
-| COMPLETED | Project completed |
-| ARCHIVED | Project archived |
-| REJECTED | Project rejected |
-| FOR_CLIENT_REVIEW | Pending client review |
+---
 
-### user_role
+### Table 15. user_role
 
-User permission levels and access control.
+| Data Dictionary | | | | | | | | |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | Reference Number: | |
+| | | | | | | | Version Number: | |
+| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
+| Subject: user_role |
+| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+|---|---|---|---|---|---|---|---|---|
+| No | No | No | CLIENT | enum | - | No | - | Standard client user |
+| No | No | No | ADMIN | enum | - | No | - | Administrative user |
+| No | No | No | DEVELOPER | enum | - | No | - | Developer/technical user |
 
-| Value | Description |
-|-------|-------------|
-| CLIENT | Standard client user |
-| ADMIN | Administrative user |
-| DEVELOPER | Developer/technical user |
+---
 
-### project_constructionMode
+### Table 16. project_constructionMode
 
-Construction project types.
+| Data Dictionary | | | | | | | | |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | Reference Number: | |
+| | | | | | | | Version Number: | |
+| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
+| Subject: project_constructionMode |
+| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+|---|---|---|---|---|---|---|---|---|
+| No | No | No | NEW | enum | - | No | - | New construction project |
+| No | No | No | REPAIR | enum | - | No | - | Repair/maintenance project |
 
-| Value | Description |
-|-------|-------------|
-| NEW | New construction project |
-| REPAIR | Repair/maintenance project |
+---
 
-### project_proposalStatus
+### Table 17. project_proposalStatus
 
-Proposal workflow states.
+| Data Dictionary | | | | | | | | |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | Reference Number: | |
+| | | | | | | | Version Number: | |
+| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
+| Subject: project_proposalStatus |
+| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+|---|---|---|---|---|---|---|---|---|
+| No | No | No | DRAFT | enum | - | No | - | Initial proposal draft |
+| No | No | No | SENT | enum | - | No | - | Proposal sent to client |
+| No | No | No | ACCEPTED | enum | - | No | - | Proposal accepted |
+| No | No | No | REJECTED | enum | - | No | - | Proposal rejected |
+| No | No | No | REVISED | enum | - | No | - | Proposal revised |
+| No | No | No | COMPLETED | enum | - | No | - | Proposal completed |
 
-| Value | Description |
-|-------|-------------|
-| DRAFT | Initial proposal draft |
-| SENT | Proposal sent to client |
-| ACCEPTED | Proposal accepted |
-| REJECTED | Proposal rejected |
-| REVISED | Proposal revised |
-| COMPLETED | Proposal completed |
+---
 
-### project_currentStage
+### Table 18. project_currentStage
 
-Project execution stages.
+| Data Dictionary | | | | | | | | |
+|---|---|---|---|---|---|---|---|---|
+| | | | | | | | Reference Number: | |
+| | | | | | | | Version Number: | |
+| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
+| Subject: project_currentStage |
+| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+|---|---|---|---|---|---|---|---|---|
+| No | No | No | INSPECTION | enum | - | No | - | Initial inspection stage |
+| No | No | No | ESTIMATE | enum | - | No | - | Cost estimation stage |
+| No | No | No | MATERIALS | enum | - | No | - | Material procurement stage |
+| No | No | No | INSTALL | enum | - | No | - | Installation stage |
+| No | No | No | FINALIZE | enum | - | No | - | Project finalization |
 
-| Value | Description |
-|-------|-------------|
-| INSPECTION | Initial inspection stage |
-| ESTIMATE | Cost estimation stage |
-| MATERIALS | Material procurement stage |
-| INSTALL | Installation stage |
-| FINALIZE | Project finalization |
+---
 
 ## Relationships Diagram
 
@@ -545,12 +545,3 @@ ProjectMaterial
 | verificationcode | expiresAt | Cleanup expired codes |
 | warehouse | created_by | Creator-based queries |
 
-### Unique Constraints
-
-| Table | Column(s) | Purpose |
-|-------|-----------|---------|
-| PricingConfig | category, name | Prevent duplicate materials |
-| ProjectMaterial | projectId, warehouseMaterialId | One allocation per project-material |
-| WarehouseMaterial | warehouseId, materialId | One entry per warehouse-material |
-| ratelimit | email, action | One rate limit per email-action |
-| user | email | Unique email addresses |
