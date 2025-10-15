@@ -363,7 +363,7 @@ export async function saveProjectForCustomer(
         userId: customerId, // Customer owns the project
         clientId: customerId, // Customer is the client
         contractorId: contractorId || null, // Use selected contractor if provided
-        status: projectData.status, // Use dynamic status based on contractor presence
+        status: "FOR_CLIENT_REVIEW", // Always require client review for contractor-created projects
         proposalStatus: contractorId ? "DRAFT" : null, // Only create proposal if contractor assigned
         assignedAt: contractorId ? new Date() : null, // Auto-assign only if contractor provided
         updated_at: new Date(),

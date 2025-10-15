@@ -177,6 +177,13 @@ export function ProjectList() {
             createdAt: p.createdAt ? new Date(p.createdAt) : new Date(),
           }));
           console.log('Formatted projects:', formattedProjects);
+          console.log('Project status details:', formattedProjects.map((p: Project) => ({ 
+            id: p.id, 
+            name: p.projectName, 
+            status: p.status, 
+            contractorId: p.contractorId,
+            proposalStatus: p.proposalStatus 
+          })));
           setProjects(formattedProjects);
           
           if (formattedProjects.length === 0) {
@@ -692,7 +699,7 @@ export function ProjectList() {
                           <EditIcon className="mr-2 h-4 w-4" />
                           Edit Project
                         </DropdownMenuItem>
-                        {project.status === "DRAFT" && !project.contractorId && (
+                        {project.status === "DRAFT" && !project.contractorId && !project.createdByAdmin && (
                           <DropdownMenuItem
                             onClick={() => {
                               setSelectedProject(project);
@@ -913,7 +920,14 @@ export function ProjectList() {
                     toast.success("Project sent to contractor successfully");
                     
                     // Force immediate refresh with cache busting
+                    console.log('About to refresh projects after send-to-contractor');
                     await fetchProjects();
+                    
+                    // Force another refresh after a short delay to ensure database consistency
+                    setTimeout(async () => {
+                      console.log('Second refresh after send-to-contractor');
+                      await fetchProjects();
+                    }, 1000);
                     
                     setContractorDialogOpen(false);
                     setSelectedProject(null);

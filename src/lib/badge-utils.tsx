@@ -73,9 +73,15 @@ export function getStatusBadge(status: string, proposalStatus?: string) {
   const statusKey = normalizeStatus(status) as BadgeVariant;
   const proposalKey = proposalStatus ? normalizeStatus(proposalStatus) as BadgeVariant : null;
   
-  // Use proposal status if available and has a matching variant, otherwise use project status
-  const variant = proposalKey && badgeVariants[proposalKey] ? proposalKey : statusKey;
-  const displayText = proposalStatus || status;
+  // Only use proposal status for specific meaningful states that should override project status
+  const meaningfulProposalStates = ['sent', 'accepted', 'rejected', 'completed', 'revised'];
+  const shouldUseProposalStatus = proposalKey && 
+    meaningfulProposalStates.includes(proposalKey) && 
+    badgeVariants[proposalKey];
+  
+  // Use proposal status only for meaningful states, otherwise use project status
+  const variant = shouldUseProposalStatus ? proposalKey : statusKey;
+  const displayText = shouldUseProposalStatus ? proposalStatus : status;
   
   // Fallback to default variant if the variant doesn't exist
   const finalVariant = badgeVariants[variant] ? variant : 'default';

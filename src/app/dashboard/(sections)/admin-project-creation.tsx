@@ -95,7 +95,7 @@ export default function AdminProjectCreationContent() {
 
     setShowCalculator(true);
     toast.success("Starting project creation", {
-      description: `Creating project for ${selectedClient.fullName}. The project will be sent to the client for review and approval.`,
+      description: `Creating project proposal for ${selectedClient.fullName}. The client will review and approve the proposal.`,
     });
   };
 
@@ -107,8 +107,8 @@ export default function AdminProjectCreationContent() {
     // Redirect away from help request mode
     router.push('/dashboard?tab=admin-project-creation');
     
-    toast.success("Project created successfully", {
-      description: `Project has been created for ${selectedClient?.fullName}. The client will receive a notification to review and approve it.`,
+    toast.success("Project proposal created successfully", {
+      description: `Project proposal has been created for ${selectedClient?.fullName}. The client will receive a notification to review and approve the proposal.`,
     });
   };
 
@@ -211,7 +211,7 @@ export default function AdminProjectCreationContent() {
                     Admin Project Creation Mode
                   </h3>
                   <p className="text-sm text-orange-700 dark:text-orange-300">
-                    You are creating a project on behalf of <strong>{selectedClient.fullName}</strong>. The project will be immediately active and ready for work.
+                    You are creating a project proposal on behalf of <strong>{selectedClient.fullName}</strong>. The client will review and approve the proposal before work begins.
                   </p>
                 </div>
               </div>
@@ -356,8 +356,8 @@ export default function AdminProjectCreationContent() {
                 <span className="text-xs font-medium text-primary">3</span>
               </div>
               <div>
-                <p className="font-medium text-foreground">Project activation</p>
-                <p>The project is immediately active and ready for work</p>
+                <p className="font-medium text-foreground">Client review</p>
+                <p>The client reviews and approves the project proposal</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -365,8 +365,8 @@ export default function AdminProjectCreationContent() {
                 <span className="text-xs font-medium text-primary">4</span>
               </div>
               <div>
-                <p className="font-medium text-foreground">Complete project</p>
-                <p>You can now complete the project when work is finished</p>
+                <p className="font-medium text-foreground">Project work</p>
+                <p>Once approved, you can begin and complete the project work</p>
               </div>
             </div>
           </CardContent>

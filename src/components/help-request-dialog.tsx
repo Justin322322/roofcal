@@ -149,7 +149,7 @@ export function HelpRequestDialog({ trigger }: HelpRequestDialogProps) {
           </DialogTitle>
           <DialogDescription>
             If you&apos;re having trouble with the calculator or need assistance creating your project, 
-            our contractors can help you get started.
+            our contractors can create a project proposal for you to review and approve.
           </DialogDescription>
         </DialogHeader>
         
@@ -226,8 +226,8 @@ export function HelpRequestDialog({ trigger }: HelpRequestDialogProps) {
                 </p>
                 <ul className="mt-1 text-xs text-muted-foreground list-disc list-inside space-y-1">
                   <li>The selected contractor will be notified of your request</li>
-                  <li>They can create a project on your behalf</li>
-                  <li>You&apos;ll receive a notification when it&apos;s ready</li>
+                  <li>They will create a project proposal for you to review</li>
+                  <li>You&apos;ll receive a notification to review and approve the proposal</li>
                 </ul>
               </div>
             </>

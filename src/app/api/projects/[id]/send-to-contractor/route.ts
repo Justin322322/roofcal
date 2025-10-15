@@ -25,6 +25,14 @@ export async function POST(
     if (!project) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
+    
+    console.log('Found project:', {
+      id: project.id,
+      name: project.projectName,
+      currentStatus: project.status,
+      currentContractorId: project.contractorId,
+      userId: project.userId
+    });
 
     const contractor = await prisma.user.findUnique({ where: { id: contractorId } });
     if (!contractor) {
@@ -89,7 +97,14 @@ export async function POST(
     return NextResponse.json(response);
   } catch (error) {
     console.error("Error sending to contractor:", error);
-    return NextResponse.json({ error: "Failed to send to contractor" }, { status: 500 });
+    console.error("Error details:", {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    return NextResponse.json({ 
+      error: "Failed to send to contractor",
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
 
