@@ -16,11 +16,11 @@ This document describes the complete workflow for contractor-managed projects fr
   - **Approve**: Client accepts the project proposal
   - **Reject**: Client declines the project proposal
 - **Next Step**: 
-  - If approved → Status becomes `ACCEPTED`
+  - If approved → Status becomes `ACTIVE`
   - If rejected → Status becomes `REJECTED`
 
 ### 3. Project Accepted by Client
-- **Status**: `ACCEPTED`
+- **Status**: `ACTIVE` (changed from `ACCEPTED`)
 - **ProposalStatus**: `ACCEPTED`
 - **Visible In**: Contractor Projects Dashboard (`/dashboard?tab=contractor-projects`)
 - **Actions Available**:
@@ -49,7 +49,7 @@ This document describes the complete workflow for contractor-managed projects fr
 - **Endpoint**: `PUT /api/projects/[id]/approve`
 - **Body**: `{ "action": "approve" | "reject" }`
 - **Auth**: Client only
-- **Result**: Updates status to `ACCEPTED` or `REJECTED`
+- **Result**: Updates status to `ACTIVE` or `REJECTED`
 
 ### Contractor Start Work
 - **Endpoint**: `PATCH /api/projects/[id]`

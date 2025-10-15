@@ -362,10 +362,10 @@ export async function saveProjectForCustomer(
         id: crypto.randomUUID(),
         userId: customerId, // Customer owns the project
         clientId: customerId, // Customer is the client
-        contractorId: contractorId || null, // Use selected contractor if provided
+        contractorId: contractorId || session.user.id, // Use selected contractor or assign to admin who created it
         status: "FOR_CLIENT_REVIEW", // Always require client review for contractor-created projects
         proposalStatus: contractorId ? "DRAFT" : null, // Only create proposal if contractor assigned
-        assignedAt: contractorId ? new Date() : null, // Auto-assign only if contractor provided
+        assignedAt: contractorId ? new Date() : new Date(), // Auto-assign to admin if no contractor provided
         updated_at: new Date(),
         ...projectData,
       },
@@ -380,7 +380,7 @@ export async function saveProjectForCustomer(
         title: "Project Created",
         message: contractorId 
           ? `${session.user.name} created a roofing project for you and assigned it to a contractor. Please review the project details and approve it for the contractor to proceed with the work.`
-          : `${session.user.name} created a roofing project for you. Please review the project details and approve it to proceed.`,
+          : `${session.user.name} created a roofing project for you and will handle the work. Please review the project details and approve it to proceed.`,
         projectId: project.id,
         projectName: project.projectName,
         actionUrl: `/dashboard?tab=my-projects&projectId=${project.id}`,

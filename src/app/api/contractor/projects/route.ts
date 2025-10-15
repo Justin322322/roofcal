@@ -25,10 +25,10 @@ export async function GET(request: NextRequest) {
 
     if (statusFilter && statusFilter !== "all") {
       // Map filter values to database status values
-      const statusMapping: { [key: string]: string } = {
+      const statusMapping: { [key: string]: string | string[] } = {
         "reviewing": "CONTRACTOR_REVIEWING",
         "client-review": "FOR_CLIENT_REVIEW",
-        "accepted": "ACCEPTED",
+        "accepted": ["ACCEPTED", "ACTIVE"], // Include both ACCEPTED and ACTIVE for accepted filter
         "in-progress": "IN_PROGRESS",
         "completed": "COMPLETED",
         "rejected": "REJECTED",
@@ -36,7 +36,12 @@ export async function GET(request: NextRequest) {
       };
       
       const dbStatus = statusMapping[statusFilter] || statusFilter;
-      where.status = dbStatus;
+      
+      if (Array.isArray(dbStatus)) {
+        where.status = { in: dbStatus };
+      } else {
+        where.status = dbStatus;
+      }
     } else {
       // If no specific status filter, exclude only DRAFT projects
       // Contractors should see all their assigned projects including those waiting for client review
