@@ -141,6 +141,7 @@ export function ContractorProjectsContent() {
   const [maxCost, setMaxCost] = useState<string>("");
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
+  const [showArchived, setShowArchived] = useState<boolean>(false);
   
   // Loading states for actions
   const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
@@ -295,7 +296,10 @@ export function ContractorProjectsContent() {
       const response = await fetch(`/api/projects/${projectId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "ACCEPTED" }),
+        body: JSON.stringify({ 
+          status: "ACCEPTED",
+          proposalStatus: "ACCEPTED"
+        }),
       });
 
       if (!response.ok) {
@@ -312,7 +316,7 @@ export function ContractorProjectsContent() {
       setProjects(prevProjects => 
         prevProjects.map(project => 
           project.id === projectId 
-            ? { ...project, status: "ACCEPTED" }
+            ? { ...project, status: "ACCEPTED", proposalStatus: "ACCEPTED" }
             : project
         )
       );
@@ -329,7 +333,8 @@ export function ContractorProjectsContent() {
   const getProjectStatusBadge = (status: string, proposalStatus: string | null) => {
     // Use the same logic as filtering: prioritize proposalStatus over status
     const effectiveStatus = proposalStatus || status;
-    return getStatusBadge(effectiveStatus, undefined);
+    // Pass the effective status as both status and proposalStatus so it displays correctly
+    return getStatusBadge(effectiveStatus, effectiveStatus);
   };
 
   const filteredProjects = projects.filter(project => {
@@ -347,6 +352,7 @@ export function ContractorProjectsContent() {
       if (statusFilter === "accepted" && projectStatus !== "ACCEPTED" && projectStatus !== "ACTIVE" && projectStatus !== "DRAFT" && project.proposalStatus !== "ACCEPTED") return false;
       if (statusFilter === "completed" && projectStatus !== "COMPLETED") return false;
       if (statusFilter === "rejected" && projectStatus !== "REJECTED" && project.proposalStatus !== "REJECTED") return false;
+      if (statusFilter === "archived" && projectStatus !== "ARCHIVED") return false;
     }
 
     // Cost filter
@@ -365,6 +371,11 @@ export function ContractorProjectsContent() {
       toDate.setHours(23, 59, 59, 999); // End of day
       if (projectDate > toDate) return false;
     }
+
+    // Archived filter
+    const projectStatus = project.proposalStatus || project.status;
+    if (!showArchived && projectStatus === "ARCHIVED") return false;
+    if (showArchived && projectStatus !== "ARCHIVED") return false;
 
     return true;
   });
@@ -471,6 +482,7 @@ export function ContractorProjectsContent() {
                     <SelectItem value="accepted">Accepted & Active</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
                     <SelectItem value="rejected">Declined</SelectItem>
+                    <SelectItem value="archived">Archived</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -514,6 +526,16 @@ export function ContractorProjectsContent() {
                   onChange={(e) => setDateTo(e.target.value)}
                 />
               </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="showArchived"
+                checked={showArchived}
+                onChange={(e) => setShowArchived(e.target.checked)}
+                className="rounded border-gray-300"
+              />
+              <Label htmlFor="showArchived">Show Archived Projects</Label>
             </div>
           </CardContent>
         </Card>

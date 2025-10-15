@@ -121,6 +121,12 @@ export function AppSidebar({
         icon: UsersIcon,
         roles: [UserRole.ADMIN],
       },
+      {
+        title: "Create Client Project",
+        url: "admin-project-creation",
+        icon: CalculatorIcon,
+        roles: [UserRole.ADMIN],
+      },
     ];
 
     // Combine navigation items

@@ -43,6 +43,7 @@ export async function POST(
       where: { id },
       data: {
         status: "REJECTED",
+        proposalStatus: "REJECTED", // Also update proposal status
         contractorStatus: "declined",
         notes: reason ? `${project.notes ? project.notes + '\n\n' : ''}Declined: ${reason}` : project.notes,
       },

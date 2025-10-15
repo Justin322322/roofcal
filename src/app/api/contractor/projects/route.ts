@@ -24,7 +24,17 @@ export async function GET(request: NextRequest) {
     };
 
     if (statusFilter && statusFilter !== "all") {
-      where.status = statusFilter;
+      // Map filter values to database status values
+      const statusMapping: { [key: string]: string } = {
+        "reviewing": "CONTRACTOR_REVIEWING",
+        "accepted": "ACCEPTED",
+        "completed": "COMPLETED",
+        "rejected": "REJECTED",
+        "archived": "ARCHIVED"
+      };
+      
+      const dbStatus = statusMapping[statusFilter] || statusFilter;
+      where.status = dbStatus;
     }
 
     if (search) {
