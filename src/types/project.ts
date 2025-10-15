@@ -221,8 +221,8 @@ export interface UpdateProjectInput {
   gutterPieces?: number;
   ridgeLength?: number;
 
-  complexityScore?: number;
-  complexityLevel?: string;
+  complexityScore: number;
+  complexityLevel: string;
   recommendedMaterial?: string | null;
   optimizationTips?: string | null;
 

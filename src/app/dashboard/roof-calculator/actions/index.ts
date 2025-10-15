@@ -86,8 +86,8 @@ export async function saveProject(
       ridgeLength: data.results.ridgeLength,
 
       // Decision Tree
-      complexityScore: data.decisionTree.complexity.score,
-      complexityLevel: data.decisionTree.complexity.level,
+      complexityScore: 0, // Default value since complexity was removed
+      complexityLevel: "low", // Default value since complexity was removed
       recommendedMaterial:
         data.decisionTree.materialRecommendation.recommendedMaterial,
       optimizationTips: JSON.stringify(data.decisionTree.optimizationTips),
@@ -232,8 +232,6 @@ export async function updateProject(
 
     // Update decision tree if provided
     if (data.decisionTree) {
-      updateData.complexityScore = data.decisionTree.complexity.score;
-      updateData.complexityLevel = data.decisionTree.complexity.level;
       updateData.recommendedMaterial =
         data.decisionTree.materialRecommendation.recommendedMaterial;
       updateData.optimizationTips = JSON.stringify(
@@ -347,8 +345,8 @@ export async function saveProjectForCustomer(
       ridgeLength: data.results.ridgeLength,
 
       // Decision Tree
-      complexityScore: data.decisionTree.complexity.score,
-      complexityLevel: data.decisionTree.complexity.level,
+      complexityScore: 0, // Default value since complexity was removed
+      complexityLevel: "low", // Default value since complexity was removed
       recommendedMaterial:
         data.decisionTree.materialRecommendation.recommendedMaterial,
       optimizationTips: JSON.stringify(data.decisionTree.optimizationTips),
@@ -460,8 +458,8 @@ export async function saveProjectForAdminSelf(
       ridgeLength: data.results.ridgeLength,
 
       // Decision Tree
-      complexityScore: data.decisionTree.complexity.score,
-      complexityLevel: data.decisionTree.complexity.level,
+      complexityScore: 0, // Default value since complexity was removed
+      complexityLevel: "low", // Default value since complexity was removed
       recommendedMaterial:
         data.decisionTree.materialRecommendation.recommendedMaterial,
       optimizationTips: JSON.stringify(data.decisionTree.optimizationTips),
@@ -624,8 +622,8 @@ export async function duplicateProject(
         ridgeLength: originalProject.ridgeLength,
 
         // Copy decision tree
-        complexityScore: originalProject.complexityScore,
-        complexityLevel: originalProject.complexityLevel,
+        complexityScore: originalProject.complexityScore || 0,
+        complexityLevel: originalProject.complexityLevel || "low",
         recommendedMaterial: originalProject.recommendedMaterial,
         optimizationTips: originalProject.optimizationTips,
 
