@@ -44,11 +44,9 @@ export async function GET(request: NextRequest) {
         where.status = dbStatus;
       }
     } else {
-      // If no specific status filter, exclude only DRAFT projects
-      // Contractors should see all their assigned projects including those waiting for client review
-      where.status = {
-        notIn: ["DRAFT"]
-      };
+      // If no specific status filter, show all projects including DRAFT
+      // Contractors should see all their assigned projects
+      // No status filter applied - show everything
     }
 
     if (search) {
