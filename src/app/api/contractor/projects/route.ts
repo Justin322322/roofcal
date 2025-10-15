@@ -78,47 +78,57 @@ export async function GET(request: NextRequest) {
     });
 
     // Convert Decimal fields to numbers for JSON response
-    const formattedProjects = projects.map(project => ({
-      ...project,
-      length: Number(project.length),
-      width: Number(project.width),
-      pitch: Number(project.pitch),
-      budgetAmount: project.budgetAmount ? Number(project.budgetAmount) : undefined,
-      gutterLengthA: project.gutterLengthA ? Number(project.gutterLengthA) : undefined,
-      gutterSlope: project.gutterSlope ? Number(project.gutterSlope) : undefined,
-      gutterLengthC: project.gutterLengthC ? Number(project.gutterLengthC) : undefined,
-      area: Number(project.area),
-      materialCost: Number(project.materialCost),
-      gutterCost: Number(project.gutterCost),
-      ridgeCost: Number(project.ridgeCost),
-      screwsCost: Number(project.screwsCost),
-      insulationCost: Number(project.insulationCost),
-      ventilationCost: Number(project.ventilationCost),
-      totalMaterialsCost: Number(project.totalMaterialsCost),
-      laborCost: Number(project.laborCost),
-      removalCost: Number(project.removalCost),
-      totalCost: Number(project.totalCost),
-      gutterPieces: project.gutterPieces,
-      ridgeLength: Number(project.ridgeLength),
-      ventilationPieces: project.ventilationPieces,
-      latitude: project.latitude ? Number(project.latitude) : null,
-      longitude: project.longitude ? Number(project.longitude) : null,
-      deliveryCost: project.deliveryCost ? Number(project.deliveryCost) : null,
-      deliveryDistance: project.deliveryDistance ? Number(project.deliveryDistance) : null,
-      client: project.user_project_clientIdTouser || project.user_project_userIdTouser,
-      createdAt: project.created_at,
-      updatedAt: project.updated_at,
-      // Include material detail fields for print preview
-      materialThickness: project.materialThickness,
-      ridgeType: project.ridgeType,
-      gutterSize: project.gutterSize,
-      insulationThickness: project.insulationThickness,
-      // Map additional fields that printer expects
-      gutterMaterial: project.gutterSize, // Using gutterSize as gutterMaterial for now
-      screwType: project.materialThickness, // Using materialThickness as screwType for now
-      insulationType: project.insulationThickness,
-      ventilationType: project.ventilationPieces ? `${project.ventilationPieces} pieces` : undefined,
-    }));
+    const formattedProjects = projects.map(project => {
+      // Debug logging to see project status
+      console.log('Project status debug:', { 
+        id: project.id, 
+        projectName: project.projectName,
+        status: project.status, 
+        proposalStatus: project.proposalStatus 
+      });
+      
+      return {
+        ...project,
+        length: Number(project.length),
+        width: Number(project.width),
+        pitch: Number(project.pitch),
+        budgetAmount: project.budgetAmount ? Number(project.budgetAmount) : undefined,
+        gutterLengthA: project.gutterLengthA ? Number(project.gutterLengthA) : undefined,
+        gutterSlope: project.gutterSlope ? Number(project.gutterSlope) : undefined,
+        gutterLengthC: project.gutterLengthC ? Number(project.gutterLengthC) : undefined,
+        area: Number(project.area),
+        materialCost: Number(project.materialCost),
+        gutterCost: Number(project.gutterCost),
+        ridgeCost: Number(project.ridgeCost),
+        screwsCost: Number(project.screwsCost),
+        insulationCost: Number(project.insulationCost),
+        ventilationCost: Number(project.ventilationCost),
+        totalMaterialsCost: Number(project.totalMaterialsCost),
+        laborCost: Number(project.laborCost),
+        removalCost: Number(project.removalCost),
+        totalCost: Number(project.totalCost),
+        gutterPieces: project.gutterPieces,
+        ridgeLength: Number(project.ridgeLength),
+        ventilationPieces: project.ventilationPieces,
+        latitude: project.latitude ? Number(project.latitude) : null,
+        longitude: project.longitude ? Number(project.longitude) : null,
+        deliveryCost: project.deliveryCost ? Number(project.deliveryCost) : null,
+        deliveryDistance: project.deliveryDistance ? Number(project.deliveryDistance) : null,
+        client: project.user_project_clientIdTouser || project.user_project_userIdTouser,
+        createdAt: project.created_at,
+        updatedAt: project.updated_at,
+        // Include material detail fields for print preview
+        materialThickness: project.materialThickness,
+        ridgeType: project.ridgeType,
+        gutterSize: project.gutterSize,
+        insulationThickness: project.insulationThickness,
+        // Map additional fields that printer expects
+        gutterMaterial: project.gutterSize, // Using gutterSize as gutterMaterial for now
+        screwType: project.materialThickness, // Using materialThickness as screwType for now
+        insulationType: project.insulationThickness,
+        ventilationType: project.ventilationPieces ? `${project.ventilationPieces} pieces` : undefined,
+      };
+    });
 
     return NextResponse.json({
       success: true,

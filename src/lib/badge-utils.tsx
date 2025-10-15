@@ -9,6 +9,7 @@ export const badgeVariants = {
   "client-pending": "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900 dark:text-orange-300 dark:border-orange-800",
   "action-required": "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-800",
   "under-review": "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-800",
+  "contractor-reviewing": "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-800",
   "proposal-sent": "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-800",
   accepted: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900 dark:text-green-300 dark:border-green-800",
   approved: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900 dark:text-green-300 dark:border-green-800",
@@ -63,15 +64,23 @@ export function StandardBadge({ variant, children, className }: StandardBadgePro
 
 // Helper functions for common badge patterns
 export function getStatusBadge(status: string, proposalStatus?: string) {
-  const statusKey = status.toLowerCase().replace(/\s+/g, '-') as BadgeVariant;
-  const proposalKey = proposalStatus?.toLowerCase().replace(/\s+/g, '-') as BadgeVariant;
+  // Normalize status strings to match badge variants
+  const normalizeStatus = (statusStr: string) => {
+    return statusStr.toLowerCase().replace(/\s+/g, '-').replace(/_/g, '-');
+  };
   
-  // Use proposal status if available, otherwise use project status
+  const statusKey = normalizeStatus(status) as BadgeVariant;
+  const proposalKey = proposalStatus ? normalizeStatus(proposalStatus) as BadgeVariant : null;
+  
+  // Use proposal status if available and has a matching variant, otherwise use project status
   const variant = proposalKey && badgeVariants[proposalKey] ? proposalKey : statusKey;
   const displayText = proposalStatus || status;
   
+  // Fallback to default variant if the variant doesn't exist
+  const finalVariant = badgeVariants[variant] ? variant : 'default';
+  
   return (
-    <StandardBadge variant={variant}>
+    <StandardBadge variant={finalVariant}>
       {displayText}
     </StandardBadge>
   );
