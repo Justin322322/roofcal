@@ -113,19 +113,19 @@ export default function About() {
                   title: "Pitch Calculation",
                   description:
                     "Automatically calculates roof slope using rise-over-run ratios, ensuring accurate surface area measurements regardless of roof complexity.",
-                  icon: <Target className="h-5 w-5" />,
+                  icon: <Target className="h-8 w-8 text-primary" />,
                 },
                 {
                   title: "Material Optimization",
                   description:
                     "Factors in material dimensions, overlap requirements, and standard installation practices to minimize waste and cost.",
-                  icon: <CheckCircle className="h-5 w-5" />,
+                  icon: <CheckCircle className="h-8 w-8 text-primary" />,
                 },
                 {
                   title: "Quality Assurance",
                   description:
                     "Validates calculations against industry standards and real-world project data to ensure reliability and accuracy.",
-                  icon: <Shield className="h-5 w-5" />,
+                  icon: <Shield className="h-8 w-8 text-primary" />,
                 },
               ].map((item, index) => (
                 <div 
@@ -137,16 +137,16 @@ export default function About() {
                   }`}
                 >
                   <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-t from-muted/50 to-transparent pointer-events-none" />
-                  <div className="mb-3 relative z-10 text-muted-foreground ml-4">
-                    <div className="inline-flex items-center justify-center rounded-md bg-muted/60 p-2 text-primary">
+                  <div className="flex items-start justify-between gap-4 mb-2 relative z-10">
+                    <div className="text-lg font-bold relative z-10">
+                      <div className="absolute left-0 inset-y-0 h-6 w-1 rounded-tr-full rounded-br-full bg-muted group-hover/feature:bg-primary transition-all duration-200 origin-center" />
+                      <span className="group-hover/feature:translate-x-1 transition duration-200 inline-block text-foreground ml-4">
+                        {item.title}
+                      </span>
+                    </div>
+                    <div className="mr-2">
                       {item.icon}
                     </div>
-                  </div>
-                  <div className="text-lg font-bold mb-2 relative z-10">
-                    <div className="absolute left-0 inset-y-0 h-6 w-1 rounded-tr-full rounded-br-full bg-muted group-hover/feature:bg-primary transition-all duration-200 origin-center" />
-                    <span className="group-hover/feature:translate-x-1 transition duration-200 inline-block text-foreground ml-4">
-                      {item.title}
-                    </span>
                   </div>
                   <p className="text-sm text-muted-foreground max-w-prose relative z-10 ml-4">
                     {item.description}
