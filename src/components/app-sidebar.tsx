@@ -8,7 +8,6 @@ import {
   WrenchIcon,
   DatabaseIcon,
   SettingsIcon,
-  ArchiveIcon,
   UserPlusIcon,
   HelpCircleIcon,
   ActivityIcon,

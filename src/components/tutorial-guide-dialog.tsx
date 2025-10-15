@@ -12,7 +12,6 @@ import {
   LayersIcon,
   CalculatorIcon,
   ClipboardListIcon,
-  HardHatIcon,
   SparklesIcon,
   ArchiveIcon,
 } from "lucide-react";

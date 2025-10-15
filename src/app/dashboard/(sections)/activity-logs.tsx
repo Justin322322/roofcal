@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -109,42 +109,7 @@ export default function ActivityLogsContent() {
     dateTo: "",
   });
 
-  useEffect(() => {
-    fetchStats();
-    fetchUsers();
-  }, []);
-
-  useEffect(() => {
-    fetchActivities();
-  }, [filters, pagination.page]);
-
-  const fetchStats = async () => {
-    try {
-      const response = await fetch("/api/activity/stats");
-      if (!response.ok) throw new Error("Failed to fetch stats");
-      const data = await response.json();
-      if (data.success) {
-        setStats(data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching stats:", error);
-    }
-  };
-
-  const fetchUsers = async () => {
-    try {
-      const response = await fetch("/api/activity/users");
-      if (!response.ok) throw new Error("Failed to fetch users");
-      const data = await response.json();
-      if (data.success) {
-        setUsers(data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    }
-  };
-
-  const fetchActivities = async () => {
+  const fetchActivities = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -176,7 +141,44 @@ export default function ActivityLogsContent() {
     } finally {
       setLoading(false);
     }
+  }, [filters, pagination.page, pagination.limit]);
+
+  useEffect(() => {
+    fetchStats();
+    fetchUsers();
+  }, []);
+
+  useEffect(() => {
+    fetchActivities();
+  }, [fetchActivities]);
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch("/api/activity/stats");
+      if (!response.ok) throw new Error("Failed to fetch stats");
+      const data = await response.json();
+      if (data.success) {
+        setStats(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    }
   };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch("/api/activity/users");
+      if (!response.ok) throw new Error("Failed to fetch users");
+      const data = await response.json();
+      if (data.success) {
+        setUsers(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+
+  
 
   const handleFilterChange = (key: keyof Filters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -252,7 +254,7 @@ export default function ActivityLogsContent() {
           <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Today's Activities</CardTitle>
+                <CardTitle className="text-sm font-medium">Today&apos;s Activities</CardTitle>
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
