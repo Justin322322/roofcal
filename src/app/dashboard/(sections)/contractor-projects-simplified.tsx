@@ -32,6 +32,7 @@ import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getStatusBadge } from "@/lib/badge-utils";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -83,7 +84,7 @@ import {
   EyeIcon,
   DollarSignIcon,
   RulerIcon,
-  MoreVertical,
+  MoreHorizontal,
   Archive,
   RefreshCw,
 } from "lucide-react";
@@ -653,31 +654,46 @@ export function ContractorProjectsContent() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {filteredProjects.length === 0 ? (
-              <div className="text-center py-8">
-                <FileTextIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No projects found</h3>
-                <p className="text-muted-foreground">
-                  {searchQuery || statusFilter !== "all" || minCost || maxCost || dateFrom || dateTo
-                    ? "Try adjusting your filters to see more projects."
-                    : "You don't have any projects yet."}
-                </p>
-              </div>
-            ) : (
-              <div>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Project</TableHead>
-                      <TableHead>Client</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Cost</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredProjects.map((project) => (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Project</TableHead>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Cost</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="w-[50px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    // Loading skeleton rows
+                    Array.from({ length: 5 }).map((_, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-24 mt-1" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-28" />
+                          <Skeleton className="h-3 w-36 mt-1" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-6 w-20" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-20" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-24" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-8 w-8" />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : filteredProjects.map((project) => (
                       <TableRow key={project.id}>
                         <TableCell>
                           <div>
@@ -710,147 +726,94 @@ export function ContractorProjectsContent() {
                         <TableCell>
                           {formatDate(project.createdAt)}
                         </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-700"
-                              onClick={() => handleViewProject(project)}
-                            >
-                              <EyeIcon className="h-4 w-4 mr-1" />
-                              View
-                            </Button>
-                            {project.status === "CONTRACTOR_REVIEWING" && (
-                              <>
-                                <Button
-                                  size="sm"
-                                  variant="default"
-                                  className="bg-green-600 hover:bg-green-700 text-white"
-                                  onClick={() => handleAcceptProject(project.id)}
-                                  disabled={loadingProjectId === project.id}
-                                >
-                                  {loadingProjectId === project.id ? (
-                                    <>
-                                      <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
-                                      Processing...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <CheckIcon className="h-4 w-4 mr-1" />
-                                      Accept
-                                    </>
-                                  )}
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => handleDeclineProject(project.id)}
-                                  disabled={loadingProjectId === project.id}
-                                >
-                                  <XIcon className="h-4 w-4 mr-1" />
-                                  Decline
-                                </Button>
-                              </>
-                            )}
-                            {project.status === "ACCEPTED" && (
-                              <>
-                                <Button
-                                  size="sm"
-                                  variant="default"
-                                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                                  onClick={() => handleStartWork(project.id)}
-                                  disabled={loadingProjectId === project.id}
-                                >
-                                  {loadingProjectId === project.id ? (
-                                    <>
-                                      <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
-                                      Starting...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <CheckCircleIcon className="h-4 w-4 mr-1" />
-                                      Start Work
-                                    </>
-                                  )}
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="border-orange-500 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleViewProject(project)}>
+                                <EyeIcon className="h-4 w-4 mr-2" />
+                                View Details
+                              </DropdownMenuItem>
+                              {project.status === "CONTRACTOR_REVIEWING" && (
+                                <>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleAcceptProject(project.id)}
+                                    disabled={loadingProjectId === project.id}
+                                  >
+                                    <CheckIcon className="h-4 w-4 mr-2" />
+                                    Accept Project
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleDeclineProject(project.id)}
+                                    disabled={loadingProjectId === project.id}
+                                    className="text-red-600"
+                                  >
+                                    <XIcon className="h-4 w-4 mr-2" />
+                                    Decline Project
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                              {project.status === "ACCEPTED" && (
+                                <>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleStartWork(project.id)}
+                                    disabled={loadingProjectId === project.id}
+                                  >
+                                    <CheckCircleIcon className="h-4 w-4 mr-2" />
+                                    Start Work
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleFinishProject(project.id)}
+                                    disabled={loadingProjectId === project.id}
+                                    className="text-orange-600"
+                                  >
+                                    <CheckCircleIcon className="h-4 w-4 mr-2" />
+                                    Complete Project
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                              {(project.status === "IN_PROGRESS" || project.status === "ACTIVE" || project.status === "DRAFT") && (
+                                <DropdownMenuItem 
                                   onClick={() => handleFinishProject(project.id)}
                                   disabled={loadingProjectId === project.id}
                                 >
-                                  {loadingProjectId === project.id ? (
-                                    <>
-                                      <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
-                                      Finishing...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <CheckCircleIcon className="h-4 w-4 mr-1" />
-                                      Complete Project
-                                    </>
-                                  )}
-                                </Button>
-                              </>
-                            )}
-                            {(project.status === "IN_PROGRESS" || project.status === "ACTIVE" || project.status === "DRAFT") && (
-                              <Button
-                                size="sm"
-                                variant="default"
-                                className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                                onClick={() => handleFinishProject(project.id)}
-                                disabled={loadingProjectId === project.id}
-                              >
-                                {loadingProjectId === project.id ? (
-                                  <>
-                                    <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
-                                    Finishing...
-                                  </>
-                                ) : (
-                                  <>
-                                    <CheckCircleIcon className="h-4 w-4 mr-1" />
-                                    Complete Project
-                                  </>
-                                )}
-                              </Button>
-                            )}
-                            {/* Archive menu for completed projects */}
-                            {project.status === "COMPLETED" && (
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-8 w-8 p-0"
-                                  >
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem
-                                    onClick={() => {
-                                      setProjectToArchive(project.id);
-                                      setArchiveDialogOpen(true);
-                                    }}
-                                    className="text-orange-600 focus:text-orange-600"
-                                  >
-                                    <Archive className="h-4 w-4 mr-2" />
-                                    Archive Project
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            )}
-                          </div>
+                                  <CheckCircleIcon className="h-4 w-4 mr-2" />
+                                  Complete Project
+                                </DropdownMenuItem>
+                              )}
+                              {project.status === "COMPLETED" && (
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setProjectToArchive(project.id);
+                                    setArchiveDialogOpen(true);
+                                  }}
+                                  className="text-orange-600"
+                                >
+                                  <Archive className="h-4 w-4 mr-2" />
+                                  Archive Project
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </div>
-            )}
-          </CardContent>
+
+              {!isLoading && filteredProjects.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  {searchQuery || statusFilter !== "all" || minCost || maxCost || dateFrom || dateTo
+                    ? "No projects match your current filters."
+                    : "You don't have any projects yet."}
+                </div>
+              )}
+            </CardContent>
         </Card>
       </div>
 

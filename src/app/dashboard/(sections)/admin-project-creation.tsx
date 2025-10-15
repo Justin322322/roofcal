@@ -218,14 +218,12 @@ export default function AdminProjectCreationContent() {
             </div>
 
             {/* Embedded Roof Calculator */}
-            <div className="bg-background border rounded-lg">
-              <RoofCalculatorContent 
-                isAdminMode={true}
-                selectedClientId={selectedClient.id}
-                selectedClientName={selectedClient.fullName}
-                onProjectCreated={handleProjectCreated}
-              />
-            </div>
+            <RoofCalculatorContent 
+              isAdminMode={true}
+              selectedClientId={selectedClient.id}
+              selectedClientName={selectedClient.fullName}
+              onProjectCreated={handleProjectCreated}
+            />
           </div>
         ) : (
         <div className="grid gap-6 lg:grid-cols-2">

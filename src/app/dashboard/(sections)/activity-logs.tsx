@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -26,7 +27,6 @@ import { HorizontalScrollTable } from "@/components/ui/horizontal-scroll-table";
 import { Separator } from "@/components/ui/separator";
 import {
   ActivityIcon,
-  Loader2,
   AlertTriangle,
   Search,
   Filter,
@@ -435,45 +435,60 @@ export default function ActivityLogsContent() {
             </div>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <div className="flex items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : (
-              <HorizontalScrollTable className="w-full" showScrollControls={true} scrollStep={300}>
-                <div className="min-w-full rounded-md border">
-                  <Table className="min-w-full">
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="whitespace-nowrap min-w-[180px] bg-muted/50">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            <span>Timestamp</span>
-                          </div>
-                        </TableHead>
-                        <TableHead className="whitespace-nowrap min-w-[200px] bg-muted/50">
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4" />
-                            <span>User</span>
-                          </div>
-                        </TableHead>
-                        <TableHead className="whitespace-nowrap min-w-[150px] bg-muted/50">
-                          Activity Type
-                        </TableHead>
-                        <TableHead className="min-w-[300px] bg-muted/50">
-                          Description
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {activities.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                            No activity logs found
+            <HorizontalScrollTable className="w-full" showScrollControls={true} scrollStep={300}>
+              <div className="min-w-full rounded-md border">
+                <Table className="min-w-full">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="whitespace-nowrap min-w-[180px] bg-muted/50">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          <span>Timestamp</span>
+                        </div>
+                      </TableHead>
+                      <TableHead className="whitespace-nowrap min-w-[200px] bg-muted/50">
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          <span>User</span>
+                        </div>
+                      </TableHead>
+                      <TableHead className="whitespace-nowrap min-w-[150px] bg-muted/50">
+                        Activity Type
+                      </TableHead>
+                      <TableHead className="min-w-[300px] bg-muted/50">
+                        Description
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loading ? (
+                      // Loading skeleton rows
+                      Array.from({ length: 5 }).map((_, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="whitespace-nowrap min-w-[180px]">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-3 w-16 mt-1" />
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap min-w-[200px]">
+                            <Skeleton className="h-4 w-28" />
+                            <Skeleton className="h-3 w-36 mt-1" />
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap min-w-[150px]">
+                            <Skeleton className="h-6 w-24" />
+                          </TableCell>
+                          <TableCell className="min-w-[300px]">
+                            <Skeleton className="h-4 w-64" />
                           </TableCell>
                         </TableRow>
-                      ) : (
-                        activities.map((activity) => (
+                      ))
+                    ) : activities.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                          No activity logs found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      activities.map((activity) => (
                           <TableRow key={activity.id} className="hover:bg-muted/30 transition-colors">
                             <TableCell className="whitespace-nowrap min-w-[180px]">
                               <div className="text-sm">
@@ -506,7 +521,6 @@ export default function ActivityLogsContent() {
                   </Table>
                 </div>
               </HorizontalScrollTable>
-            )}
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (

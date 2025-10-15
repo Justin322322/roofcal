@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { getStatusBadge } from "@/lib/badge-utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -41,14 +42,13 @@ import {
 import { toast } from "sonner";
 import {
   Loader2Icon,
-  FileTextIcon,
   EyeIcon,
   CalendarIcon,
   MapPinIcon,
   EditIcon,
   ArchiveIcon,
   PrinterIcon,
-  MoreVerticalIcon,
+  MoreHorizontalIcon,
   ArrowUpDownIcon,
   ArrowUpIcon,
   ArrowDownIcon,
@@ -400,14 +400,6 @@ export function ProjectList() {
     );
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <Loader2Icon className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Loading projects...</span>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -558,80 +550,96 @@ export function ProjectList() {
           </div>
         </CardHeader>
         <CardContent>
-          {sortedProjects.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <FileTextIcon className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No projects found</h3>
-              <p className="text-muted-foreground">
-                {hasActiveFilters
-                  ? "No projects match your current filters."
-                  : "You haven't created any projects yet. Use the roof calculator to get started."}
-              </p>
-            </div>
-          ) : (
-            <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => handleSort("projectName")}
-                >
-                  <div className="flex items-center">
-                    Project Name
-                    {getSortIcon("projectName")}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => handleSort("material")}
-                >
-                  <div className="flex items-center">
-                    Material
-                    {getSortIcon("material")}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => handleSort("area")}
-                >
-                  <div className="flex items-center">
-                    Area
-                    {getSortIcon("area")}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => handleSort("totalCost")}
-                >
-                  <div className="flex items-center">
-                    Est. Cost
-                    {getSortIcon("totalCost")}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => handleSort("status")}
-                >
-                  <div className="flex items-center">
-                    Status
-                    {getSortIcon("status")}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => handleSort("createdAt")}
-                >
-                  <div className="flex items-center">
-                    Created
-                    {getSortIcon("createdAt")}
-                  </div>
-                </TableHead>
-                <TableHead className="w-[50px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedProjects.map((project) => (
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleSort("projectName")}
+                  >
+                    <div className="flex items-center">
+                      Project Name
+                      {getSortIcon("projectName")}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleSort("material")}
+                  >
+                    <div className="flex items-center">
+                      Material
+                      {getSortIcon("material")}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleSort("area")}
+                  >
+                    <div className="flex items-center">
+                      Area
+                      {getSortIcon("area")}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleSort("totalCost")}
+                  >
+                    <div className="flex items-center">
+                      Est. Cost
+                      {getSortIcon("totalCost")}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleSort("status")}
+                  >
+                    <div className="flex items-center">
+                      Status
+                      {getSortIcon("status")}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleSort("createdAt")}
+                  >
+                    <div className="flex items-center">
+                      Created
+                      {getSortIcon("createdAt")}
+                    </div>
+                  </TableHead>
+                  <TableHead className="w-[50px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  // Loading skeleton rows
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <Skeleton className="h-4 w-32" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-24" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-16" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-20" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-6 w-20" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-24" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-8 w-8" />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : sortedProjects.map((project) => (
                 <TableRow key={project.id} className="hover:bg-muted/50">
                   <TableCell className="font-medium">
                     <div>
@@ -660,8 +668,8 @@ export function ProjectList() {
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MoreVerticalIcon className="h-4 w-4" />
+                        <Button variant="ghost" size="sm">
+                          <MoreHorizontalIcon className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
@@ -749,7 +757,14 @@ export function ProjectList() {
             </TableBody>
           </Table>
         </div>
-          )}
+
+        {!isLoading && sortedProjects.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            {hasActiveFilters
+              ? "No projects match your current filters."
+              : "You haven't created any projects yet. Use the roof calculator to get started."}
+          </div>
+        )}
         </CardContent>
       </Card>
 

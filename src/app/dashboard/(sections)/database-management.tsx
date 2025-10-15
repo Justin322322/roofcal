@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -250,50 +251,61 @@ export default function DatabaseManagementContent() {
               </div>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="flex items-center justify-center h-64">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-              ) : (
-                <HorizontalScrollTable className="w-full" showScrollControls={true} scrollStep={300}>
-                  <div className="min-w-full rounded-md border">
-                    <Table className="min-w-full">
-                      <TableHeader>
-                        <TableRow>
-                          {tableColumns.map((col) => (
-                            <TableHead key={col.name} className="capitalize whitespace-nowrap min-w-[200px] bg-muted/50">
-                              <div className="flex items-center gap-2">
-                                <span>{col.name}</span>
-                                <Badge variant="outline" className="text-xs">
-                                  {col.type}
+              <HorizontalScrollTable className="w-full" showScrollControls={true} scrollStep={300}>
+                <div className="min-w-full rounded-md border">
+                  <Table className="min-w-full">
+                    <TableHeader>
+                      <TableRow>
+                        {tableColumns.map((col) => (
+                          <TableHead key={col.name} className="capitalize whitespace-nowrap min-w-[200px] bg-muted/50">
+                            <div className="flex items-center gap-2">
+                              <span>{col.name}</span>
+                              <Badge variant="outline" className="text-xs">
+                                {col.type}
+                              </Badge>
+                              {col.nullable && (
+                                <Badge variant="secondary" className="text-xs">
+                                  Nullable
                                 </Badge>
-                                {col.nullable && (
-                                  <Badge variant="secondary" className="text-xs">
-                                    Nullable
-                                  </Badge>
-                                )}
-                              </div>
-                            </TableHead>
-                          ))}
-                          {isEditable(selectedTable) && (
-                            <TableHead className="w-32 whitespace-nowrap sticky right-0 bg-muted/50 border-l">
-                              Actions
-                            </TableHead>
-                          )}
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {tableData.data.length === 0 ? (
-                          <TableRow>
-                            <TableCell
-                              colSpan={tableColumns.length + (isEditable(selectedTable) ? 1 : 0)}
-                              className="text-center text-muted-foreground py-8"
-                            >
-                              No records found
-                            </TableCell>
+                              )}
+                            </div>
+                          </TableHead>
+                        ))}
+                        {isEditable(selectedTable) && (
+                          <TableHead className="w-32 whitespace-nowrap sticky right-0 bg-muted/50 border-l">
+                            Actions
+                          </TableHead>
+                        )}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {loading ? (
+                        // Loading skeleton rows
+                        Array.from({ length: 5 }).map((_, index) => (
+                          <TableRow key={index}>
+                            {tableColumns.map((col) => (
+                              <TableCell key={col.name} className="whitespace-nowrap min-w-[200px]">
+                                <Skeleton className="h-4 w-32" />
+                              </TableCell>
+                            ))}
+                            {isEditable(selectedTable) && (
+                              <TableCell className="w-32 whitespace-nowrap sticky right-0 border-l">
+                                <Skeleton className="h-8 w-16" />
+                              </TableCell>
+                            )}
                           </TableRow>
-                        ) : (
-                          tableData.data.map((record, idx) => (
+                        ))
+                      ) : tableData.data.length === 0 ? (
+                        <TableRow>
+                          <TableCell
+                            colSpan={tableColumns.length + (isEditable(selectedTable) ? 1 : 0)}
+                            className="text-center text-muted-foreground py-8"
+                          >
+                            No records found
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        tableData.data.map((record, idx) => (
                             <TableRow key={(record.id as string) || idx} className="hover:bg-muted/30 transition-colors">
                               {tableColumns.map((col) => (
                                 <TableCell key={col.name} className="whitespace-nowrap min-w-[200px]">
@@ -323,7 +335,6 @@ export default function DatabaseManagementContent() {
                     </Table>
                   </div>
                 </HorizontalScrollTable>
-              )}
             </CardContent>
           </Card>
         </div>

@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -52,7 +53,7 @@ import {
   TrashIcon,
   DownloadIcon,
   PlusIcon,
-  MoreVerticalIcon,
+  MoreHorizontalIcon,
   EditIcon,
   SaveIcon,
   XIcon,
@@ -541,35 +542,56 @@ export default function PricingMaintenance() {
           </div>
 
           {/* Data Table */}
-          {filteredData.length === 0 ? (
-            <div className="text-center py-12">
-              <DollarSignIcon className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Items Found</h3>
-              <p className="text-muted-foreground">
-                {searchTerm || selectedCategory || statusFilter !== "all"
-                  ? "Try adjusting your filters to see more results."
-                  : "Add your first pricing item to get started."
-                }
-              </p>
-            </div>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Label</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead>Unit</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Last Updated</TableHead>
-                    <TableHead className="w-[100px]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredData.map((item) => (
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Label</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Unit</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Last Updated</TableHead>
+                  <TableHead className="w-[50px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  // Loading skeleton rows
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <Skeleton className="h-6 w-20" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-24" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-32" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-40" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-20" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-16" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-6 w-16" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-24" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-8 w-8" />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : filteredData.map((item) => (
                     <TableRow key={item.id} className={editingItem === item.id ? "bg-blue-100 dark:bg-blue-800/50 border-blue-300 dark:border-blue-600 hover:bg-blue-100 dark:hover:bg-blue-800/50" : ""}>
                       <TableCell>
                         <Badge variant="outline">
@@ -679,7 +701,7 @@ export default function PricingMaintenance() {
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="sm">
-                                <MoreVerticalIcon className="h-4 w-4" />
+                                <MoreHorizontalIcon className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
@@ -704,7 +726,14 @@ export default function PricingMaintenance() {
                 </TableBody>
               </Table>
             </div>
-          )}
+
+            {!isLoading && filteredData.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                {searchTerm || selectedCategory || statusFilter !== "all"
+                  ? "No items match your current filters."
+                  : "Add your first pricing item to get started."}
+              </div>
+            )}
         </CardContent>
       </Card>
     </div>
