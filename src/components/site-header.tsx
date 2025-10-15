@@ -16,7 +16,7 @@ export function SiteHeader({ currentSection }: SiteHeaderProps) {
       case "roof-calculator":
         return "Project Estimation";
       case "my-projects":
-        return "Record Management";
+        return "";
       case "contractor-projects":
         return "Assigned Projects";
       case "account-management":
