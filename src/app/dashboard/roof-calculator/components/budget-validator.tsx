@@ -41,20 +41,9 @@ export function BudgetValidator({
 
   // Enhanced budget validation logic
   const isBudgetSufficientForTotal = budget === 0 || budget >= totalCost;
-  const isBudgetSufficientForMinimum = budget >= minimumBudget;
   const budgetStatus =
     budget === 0 ? "none" : isBudgetSufficientForTotal ? "sufficient" : "insufficient";
   const shortfall = Math.max(0, totalCost - budget);
-
-  // Export validation result for parent components
-  const validationResult: BudgetValidationResult = {
-    isBudgetSufficient: isBudgetSufficientForTotal,
-    budgetStatus,
-    shortfall,
-  };
-
-  // Make validation result available globally for this component instance
-  (BudgetValidator as any).__lastValidationResult = validationResult;
 
   return (
     <div className="space-y-3 min-w-0">
