@@ -85,6 +85,7 @@ import {
   RulerIcon,
   MoreVertical,
   Archive,
+  RefreshCw,
 } from "lucide-react";
 
 
@@ -191,9 +192,8 @@ export function ContractorProjectsContent() {
   const fetchProjects = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Add cache-busting parameter to ensure fresh data
-      const statusQuery = statusFilter && statusFilter !== "all" ? `&status=${encodeURIComponent(statusFilter)}` : "";
-      const response = await fetch(`/api/contractor/projects?t=${Date.now()}${statusQuery}`);
+      // Fetch all projects without server-side filtering to prevent reloads
+      const response = await fetch('/api/contractor/projects');
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.projects) {
@@ -206,11 +206,12 @@ export function ContractorProjectsContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [statusFilter]);
+  }, []);
 
+  // Only fetch projects on component mount
   useEffect(() => {
     fetchProjects();
-  }, [fetchProjects]);
+  }, [fetchProjects]); // Include fetchProjects to satisfy linter
 
   const handleViewProject = (project: Project) => {
     setSelectedProject(project);
@@ -322,7 +323,7 @@ export function ContractorProjectsContent() {
         description: "The project has been marked as completed",
       });
       
-      // Update local state and refresh from server
+      // Update local state instead of refreshing
       setProjects(prevProjects => 
         prevProjects.map(project => 
           project.id === projectId 
@@ -330,11 +331,6 @@ export function ContractorProjectsContent() {
             : project
         )
       );
-      
-      // Also refresh from server to ensure consistency
-      setTimeout(() => {
-        fetchProjects();
-      }, 500);
     } catch (error) {
       console.error("Failed to finish project:", error);
       toast.error("Failed to finish project", {
@@ -522,19 +518,31 @@ export function ContractorProjectsContent() {
     <div className="flex flex-col gap-4 md:gap-6">
       {/* Header */}
       <div className="flex flex-col gap-2 px-4 lg:px-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-            <FileTextIcon className="h-5 w-5 text-primary" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+              <FileTextIcon className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Assigned Projects</h1>
+              <p className="text-sm text-muted-foreground">
+                {isHelpRequest 
+                  ? "Help request mode - showing projects that need attention"
+                  : "Manage and track your roofing projects"
+                }
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Assigned Projects</h1>
-            <p className="text-sm text-muted-foreground">
-              {isHelpRequest 
-                ? "Help request mode - showing projects that need attention"
-                : "Manage and track your roofing projects"
-              }
-            </p>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchProjects}
+            disabled={isLoading}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
         </div>
         {isHelpRequest && (
           <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3">

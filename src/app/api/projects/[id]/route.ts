@@ -297,23 +297,37 @@ export async function DELETE(
 
     const { id } = await params;
 
-    // Check if project exists and user owns it
+    // Check if project exists and user has permission to archive it
     const existingProject = await prisma.project.findFirst({
       where: {
         id,
-        userId: session.user.id,
+        OR: [
+          { userId: session.user.id }, // Project owner
+          { clientId: session.user.id }, // Assigned client
+        ],
       },
     });
 
-    if (!existingProject) {
+    // Admins can archive any project
+    const isAdmin = session.user.role === 'ADMIN';
+    if (!existingProject && !isAdmin) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+
+    // If user is admin but project doesn't exist in their scope, find it anyway
+    const projectToArchive = existingProject || (isAdmin ? await prisma.project.findUnique({ where: { id } }) : null);
+    if (!projectToArchive) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
     // Soft delete by setting status to ARCHIVED
-    await prisma.project.update({
+    console.log(`Archiving project ${id} for user ${session.user.id} (role: ${session.user.role}${isAdmin ? ', admin override' : ''})`);
+    const updatedProject = await prisma.project.update({
       where: { id },
       data: { status: "ARCHIVED" },
     });
+    
+    console.log(`Project ${id} archived successfully. New status: ${updatedProject.status}`);
 
     return NextResponse.json({ message: "Project archived successfully" });
   } catch (error) {
