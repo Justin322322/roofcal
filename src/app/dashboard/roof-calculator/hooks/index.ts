@@ -108,13 +108,13 @@ export function useRoofCalculator() {
         
         if (result.success && result.data) {
           updatePricingConstants(result.data);
-          console.log('✅ Pricing constants loaded successfully from API');
+          console.log('Pricing constants loaded successfully from API');
           setIsPricingLoaded(true);
         } else {
           throw new Error('Invalid API response format');
         }
       } catch (error) {
-        console.error('❌ Failed to load pricing from API:', error);
+        console.error('Failed to load pricing from API:', error);
         setPricingError('Failed to load latest pricing.');
         setIsPricingLoaded(false);
       } finally {

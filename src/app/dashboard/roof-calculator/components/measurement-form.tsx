@@ -68,7 +68,7 @@ export function MeasurementForm({
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            ⚠️ Warning: Very small dimensions detected. Please verify your measurements are in meters and realistic for a roofing project.
+            Warning: Very small dimensions detected. Please verify your measurements are in meters and realistic for a roofing project.
           </AlertDescription>
         </Alert>
       )}

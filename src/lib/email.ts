@@ -24,7 +24,7 @@ export async function sendEmail(emailData: EmailData): Promise<void> {
   // In development, just log the email
   if (process.env.NODE_ENV === "development") {
     console.log("\n" + "=".repeat(60));
-    console.log("📧 EMAIL NOTIFICATION");
+    console.log("EMAIL NOTIFICATION");
     console.log("=".repeat(60));
     console.log(`To: ${emailData.to}`);
     console.log(`Subject: ${emailData.subject}`);
@@ -306,7 +306,7 @@ export async function sendAdminCredentialsEmail(data: AdminCredentialsData): Pro
     </head>
     <body>
       <div class="header">
-        <h1>🔐 Admin Account Created</h1>
+        <h1>Admin Account Created</h1>
         <p>Welcome to RoofCal Admin Panel</p>
       </div>
       

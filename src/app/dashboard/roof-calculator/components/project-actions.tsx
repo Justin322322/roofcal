@@ -280,7 +280,7 @@ export function ProjectActions({
             {!isBudgetSufficient && (
               <Alert variant="destructive">
                 <XCircleIcon className="h-4 w-4" />
-                <AlertTitle>⚠️ Budget Insufficient - Cannot Save Project</AlertTitle>
+                <AlertTitle>Budget Insufficient - Cannot Save Project</AlertTitle>
                 <AlertDescription>
                   <div className="space-y-2">
                     <div>
