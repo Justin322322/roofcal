@@ -20,7 +20,6 @@ interface CalculationResultsProps {
   ventilationCost: number;
   totalMaterialsCost: number;
   laborCost: number;
-  removalCost: number;
   totalCost: number;
   gutterPieces: number;
   ridgeLength: number;
@@ -48,7 +47,6 @@ export function CalculationResults({
   ventilationCost,
   totalMaterialsCost,
   laborCost,
-  removalCost,
   totalCost,
   gutterPieces,
   ridgeLength,

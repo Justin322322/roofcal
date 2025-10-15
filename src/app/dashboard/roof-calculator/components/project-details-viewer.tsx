@@ -7,7 +7,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
 import { getStatusBadge } from "@/lib/badge-utils";
 import { Separator } from "@/components/ui/separator";
 import { 

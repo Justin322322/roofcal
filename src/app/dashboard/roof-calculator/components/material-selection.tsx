@@ -48,6 +48,18 @@ interface PricingConfigAPIResponse {
   updated_at: string;
 }
 
+interface WarehouseMaterial {
+  isActive: boolean;
+  quantity: number;
+  locationAdjustment: number;
+  material: {
+    name: string;
+    label: string;
+    price: number;
+    description: string | null;
+  };
+}
+
 // Static materials data for fallback and component imports
 export const materials: Material[] = [
   { value: 'corrugated-0.4', name: 'Corrugated (0.4mm)', price: 450, description: 'Lightweight, weather-resistant, 30-50 year lifespan - 0.4mm thickness' },
@@ -85,18 +97,6 @@ export function MaterialSelection({
           
           if (result.success && result.data) {
             // Filter to only show materials that are active and in stock
-            interface WarehouseMaterial {
-              isActive: boolean;
-              quantity: number;
-              locationAdjustment: number;
-              material: {
-                name: string;
-                label: string;
-                price: number;
-                description: string | null;
-              };
-            }
-
             const warehouseMaterials = result.data
               .filter((wm: WarehouseMaterial) => wm.isActive && wm.quantity > 0)
               .map((wm: WarehouseMaterial) => ({
@@ -193,7 +193,6 @@ export function MaterialSelection({
             <span className="text-sm">{loadError}</span>
             <Button size="sm" variant="outline" onClick={() => {
               // trigger reload by resetting selectedWarehouseId dependency path
-              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               (async () => {
                 try {
                   setIsLoadingMaterials(true);
@@ -208,8 +207,8 @@ export function MaterialSelection({
                   if (result.success && result.data) {
                     if (selectedWarehouseId) {
                       const warehouseMaterials = result.data
-                        .filter((wm: any) => wm.isActive && wm.quantity > 0)
-                        .map((wm: any) => ({
+                        .filter((wm: WarehouseMaterial) => wm.isActive && wm.quantity > 0)
+                        .map((wm: WarehouseMaterial) => ({
                           value: wm.material.name,
                           name: wm.material.label,
                           price: wm.material.price * (1 + wm.locationAdjustment / 100),

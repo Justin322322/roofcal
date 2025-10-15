@@ -386,7 +386,7 @@ export function useRoofCalculator() {
       materialRecommendation: analysis.materialRecommendation,
       optimizationTips: analysis.optimizationTips,
     });
-  }, [measurements, material]);
+  }, [measurements, material, isPricingLoaded]);
 
   useEffect(() => {
     calculateRoof();
