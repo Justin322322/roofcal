@@ -32,7 +32,7 @@ export function SiteHeader({ currentSection }: SiteHeaderProps) {
       case "delivery-test":
         return "Delivery Test";
       default:
-        return "Project Request";
+        return "Project Estimation";
     }
   };
 
