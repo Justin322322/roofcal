@@ -57,6 +57,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -77,6 +83,8 @@ import {
   EyeIcon,
   DollarSignIcon,
   RulerIcon,
+  MoreVertical,
+  Archive,
 } from "lucide-react";
 
 
@@ -141,7 +149,6 @@ export function ContractorProjectsContent() {
   const [maxCost, setMaxCost] = useState<string>("");
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
-  const [showArchived, setShowArchived] = useState<boolean>(false);
   
   // Loading states for actions
   const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
@@ -151,6 +158,8 @@ export function ContractorProjectsContent() {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isHelpRequest, setIsHelpRequest] = useState(false);
+  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
+  const [projectToArchive, setProjectToArchive] = useState<string | null>(null);
 
   // Initialize filters from URL parameters
   useEffect(() => {
@@ -375,6 +384,47 @@ export function ContractorProjectsContent() {
     }
   };
 
+  const handleArchiveProject = async (projectId: string) => {
+    setLoadingProjectId(projectId);
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "ARCHIVED" }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to archive project");
+      }
+
+      const result = await response.json();
+      toast.success(result.message || "Project archived", {
+        description: "The project has been archived and can be filtered later",
+      });
+      
+      // Update local state
+      setProjects(prevProjects => 
+        prevProjects.map(project => 
+          project.id === projectId 
+            ? { ...project, status: "ARCHIVED" }
+            : project
+        )
+      );
+      
+      // Close dialog
+      setArchiveDialogOpen(false);
+      setProjectToArchive(null);
+    } catch (error) {
+      console.error("Failed to archive project:", error);
+      toast.error("Failed to archive project", {
+        description: error instanceof Error ? error.message : "Please try again",
+      });
+    } finally {
+      setLoadingProjectId(null);
+    }
+  };
+
   const getProjectStatusBadge = (status: string, proposalStatus: string | null) => {
     // Use the same logic as filtering: prioritize proposalStatus over status
     const effectiveStatus = proposalStatus || status;
@@ -419,10 +469,9 @@ export function ContractorProjectsContent() {
       if (projectDate > toDate) return false;
     }
 
-    // Archived filter
+    // Archived filter - hide archived projects by default unless explicitly filtered
     const projectStatus = project.proposalStatus || project.status;
-    if (!showArchived && projectStatus === "ARCHIVED") return false;
-    if (showArchived && projectStatus !== "ARCHIVED") return false;
+    if (statusFilter === "all" && projectStatus === "ARCHIVED") return false;
 
     return true;
   });
@@ -756,6 +805,32 @@ export function ContractorProjectsContent() {
                                 )}
                               </Button>
                             )}
+                            {/* Archive menu for completed projects */}
+                            {project.status === "COMPLETED" && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setProjectToArchive(project.id);
+                                      setArchiveDialogOpen(true);
+                                    }}
+                                    className="text-orange-600 focus:text-orange-600"
+                                  >
+                                    <Archive className="h-4 w-4 mr-2" />
+                                    Archive Project
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1076,6 +1151,51 @@ export function ContractorProjectsContent() {
                 <>
                   <XIcon className="h-4 w-4 mr-2" />
                   Decline Project
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Archive Project Dialog */}
+      <Dialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Archive Project</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to archive this project? Archived projects can be filtered and viewed later.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setArchiveDialogOpen(false);
+                setProjectToArchive(null);
+              }}
+              disabled={loadingProjectId === projectToArchive}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (projectToArchive) {
+                  handleArchiveProject(projectToArchive);
+                }
+              }}
+              disabled={loadingProjectId === projectToArchive}
+            >
+              {loadingProjectId === projectToArchive ? (
+                <>
+                  <Loader2Icon className="h-4 w-4 animate-spin mr-2" />
+                  Archiving...
+                </>
+              ) : (
+                <>
+                  <Archive className="h-4 w-4 mr-2" />
+                  Archive Project
                 </>
               )}
             </Button>

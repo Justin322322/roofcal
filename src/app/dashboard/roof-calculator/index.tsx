@@ -48,6 +48,7 @@ function getMaterialName(materialValue: string): string {
 
 interface RoofCalculatorContentProps {
   isAdminMode?: boolean;
+  isAdminSelfMode?: boolean;
   selectedClientId?: string;
   selectedClientName?: string;
   onProjectCreated?: () => void;
@@ -56,6 +57,7 @@ interface RoofCalculatorContentProps {
 export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
   const { 
     isAdminMode = false, 
+    isAdminSelfMode = false,
     selectedClientId, 
     selectedClientName, 
     onProjectCreated 
@@ -192,6 +194,7 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
               helpRequestClientId={helpRequestClientId}
               helpRequestClient={helpRequestClient}
               isAdminMode={isAdminMode}
+              isAdminSelfMode={isAdminSelfMode}
               selectedClientId={selectedClientId}
               onProjectCreated={onProjectCreated}
             />

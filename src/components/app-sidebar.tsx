@@ -116,6 +116,12 @@ export function AppSidebar({
         icon: CalculatorIcon,
         roles: [UserRole.ADMIN],
       },
+      {
+        title: "Roof Estimation",
+        url: "admin-roof-estimation",
+        icon: CalculatorIcon,
+        roles: [UserRole.ADMIN],
+      },
     ];
 
     // Combine navigation items

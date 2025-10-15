@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { SaveIcon, Loader2Icon } from "lucide-react";
-import { saveProject, updateProject, getProjectDetails, saveProjectForCustomer } from "../actions";
+import { saveProject, updateProject, getProjectDetails, saveProjectForCustomer, saveProjectForAdminSelf } from "../actions";
 import { AddressInput } from "@/components/map/address-input";
 import type {
   Measurements,
@@ -43,6 +43,7 @@ interface ProjectActionsProps {
   helpRequestClientId?: string | null;
   helpRequestClient?: { name: string; email: string } | null;
   isAdminMode?: boolean;
+  isAdminSelfMode?: boolean;
   selectedClientId?: string;
   onProjectCreated?: () => void;
 }
@@ -64,6 +65,7 @@ export function ProjectActions({
   helpRequestClientId,
   helpRequestClient,
   isAdminMode = false,
+  isAdminSelfMode = false,
   selectedClientId,
   onProjectCreated,
 }: ProjectActionsProps) {
@@ -130,7 +132,8 @@ export function ProjectActions({
       return;
     }
 
-    if (!isValidated || !coordinates) {
+    // Skip address validation for admin self mode
+    if (!isAdminSelfMode && (!isValidated || !coordinates)) {
       toast.error("Please validate the delivery address");
       return;
     }
@@ -146,8 +149,8 @@ export function ProjectActions({
         clientName: clientName.trim() || undefined,
         notes: notes.trim() || undefined,
         address: address,
-        latitude: coordinates.latitude,
-        longitude: coordinates.longitude,
+        latitude: coordinates?.latitude || 0,
+        longitude: coordinates?.longitude || 0,
         warehouseId: selectedWarehouseId || undefined,
         deliveryCost: deliveryCost || undefined,
         deliveryDistance: deliveryDistance || undefined,
@@ -158,6 +161,9 @@ export function ProjectActions({
       if (currentProjectId) {
         // Update existing project
         result = await updateProject(currentProjectId, projectData);
+      } else if (isAdminSelfMode) {
+        // Save project for admin self-estimation
+        result = await saveProjectForAdminSelf(projectData);
       } else if (isHelpRequest && helpRequestClientId) {
         // Save project for customer (help request) - no contractor required
         result = await saveProjectForCustomer(projectData, helpRequestClientId, undefined);
@@ -171,10 +177,12 @@ export function ProjectActions({
 
       if (result.success) {
         const isCreatingForClient = isHelpRequest || isAdminMode;
-        const action = currentProjectId ? "updated" : (isCreatingForClient ? "created for client" : "saved");
+        const action = currentProjectId ? "updated" : (isCreatingForClient ? "created for client" : (isAdminSelfMode ? "saved as estimation" : "saved"));
         const description = isCreatingForClient 
           ? `Project "${projectName}" has been created for ${helpRequestClient?.name || "the client"}`
-          : `Project "${projectName}" has been ${currentProjectId ? "updated" : "saved"}`;
+          : isAdminSelfMode
+            ? `Roof estimation "${projectName}" has been saved as DRAFT`
+            : `Project "${projectName}" has been ${currentProjectId ? "updated" : "saved"}`;
         
         toast.success(`Project ${action} successfully`, {
           description,
@@ -189,8 +197,8 @@ export function ProjectActions({
         setDeliveryCost(null);
         setDeliveryDistance(null);
         
-        // Call the callback for admin mode or help requests
-        if ((isAdminMode || isHelpRequest) && onProjectCreated) {
+        // Call the callback for admin mode, admin self mode, or help requests
+        if ((isAdminMode || isAdminSelfMode || isHelpRequest) && onProjectCreated) {
           onProjectCreated();
         }
       } else {
@@ -209,7 +217,7 @@ export function ProjectActions({
     }
   };
 
-  const canSave = (results.totalCost > 0 || saveEnabled) && projectName.trim() && isValidated;
+  const canSave = (results.totalCost > 0 || saveEnabled) && projectName.trim() && (isAdminSelfMode || isValidated);
 
   return (
     <>
@@ -233,16 +241,20 @@ export function ProjectActions({
             <DialogTitle>
               {currentProjectId 
                 ? "Update Project" 
-                : isHelpRequest 
-                  ? "Create Project for Client" 
-                  : "Save Project"}
+                : isAdminSelfMode
+                  ? "Save Roof Estimation"
+                  : isHelpRequest 
+                    ? "Create Project for Client" 
+                    : "Save Project"}
             </DialogTitle>
             <DialogDescription>
               {currentProjectId
                 ? "Update your current roof calculation project."
-                : isHelpRequest
-                  ? `Creating a project for ${helpRequestClient?.name || "the requesting client"}. This project will be owned by the client and they will receive a notification.`
-                  : `Save your current roof calculation as a ${measurements.constructionMode === "repair" ? "repair" : "new construction"} project for future reference.`}
+                : isAdminSelfMode
+                  ? `Save your roof estimation as a DRAFT project for your own use. No client assignment or material tracking required.`
+                  : isHelpRequest
+                    ? `Creating a project for ${helpRequestClient?.name || "the requesting client"}. This project will be owned by the client and they will receive a notification.`
+                    : `Save your current roof calculation as a ${measurements.constructionMode === "repair" ? "repair" : "new construction"} project for future reference.`}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6">
@@ -257,26 +269,28 @@ export function ProjectActions({
               />
             </div>
 
-            {/* Delivery Address */}
-            <div>
-              <Label>Delivery Address *</Label>
-              <AddressInput
-                initialAddress={address}
-                initialCoordinates={coordinates || undefined}
-                onAddressChange={(geocodedAddress) => {
-                  setAddress(geocodedAddress.formattedAddress || "");
-                  setCoordinates(geocodedAddress.coordinates);
-                  setIsValidated(true);
-                  onAddressChange?.(geocodedAddress);
-                }}
-                onCoordinatesChange={(coords) => {
-                  setCoordinates(coords);
-                  setIsValidated(true);
-                }}
-                className="mt-1"
-                required
-              />
-            </div>
+            {/* Delivery Address - Hide for admin self mode */}
+            {!isAdminSelfMode && (
+              <div>
+                <Label>Delivery Address *</Label>
+                <AddressInput
+                  initialAddress={address}
+                  initialCoordinates={coordinates || undefined}
+                  onAddressChange={(geocodedAddress) => {
+                    setAddress(geocodedAddress.formattedAddress || "");
+                    setCoordinates(geocodedAddress.coordinates);
+                    setIsValidated(true);
+                    onAddressChange?.(geocodedAddress);
+                  }}
+                  onCoordinatesChange={(coords) => {
+                    setCoordinates(coords);
+                    setIsValidated(true);
+                  }}
+                  className="mt-1"
+                  required
+                />
+              </div>
+            )}
 
 
 
@@ -317,7 +331,7 @@ export function ProjectActions({
               {isLoading && (
                 <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
               )}
-              {currentProjectId ? "Update Project" : "Save Project"}
+              {currentProjectId ? "Update Project" : (isAdminSelfMode ? "Save Estimation" : "Save Project")}
             </Button>
           </DialogFooter>
         </DialogContent>

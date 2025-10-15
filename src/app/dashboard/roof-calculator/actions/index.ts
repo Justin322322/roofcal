@@ -10,6 +10,7 @@ import type {
   Project,
   ProjectFromCalculator,
   ProjectToCalculator,
+  ConstructionMode,
 } from "@/types/project";
 import type { Prisma } from "@prisma/client";
 import { UserRole } from "@/types/user-role";
@@ -396,6 +397,101 @@ export async function saveProjectForCustomer(
   } catch (error) {
     console.error("Error saving project for customer:", error);
     return { success: false, error: "Failed to save project for customer" };
+  }
+}
+
+/**
+ * Save project for admin self-estimation (no client assignment)
+ */
+export async function saveProjectForAdminSelf(
+  data: ProjectFromCalculator
+): Promise<{ success: boolean; projectId?: string; error?: string }> {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    // Only ADMIN users can create self-estimations
+    if (session.user.role !== UserRole.ADMIN) {
+      return { success: false, error: "Unauthorized - ADMIN role required" };
+    }
+
+    // Convert calculator data to project format
+    const projectData: CreateProjectInput = {
+      projectName: data.projectName,
+      clientName: data.clientName || undefined,
+
+      // Basic measurements (required fields)
+      length: parseFloat(data.measurements.length) || 0,
+      width: parseFloat(data.measurements.width) || 0,
+      pitch: parseFloat(data.measurements.pitch) || 0,
+      roofType: data.measurements.roofType,
+      floors: parseInt(data.measurements.floors) || 1,
+      materialThickness: data.measurements.materialThickness,
+      ridgeType: data.measurements.ridgeType,
+      gutterSize: data.measurements.gutterSize,
+      budgetLevel: data.measurements.budgetLevel,
+      budgetAmount: data.measurements.budgetAmount ? parseFloat(data.measurements.budgetAmount) : undefined,
+      constructionMode: data.measurements.constructionMode.toUpperCase() as ConstructionMode,
+      gutterLengthA: data.measurements.gutterLengthA ? parseFloat(data.measurements.gutterLengthA) : undefined,
+      gutterSlope: data.measurements.gutterSlope ? parseFloat(data.measurements.gutterSlope) : undefined,
+      gutterLengthC: data.measurements.gutterLengthC ? parseFloat(data.measurements.gutterLengthC) : undefined,
+      insulationThickness: data.measurements.insulationThickness,
+      ventilationPieces: parseInt(data.measurements.ventilationPieces) || 0,
+
+      // Material
+      material: data.material,
+
+      // Results
+      area: data.results.area,
+      materialCost: data.results.materialCost,
+      gutterCost: data.results.gutterCost,
+      ridgeCost: data.results.ridgeCost,
+      screwsCost: data.results.screwsCost,
+      insulationCost: data.results.insulationCost,
+      ventilationCost: data.results.ventilationCost,
+      totalMaterialsCost: data.results.totalMaterialsCost,
+      laborCost: data.results.laborCost,
+      removalCost: data.results.removalCost,
+      totalCost: data.results.totalCost,
+      gutterPieces: data.results.gutterPieces,
+      ridgeLength: data.results.ridgeLength,
+
+      // Decision Tree
+      complexityScore: data.decisionTree.complexity.score,
+      complexityLevel: data.decisionTree.complexity.level,
+      recommendedMaterial:
+        data.decisionTree.materialRecommendation.recommendedMaterial,
+      optimizationTips: JSON.stringify(data.decisionTree.optimizationTips),
+
+      // Metadata
+      notes: data.notes,
+    };
+
+    // Create project for admin self-estimation
+    const project = await prisma.project.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: session.user.id,
+        clientId: null, // No client assigned
+        contractorId: session.user.id, // Admin is self-assigned as contractor
+        status: "DRAFT", // Always starts as DRAFT
+        proposalStatus: "DRAFT", // Always starts as DRAFT
+        assignedAt: null, // Not assigned yet
+        updated_at: new Date(),
+        ...projectData,
+      },
+    });
+
+    revalidatePath("/dashboard?tab=admin-roof-estimation");
+    revalidatePath("/dashboard?tab=contractor-projects");
+
+    return { success: true, projectId: project.id };
+  } catch (error) {
+    console.error("Error in saveProjectForAdminSelf:", error);
+    return { success: false, error: "Failed to save roof estimation" };
   }
 }
 

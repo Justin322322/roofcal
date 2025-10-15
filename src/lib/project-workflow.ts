@@ -97,6 +97,26 @@ export const WORKFLOW_TRANSITIONS: WorkflowTransition[] = [
     allowedRoles: [UserRole.ADMIN],
     description: "Mark project as completed",
   },
+
+  // Admin self-project workflow (direct transitions)
+  {
+    from: "DRAFT",
+    to: "IN_PROGRESS",
+    allowedRoles: [UserRole.ADMIN],
+    description: "Start work directly from draft (admin self-project)",
+  },
+  {
+    from: "DRAFT",
+    to: "COMPLETED",
+    allowedRoles: [UserRole.ADMIN],
+    description: "Mark draft as completed (admin self-project)",
+  },
+  {
+    from: "ACTIVE",
+    to: "COMPLETED",
+    allowedRoles: [UserRole.ADMIN],
+    description: "Skip in-progress and mark as completed (admin self-project)",
+  },
   
   // Revision workflow
   {
