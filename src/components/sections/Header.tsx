@@ -16,7 +16,7 @@ export default function Header() {
       <div className="container mx-auto px-6 py-4 max-w-7xl">
         <div className="flex items-center justify-between">
           <Link
-            href="#home"
+            href="/"
             className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           >
             <RoofCalcLogo className="w-8 h-8 text-primary" />
@@ -25,18 +25,18 @@ export default function Header() {
             </div>
           </Link>
           <nav className="hidden md:flex gap-8 flex-1 justify-center">
-            <a
-              href="#calculator"
+            <Link
+              href="/#calculator"
               className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
             >
               Calculator
-            </a>
-            <a
-              href="#features"
+            </Link>
+            <Link
+              href="/#features"
               className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
             >
               Features
-            </a>
+            </Link>
             <Link
               href="/about"
               className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
@@ -83,20 +83,20 @@ export default function Header() {
           <div className="md:hidden absolute left-0 right-0 top-full border-b border-border bg-card/90 backdrop-blur-md shadow-sm z-20">
             <div className="container mx-auto px-6 py-4 max-w-7xl">
               <div className="grid gap-3">
-                <a
-                  href="#calculator"
+                <Link
+                  href="/#calculator"
                   className="text-foreground/90 hover:text-foreground text-base font-medium"
                   onClick={() => setMobileOpen(false)}
                 >
                   Calculator
-                </a>
-                <a
-                  href="#features"
+                </Link>
+                <Link
+                  href="/#features"
                   className="text-foreground/90 hover:text-foreground text-base font-medium"
                   onClick={() => setMobileOpen(false)}
                 >
                   Features
-                </a>
+                </Link>
                 <Link
                   href="/about"
                   className="text-foreground/90 hover:text-foreground text-base font-medium"
