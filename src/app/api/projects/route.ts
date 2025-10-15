@@ -171,7 +171,7 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: {
       userId: string;
-      status?: "DRAFT" | "ACTIVE" | "COMPLETED" | "ARCHIVED" | "FOR_CLIENT_REVIEW";
+      status?: "DRAFT" | "ACTIVE" | "COMPLETED" | "ARCHIVED" | "FOR_CLIENT_REVIEW" | "CONTRACTOR_REVIEWING" | "ACCEPTED" | "REJECTED" | "IN_PROGRESS" | "PROPOSAL_SENT";
       OR?: Array<{
         projectName?: { contains: string; mode: "insensitive" };
         clientName?: { contains: string; mode: "insensitive" };
@@ -186,7 +186,12 @@ export async function GET(request: NextRequest) {
         | "ACTIVE"
         | "COMPLETED"
         | "ARCHIVED"
-        | "FOR_CLIENT_REVIEW";
+        | "FOR_CLIENT_REVIEW"
+        | "CONTRACTOR_REVIEWING"
+        | "ACCEPTED"
+        | "REJECTED"
+        | "IN_PROGRESS"
+        | "PROPOSAL_SENT";
     }
 
     if (filters.search) {

@@ -32,16 +32,31 @@ export async function POST(
     }
 
     // Update project handoff fields - set to CONTRACTOR_REVIEWING so contractor can accept/decline immediately
-    const updated = await prisma.project.update({
-      where: { id },
-      data: {
-        contractorId,
-        sentToContractorAt: new Date(),
-        contractorStatus: "reviewing",
-        status: "CONTRACTOR_REVIEWING",
-        handoffNote: note,
-      },
+    console.log('Before update - Project ID:', id, 'Contractor ID:', contractorId);
+    console.log('Current project status:', project.status);
+    
+    // Use a transaction to ensure the update is committed
+    const updated = await prisma.$transaction(async (tx) => {
+      return await tx.project.update({
+        where: { id },
+        data: {
+          contractorId,
+          sentToContractorAt: new Date(),
+          contractorStatus: "reviewing",
+          status: "CONTRACTOR_REVIEWING",
+          handoffNote: note,
+        },
+      });
     });
+    
+    console.log('After update - Project status:', updated.status, 'Contractor ID:', updated.contractorId);
+
+    // Verify the update by querying the database again
+    const verification = await prisma.project.findUnique({
+      where: { id },
+      select: { id: true, status: true, contractorId: true }
+    });
+    console.log('Verification query result:', verification);
 
     // Revalidate paths to refresh project lists
     revalidatePath("/dashboard");
@@ -60,7 +75,7 @@ export async function POST(
       contractor.email
     );
 
-    return NextResponse.json({ 
+    const response = { 
       success: true,
       message: "Sent to contractor",
       project: {
@@ -68,7 +83,10 @@ export async function POST(
         status: updated.status,
         contractorId: updated.contractorId
       }
-    });
+    };
+    
+    console.log('API Response:', response);
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error sending to contractor:", error);
     return NextResponse.json({ error: "Failed to send to contractor" }, { status: 500 });
