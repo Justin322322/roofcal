@@ -23,12 +23,12 @@ export function MeasurementForm({
   onMeasurementsChange,
 }: MeasurementFormProps) {
   const handleChange = (field: string, value: string) => {
-    // Special handling for floors field to limit to 99
+    // Special handling for floors field to limit to 5
     if (field === "floors") {
       const numericValue = parseInt(value, 10);
       if (
         value === "" ||
-        (!isNaN(numericValue) && numericValue >= 1 && numericValue <= 99)
+        (!isNaN(numericValue) && numericValue >= 1 && numericValue <= 5)
       ) {
         onMeasurementsChange({
           ...measurements,
@@ -154,7 +154,7 @@ export function MeasurementForm({
             value={measurements.floors}
             onChange={(e) => handleChange("floors", e.target.value)}
             min="1"
-            max="99"
+            max="5"
             step="1"
             className="text-center"
           />

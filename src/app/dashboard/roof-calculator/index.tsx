@@ -243,7 +243,6 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
       <div className="mb-6 sm:mb-8">
         <RoofStatsCards
           area={results.area}
-          complexity={decisionTree.complexity}
           totalCost={results.totalCost}
           material={material}
         />

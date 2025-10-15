@@ -4,7 +4,6 @@
 
 import type {
   MaterialRecommendation,
-  ComplexityScore,
 } from "@/lib/decision-tree";
 
 export interface Measurements {
@@ -57,8 +56,7 @@ export interface CalculationResults {
 
 export interface DecisionTreeResult {
   materialRecommendation: MaterialRecommendation;
-  complexity: ComplexityScore;
   optimizationTips: string[];
 }
 
-export type { MaterialRecommendation, ComplexityScore };
+export type { MaterialRecommendation };

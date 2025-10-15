@@ -11,6 +11,7 @@ import {
   UserPlusIcon,
   HelpCircleIcon,
   ActivityIcon,
+  ArchiveIcon,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { UserRole } from "@/types/user-role";
@@ -40,6 +41,11 @@ const adminTools = {
       name: "Pricing Maintenance",
       url: "pricing-maintenance",
       icon: WrenchIcon,
+    },
+    {
+      name: "Archive Records",
+      url: "admin-archive-records",
+      icon: ArchiveIcon,
     },
   ],
 };

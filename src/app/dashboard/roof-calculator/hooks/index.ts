@@ -146,7 +146,6 @@ export function useRoofCalculator() {
 
     setDecisionTree({
       materialRecommendation: analysis.materialRecommendation,
-      complexity: analysis.complexity,
       optimizationTips: analysis.optimizationTips,
     });
   }, [
@@ -256,11 +255,6 @@ export function useRoofCalculator() {
           recommendedMaterial: material,
           reason: "Enter measurements to get recommendations",
           isOptimal: true,
-        },
-        complexity: {
-          score: 1,
-          factors: [],
-          level: "low",
         },
         optimizationTips: [],
       });
@@ -390,7 +384,6 @@ export function useRoofCalculator() {
 
     setDecisionTree({
       materialRecommendation: analysis.materialRecommendation,
-      complexity: analysis.complexity,
       optimizationTips: analysis.optimizationTips,
     });
   }, [measurements, material]);
@@ -446,11 +439,6 @@ export function useRoofCalculator() {
         recommendedMaterial: "corrugated",
         reason: "Enter measurements to get recommendations",
         isOptimal: true,
-      },
-      complexity: {
-        score: 1,
-        factors: [],
-        level: "low",
       },
       optimizationTips: [],
     });

@@ -133,7 +133,7 @@ export function CalculationResults({
                 onClick={handleOptimizeClick}
                 disabled={isOptimizing}
                 className="h-7 px-3 text-xs"
-                title="Optimize settings to reduce complexity while maintaining quality"
+                title="Optimize settings while maintaining quality"
               >
                 {isOptimizing ? (
                   <>

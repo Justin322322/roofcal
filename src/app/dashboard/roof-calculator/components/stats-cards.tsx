@@ -3,24 +3,18 @@
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import {
   RulerIcon,
-  AlertTriangleIcon,
   DollarSignIcon,
   PackageIcon,
 } from "lucide-react";
-import type { ComplexityScore } from "@/lib/decision-tree";
 import {
   formatCurrency,
-  getComplexityLabel,
-  getComplexityBadgeVariant,
 } from "../utils";
 import { materials } from "./material-selection";
 
 interface RoofStatsCardsProps {
   area: number;
-  complexity: ComplexityScore | null;
   totalCost: number;
   material: string;
   loading?: boolean;
@@ -42,7 +36,6 @@ function getMaterialPrice(materialValue: string): number {
 
 export function RoofStatsCards({
   area,
-  complexity,
   totalCost,
   material,
   loading = false,
@@ -59,20 +52,6 @@ export function RoofStatsCards({
         description: "Total calculated area",
       },
       {
-        title: "Complexity",
-        value: complexity ? (
-          <Badge variant={getComplexityBadgeVariant(complexity.level)}>
-            {complexity.score}/10
-          </Badge>
-        ) : (
-          "—"
-        ),
-        icon: AlertTriangleIcon,
-        description: complexity
-          ? getComplexityLabel(complexity.level)
-          : "No data",
-      },
-      {
         title: "Total Cost",
         value: totalCost > 0 ? formatCurrency(totalCost) : "—",
         icon: DollarSignIcon,
@@ -87,12 +66,12 @@ export function RoofStatsCards({
           : "Select material",
       },
     ];
-  }, [area, complexity, totalCost, material]);
+  }, [area, totalCost, material]);
 
   if (loading) {
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        {Array.from({ length: 4 }).map((_, index) => (
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+        {Array.from({ length: 3 }).map((_, index) => (
           <Card key={index} className="relative overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <Skeleton className="h-4 w-24" />
@@ -109,7 +88,7 @@ export function RoofStatsCards({
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
       {stats.map((stat, index) => (
         <Card key={index} className="relative overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

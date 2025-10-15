@@ -17,7 +17,6 @@ import {
   SparklesIcon,
 } from "lucide-react";
 import type { DecisionTreeResult } from "../types";
-import { ComplexityMeter } from "./complexity-meter";
 import { materials } from "./material-selection";
 
 interface DecisionInsightsProps {
@@ -31,7 +30,7 @@ export function DecisionInsights({
   currentMaterial,
   area,
 }: DecisionInsightsProps) {
-  const { materialRecommendation, complexity, optimizationTips } = decisionTree;
+  const { materialRecommendation, optimizationTips } = decisionTree;
 
   // Get material names and prices for display
   const currentMaterialData = materials.find(
@@ -178,14 +177,6 @@ export function DecisionInsights({
             </div>
           </div>
         )}
-
-        <Separator />
-
-        {/* Complexity Meter */}
-        <div className="space-y-3">
-          <h4 className="text-sm font-semibold">Project Complexity</h4>
-          <ComplexityMeter complexity={complexity} />
-        </div>
 
         <Separator />
 

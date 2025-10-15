@@ -48,7 +48,13 @@ interface PricingConfigAPIResponse {
   updated_at: string;
 }
 
-// No fallbacks; rely exclusively on API
+// Static materials data for fallback and component imports
+export const materials: Material[] = [
+  { value: 'corrugated-0.4', name: 'Corrugated (0.4mm)', price: 450, description: 'Lightweight, weather-resistant, 30-50 year lifespan - 0.4mm thickness' },
+  { value: 'corrugated-0.5', name: 'Corrugated (0.5mm)', price: 520, description: 'Durable, weather-resistant, 30-50 year lifespan - 0.5mm thickness' },
+  { value: 'longspan-0.4', name: 'Long Span (0.4mm)', price: 520, description: 'Durable, weather-resistant, excellent water drainage - 0.4mm thickness' },
+  { value: 'longspan-0.5', name: 'Long Span (0.5mm)', price: 600, description: 'Durable, weather-resistant, excellent water drainage - 0.5mm thickness' },
+];
 
 export function MaterialSelection({
   material,
