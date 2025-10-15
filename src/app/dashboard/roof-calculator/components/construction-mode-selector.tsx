@@ -159,9 +159,7 @@ export function ConstructionModeSelector({
             <WrenchIcon className="mb-3 h-6 w-6" />
             <div className="text-center">
               <div className="font-semibold">Repair</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                Includes removal
-              </div>
+              {/* Removal no longer included */}
               <div className="text-xs font-medium text-primary mt-1">
                 Labor: 20%
               </div>

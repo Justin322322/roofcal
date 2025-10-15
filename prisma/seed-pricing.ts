@@ -42,6 +42,9 @@ async function seedPricingData() {
     const gutters = [
       { name: 'standard', label: 'Standard Gutter (5 inch)', price: 350, description: 'Standard 5-inch gutter' },
       { name: 'large', label: 'Large Gutter (6 inch)', price: 450, description: 'Large 6-inch gutter for high-volume drainage' },
+      // Legacy/alt labels used in UI logic
+      { name: 'cut-16', label: 'Cut 16" Gutter', price: 350, description: 'Legacy 16-inch gutter alias' },
+      { name: 'cut-24', label: 'Cut 24" Gutter', price: 450, description: 'Legacy 24-inch gutter alias' },
     ];
 
     for (const gutter of gutters) {
@@ -60,11 +63,14 @@ async function seedPricingData() {
     }
     console.log('✅ Seeded gutter prices');
 
-    // Seed ridge prices (matching materials)
+    // Seed ridge prices (matching materials and UI constants)
     const ridges = [
       { name: 'asphalt', label: 'Asphalt Ridge Cap', price: 150, description: 'Ridge cap for asphalt shingles' },
       { name: 'metal', label: 'Metal Ridge Cap', price: 200, description: 'Ridge cap for metal roofing' },
       { name: 'corrugated', label: 'Corrugated Ridge Cap', price: 180, description: 'Ridge cap for corrugated roofing' },
+      { name: 'longspan', label: 'Long Span Ridge Cap', price: 200, description: 'Ridge cap for long span roofing' },
+      { name: 'standard', label: 'Standard Ridge Cap', price: 180, description: 'Standard ridge cap' },
+      { name: 'ventilated', label: 'Ventilated Ridge Cap', price: 220, description: 'Ventilated ridge for improved airflow' },
       { name: 'tile', label: 'Tile Ridge Cap', price: 250, description: 'Ridge cap for clay/concrete tiles' },
       { name: 'slate', label: 'Slate Ridge Cap', price: 300, description: 'Ridge cap for slate roofing' },
       { name: 'wood', label: 'Wood Ridge Cap', price: 180, description: 'Ridge cap for wood shakes' },

@@ -18,7 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SCREW_TYPES } from "../constants";
+import { Button } from "@/components/ui/button";
 
 interface ConsolidatedMaterialSelectionProps {
   material: string;
@@ -56,40 +56,7 @@ interface PricingConfigAPIResponse {
   updated_at: string;
 }
 
-// Fallback materials for when database is unavailable
-const fallbackMaterials: Material[] = [
-  {
-    value: "corrugated-0.4",
-    name: "Corrugated (0.4mm)",
-    price: 450,
-    description: "Lightweight, weather-resistant, 30-50 year lifespan - 0.4mm thickness",
-  },
-  {
-    value: "corrugated-0.5",
-    name: "Corrugated (0.5mm)",
-    price: 520,
-    description: "Durable, weather-resistant, 30-50 year lifespan - 0.5mm thickness",
-  },
-  {
-    value: "longspan-0.4",
-    name: "Long Span (0.4mm)",
-    price: 520,
-    description: "Durable, weather-resistant, excellent water drainage - 0.4mm thickness",
-  },
-  {
-    value: "longspan-0.5",
-    name: "Long Span (0.5mm)",
-    price: 600,
-    description: "Durable, weather-resistant, excellent water drainage - 0.5mm thickness",
-  },
-];
-
-// Convert SCREW_TYPES constant to array format as fallback
-const fallbackScrewTypes: ScrewType[] = Object.entries(SCREW_TYPES).map(([key, value]) => ({
-  value: key,
-  name: value.name,
-  price: value.price,
-}));
+// No fallbacks; rely exclusively on API
 
 export function ConsolidatedMaterialSelection({
   material,
@@ -99,16 +66,19 @@ export function ConsolidatedMaterialSelection({
   budgetLevel,
   onBudgetLevelChange,
 }: ConsolidatedMaterialSelectionProps) {
-  const [materials, setMaterials] = useState<Material[]>(fallbackMaterials);
-  const [screwTypes, setScrewTypes] = useState<ScrewType[]>(fallbackScrewTypes);
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [screwTypes, setScrewTypes] = useState<ScrewType[]>([]);
   const [isLoadingMaterials, setIsLoadingMaterials] = useState(true);
   const [isLoadingScrews, setIsLoadingScrews] = useState(true);
+  const [materialsError, setMaterialsError] = useState<string | null>(null);
+  const [screwsError, setScrewsError] = useState<string | null>(null);
 
   // Load materials from API
   useEffect(() => {
     const loadMaterials = async () => {
       try {
         setIsLoadingMaterials(true);
+        setMaterialsError(null);
         
         // Load all materials from pricing config
         const response = await fetch('/api/pricing?category=materials');
@@ -133,9 +103,9 @@ export function ConsolidatedMaterialSelection({
           throw new Error('Invalid API response format');
         }
       } catch (error) {
-        console.error('Failed to load materials from API, using fallback:', error);
-        // Use all fallback materials
-        setMaterials(fallbackMaterials);
+        console.error('Failed to load materials from API:', error);
+        setMaterials([]);
+        setMaterialsError('Failed to load materials. Please try again.');
       } finally {
         setIsLoadingMaterials(false);
       }
@@ -149,6 +119,7 @@ export function ConsolidatedMaterialSelection({
     const loadScrewTypes = async () => {
       try {
         setIsLoadingScrews(true);
+        setScrewsError(null);
         const response = await fetch('/api/pricing?category=screw_types');
         
         if (!response.ok) {
@@ -169,8 +140,9 @@ export function ConsolidatedMaterialSelection({
           throw new Error('Invalid API response format');
         }
       } catch (error) {
-        console.error('Failed to load screw types from API, using fallback:', error);
-        setScrewTypes(fallbackScrewTypes);
+        console.error('Failed to load screw types from API:', error);
+        setScrewTypes([]);
+        setScrewsError('Failed to load screw types. Please try again.');
       } finally {
         setIsLoadingScrews(false);
       }
@@ -194,18 +166,7 @@ export function ConsolidatedMaterialSelection({
     return true; // Show all if no budget level selected
   });
 
-  // Auto-select appropriate material when budget level changes
-  useEffect(() => {
-    if (!isLoadingMaterials && filteredMaterials.length > 0) {
-      // Check if current material is in filtered list
-      const isCurrentMaterialAvailable = filteredMaterials.some((m) => m.value === material);
-      
-      if (!isCurrentMaterialAvailable) {
-        // Auto-select the first available material from filtered list
-        onMaterialChange(filteredMaterials[0].value);
-      }
-    }
-  }, [budgetLevel, isLoadingMaterials, filteredMaterials, material, onMaterialChange]);
+  // Do not auto-select; require explicit user choice
 
   return (
     <div className="space-y-6">
@@ -245,6 +206,37 @@ export function ConsolidatedMaterialSelection({
         {isLoadingMaterials ? (
           <Skeleton className="h-11 w-full" />
         ) : (
+          <>
+          {materialsError && (
+            <div className="mb-2 flex items-center justify-between gap-2 rounded border border-destructive/30 bg-destructive/5 px-3 py-2 text-destructive">
+              <span className="text-xs sm:text-sm">{materialsError}</span>
+              <Button size="sm" variant="outline" onClick={async () => {
+                try {
+                  setIsLoadingMaterials(true);
+                  setMaterialsError(null);
+                  const response = await fetch('/api/pricing?category=materials');
+                  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                  const result = await response.json();
+                  if (result.success && result.data) {
+                    const dbMaterials = result.data.map((m: PricingConfigAPIResponse) => ({
+                      value: m.name,
+                      name: m.label,
+                      price: m.price,
+                      description: m.description || '',
+                    }));
+                    setMaterials(dbMaterials);
+                  } else {
+                    throw new Error('Invalid API response format');
+                  }
+                } catch (e) {
+                  console.error(e);
+                  setMaterialsError('Failed to load materials. Please try again.');
+                } finally {
+                  setIsLoadingMaterials(false);
+                }
+              }}>Retry</Button>
+            </div>
+          )}
           <Select value={material} onValueChange={onMaterialChange}>
             <SelectTrigger className="h-11">
               <SelectValue placeholder="Select material" />
@@ -260,6 +252,7 @@ export function ConsolidatedMaterialSelection({
               ))}
             </SelectContent>
           </Select>
+          </>
         )}
       </div>
 
@@ -269,6 +262,36 @@ export function ConsolidatedMaterialSelection({
         {isLoadingScrews ? (
           <Skeleton className="h-11 w-full" />
         ) : (
+          <>
+          {screwsError && (
+            <div className="mb-2 flex items-center justify-between gap-2 rounded border border-destructive/30 bg-destructive/5 px-3 py-2 text-destructive">
+              <span className="text-xs sm:text-sm">{screwsError}</span>
+              <Button size="sm" variant="outline" onClick={async () => {
+                try {
+                  setIsLoadingScrews(true);
+                  setScrewsError(null);
+                  const response = await fetch('/api/pricing?category=screw_types');
+                  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                  const result = await response.json();
+                  if (result.success && result.data) {
+                    const dbScrewTypes = result.data.map((st: PricingConfigAPIResponse) => ({
+                      value: st.name,
+                      name: st.label,
+                      price: st.price,
+                    }));
+                    setScrewTypes(dbScrewTypes);
+                  } else {
+                    throw new Error('Invalid API response format');
+                  }
+                } catch (e) {
+                  console.error(e);
+                  setScrewsError('Failed to load screw types. Please try again.');
+                } finally {
+                  setIsLoadingScrews(false);
+                }
+              }}>Retry</Button>
+            </div>
+          )}
           <Select value={screwType} onValueChange={onScrewTypeChange}>
             <SelectTrigger className="h-11">
               <SelectValue placeholder="Select Screw Type" />
@@ -284,6 +307,7 @@ export function ConsolidatedMaterialSelection({
               ))}
             </SelectContent>
           </Select>
+          </>
         )}
       </div>
 

@@ -7,7 +7,6 @@ import type {
   DecisionTreeResult,
 } from "../types";
 import { analyzeProject } from "@/lib/decision-tree";
-import { materials } from "../components/material-selection";
 import * as CONSTANTS from "../constants";
 import { getSlopeMultiplier } from "../constants";
 import { updatePricingConstants } from "../constants";
@@ -23,7 +22,7 @@ export function useRoofCalculator() {
     materialThickness: "0.4",
     insulationType: "fiberglass-batt",
     ridgeType: "corrugated",
-    gutterSize: "cut-16",
+    gutterSize: "standard",
     gutterMaterial: "pre-painted-gi",
     budgetLevel: "low",
     budgetAmount: "",
@@ -39,9 +38,10 @@ export function useRoofCalculator() {
     screwType: "roofing-with-washer",
   });
 
-  const [material, setMaterial] = useState("corrugated-0.4"); // Default material
+  const [material, setMaterial] = useState(""); // require explicit selection
   const [isLoadingPricing, setIsLoadingPricing] = useState(true);
   const [pricingError, setPricingError] = useState<string | null>(null);
+  const [isPricingLoaded, setIsPricingLoaded] = useState(false);
 
   // Auto-match ridge type with material selection
   useEffect(() => {
@@ -109,13 +109,14 @@ export function useRoofCalculator() {
         if (result.success && result.data) {
           updatePricingConstants(result.data);
           console.log('✅ Pricing constants loaded successfully from API');
+          setIsPricingLoaded(true);
         } else {
           throw new Error('Invalid API response format');
         }
       } catch (error) {
-        console.error('❌ Failed to load pricing from API, using fallback values:', error);
-        setPricingError('Failed to load latest pricing. Using cached values.');
-        // Continue with fallback values (already set in constants)
+        console.error('❌ Failed to load pricing from API:', error);
+        setPricingError('Failed to load latest pricing.');
+        setIsPricingLoaded(false);
       } finally {
         setIsLoadingPricing(false);
       }
@@ -207,6 +208,27 @@ export function useRoofCalculator() {
   }, [measurements.budgetLevel, measurements.length, measurements.width]);
 
   const calculateRoof = useCallback(() => {
+    // Block calculations until pricing has loaded and selections are valid
+    if (!isPricingLoaded || !material) {
+      setResults({
+        area: 0,
+        materialCost: 0,
+        gutterCost: 0,
+        ridgeCost: 0,
+        screwsCost: 0,
+        insulationCost: 0,
+        ventilationCost: 0,
+        totalMaterialsCost: 0,
+        laborCost: 0,
+        removalCost: 0,
+        totalCost: 0,
+        gutterPieces: 0,
+        ridgeLength: 0,
+        materialQuantity: 0,
+        screwsQuantity: 0,
+      });
+      return;
+    }
     const length = parseFloat(measurements.length) || 0;
     const width = parseFloat(measurements.width) || 0;
     const pitch = parseFloat(measurements.pitch) || 0;
@@ -254,9 +276,8 @@ export function useRoofCalculator() {
     const gableAreaMultiplier = measurements.roofType === "gable" ? 1.05 : 1.0;
     const totalArea = planArea * slopeMultiplier * gableAreaMultiplier;
 
-    // 2. Calculate roof material cost
-    const selectedMaterial = materials.find((m) => m.value === material);
-    const pricePerSqm = selectedMaterial?.price || CONSTANTS.MATERIAL_PRICES.corrugated;
+    // 2. Calculate roof material cost (from DB-backed constants)
+    const pricePerSqm = (CONSTANTS.MATERIAL_PRICES as Record<string, number>)[material] || 0;
     const materialCost = Math.round(totalArea * pricePerSqm);
 
     // 3. Calculate gutter cost
@@ -271,7 +292,7 @@ export function useRoofCalculator() {
           )
         : 0;
     const gutterPricePerPiece =
-      (CONSTANTS.GUTTER_PRICES as Record<string, number>)[measurements.gutterSize] || 350;
+      (CONSTANTS.GUTTER_PRICES as Record<string, number>)[measurements.gutterSize] || 0;
     const gutterCost = gutterPieces * gutterPricePerPiece;
 
     // 4. Calculate roof ridge cost
@@ -289,10 +310,10 @@ export function useRoofCalculator() {
     const screwsPerSqm = 10; // Base screws per square meter
     const screwsQuantity = Math.ceil(totalArea * screwsPerSqm);
     
-    // Get price per screw from selected screw type
-    // For now, use fallback pricing until we implement dynamic loading
-    const selectedScrewPrice = CONSTANTS.SCREW_TYPES[measurements.screwType as keyof typeof CONSTANTS.SCREW_TYPES]?.price || CONSTANTS.SCREW_TYPES["roofing-with-washer"].price;
-    const screwsCost = Math.round(screwsQuantity * selectedScrewPrice);
+    // Use per-sqm screws pricing by base material from DB constants
+    const baseMaterial = material.split('-')[0];
+    const screwsPricePerSqm = (CONSTANTS.SCREWS_PRICE_PER_SQM as Record<string, number>)[baseMaterial] || 0;
+    const screwsCost = Math.round(totalArea * screwsPricePerSqm);
 
     // 6. Calculate insulation cost (100% coverage) - only if included
     const insulationCost = measurements.includeInsulation
@@ -329,14 +350,11 @@ export function useRoofCalculator() {
         : CONSTANTS.LABOR_COST_NEW_CONSTRUCTION;
     const laborCost = Math.round(totalMaterialsCost * laborPercentage);
 
-    // 10. Calculate removal cost for repairs (included in labor for repairs)
-    const removalCost =
-      measurements.constructionMode === "repair"
-        ? Math.round(totalMaterialsCost * 0.1) // 10% removal cost
-        : 0;
+    // 10. Removal cost no longer applied
+    const removalCost = 0;
 
-    // 11. Calculate total cost
-    const totalCost = totalMaterialsCost + laborCost + removalCost;
+    // 11. Calculate total cost (without removal cost)
+    const totalCost = totalMaterialsCost + laborCost;
 
     setResults({
       area: totalArea,
@@ -405,7 +423,7 @@ export function useRoofCalculator() {
       includeVentilation: false,
       screwType: "roofing-with-washer",
     });
-    setMaterial("corrugated-0.4"); // Reset to default material
+    setMaterial(""); // require explicit selection after reset
     setResults({
       area: 0,
       materialCost: 0,
@@ -548,5 +566,6 @@ export function useRoofCalculator() {
     handleAutoOptimize,
     isLoadingPricing,
     pricingError,
+    isPricingLoaded,
   };
 }

@@ -378,7 +378,7 @@ Intelligent roofing cost estimation with decision tree algorithms and complexity
 
 - **Advanced Area Calculation**: Plan area with slope multiplier and roof type adjustments
 - **Material Selection**: Corrugated and Long-span materials with thickness options
-- **Construction Mode**: New (40% labor) vs Repair (20% labor + 10% removal)
+- **Construction Mode**: New (40% labor) vs Repair (20% labor)
 - **Budget Validation**: Real-time budget checking with smart alerts
 - **Gutter Calculator**: A-B-C formula with automatic piece calculation
 - **Ridge System**: Auto-matched to roof material (corrugated/longspan)
@@ -412,11 +412,10 @@ if (constructionMode === "NEW") {
     laborCost = totalMaterialsCost × 0.4 // 40% labor
 } else if (constructionMode === "REPAIR") {
     laborCost = totalMaterialsCost × 0.2 // 20% labor
-    removalCost = totalMaterialsCost × 0.1 // 10% removal
 }
 
-// Total Cost
-totalCost = totalMaterialsCost + laborCost + removalCost
+// Total Cost (no removal fee)
+totalCost = totalMaterialsCost + laborCost
 ```
 
 #### Complexity Scoring Factors

@@ -274,20 +274,7 @@ export function CalculationResults({
           <Separator />
         </div>
 
-        {/* Removal Cost (Repair mode only) */}
-        {removalCost > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">
-                Removal Cost (10%)
-              </span>
-              <span className="text-base font-medium">
-                ₱{formatNumberWithCommas(removalCost)}
-              </span>
-            </div>
-            <Separator />
-          </div>
-        )}
+        {/* Removal cost no longer displayed */}
 
         {/* Total Cost */}
         <div className="space-y-2">
@@ -338,9 +325,7 @@ export function CalculationResults({
 
         <div className="pt-4 text-xs text-muted-foreground">
           * {constructionMode === "repair" ? "Repair" : "New construction"}{" "}
-          estimate includes all materials, labor
-          {constructionMode === "repair" ? ", and removal" : ""}. Additional
-          fees may apply for permits and site-specific requirements.
+          estimate includes all materials and labor. Additional fees may apply for permits and site-specific requirements.
         </div>
       </CardContent>
     </Card>

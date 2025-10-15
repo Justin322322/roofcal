@@ -30,7 +30,6 @@ import {
   Loader2Icon,
 } from "lucide-react";
 import { useRoofCalculator } from "./hooks";
-import { materials } from "./components/material-selection";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import type { Measurements } from "./types";
@@ -39,11 +38,9 @@ import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { UserRole } from "@/types/user-role";
 
-// Helper function to get material name with fallback
+// Display helper; currently shows value. Label mapping is handled in selectors.
 function getMaterialName(materialValue: string): string {
-  // Find in materials array
-  const material = materials.find((m) => m.value === materialValue);
-  return material?.name || materialValue;
+  return materialValue || "";
 }
 
 interface RoofCalculatorContentProps {
@@ -73,6 +70,8 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
     decisionTree,
     handleReset,
     handleAutoOptimize,
+    isPricingLoaded,
+    pricingError,
   } = useRoofCalculator();
 
   // Check if this is a help request from a client or admin mode
@@ -174,6 +173,14 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
   return (
     <div className="px-3 sm:px-4 lg:px-6">
       <div className="space-y-4 sm:space-y-6">
+        {pricingError && (
+          <Card className="border-destructive/30 bg-destructive/5">
+            <CardHeader>
+              <CardTitle className="text-sm text-destructive">Pricing failed to load</CardTitle>
+              <CardDescription className="text-xs text-destructive/80">Please try again or contact support.</CardDescription>
+            </CardHeader>
+          </Card>
+        )}
         {/* Action Buttons */}
         <div className="mb-4 flex flex-col sm:flex-row sm:justify-end gap-2">
           <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -399,6 +406,7 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
 
           {/* Right Column - Results & Analysis (Sticky) */}
           <div className="space-y-4 sm:space-y-6 lg:sticky lg:top-4 lg:self-start">
+            {isPricingLoaded && material && (
             <CalculationResults
               area={results.area}
               materialCost={results.materialCost}
@@ -425,8 +433,9 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
               pitch={parseFloat(measurements.pitch) || undefined}
               roofTypeLabel={`${measurements.roofType.charAt(0).toUpperCase()}${measurements.roofType.slice(1)} roof${measurements.roofType === "shed" ? " (single slope)" : ""}`}
             />
+            )}
 
-            {results.totalCost > 0 && (
+            {isPricingLoaded && material && results.totalCost > 0 && (
               <DecisionInsights
                 decisionTree={decisionTree}
                 currentMaterial={material}
@@ -434,7 +443,7 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
               />
             )}
 
-            {results.totalCost > 0 && (
+            {isPricingLoaded && material && results.totalCost > 0 && (
               <Card className="bg-primary/5 border-primary/20">
                 <CardHeader>
                   <CardTitle className="text-sm sm:text-base">Quick Tips</CardTitle>

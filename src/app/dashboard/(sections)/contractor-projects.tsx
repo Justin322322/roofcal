@@ -892,12 +892,7 @@ export function ContractorProjectsContent() {
                           <span className="font-medium">₱{selectedProject.laborCost.toLocaleString()}</span>
                         </div>
                       )}
-                      {selectedProject.removalCost !== undefined && selectedProject.removalCost > 0 && (
-                        <div className="flex justify-between text-sm">
-                          <span>Removal & Disposal</span>
-                          <span className="font-medium">₱{selectedProject.removalCost.toLocaleString()}</span>
-                        </div>
-                      )}
+                      {/* Removal & Disposal no longer displayed */}
                       {selectedProject.deliveryCost !== null && selectedProject.deliveryCost !== undefined && selectedProject.deliveryCost > 0 && (
                         <div className="flex justify-between text-sm">
                           <span>Delivery</span>

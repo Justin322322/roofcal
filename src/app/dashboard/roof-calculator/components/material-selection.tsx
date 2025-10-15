@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 // Remove direct import of server-side function
 
 interface MaterialSelectionProps {
@@ -47,33 +48,7 @@ interface PricingConfigAPIResponse {
   updated_at: string;
 }
 
-// Fallback materials for when database is unavailable
-const fallbackMaterials: Material[] = [
-  {
-    value: "corrugated-0.4",
-    name: "Corrugated (0.4mm)",
-    price: 450,
-    description: "Lightweight, weather-resistant, 30-50 year lifespan - 0.4mm thickness",
-  },
-  {
-    value: "corrugated-0.5",
-    name: "Corrugated (0.5mm)",
-    price: 520,
-    description: "Durable, weather-resistant, 30-50 year lifespan - 0.5mm thickness",
-  },
-  {
-    value: "longspan-0.4",
-    name: "Long Span (0.4mm)",
-    price: 520,
-    description: "Durable, weather-resistant, excellent water drainage - 0.4mm thickness",
-  },
-  {
-    value: "longspan-0.5",
-    name: "Long Span (0.5mm)",
-    price: 600,
-    description: "Durable, weather-resistant, excellent water drainage - 0.5mm thickness",
-  },
-];
+// No fallbacks; rely exclusively on API
 
 export function MaterialSelection({
   material,
@@ -81,14 +56,16 @@ export function MaterialSelection({
   onRidgeTypeChange,
   selectedWarehouseId,
 }: MaterialSelectionProps) {
-  const [materials, setMaterials] = useState<Material[]>(fallbackMaterials);
+  const [materials, setMaterials] = useState<Material[]>([]);
   const [isLoadingMaterials, setIsLoadingMaterials] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Load materials from API on mount or when warehouse changes
   useEffect(() => {
     const loadMaterials = async () => {
       try {
         setIsLoadingMaterials(true);
+        setLoadError(null);
         
         if (selectedWarehouseId) {
           // Load materials from specific warehouse
@@ -152,9 +129,9 @@ export function MaterialSelection({
           }
         }
       } catch (error) {
-        console.error('Failed to load materials from API, using fallback:', error);
-        // Use all fallback materials
-        setMaterials(fallbackMaterials);
+        console.error('Failed to load materials from API:', error);
+        setMaterials([]);
+        setLoadError('Failed to load materials. Please try again.');
       } finally {
         setIsLoadingMaterials(false);
       }
@@ -165,18 +142,7 @@ export function MaterialSelection({
 
   const selectedMaterial = materials.find((m) => m.value === material);
 
-  // Ensure currently selected material is valid; default to first available material
-  useEffect(() => {
-    if (!isLoadingMaterials) {
-      const exists = materials.some((m) => m.value === material);
-      if (!exists && materials.length > 0) {
-        onMaterialChange(materials[0].value);
-        if (materials[0].value === "corrugated" && onRidgeTypeChange) {
-          onRidgeTypeChange("corrugated");
-        }
-      }
-    }
-  }, [isLoadingMaterials, materials, material, onMaterialChange, onRidgeTypeChange]);
+  // Do not auto-select; require explicit user choice
 
   const handleMaterialChange = (newMaterial: string) => {
     onMaterialChange(newMaterial);
@@ -216,6 +182,56 @@ export function MaterialSelection({
             Showing {materials.length} materials from selected warehouse
           </div>
         )}
+        {loadError && (
+          <div className="flex items-center justify-between gap-2 rounded border border-destructive/30 bg-destructive/5 px-3 py-2 text-destructive">
+            <span className="text-sm">{loadError}</span>
+            <Button size="sm" variant="outline" onClick={() => {
+              // trigger reload by resetting selectedWarehouseId dependency path
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+              (async () => {
+                try {
+                  setIsLoadingMaterials(true);
+                  setLoadError(null);
+                  // Re-run effect logic
+                  const url = selectedWarehouseId
+                    ? `/api/warehouses/${selectedWarehouseId}/materials`
+                    : '/api/pricing?category=materials';
+                  const response = await fetch(url);
+                  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                  const result = await response.json();
+                  if (result.success && result.data) {
+                    if (selectedWarehouseId) {
+                      const warehouseMaterials = result.data
+                        .filter((wm: any) => wm.isActive && wm.quantity > 0)
+                        .map((wm: any) => ({
+                          value: wm.material.name,
+                          name: wm.material.label,
+                          price: wm.material.price * (1 + wm.locationAdjustment / 100),
+                          description: wm.material.description || '',
+                        }));
+                      setMaterials(warehouseMaterials);
+                    } else {
+                      const dbMaterials = result.data.map((m: PricingConfigAPIResponse) => ({
+                        value: m.name,
+                        name: m.label,
+                        price: m.price,
+                        description: m.description || '',
+                      }));
+                      setMaterials(dbMaterials);
+                    }
+                  } else {
+                    throw new Error('Invalid API response format');
+                  }
+                } catch (e) {
+                  console.error(e);
+                  setLoadError('Failed to load materials. Please try again.');
+                } finally {
+                  setIsLoadingMaterials(false);
+                }
+              })();
+            }}>Retry</Button>
+          </div>
+        )}
         <Select value={material} onValueChange={handleMaterialChange}>
           <SelectTrigger className="max-w-full truncate">
             <SelectValue placeholder="Select material" />
@@ -252,5 +268,4 @@ export function MaterialSelection({
   );
 }
 
-// Export fallback materials for backwards compatibility
-export { fallbackMaterials as materials };
+// No fallback re-exports
