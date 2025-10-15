@@ -255,6 +255,45 @@ export function ContractorProjectsContent() {
     }
   };
 
+  const handleStartWork = async (projectId: string) => {
+    setLoadingProjectId(projectId);
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          status: "IN_PROGRESS"
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to start work");
+      }
+
+      const result = await response.json();
+      toast.success(result.message || "Work started", {
+        description: "The project is now in progress",
+      });
+      
+      // Update local state
+      setProjects(prevProjects => 
+        prevProjects.map(project => 
+          project.id === projectId 
+            ? { ...project, status: "IN_PROGRESS" }
+            : project
+        )
+      );
+    } catch (error) {
+      console.error("Failed to start work:", error);
+      toast.error("Failed to start work", {
+        description: error instanceof Error ? error.message : "Please try again",
+      });
+    } finally {
+      setLoadingProjectId(null);
+    }
+  };
+
   const handleFinishProject = async (projectId: string) => {
     setLoadingProjectId(projectId);
     try {
@@ -357,6 +396,7 @@ export function ContractorProjectsContent() {
       if (statusFilter === "reviewing" && projectStatus !== "CONTRACTOR_REVIEWING") return false;
       if (statusFilter === "client-review" && projectStatus !== "FOR_CLIENT_REVIEW") return false;
       if (statusFilter === "accepted" && projectStatus !== "ACCEPTED" && projectStatus !== "ACTIVE" && projectStatus !== "DRAFT" && project.proposalStatus !== "ACCEPTED") return false;
+      if (statusFilter === "in-progress" && projectStatus !== "IN_PROGRESS") return false;
       if (statusFilter === "completed" && projectStatus !== "COMPLETED") return false;
       if (statusFilter === "rejected" && projectStatus !== "REJECTED" && project.proposalStatus !== "REJECTED") return false;
       if (statusFilter === "archived" && projectStatus !== "ARCHIVED") return false;
@@ -487,7 +527,8 @@ export function ContractorProjectsContent() {
                     <SelectItem value="all">All Statuses</SelectItem>
                     <SelectItem value="reviewing">Under Review</SelectItem>
                     <SelectItem value="client-review">Awaiting Client</SelectItem>
-                    <SelectItem value="accepted">Accepted & Active</SelectItem>
+                    <SelectItem value="accepted">Accepted</SelectItem>
+                    <SelectItem value="in-progress">In Progress</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
                     <SelectItem value="rejected">Declined</SelectItem>
                     <SelectItem value="archived">Archived</SelectItem>
@@ -621,6 +662,7 @@ export function ContractorProjectsContent() {
                             <Button
                               size="sm"
                               variant="outline"
+                              className="border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-700"
                               onClick={() => handleViewProject(project)}
                             >
                               <EyeIcon className="h-4 w-4 mr-1" />
@@ -631,6 +673,7 @@ export function ContractorProjectsContent() {
                                 <Button
                                   size="sm"
                                   variant="default"
+                                  className="bg-green-600 hover:bg-green-700 text-white"
                                   onClick={() => handleAcceptProject(project.id)}
                                   disabled={loadingProjectId === project.id}
                                 >
@@ -657,10 +700,53 @@ export function ContractorProjectsContent() {
                                 </Button>
                               </>
                             )}
-                            {(project.status === "ACCEPTED" || project.status === "ACTIVE" || project.status === "DRAFT") && (
+                            {project.status === "ACCEPTED" && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                                  onClick={() => handleStartWork(project.id)}
+                                  disabled={loadingProjectId === project.id}
+                                >
+                                  {loadingProjectId === project.id ? (
+                                    <>
+                                      <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
+                                      Starting...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <CheckCircleIcon className="h-4 w-4 mr-1" />
+                                      Start Work
+                                    </>
+                                  )}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-orange-500 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
+                                  onClick={() => handleFinishProject(project.id)}
+                                  disabled={loadingProjectId === project.id}
+                                >
+                                  {loadingProjectId === project.id ? (
+                                    <>
+                                      <Loader2Icon className="h-4 w-4 mr-1 animate-spin" />
+                                      Finishing...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <CheckCircleIcon className="h-4 w-4 mr-1" />
+                                      Complete Project
+                                    </>
+                                  )}
+                                </Button>
+                              </>
+                            )}
+                            {(project.status === "IN_PROGRESS" || project.status === "ACTIVE" || project.status === "DRAFT") && (
                               <Button
                                 size="sm"
                                 variant="default"
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white"
                                 onClick={() => handleFinishProject(project.id)}
                                 disabled={loadingProjectId === project.id}
                               >

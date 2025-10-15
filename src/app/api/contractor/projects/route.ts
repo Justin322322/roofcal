@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
         "reviewing": "CONTRACTOR_REVIEWING",
         "client-review": "FOR_CLIENT_REVIEW",
         "accepted": "ACCEPTED",
+        "in-progress": "IN_PROGRESS",
         "completed": "COMPLETED",
         "rejected": "REJECTED",
         "archived": "ARCHIVED"
