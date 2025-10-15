@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { DownloadIcon } from "lucide-react";
 import { useAccountManagement } from "./hooks";
 import { toast } from "sonner";
+import { enableAccount } from "./actions";
 
 export function AccountManagementContent() {
   const { data: session, status } = useSession();
@@ -147,13 +148,42 @@ export function AccountManagementContent() {
     }
   };
 
-  const handleEnableAccount = async (): Promise<void> => {
+  const handleEnableAccount = async (accountId?: string): Promise<void> => {
     try {
-      // The enableAccount function is called directly from the modal
-      // This handler is just for refreshing the accounts list
-      refreshAccounts();
+      // Use the accountId parameter if provided, otherwise use the selected account from modal
+      const targetAccountId = accountId || selectedAccount?.id;
+      
+      if (!targetAccountId) {
+        toast.error("No account selected", {
+          description: "Please select an account to enable.",
+          duration: 3000,
+        });
+        return;
+      }
+
+      const result = await enableAccount(targetAccountId);
+      
+      if (result.success) {
+        toast.success("Account enabled successfully", {
+          description: "The account has been enabled and access restored.",
+          duration: 3000,
+        });
+        refreshAccounts();
+      } else {
+        const errorMessage = result.errors?.[0] || "Failed to enable account";
+        toast.error("Failed to enable account", {
+          description: errorMessage,
+          duration: 5000,
+        });
+      }
     } catch (error) {
-      console.error("Error refreshing accounts after enable:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "An unexpected error occurred";
+      console.error("Enable account error:", error);
+      toast.error("Failed to enable account", {
+        description: errorMessage,
+        duration: 5000,
+      });
     }
   };
 
