@@ -10,6 +10,7 @@ import {
   CheckCircle2Icon,
   XCircleIcon,
   ArchiveIcon,
+  UserCheckIcon,
 } from "lucide-react";
 
 export interface WorkflowTransition {
@@ -226,6 +227,12 @@ export function getStatusDisplayInfo(status: ProjectStatus) {
       description: "Waiting for contractor to review",
       color: "bg-yellow-100 text-yellow-800",
       icon: ClockIcon,
+    },
+    FOR_CLIENT_REVIEW: {
+      label: "For Client Review",
+      description: "Waiting for client to review and approve",
+      color: "bg-purple-100 text-purple-800",
+      icon: UserCheckIcon,
     },
     CONTRACTOR_REVIEWING: {
       label: "Under Review",

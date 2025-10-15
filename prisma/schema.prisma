@@ -304,6 +304,7 @@ enum project_status {
   COMPLETED
   ARCHIVED
   REJECTED
+  FOR_CLIENT_REVIEW
 }
 
 enum user_role {

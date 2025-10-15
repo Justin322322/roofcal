@@ -34,11 +34,12 @@ export async function PUT(
     const project = await prisma.project.findFirst({
       where: {
         id: id,
-        userId: session.user.id, // Only the project owner can approve/reject
+        clientId: session.user.id, // Only the client can approve/reject
       },
       include: {
         user_project_userIdTouser: true, // Project owner
-        user_project_contractorIdTouser: true, // Admin who created it
+        user_project_contractorIdTouser: true, // Contractor who created it
+        user_project_clientIdTouser: true, // Client
       },
     });
 
@@ -49,36 +50,37 @@ export async function PUT(
       );
     }
 
-    // Only projects with CLIENT_PENDING status can be approved/rejected
-    if (project.status !== "CLIENT_PENDING") {
+    // Only projects with FOR_CLIENT_REVIEW status can be approved/rejected
+    if (project.status !== "FOR_CLIENT_REVIEW") {
       return NextResponse.json(
-        { success: false, error: "Project is not pending approval" },
+        { success: false, error: "Project is not pending client review" },
         { status: 400 }
       );
     }
 
-    // Update project status
-    const newStatus = action === "approve" ? "ACTIVE" : "REJECTED";
+    // Update project status based on workflow
+    const newStatus = action === "approve" ? "CONTRACTOR_REVIEWING" : "REJECTED";
     
     const updatedProject = await prisma.project.update({
       where: { id: id },
       data: {
         status: newStatus,
+        proposalStatus: action === "approve" ? "DRAFT" : null,
         updated_at: new Date(),
       },
     });
 
-    // Create notification for the admin who created the project
+    // Create notification for the contractor who created the project
     if (project.user_project_contractorIdTouser) {
       await prisma.notification.create({
         data: {
           id: crypto.randomUUID(),
           userId: project.user_project_contractorIdTouser.id,
           type: action === "approve" ? "PROJECT_APPROVED" : "PROJECT_REJECTED",
-          title: action === "approve" ? "Project Approved" : "Project Rejected",
+          title: action === "approve" ? "Project Approved by Client" : "Project Rejected by Client",
           message: action === "approve" 
-            ? `${project.projectName} has been approved by ${project.user_project_userIdTouser.firstName} ${project.user_project_userIdTouser.lastName}`
-            : `${project.projectName} has been rejected by ${project.user_project_userIdTouser.firstName} ${project.user_project_userIdTouser.lastName}`,
+            ? `${project.projectName} has been approved by ${project.user_project_clientIdTouser?.firstName} ${project.user_project_clientIdTouser?.lastName}. You can now proceed with the work.`
+            : `${project.projectName} has been rejected by ${project.user_project_clientIdTouser?.firstName} ${project.user_project_clientIdTouser?.lastName}.`,
           projectId: project.id,
           projectName: project.projectName,
           actionUrl: `/dashboard?tab=contractor-projects`,

@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2, AlertTriangle, CheckCircle2, Calendar, Settings2, ShieldAlert } from "lucide-react";
 
 interface MaintenanceSettings {
@@ -28,6 +29,8 @@ export default function SystemControlContent() {
   const [scheduledEnd, setScheduledEnd] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [pendingAction, setPendingAction] = useState<"enable" | "disable" | null>(null);
 
   useEffect(() => {
     fetchSettings();
@@ -53,18 +56,26 @@ export default function SystemControlContent() {
     }
   };
 
-  const handleToggleMaintenance = async () => {
+  const handleToggleMaintenance = () => {
+    const action = settings?.maintenanceMode ? "disable" : "enable";
+    setPendingAction(action);
+    setShowConfirmation(true);
+  };
+
+  const handleConfirmToggle = async () => {
+    if (!pendingAction) return;
+
     try {
       setSaving(true);
       setError(null);
       setSuccess(null);
+      setShowConfirmation(false);
 
-      const action = settings?.maintenanceMode ? "disable" : "enable";
       const response = await fetch("/api/system/maintenance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action,
+          action: pendingAction,
           message,
           scheduledEnd: scheduledEnd || null,
         }),
@@ -75,13 +86,19 @@ export default function SystemControlContent() {
       const data = await response.json();
       setSettings(data);
       setSuccess(
-        `Maintenance mode ${action === "enable" ? "enabled" : "disabled"} successfully`
+        `Maintenance mode ${pendingAction === "enable" ? "enabled" : "disabled"} successfully`
       );
     } catch {
       setError("Failed to update maintenance mode");
     } finally {
       setSaving(false);
+      setPendingAction(null);
     }
+  };
+
+  const handleCancelToggle = () => {
+    setShowConfirmation(false);
+    setPendingAction(null);
   };
 
   const handleManualLift = async () => {
@@ -286,6 +303,59 @@ export default function SystemControlContent() {
           </Card>
         </div>
       )}
+
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Confirm Maintenance Mode Change
+            </DialogTitle>
+            <DialogDescription className="text-left">
+              {pendingAction === "enable" ? (
+                <>
+                  <strong>Warning:</strong> You are about to enable maintenance mode. This will:
+                  <ul className="mt-2 space-y-1 text-sm">
+                    <li>• Block all non-DEVELOPER users from accessing the system</li>
+                    <li>• Redirect all users to the maintenance page</li>
+                    <li>• Prevent normal system operations</li>
+                  </ul>
+                  <p className="mt-2 text-sm font-medium">
+                    Are you sure you want to proceed?
+                  </p>
+                </>
+              ) : (
+                <>
+                  You are about to disable maintenance mode. This will restore normal system access for all users.
+                  <p className="mt-2 text-sm font-medium">
+                    Are you sure you want to proceed?
+                  </p>
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancelToggle}
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant={pendingAction === "enable" ? "destructive" : "default"}
+              onClick={handleConfirmToggle}
+              disabled={saving}
+            >
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {pendingAction === "enable" ? "Enable Maintenance" : "Disable Maintenance"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

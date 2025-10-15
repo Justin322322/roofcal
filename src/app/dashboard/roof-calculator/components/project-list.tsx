@@ -437,6 +437,7 @@ export function ProjectList() {
                     <SelectItem value="all">All Projects</SelectItem>
                     <SelectItem value="DRAFT">Draft</SelectItem>
                     <SelectItem value="CLIENT_PENDING">Pending Approval</SelectItem>
+                    <SelectItem value="FOR_CLIENT_REVIEW">For Client Review</SelectItem>
                     <SelectItem value="CONTRACTOR_REVIEWING">Under Review</SelectItem>
                     <SelectItem value="ACCEPTED">Accepted</SelectItem>
                     <SelectItem value="COMPLETED">Completed</SelectItem>
@@ -701,7 +702,7 @@ export function ProjectList() {
                             Send to Contractor
                           </DropdownMenuItem>
                         )}
-                        {project.status === "CLIENT_PENDING" && (
+                        {(project.status === "CLIENT_PENDING" || project.status === "FOR_CLIENT_REVIEW") && (
                           <>
                             <DropdownMenuItem
                               onClick={() => handleApproveProject(project.id)}
