@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
       // Map filter values to database status values
       const statusMapping: { [key: string]: string } = {
         "reviewing": "CONTRACTOR_REVIEWING",
+        "client-review": "FOR_CLIENT_REVIEW",
         "accepted": "ACCEPTED",
         "completed": "COMPLETED",
         "rejected": "REJECTED",
@@ -36,10 +37,10 @@ export async function GET(request: NextRequest) {
       const dbStatus = statusMapping[statusFilter] || statusFilter;
       where.status = dbStatus;
     } else {
-      // If no specific status filter, exclude DRAFT and FOR_CLIENT_REVIEW projects
-      // Contractors should only see projects they need to work on (not drafts or projects waiting for client review)
+      // If no specific status filter, exclude only DRAFT projects
+      // Contractors should see all their assigned projects including those waiting for client review
       where.status = {
-        notIn: ["DRAFT", "FOR_CLIENT_REVIEW"]
+        notIn: ["DRAFT"]
       };
     }
 

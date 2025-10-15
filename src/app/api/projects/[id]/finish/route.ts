@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
 import { notifyProjectCompleted } from "@/lib/notifications";
+import { revalidatePath } from "next/cache";
 
 export const runtime = 'nodejs';
 
@@ -66,6 +67,12 @@ export async function POST(
         // Don't fail the request if notification fails
       }
     }
+
+    // Revalidate paths to refresh project lists
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard?tab=contractor-projects");
+    revalidatePath("/dashboard?tab=projects");
+    revalidatePath("/api/contractor/projects");
 
     return NextResponse.json({ 
       success: true, 

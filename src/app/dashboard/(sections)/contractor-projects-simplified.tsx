@@ -186,7 +186,8 @@ export function ContractorProjectsContent() {
   const fetchProjects = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/contractor/projects');
+      // Add cache-busting parameter to ensure fresh data
+      const response = await fetch(`/api/contractor/projects?t=${Date.now()}`);
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.projects) {
@@ -272,7 +273,7 @@ export function ContractorProjectsContent() {
         description: "The project has been marked as completed",
       });
       
-      // Update local state instead of refreshing
+      // Update local state and refresh from server
       setProjects(prevProjects => 
         prevProjects.map(project => 
           project.id === projectId 
@@ -280,6 +281,11 @@ export function ContractorProjectsContent() {
             : project
         )
       );
+      
+      // Also refresh from server to ensure consistency
+      setTimeout(() => {
+        fetchProjects();
+      }, 500);
     } catch (error) {
       console.error("Failed to finish project:", error);
       toast.error("Failed to finish project", {
@@ -349,6 +355,7 @@ export function ContractorProjectsContent() {
     if (statusFilter !== "all") {
       const projectStatus = project.proposalStatus || project.status;
       if (statusFilter === "reviewing" && projectStatus !== "CONTRACTOR_REVIEWING") return false;
+      if (statusFilter === "client-review" && projectStatus !== "FOR_CLIENT_REVIEW") return false;
       if (statusFilter === "accepted" && projectStatus !== "ACCEPTED" && projectStatus !== "ACTIVE" && projectStatus !== "DRAFT" && project.proposalStatus !== "ACCEPTED") return false;
       if (statusFilter === "completed" && projectStatus !== "COMPLETED") return false;
       if (statusFilter === "rejected" && projectStatus !== "REJECTED" && project.proposalStatus !== "REJECTED") return false;
@@ -478,7 +485,8 @@ export function ContractorProjectsContent() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="reviewing">Action Required</SelectItem>
+                    <SelectItem value="reviewing">Under Review</SelectItem>
+                    <SelectItem value="client-review">Awaiting Client</SelectItem>
                     <SelectItem value="accepted">Accepted & Active</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
                     <SelectItem value="rejected">Declined</SelectItem>
