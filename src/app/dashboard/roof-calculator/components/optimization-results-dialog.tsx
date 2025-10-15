@@ -99,7 +99,7 @@ export function OptimizationResultsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {optimizationResult.hasChanges ? (
+        {optimizationResult.hasChanges && optimizationResult.changesCount > 0 ? (
           <div className="space-y-6">
             {/* Summary Card */}
             <Card className="bg-primary/5 border-primary/20">

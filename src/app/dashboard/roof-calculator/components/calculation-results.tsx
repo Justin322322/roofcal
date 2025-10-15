@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { SparklesIcon, Loader2Icon } from "lucide-react";
+import { SparklesIcon, Loader2Icon, HammerIcon, WrenchIcon } from "lucide-react";
 import { useState } from "react";
 import { formatNumberWithCommas } from "../utils/format";
 import { getSlopeMultiplier, SCREW_TYPES } from "../constants";
@@ -255,7 +255,12 @@ export function CalculationResults({
         {/* Labor Cost */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-muted-foreground flex items-center gap-2">
+              {constructionMode === "repair" ? (
+                <WrenchIcon className="h-4 w-4" />
+              ) : (
+                <HammerIcon className="h-4 w-4" />
+              )}
               Labor Cost ({constructionMode === "repair" ? "20%" : "40%"})
             </span>
             <span className="text-base font-medium">
@@ -314,8 +319,18 @@ export function CalculationResults({
           </div>
         )}
 
-        <div className="pt-4 text-xs text-muted-foreground">
-          * {constructionMode === "repair" ? "Repair" : "New construction"}{" "}
+        <div className="pt-4 text-xs text-muted-foreground flex items-center gap-1">
+          * {constructionMode === "repair" ? (
+            <>
+              <WrenchIcon className="h-3 w-3" />
+              <span>Repair</span>
+            </>
+          ) : (
+            <>
+              <HammerIcon className="h-3 w-3" />
+              <span>New construction</span>
+            </>
+          )}{" "}
           estimate includes all materials and labor. Additional fees may apply for permits and site-specific requirements.
         </div>
       </CardContent>

@@ -349,6 +349,8 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
                   budgetLevel={measurements.budgetLevel}
                   onBudgetLevelChange={(budgetLevel, materialThickness) => {
                     setMeasurements({ ...measurements, budgetLevel, materialThickness });
+                    // Clear material selection when budget level changes since available materials are filtered by thickness
+                    setMaterial("");
                   }}
                 />
 
