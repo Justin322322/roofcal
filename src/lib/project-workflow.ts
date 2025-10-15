@@ -53,6 +53,21 @@ export const WORKFLOW_TRANSITIONS: WorkflowTransition[] = [
     autoUpdateProposalStatus: "SENT",
   },
   
+  // Client review workflow (admin-created projects)
+  {
+    from: "FOR_CLIENT_REVIEW",
+    to: "ACTIVE",
+    allowedRoles: [UserRole.CLIENT],
+    description: "Approve project proposal",
+    autoUpdateProposalStatus: "ACCEPTED",
+  },
+  {
+    from: "FOR_CLIENT_REVIEW",
+    to: "REJECTED",
+    allowedRoles: [UserRole.CLIENT],
+    description: "Reject project proposal",
+  },
+  
   // Proposal response workflow
   {
     from: "PROPOSAL_SENT",
@@ -288,6 +303,7 @@ export function getWorkflowProgress(currentStatus: ProjectStatus): {
 } {
   const workflowSteps: ProjectStatus[] = [
     "DRAFT",
+    "FOR_CLIENT_REVIEW", // Admin-created projects
     "CLIENT_PENDING", 
     "CONTRACTOR_REVIEWING",
     "PROPOSAL_SENT",

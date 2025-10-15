@@ -59,9 +59,7 @@ export async function PUT(
       );
     }
 
-    // Update project status based on workflow
-    // When client approves, always go to ACCEPTED status
-    const newStatus = action === "approve" ? "ACCEPTED" : "REJECTED";
+    const newStatus = action === "approve" ? "ACTIVE" : "REJECTED";
     
     const updatedProject = await prisma.project.update({
       where: { id: id },
@@ -80,7 +78,7 @@ export async function PUT(
           userId: project.user_project_contractorIdTouser.id,
           type: "PROJECT_APPROVED",
           title: "Project Approved by Client",
-          message: `${project.projectName} has been approved by ${project.user_project_clientIdTouser?.firstName} ${project.user_project_clientIdTouser?.lastName}. The project is now accepted and ready for work.`,
+          message: `${project.projectName} has been approved by ${project.user_project_clientIdTouser?.firstName} ${project.user_project_clientIdTouser?.lastName}. The project is now active and ready for work.`,
           projectId: project.id,
           projectName: project.projectName,
           actionUrl: `/dashboard?tab=contractor-projects`,
@@ -90,18 +88,16 @@ export async function PUT(
       });
     }
     
-    // Create notification for the admin who created the project (if rejected or no contractor)
-    if (action === "reject" || !project.contractorId) {
+    // Create notification for the admin who created the project (only if rejected)
+    if (action === "reject") {
       // Find the admin who created the project (the userId field)
       await prisma.notification.create({
         data: {
           id: crypto.randomUUID(),
           userId: project.userId, // This is the admin who created the project
-          type: action === "approve" ? "PROJECT_APPROVED" : "PROJECT_REJECTED",
-          title: action === "approve" ? "Project Approved by Client" : "Project Rejected by Client",
-          message: action === "approve" 
-            ? `${project.projectName} has been approved by ${project.user_project_clientIdTouser?.firstName} ${project.user_project_clientIdTouser?.lastName}. The project is now accepted and ready for work.`
-            : `${project.projectName} has been rejected by ${project.user_project_clientIdTouser?.firstName} ${project.user_project_clientIdTouser?.lastName}.`,
+          type: "PROJECT_REJECTED",
+          title: "Project Rejected by Client",
+          message: `${project.projectName} has been rejected by ${project.user_project_clientIdTouser?.firstName} ${project.user_project_clientIdTouser?.lastName}.`,
           projectId: project.id,
           projectName: project.projectName,
           actionUrl: `/dashboard?tab=admin-project-creation`,

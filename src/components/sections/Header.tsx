@@ -6,17 +6,10 @@ import { Button } from "@/components/ui/button";
 import RoofCalcLogo from "@/components/RoofCalcLogo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Menu, X } from "lucide-react";
-import { toast } from "sonner";
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const handleAboutClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    toast.info("About page coming soon!", {
-      description: "We're working on this section. Stay tuned!",
-    });
-  };
 
   return (
     <header className="border-b border-border bg-card sticky top-0 z-50">
@@ -44,13 +37,12 @@ export default function Header() {
             >
               Features
             </a>
-            <a
-              href="#about"
-              onClick={handleAboutClick}
-              className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium cursor-pointer"
+            <Link
+              href="/about"
+              className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
             >
               About
-            </a>
+            </Link>
           </nav>
           <div className="hidden md:flex items-center gap-3">
             <Button variant="accent" size="sm" asChild>
@@ -105,16 +97,13 @@ export default function Header() {
                 >
                   Features
                 </a>
-                <a
-                  href="#about"
-                  onClick={(e) => {
-                    handleAboutClick(e);
-                    setMobileOpen(false);
-                  }}
-                  className="text-foreground/90 hover:text-foreground text-base font-medium cursor-pointer"
+                <Link
+                  href="/about"
+                  className="text-foreground/90 hover:text-foreground text-base font-medium"
+                  onClick={() => setMobileOpen(false)}
                 >
                   About
-                </a>
+                </Link>
                 <div className="h-px bg-border my-2" />
                 <div className="grid gap-2">
                   <Button
