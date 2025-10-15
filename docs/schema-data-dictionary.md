@@ -33,13 +33,7 @@ This document provides a comprehensive reference for the database schema defined
 
 ### Table 1. user
 
-| Data Dictionary | | | | | | | | |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | Reference Number: | |
-| | | | | | | | Version Number: | |
-| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
-| Subject: user |
-| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+| PK | FK | AK | Field Name | Data Type | Length | Nullable | Default | Description |
 |---|---|---|---|---|---|---|---|---|
 | Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
 | No | No | Yes | email | varchar | 255 | No | - | User email address |
@@ -57,13 +51,7 @@ This document provides a comprehensive reference for the database schema defined
 
 ### Table 2. project
 
-| Data Dictionary | | | | | | | | |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | Reference Number: | |
-| | | | | | | | Version Number: | |
-| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
-| Subject: project |
-| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+| PK | FK | AK | Field Name | Data Type | Length | Nullable | Default | Description |
 |---|---|---|---|---|---|---|---|---|
 | Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
 | No | Yes | No | userId | varchar | 255 | No | - | Project creator |
@@ -135,13 +123,7 @@ This document provides a comprehensive reference for the database schema defined
 
 ### Table 3. PricingConfig
 
-| Data Dictionary | | | | | | | | |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | Reference Number: | |
-| | | | | | | | Version Number: | |
-| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
-| Subject: PricingConfig |
-| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+| PK | FK | AK | Field Name | Data Type | Length | Nullable | Default | Description |
 |---|---|---|---|---|---|---|---|---|
 | Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
 | No | No | No | category | varchar | 255 | No | - | Material category |
@@ -163,13 +145,7 @@ This document provides a comprehensive reference for the database schema defined
 
 ### Table 4. warehouse
 
-| Data Dictionary | | | | | | | | |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | Reference Number: | |
-| | | | | | | | Version Number: | |
-| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
-| Subject: warehouse |
-| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+| PK | FK | AK | Field Name | Data Type | Length | Nullable | Default | Description |
 |---|---|---|---|---|---|---|---|---|
 | Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
 | No | No | No | name | varchar | 255 | No | - | Warehouse name |
@@ -192,13 +168,7 @@ This document provides a comprehensive reference for the database schema defined
 
 ### Table 5. WarehouseMaterial
 
-| Data Dictionary | | | | | | | | |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | Reference Number: | |
-| | | | | | | | Version Number: | |
-| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
-| Subject: WarehouseMaterial |
-| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+| PK | FK | AK | Field Name | Data Type | Length | Nullable | Default | Description |
 |---|---|---|---|---|---|---|---|---|
 | Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
 | No | Yes | No | warehouseId | varchar | 255 | No | - | Reference to warehouse |
@@ -213,13 +183,7 @@ This document provides a comprehensive reference for the database schema defined
 
 ### Table 6. ProjectMaterial
 
-| Data Dictionary | | | | | | | | |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | Reference Number: | |
-| | | | | | | | Version Number: | |
-| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
-| Subject: ProjectMaterial |
-| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+| PK | FK | AK | Field Name | Data Type | Length | Nullable | Default | Description |
 |---|---|---|---|---|---|---|---|---|
 | Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
 | No | Yes | No | projectId | varchar | 255 | No | - | Reference to project |
@@ -237,13 +201,7 @@ This document provides a comprehensive reference for the database schema defined
 
 ### Table 7. Notification
 
-| Data Dictionary | | | | | | | | |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | Reference Number: | |
-| | | | | | | | Version Number: | |
-| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
-| Subject: Notification |
-| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+| PK | FK | AK | Field Name | Data Type | Length | Nullable | Default | Description |
 |---|---|---|---|---|---|---|---|---|
 | Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
 | No | Yes | No | userId | varchar | 255 | No | - | Reference to user receiving notification |
@@ -260,13 +218,7 @@ This document provides a comprehensive reference for the database schema defined
 
 ### Table 8. activity
 
-| Data Dictionary | | | | | | | | |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | Reference Number: | |
-| | | | | | | | Version Number: | |
-| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
-| Subject: activity |
-| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+| PK | FK | AK | Field Name | Data Type | Length | Nullable | Default | Description |
 |---|---|---|---|---|---|---|---|---|
 | Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
 | No | Yes | No | userId | varchar | 255 | No | - | Reference to user |
@@ -279,13 +231,7 @@ This document provides a comprehensive reference for the database schema defined
 
 ### Table 9. verificationcode
 
-| Data Dictionary | | | | | | | | |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | Reference Number: | |
-| | | | | | | | Version Number: | |
-| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
-| Subject: verificationcode |
-| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+| PK | FK | AK | Field Name | Data Type | Length | Nullable | Default | Description |
 |---|---|---|---|---|---|---|---|---|
 | Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
 | No | No | No | code | varchar | 6 | No | - | 6-digit verification code |
@@ -299,13 +245,7 @@ This document provides a comprehensive reference for the database schema defined
 
 ### Table 10. ratelimit
 
-| Data Dictionary | | | | | | | | |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | Reference Number: | |
-| | | | | | | | Version Number: | |
-| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
-| Subject: ratelimit |
-| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+| PK | FK | AK | Field Name | Data Type | Length | Nullable | Default | Description |
 |---|---|---|---|---|---|---|---|---|
 | Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
 | No | No | No | email | varchar | 255 | No | - | User email |
@@ -320,13 +260,7 @@ This document provides a comprehensive reference for the database schema defined
 
 ### Table 11. systemsettings
 
-| Data Dictionary | | | | | | | | |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | Reference Number: | |
-| | | | | | | | Version Number: | |
-| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
-| Subject: systemsettings |
-| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
+| PK | FK | AK | Field Name | Data Type | Length | Nullable | Default | Description |
 |---|---|---|---|---|---|---|---|---|
 | Yes | No | No | id | varchar | 255 | No | - | Unique identifier |
 | No | No | No | maintenanceMode | tinyint | 1 | No | false | Whether system in maintenance |
@@ -342,132 +276,90 @@ This document provides a comprehensive reference for the database schema defined
 
 ### Table 12. activity_type
 
-| Data Dictionary | | | | | | | | |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | Reference Number: | |
-| | | | | | | | Version Number: | |
-| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
-| Subject: activity_type |
-| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
-|---|---|---|---|---|---|---|---|---|
-| No | No | No | LOGIN | enum | - | No | - | User login activity |
-| No | No | No | LOGOUT | enum | - | No | - | User logout activity |
-| No | No | No | PROFILE_UPDATE | enum | - | No | - | Profile modification |
-| No | No | No | PASSWORD_CHANGE | enum | - | No | - | Password change activity |
-| No | No | No | ACCOUNT_CREATED | enum | - | No | - | Account creation |
-| No | No | No | PROJECT_CREATED | enum | - | No | - | Project creation |
-| No | No | No | PROJECT_UPDATED | enum | - | No | - | Project modification |
-| No | No | No | PAYMENT_RECEIVED | enum | - | No | - | Payment processing |
-| No | No | No | EMAIL_VERIFIED | enum | - | No | - | Email verification |
+| Value | Description |
+|---|---|
+| LOGIN | User login activity |
+| LOGOUT | User logout activity |
+| PROFILE_UPDATE | Profile modification |
+| PASSWORD_CHANGE | Password change activity |
+| ACCOUNT_CREATED | Account creation |
+| PROJECT_CREATED | Project creation |
+| PROJECT_UPDATED | Project modification |
+| PAYMENT_RECEIVED | Payment processing |
+| EMAIL_VERIFIED | Email verification |
 
 ---
 
 ### Table 13. ProjectMaterial_status
 
-| Data Dictionary | | | | | | | | |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | Reference Number: | |
-| | | | | | | | Version Number: | |
-| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
-| Subject: ProjectMaterial_status |
-| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
-|---|---|---|---|---|---|---|---|---|
-| No | No | No | RESERVED | enum | - | No | - | Material reserved for project |
-| No | No | No | CONSUMED | enum | - | No | - | Material consumed/used |
-| No | No | No | RETURNED | enum | - | No | - | Material returned to warehouse |
-| No | No | No | CANCELLED | enum | - | No | - | Material reservation cancelled |
+| Value | Description |
+|---|---|
+| RESERVED | Material reserved for project |
+| CONSUMED | Material consumed/used |
+| RETURNED | Material returned to warehouse |
+| CANCELLED | Material reservation cancelled |
 
 ---
 
 ### Table 14. project_status
 
-| Data Dictionary | | | | | | | | |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | Reference Number: | |
-| | | | | | | | Version Number: | |
-| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
-| Subject: project_status |
-| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
-|---|---|---|---|---|---|---|---|---|
-| No | No | No | DRAFT | enum | - | No | - | Initial project draft |
-| No | No | No | ACTIVE | enum | - | No | - | Active project |
-| No | No | No | CLIENT_PENDING | enum | - | No | - | Awaiting client response |
-| No | No | No | CONTRACTOR_REVIEWING | enum | - | No | - | Under contractor review |
-| No | No | No | PROPOSAL_SENT | enum | - | No | - | Proposal sent to client |
-| No | No | No | ACCEPTED | enum | - | No | - | Project accepted |
-| No | No | No | IN_PROGRESS | enum | - | No | - | Project in progress |
-| No | No | No | COMPLETED | enum | - | No | - | Project completed |
-| No | No | No | ARCHIVED | enum | - | No | - | Project archived |
-| No | No | No | REJECTED | enum | - | No | - | Project rejected |
-| No | No | No | FOR_CLIENT_REVIEW | enum | - | No | - | Pending client review |
+| Value | Description |
+|---|---|
+| DRAFT | Initial project draft |
+| ACTIVE | Active project |
+| CLIENT_PENDING | Awaiting client response |
+| CONTRACTOR_REVIEWING | Under contractor review |
+| PROPOSAL_SENT | Proposal sent to client |
+| ACCEPTED | Project accepted |
+| IN_PROGRESS | Project in progress |
+| COMPLETED | Project completed |
+| ARCHIVED | Project archived |
+| REJECTED | Project rejected |
+| FOR_CLIENT_REVIEW | Pending client review |
 
 ---
 
 ### Table 15. user_role
 
-| Data Dictionary | | | | | | | | |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | Reference Number: | |
-| | | | | | | | Version Number: | |
-| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
-| Subject: user_role |
-| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
-|---|---|---|---|---|---|---|---|---|
-| No | No | No | CLIENT | enum | - | No | - | Standard client user |
-| No | No | No | ADMIN | enum | - | No | - | Administrative user |
-| No | No | No | DEVELOPER | enum | - | No | - | Developer/technical user |
+| Value | Description |
+|---|---|
+| CLIENT | Standard client user |
+| ADMIN | Administrative user |
+| DEVELOPER | Developer/technical user |
 
 ---
 
 ### Table 16. project_constructionMode
 
-| Data Dictionary | | | | | | | | |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | Reference Number: | |
-| | | | | | | | Version Number: | |
-| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
-| Subject: project_constructionMode |
-| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
-|---|---|---|---|---|---|---|---|---|
-| No | No | No | NEW | enum | - | No | - | New construction project |
-| No | No | No | REPAIR | enum | - | No | - | Repair/maintenance project |
+| Value | Description |
+|---|---|
+| NEW | New construction project |
+| REPAIR | Repair/maintenance project |
 
 ---
 
 ### Table 17. project_proposalStatus
 
-| Data Dictionary | | | | | | | | |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | Reference Number: | |
-| | | | | | | | Version Number: | |
-| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
-| Subject: project_proposalStatus |
-| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
-|---|---|---|---|---|---|---|---|---|
-| No | No | No | DRAFT | enum | - | No | - | Initial proposal draft |
-| No | No | No | SENT | enum | - | No | - | Proposal sent to client |
-| No | No | No | ACCEPTED | enum | - | No | - | Proposal accepted |
-| No | No | No | REJECTED | enum | - | No | - | Proposal rejected |
-| No | No | No | REVISED | enum | - | No | - | Proposal revised |
-| No | No | No | COMPLETED | enum | - | No | - | Proposal completed |
+| Value | Description |
+|---|---|
+| DRAFT | Initial proposal draft |
+| SENT | Proposal sent to client |
+| ACCEPTED | Proposal accepted |
+| REJECTED | Proposal rejected |
+| REVISED | Proposal revised |
+| COMPLETED | Proposal completed |
 
 ---
 
 ### Table 18. project_currentStage
 
-| Data Dictionary | | | | | | | | |
-|---|---|---|---|---|---|---|---|---|
-| | | | | | | | Reference Number: | |
-| | | | | | | | Version Number: | |
-| System Name: RoofCalc: Professional Roofing Estimation and Project Management System |
-| Subject: project_currentStage |
-| PK | FK | AK | Field Name | Data | Length | Nullable | Default | Description |
-|---|---|---|---|---|---|---|---|---|
-| No | No | No | INSPECTION | enum | - | No | - | Initial inspection stage |
-| No | No | No | ESTIMATE | enum | - | No | - | Cost estimation stage |
-| No | No | No | MATERIALS | enum | - | No | - | Material procurement stage |
-| No | No | No | INSTALL | enum | - | No | - | Installation stage |
-| No | No | No | FINALIZE | enum | - | No | - | Project finalization |
+| Value | Description |
+|---|---|
+| INSPECTION | Initial inspection stage |
+| ESTIMATE | Cost estimation stage |
+| MATERIALS | Material procurement stage |
+| INSTALL | Installation stage |
+| FINALIZE | Project finalization |
 
 ---
 
@@ -544,4 +436,3 @@ ProjectMaterial
 | verificationcode | email | Email-based queries |
 | verificationcode | expiresAt | Cleanup expired codes |
 | warehouse | created_by | Creator-based queries |
-
