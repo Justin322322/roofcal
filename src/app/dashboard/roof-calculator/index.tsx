@@ -247,7 +247,7 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
             {/* Construction Mode */}
             <Card>
               <CardHeader className="min-w-0">
-                <CardTitle className="text-base sm:text-lg">Construction Mode</CardTitle>
+                <CardTitle className="text-base sm:text-lg">Labor Cost</CardTitle>
                 <CardDescription className="text-xs sm:text-sm truncate">
                   Select project type for accurate labor calculations
                 </CardDescription>

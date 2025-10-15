@@ -25,7 +25,6 @@ import {
   InfoIcon,
   FolderOpenIcon,
   Loader2Icon,
-  SaveIcon,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
@@ -50,7 +49,6 @@ export function ConstructionModeSelector({
   onModeChange,
   onProjectLoaded,
   currentProjectId,
-  onSaveRepairProject,
 }: ConstructionModeSelectorProps) {
   const [loadDialogOpen, setLoadDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -123,7 +121,7 @@ export function ConstructionModeSelector({
   };
   return (
     <div className="space-y-3">
-      <Label>Construction Mode</Label>
+      <Label>Labor Cost</Label>
       <RadioGroup
         value={mode}
         onValueChange={(value) => onModeChange(value as "new" | "repair")}
@@ -198,28 +196,12 @@ export function ConstructionModeSelector({
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-background px-2 text-muted-foreground">
-                    Or
+                    
                   </span>
                 </div>
               </div>
             </div>
-            <div className="space-y-3">
-              <Button
-                variant="default"
-                size="sm"
-                onClick={onSaveRepairProject}
-                className="w-full"
-              >
-                <SaveIcon className="h-4 w-4 mr-2" />
-                Enable Save Project
-              </Button>
-              <div className="text-sm text-muted-foreground">
-                If you don&apos;t have an existing project to load, click this
-                to enable the &quot;Save Project&quot; button below. This will
-                allow you to save your current calculations as a repair project
-                with reduced labor costs (20% vs 40% for new construction).
-              </div>
-            </div>
+              {/* Save project option removed per request */}
           </AlertDescription>
         </Alert>
       )}

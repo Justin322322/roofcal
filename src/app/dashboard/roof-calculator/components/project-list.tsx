@@ -500,21 +500,7 @@ export function ProjectList() {
               </div>
             </div>
 
-            {/* Show Archived Toggle */}
-            <div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="showArchived"
-                  checked={showArchived}
-                  onChange={(e) => setShowArchived(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                />
-                <label htmlFor="showArchived" className="text-sm font-medium cursor-pointer">
-                  Show Archived Projects
-                </label>
-              </div>
-            </div>
+
 
             {/* Clear Filters Button */}
             {(hasActiveFilters || showArchived) && (

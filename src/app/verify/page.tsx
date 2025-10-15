@@ -61,7 +61,7 @@ function VerifyPageSkeleton() {
           >
             <RoofCalcLogo className="w-16 h-16 text-primary" />
             <div className="text-left">
-              <h1 className="text-4xl font-bold text-foreground">RoofCal</h1>
+              <h1 className="text-4xl font-bold text-foreground">RoofCalc</h1>
               <p className="text-lg text-muted-foreground">
                 Professional Roof Calculator
               </p>

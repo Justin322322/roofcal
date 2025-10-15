@@ -10,9 +10,9 @@ export function SiteHeader({ currentSection }: SiteHeaderProps) {
   const getSectionTitle = (section?: string) => {
     switch (section) {
       case "roof-calculator":
-        return "Project Request";
+        return "Project Estimation";
       case "my-projects":
-        return "My Projects";
+        return "Record Management";
       case "contractor-projects":
         return "Assigned Projects";
       case "account-management":

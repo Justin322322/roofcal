@@ -24,7 +24,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import tutorialContent from "@/data/tutorial-content.json";
 import type { TutorialContent, RoofTypeDetails } from "@/data/tutorial-types";
 
-const content = tutorialContent as TutorialContent;
+const content = tutorialContent as unknown as TutorialContent;
 
 export function TutorialGuideDialog() {
   const [selectedRoofType, setSelectedRoofType] = useState<string | null>(null);
@@ -72,7 +72,7 @@ export function TutorialGuideDialog() {
           {/* Header */}
           <div className="p-6 pb-4 border-b">
             <DialogTitle className="text-xl font-semibold leading-none tracking-tight">
-              RoofCal Tutorial Guide
+              RoofCalc Tutorial Guide
             </DialogTitle>
             <p className="text-sm text-muted-foreground mt-1">
               Complete guide to using RoofCal for accurate roof cost estimation
@@ -114,17 +114,10 @@ export function TutorialGuideDialog() {
                   </TabsTrigger>
                   <TabsTrigger
                     className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1"
-                    value="manual-calc"
+                    value="how-to-use"
                   >
                     <ClipboardListIcon className="h-4 w-4" />
-                    <span className="whitespace-nowrap">Manual Calc</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1"
-                    value="contractor"
-                  >
-                    <HardHatIcon className="h-4 w-4" />
-                    <span className="whitespace-nowrap">Contractor</span>
+                    <span className="whitespace-nowrap">How to use</span>
                   </TabsTrigger>
                   <TabsTrigger
                     className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1"
@@ -481,60 +474,42 @@ export function TutorialGuideDialog() {
               {/* For brevity, I'll include one more complete example and indicate where others would go */}
 
               <TabsContent
-                value="manual-calc"
+                value="how-to-use"
                 className="mt-0 p-4 bg-muted/20 rounded-lg"
               >
-                <h3 className="text-lg font-semibold mb-3">
-                  {content.tabs["manual-calc"].title}
-                </h3>
+                <h3 className="text-lg font-semibold mb-3">{content.tabs["how-to-use"].title}</h3>
                 <div className="space-y-4 text-muted-foreground leading-relaxed">
-                  <p>{content.tabs["manual-calc"].description}</p>
+                  <p>{content.tabs["how-to-use"].description}</p>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <h4 className="text-base font-medium text-foreground">
-                      When to Use Manual Calculator:
+                      Getting Started:
                     </h4>
-                    <ul className="space-y-2 ml-4">
-                      {content.tabs["manual-calc"].whenToUse?.map((use, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <span className="text-primary">•</span>
-                          <span>{use}</span>
-                        </li>
-                      ))}
+                    <ul className="space-y-1 ml-4">
+                      {Array.isArray(content.tabs["how-to-use"].gettingStarted) && 
+                        content.tabs["how-to-use"].gettingStarted.map((item, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-primary">•</span>
+                            <span>{item}</span>
+                          </li>
+                        ))
+                      }
                     </ul>
                   </div>
 
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-4">
+                    <h4 className="text-base font-medium text-foreground">
+                      {content.tabs["how-to-use"].projectEstimation?.title}:
+                    </h4>
                     <div className="space-y-3">
-                      <h4 className="text-base font-medium text-foreground">
-                        Manual Entry Options:
-                      </h4>
-                      <div className="space-y-2">
-                        {content.tabs["manual-calc"].manualEntryOptions?.map((option, index) => (
-                          <div key={index} className="border rounded-lg p-3">
-                            <h5 className="font-medium text-foreground">
-                              {option.option}
-                            </h5>
-                            <p className="text-sm">{option.description}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <h4 className="text-base font-medium text-foreground">
-                        Advanced Features:
-                      </h4>
-                      <div className="space-y-2">
-                        {content.tabs["manual-calc"].advancedFeatures?.map((feature, index) => (
-                          <div key={index} className="border rounded-lg p-3">
-                            <h5 className="font-medium text-foreground">
-                              {feature.feature}
-                            </h5>
-                            <p className="text-sm">{feature.description}</p>
-                          </div>
-                        ))}
-                      </div>
+                      {content.tabs["how-to-use"].projectEstimation?.steps?.map((step, index) => (
+                        <div key={index} className="border rounded-lg p-3">
+                          <h5 className="font-medium text-foreground">
+                            {step.step}
+                          </h5>
+                          <p className="text-sm">{step.description}</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -543,7 +518,7 @@ export function TutorialGuideDialog() {
                       Best Practices:
                     </h4>
                     <ul className="text-sm text-muted-foreground space-y-1">
-                      {content.tabs["manual-calc"].bestPractices?.map((practice, index) => (
+                      {content.tabs["how-to-use"].bestPractices?.map((practice, index) => (
                         <li key={index}>• {practice}</li>
                       ))}
                     </ul>
@@ -551,112 +526,7 @@ export function TutorialGuideDialog() {
                 </div>
               </TabsContent>
 
-              <TabsContent
-                value="contractor"
-                className="mt-0 p-4 bg-muted/20 rounded-lg"
-              >
-                <h3 className="text-lg font-semibold mb-3">{content.tabs.contractor.title}</h3>
-                <div className="space-y-4 text-muted-foreground leading-relaxed">
-                  <p>{content.tabs.contractor.description}</p>
 
-                  <div className="space-y-4">
-                    <h4 className="text-base font-medium text-foreground">
-                      Professional Features:
-                    </h4>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-3">
-                        <div className="border rounded-lg p-4">
-                          <h5 className="font-medium text-foreground mb-2">
-                            Business Management
-                          </h5>
-                          <ul className="text-sm space-y-1">
-                            {(content.tabs.contractor.features as Record<string, string[]>)?.businessManagement?.map((feature, index) => (
-                              <li key={index}>• {feature}</li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        <div className="border rounded-lg p-4">
-                          <h5 className="font-medium text-foreground mb-2">
-                            Pricing & Estimates
-                          </h5>
-                          <ul className="text-sm space-y-1">
-                            {(content.tabs.contractor.features as Record<string, string[]>)?.pricingEstimates?.map((feature, index) => (
-                              <li key={index}>• {feature}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="border rounded-lg p-4">
-                          <h5 className="font-medium text-foreground mb-2">
-                            Client Communication
-                          </h5>
-                          <ul className="text-sm space-y-1">
-                            {(content.tabs.contractor.features as Record<string, string[]>)?.clientCommunication?.map((feature, index) => (
-                              <li key={index}>• {feature}</li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        <div className="border rounded-lg p-4">
-                          <h5 className="font-medium text-foreground mb-2">
-                            Reporting & Analytics
-                          </h5>
-                          <ul className="text-sm space-y-1">
-                            {(content.tabs.contractor.features as Record<string, string[]>)?.reportingAnalytics?.map((feature, index) => (
-                              <li key={index}>• {feature}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-                    <h4 className="text-base font-medium text-foreground mb-2">
-                      Advanced Integrations:
-                    </h4>
-                    <div className="grid gap-3 md:grid-cols-2">
-                      <div>
-                        <h5 className="font-medium text-foreground mb-2">
-                          Business Tools:
-                        </h5>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                          {(content.tabs.contractor.integrations as Record<string, string[]>)?.businessTools?.map((tool, index) => (
-                            <li key={index}>• {tool}</li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div>
-                        <h5 className="font-medium text-foreground mb-2">
-                          Industry Resources:
-                        </h5>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                          {(content.tabs.contractor.integrations as Record<string, string[]>)?.industryResources?.map((resource, index) => (
-                            <li key={index}>• {resource}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-                    <h4 className="text-base font-medium text-foreground mb-2">
-                      Contractor Benefits:
-                    </h4>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      {content.tabs.contractor.benefits?.map((benefit, index) => (
-                        <li key={index}>
-                          • {typeof benefit === 'string' ? benefit : <><strong>{benefit.benefit}:</strong> {benefit.description}</>}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </TabsContent>
 
               <TabsContent
                 value="ai-system"

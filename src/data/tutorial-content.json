@@ -233,57 +233,7 @@
         }
       ]
     },
-    "contractor": {
-      "title": "Contractor Features",
-      "description": "Professional contractor features designed to streamline your roofing business operations, improve client relationships, and maximize profitability through advanced tools and integrations.",
-      "features": {
-        "businessManagement": [
-          "Project management dashboard",
-          "Client relationship management (CRM)",
-          "Team collaboration tools",
-          "Document management"
-        ],
-        "pricingEstimates": [
-          "Accurate cost calculations",
-          "Customizable pricing templates",
-          "Real-time material pricing",
-          "Profit margin analysis"
-        ],
-        "clientCommunication": [
-          "Professional project proposals",
-          "Automated email notifications",
-          "Client portal access",
-          "Progress tracking and updates"
-        ],
-        "reportingAnalytics": [
-          "Performance dashboards",
-          "Revenue tracking",
-          "Project profitability analysis",
-          "Custom report generation"
-        ]
-      },
-      "integrations": {
-        "businessTools": [
-          "Accounting software integration",
-          "Calendar and scheduling",
-          "Payment processing",
-          "Cloud storage"
-        ],
-        "industryResources": [
-          "Material supplier networks",
-          "Industry pricing databases",
-          "Regulatory compliance tools",
-          "Training resources"
-        ]
-      },
-      "benefits": [
-        "Streamlined project workflow",
-        "Improved client communication",
-        "Better inventory management",
-        "Accurate cost tracking",
-        "Professional client presentations"
-      ]
-    },
+
     "warehouse": {
       "title": "Warehouse Management",
       "description": "Efficiently manage your material inventory with our comprehensive warehouse management system. Track stock levels, monitor consumption, and ensure materials are always available when needed.",
@@ -317,39 +267,43 @@
         "Plan for seasonal variations"
       ]
     },
-    "manual-calc": {
-      "title": "Manual Calculator",
-      "description": "For advanced users who prefer full control over their calculations, our manual calculator provides direct input fields for all parameters.",
-      "whenToUse": [
-        "You have exact measurements and specifications",
-        "You want to bypass the AI recommendations",
-        "You need to calculate costs for non-standard roof configurations",
-        "You're an experienced contractor with specific requirements"
+    "how-to-use": {
+      "title": "How to use",
+      "description": "A comprehensive guide on how to use RoofCalc effectively for your roofing projects and estimations.",
+      "gettingStarted": [
+        "Create an account or log in to access all features",
+        "Navigate to Project Estimation to start a new project",
+        "Follow the step-by-step wizard for accurate calculations",
+        "Save your work regularly to prevent data loss"
       ],
-      "manualEntryOptions": [
-        {
-          "option": "Direct Measurement Input",
-          "description": "Enter exact roof dimensions, pitch, and area measurements"
-        },
-        {
-          "option": "Custom Material Selection",
-          "description": "Choose materials directly from the complete database"
-        },
-        {
-          "option": "Manual Complexity Setting",
-          "description": "Set your own complexity level (1-10) based on your expertise"
-        },
-        {
-          "option": "Custom Pricing Override",
-          "description": "Override default pricing with your own supplier costs"
-        }
-      ],
+      "projectEstimation": {
+        "title": "Creating Project Estimations",
+        "steps": [
+          {
+            "step": "Step 1: Roof Specifications",
+            "description": "Select roof type and enter dimensions. Be precise with measurements to ensure accurate material calculations."
+          },
+          {
+            "step": "Step 2: Material Selection",
+            "description": "Choose from available roofing materials, accessories, and components. Compare options based on cost, durability, and suitability."
+          },
+          {
+            "step": "Step 3: Labor Cost Configuration",
+            "description": "Set labor requirements and costs based on project complexity and timeline. Adjust rates as needed for your specific situation."
+          },
+          {
+            "step": "Step 4: Review and Generate",
+            "description": "Review all inputs, make final adjustments, and generate your complete estimation with detailed breakdowns of materials, labor, and total costs."
+          }
+        ]
+      },
       "bestPractices": [
         "Double-check all measurements before calculation",
         "Consider local market pricing variations",
         "Account for waste and material overlap",
         "Factor in labor costs and complexity",
-        "Review and validate all manual inputs"
+        "Review and validate all inputs before finalizing",
+        "Save and export estimates for client presentations"
       ]
     },
     "archive": {

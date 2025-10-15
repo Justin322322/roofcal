@@ -10,7 +10,7 @@ export default function Features() {
             Features
           </Badge>
           <h3 className="text-4xl sm:text-5xl font-bold text-foreground mb-6 tracking-tight">
-            Why Choose RoofCal?
+            Why Choose RoofCalc?
           </h3>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             Professional-grade calculations with industry-standard accuracy

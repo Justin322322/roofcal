@@ -1347,7 +1347,9 @@ This project is proprietary software. All rights reserved.
 
 ## Support
 
-For support, email support@roofcalc.com or create an issue in the repository.
+```
+For support, email help@roofcalc.com or create an issue in the repository.
+```
 
 ---
 

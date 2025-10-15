@@ -7,7 +7,7 @@ interface RoofCalcLogoProps {
 
 export default function RoofCalcLogo({
   className = "w-8 h-8",
-  size = 32,
+  size = 24,
 }: RoofCalcLogoProps) {
   return (
     <svg

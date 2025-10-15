@@ -577,14 +577,7 @@ export function ContractorProjectsContent() {
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="showArchived"
-                checked={showArchived}
-                onChange={(e) => setShowArchived(e.target.checked)}
-                className="rounded border-gray-300"
-              />
-              <Label htmlFor="showArchived">Show Archived Projects</Label>
+
             </div>
           </CardContent>
         </Card>

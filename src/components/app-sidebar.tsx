@@ -83,7 +83,7 @@ export function AppSidebar({
     // Client (Homeowner) navigation items
     const clientNavItems = [
       {
-        title: "Project Request",
+        title: "Project Estimation",
         url: "roof-calculator",
         icon: CalculatorIcon,
         roles: [UserRole.CLIENT],
@@ -95,15 +95,9 @@ export function AppSidebar({
         roles: [UserRole.CLIENT],
       },
       {
-        title: "My Projects",
+        title: "Record Management",
         url: "my-projects",
         icon: FileTextIcon,
-        roles: [UserRole.CLIENT],
-      },
-      {
-        title: "Archived Projects",
-        url: "archived-projects",
-        icon: ArchiveIcon,
         roles: [UserRole.CLIENT],
       },
     ];
@@ -162,7 +156,7 @@ export function AppSidebar({
               className="flex w-full items-center gap-2 px-3 py-2 hover:bg-accent rounded-md transition-colors cursor-pointer"
             >
               <RoofCalcLogo className="h-5 w-5 text-primary" size={20} />
-              <span className="text-base font-semibold">RoofCal</span>
+              <span className="text-base font-semibold">RoofCalc</span>
             </button>
           </SidebarMenuItem>
         </SidebarMenu>

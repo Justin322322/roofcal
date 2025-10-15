@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RoofCal - Professional Roof Calculator",
+  title: "RoofCalc - Professional Roof Calculator",
   description:
     "Professional roof calculator for accurate roofing measurements, material estimates, and cost calculations. Built for contractors and homeowners.",
   keywords: [

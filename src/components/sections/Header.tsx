@@ -21,7 +21,7 @@ export default function Header() {
           >
             <RoofCalcLogo className="w-8 h-8 text-primary" />
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-foreground">RoofCal</h1>
+              <h1 className="text-2xl font-bold text-foreground">RoofCalc</h1>
             </div>
           </Link>
           <nav className="hidden md:flex gap-8 flex-1 justify-center">

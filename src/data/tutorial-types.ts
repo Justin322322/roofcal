@@ -92,12 +92,16 @@ export interface TabContent {
   title: string;
   description: string;
   keyFeatures?: KeyFeature[];
-  gettingStarted?: string;
+  gettingStarted?: string | string[];
   commonRoofs?: RoofTypeCard[];
   complexRoofs?: RoofTypeCard[];
   selectionTips?: string[];
   materialList?: MaterialInfo[];
   selectionGuide?: SelectionGuide[];
+  projectEstimation?: {
+    title: string;
+    steps: WorkflowStep[];
+  };
   // Extended materials/media sections using /roof blob assets
   ridgeCaps?: NamedImageItem[];
   gutters?: NamedImageItem[];
@@ -146,6 +150,7 @@ export interface TabContent {
     | RoofTypeCard[]
     | TabContent["learning"]
     | TabContent["costComponents"]
+    | TabContent["projectEstimation"]
     | NamedImageItem[]
     | undefined;
 }

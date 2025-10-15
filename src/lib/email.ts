@@ -129,7 +129,7 @@ function generateEmailTemplate(data: EmailTemplateData): string {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${data.title} - RoofCal</title>
+      <title>${data.title} - RoofCalc</title>
     </head>
     <body style="margin: 0; padding: 0; background-color: #e0e6e8; font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
       <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -138,7 +138,7 @@ function generateEmailTemplate(data: EmailTemplateData): string {
           <div style="display: inline-block; text-align: center;">
             <!-- Brand Logo -->
             <img src="https://unex0yvstmuqs1jv.public.blob.vercel-storage.com/brand/roofcal-logo.png" 
-                 alt="RoofCal Logo" 
+                 alt="RoofCalc Logo" 
                  style="height: 60px; width: auto; margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;"
                  width="120" height="60" />
           </div>
