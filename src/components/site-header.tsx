@@ -9,6 +9,10 @@ interface SiteHeaderProps {
 export function SiteHeader({ currentSection }: SiteHeaderProps) {
   const getSectionTitle = (section?: string) => {
     switch (section) {
+      case "activity-logs":
+        return "";
+      case "admin-roof-estimation":
+        return "";
       case "roof-calculator":
         return "Project Estimation";
       case "my-projects":

@@ -251,7 +251,7 @@ export default function DatabaseManagementContent() {
               </div>
             </CardHeader>
             <CardContent>
-              <HorizontalScrollTable className="w-full" showScrollControls={true} scrollStep={300}>
+              <HorizontalScrollTable className="w-full" showScrollControls={false}>
                 <div className="min-w-full rounded-md border">
                   <Table className="min-w-full">
                     <TableHeader>
@@ -272,7 +272,7 @@ export default function DatabaseManagementContent() {
                           </TableHead>
                         ))}
                         {isEditable(selectedTable) && (
-                          <TableHead className="w-32 whitespace-nowrap sticky right-0 bg-muted/50 border-l">
+                          <TableHead className="w-32 whitespace-nowrap sticky right-0 bg-white border-l">
                             Actions
                           </TableHead>
                         )}
@@ -289,7 +289,7 @@ export default function DatabaseManagementContent() {
                               </TableCell>
                             ))}
                             {isEditable(selectedTable) && (
-                              <TableCell className="w-32 whitespace-nowrap sticky right-0 border-l">
+                              <TableCell className="w-32 whitespace-nowrap sticky right-0 bg-white border-l">
                                 <Skeleton className="h-8 w-16" />
                               </TableCell>
                             )}
@@ -317,7 +317,7 @@ export default function DatabaseManagementContent() {
                                 </TableCell>
                               ))}
                               {isEditable(selectedTable) && (
-                                <TableCell className="whitespace-nowrap sticky right-0 bg-background border-l">
+                                <TableCell className="whitespace-nowrap sticky right-0 bg-white border-l">
                                   <Button
                                     size="sm"
                                     variant="outline"
