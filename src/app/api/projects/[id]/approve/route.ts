@@ -59,16 +59,14 @@ export async function PUT(
     }
 
     // Update project status based on workflow
-    // If approved and has contractor, go to CONTRACTOR_REVIEWING, otherwise go to ACTIVE
-    const newStatus = action === "approve" 
-      ? (project.contractorId ? "CONTRACTOR_REVIEWING" : "ACTIVE")
-      : "REJECTED";
+    // When client approves, always go to ACCEPTED status
+    const newStatus = action === "approve" ? "ACCEPTED" : "REJECTED";
     
     const updatedProject = await prisma.project.update({
       where: { id: id },
       data: {
         status: newStatus,
-        proposalStatus: action === "approve" && project.contractorId ? "DRAFT" : null,
+        proposalStatus: action === "approve" ? "ACCEPTED" : null,
         updated_at: new Date(),
       },
     });
@@ -81,7 +79,7 @@ export async function PUT(
           userId: project.user_project_contractorIdTouser.id,
           type: "PROJECT_APPROVED",
           title: "Project Approved by Client",
-          message: `${project.projectName} has been approved by ${project.user_project_clientIdTouser?.firstName} ${project.user_project_clientIdTouser?.lastName}. You can now proceed with the work.`,
+          message: `${project.projectName} has been approved by ${project.user_project_clientIdTouser?.firstName} ${project.user_project_clientIdTouser?.lastName}. The project is now accepted and ready for work.`,
           projectId: project.id,
           projectName: project.projectName,
           actionUrl: `/dashboard?tab=contractor-projects`,
@@ -101,7 +99,7 @@ export async function PUT(
           type: action === "approve" ? "PROJECT_APPROVED" : "PROJECT_REJECTED",
           title: action === "approve" ? "Project Approved by Client" : "Project Rejected by Client",
           message: action === "approve" 
-            ? `${project.projectName} has been approved by ${project.user_project_clientIdTouser?.firstName} ${project.user_project_clientIdTouser?.lastName}. The project is now active.`
+            ? `${project.projectName} has been approved by ${project.user_project_clientIdTouser?.firstName} ${project.user_project_clientIdTouser?.lastName}. The project is now accepted and ready for work.`
             : `${project.projectName} has been rejected by ${project.user_project_clientIdTouser?.firstName} ${project.user_project_clientIdTouser?.lastName}.`,
           projectId: project.id,
           projectName: project.projectName,

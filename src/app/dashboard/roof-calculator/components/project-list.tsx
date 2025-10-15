@@ -159,7 +159,8 @@ export function ProjectList() {
   const fetchProjects = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/projects');
+      // Add cache-busting parameter to ensure fresh data
+      const response = await fetch(`/api/projects?t=${Date.now()}`);
       console.log('Projects API response status:', response.status);
       
       if (response.ok) {
@@ -907,7 +908,12 @@ export function ProjectList() {
                     if (!response.ok) throw new Error("Failed to send to contractor");
 
                     toast.success("Project sent to contractor successfully");
-                    fetchProjects();
+                    
+                    // Small delay to ensure database update is complete
+                    setTimeout(() => {
+                      fetchProjects();
+                    }, 100);
+                    
                     setContractorDialogOpen(false);
                     setSelectedProject(null);
                     setSelectedContractorId("");

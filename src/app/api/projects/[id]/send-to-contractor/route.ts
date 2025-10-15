@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
 import { prisma } from "@/lib/prisma";
 import { notifyQuoteRequested } from "@/lib/notifications";
+import { revalidatePath } from "next/cache";
 
 export const runtime = 'nodejs';
 
@@ -41,6 +42,11 @@ export async function POST(
         handoffNote: note,
       },
     });
+
+    // Revalidate paths to refresh project lists
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard?tab=projects");
+    revalidatePath("/dashboard?tab=roof-calculator");
 
     // In-app notification
     await notifyQuoteRequested(

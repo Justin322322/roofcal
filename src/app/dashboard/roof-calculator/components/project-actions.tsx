@@ -189,8 +189,8 @@ export function ProjectActions({
         setDeliveryCost(null);
         setDeliveryDistance(null);
         
-        // Call the callback for admin mode
-        if (isAdminMode && onProjectCreated) {
+        // Call the callback for admin mode or help requests
+        if ((isAdminMode || isHelpRequest) && onProjectCreated) {
           onProjectCreated();
         }
       } else {

@@ -95,7 +95,7 @@ export default function AdminProjectCreationContent() {
 
     setShowCalculator(true);
     toast.success("Starting project creation", {
-      description: `Creating project for ${selectedClient.fullName}. The project will be immediately active and ready for work.`,
+      description: `Creating project for ${selectedClient.fullName}. The project will be sent to the client for review and approval.`,
     });
   };
 
@@ -103,8 +103,12 @@ export default function AdminProjectCreationContent() {
     setShowCalculator(false);
     setSelectedClient(null);
     setIsHelpRequest(false);
+    
+    // Redirect away from help request mode
+    router.push('/dashboard?tab=admin-project-creation');
+    
     toast.success("Project created successfully", {
-      description: `Project has been created and activated for ${selectedClient?.fullName}. The client will receive a notification.`,
+      description: `Project has been created for ${selectedClient?.fullName}. The client will receive a notification to review and approve it.`,
     });
   };
 
