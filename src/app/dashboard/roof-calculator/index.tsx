@@ -171,8 +171,8 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
   };
 
   return (
-    <div className="px-3 sm:px-4 lg:px-6">
-      <div className="space-y-4 sm:space-y-6">
+    <div className="px-2 sm:px-3 lg:px-6">
+      <div className="space-y-3 sm:space-y-4 md:space-y-6">
         {pricingError && (
           <Card className="border-destructive/30 bg-destructive/5">
             <CardHeader>
@@ -251,14 +251,14 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
 
       {/* Main Content Grid */}
       <div>
-        <div className="grid gap-4 sm:gap-6 xl:grid-cols-2">
+        <div className="grid gap-3 sm:gap-4 md:gap-6 lg:grid-cols-2">
           {/* Left Column - Inputs */}
-          <div className="space-y-4 sm:space-y-6 order-2 xl:order-1">
+          <div className="space-y-3 sm:space-y-4 md:space-y-6 order-2 lg:order-1">
             {/* Construction Mode */}
             <Card>
               <CardHeader className="min-w-0">
-                <CardTitle className="text-base sm:text-lg">Labor Cost</CardTitle>
-                <CardDescription className="text-xs sm:text-sm truncate">
+                <CardTitle className="text-sm sm:text-base lg:text-lg">Labor Cost</CardTitle>
+                <CardDescription className="text-[11px] sm:text-xs lg:text-sm truncate">
                   Select project type for accurate labor calculations
                 </CardDescription>
               </CardHeader>
@@ -283,8 +283,8 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
             {/* Budget Validation */}
             <Card>
               <CardHeader className="min-w-0">
-                <CardTitle className="text-base sm:text-lg">Budget Planning</CardTitle>
-                <CardDescription className="text-xs sm:text-sm truncate">
+                <CardTitle className="text-sm sm:text-base lg:text-lg">Budget Planning</CardTitle>
+                <CardDescription className="text-[11px] sm:text-xs lg:text-sm truncate">
                   Enter your budget for validation and recommendations
                 </CardDescription>
               </CardHeader>
@@ -303,13 +303,13 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
 
             <Card>
               <CardHeader className="min-w-0">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <CalculatorIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Measurements
-                </CardTitle>
-                <CardDescription className="text-xs sm:text-sm truncate">
-                  Enter your roof dimensions and specifications
-                </CardDescription>
+                  <CardTitle className="flex items-center gap-2 text-sm sm:text-base lg:text-lg">
+                    <CalculatorIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                    Measurements
+                  </CardTitle>
+                  <CardDescription className="text-[11px] sm:text-xs lg:text-sm truncate">
+                    Enter your roof dimensions and specifications
+                  </CardDescription>
               </CardHeader>
               <CardContent>
                 <MeasurementForm
@@ -322,8 +322,8 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
             {/* Consolidated Material & Screw Selection */}
             <Card>
               <CardHeader className="min-w-0">
-                <CardTitle className="text-base sm:text-lg">Material & Hardware Selection</CardTitle>
-                <CardDescription className="text-xs sm:text-sm truncate">
+                <CardTitle className="text-sm sm:text-base lg:text-lg">Material & Hardware Selection</CardTitle>
+                <CardDescription className="text-[11px] sm:text-xs lg:text-sm truncate">
                   Choose your budget level, roofing material, and screw type
                 </CardDescription>
               </CardHeader>
@@ -407,7 +407,7 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
           </div>
 
           {/* Right Column - Results & Analysis (Sticky) */}
-          <div className="space-y-4 sm:space-y-6 xl:sticky xl:top-4 xl:self-start order-1 xl:order-2">
+          <div className="space-y-3 sm:space-y-4 md:space-y-6 lg:sticky lg:top-4 lg:self-start order-1 lg:order-2">
             {isPricingLoaded && material && (
             <CalculationResults
               area={results.area}

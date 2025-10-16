@@ -168,29 +168,29 @@ export function ConsolidatedMaterialSelection({
   // Do not auto-select; require explicit user choice
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Budget Level Selection */}
       <div className="space-y-2">
         <Label className="text-sm sm:text-base font-medium">Budget Level</Label>
-        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+        <div className="grid grid-cols-2 gap-2">
           <Button
             variant={budgetLevel === "low" ? "default" : "outline"}
             onClick={() => onBudgetLevelChange("low", "0.4")}
-            className="h-auto sm:h-12 py-3 sm:py-0"
+            className="h-auto py-2.5 sm:py-3"
           >
             <div className="text-left w-full">
-              <div className="font-medium text-sm sm:text-base">Low Budget</div>
-              <div className="text-xs opacity-70">0.4mm thickness</div>
+              <div className="font-medium text-xs sm:text-sm">Low Budget</div>
+              <div className="text-[10px] sm:text-xs opacity-70">0.4mm thickness</div>
             </div>
           </Button>
           <Button
             variant={budgetLevel === "high" ? "default" : "outline"}
             onClick={() => onBudgetLevelChange("high", "0.5")}
-            className="h-auto sm:h-12 py-3 sm:py-0"
+            className="h-auto py-2.5 sm:py-3"
           >
             <div className="text-left w-full">
-              <div className="font-medium text-sm sm:text-base">High Budget</div>
-              <div className="text-xs opacity-70">0.5mm thickness</div>
+              <div className="font-medium text-xs sm:text-sm">High Budget</div>
+              <div className="text-[10px] sm:text-xs opacity-70">0.5mm thickness</div>
             </div>
           </Button>
         </div>
@@ -207,8 +207,8 @@ export function ConsolidatedMaterialSelection({
         ) : (
           <>
           {materialsError && (
-            <div className="mb-2 flex items-center justify-between gap-2 rounded border border-destructive/30 bg-destructive/5 px-3 py-2 text-destructive">
-              <span className="text-xs sm:text-sm">{materialsError}</span>
+            <div className="mb-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 rounded border border-destructive/30 bg-destructive/5 px-2 py-1.5 text-destructive">
+              <span className="text-[10px] sm:text-xs flex-1">{materialsError}</span>
               <Button size="sm" variant="outline" onClick={async () => {
                 try {
                   setIsLoadingMaterials(true);
@@ -263,8 +263,8 @@ export function ConsolidatedMaterialSelection({
         ) : (
           <>
           {screwsError && (
-            <div className="mb-2 flex items-center justify-between gap-2 rounded border border-destructive/30 bg-destructive/5 px-3 py-2 text-destructive">
-              <span className="text-xs sm:text-sm">{screwsError}</span>
+            <div className="mb-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 rounded border border-destructive/30 bg-destructive/5 px-2 py-1.5 text-destructive">
+              <span className="text-[10px] sm:text-xs flex-1">{screwsError}</span>
               <Button size="sm" variant="outline" onClick={async () => {
                 try {
                   setIsLoadingScrews(true);
@@ -314,7 +314,7 @@ export function ConsolidatedMaterialSelection({
       {selectedMaterial && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm sm:text-base">{selectedMaterial.name}</CardTitle>
+            <CardTitle className="text-xs sm:text-sm">{selectedMaterial.name}</CardTitle>
             <CardDescription className="text-xs sm:text-sm">{selectedMaterial.description}</CardDescription>
           </CardHeader>
           <CardContent>
@@ -332,7 +332,7 @@ export function ConsolidatedMaterialSelection({
       {selectedScrew && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm sm:text-base">{selectedScrew.name}</CardTitle>
+            <CardTitle className="text-xs sm:text-sm">{selectedScrew.name}</CardTitle>
             <CardDescription className="text-xs sm:text-sm">
               High-quality screw for secure roof installation
             </CardDescription>

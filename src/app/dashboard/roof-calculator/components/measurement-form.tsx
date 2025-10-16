@@ -73,9 +73,9 @@ export function MeasurementForm({
         </Alert>
       )}
       
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 min-w-0">
+      <div className="grid gap-2 sm:gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 min-w-0">
         <div className="space-y-2">
-          <Label htmlFor="length">Length (meters)</Label>
+          <Label htmlFor="length" className="text-xs sm:text-sm">Length (meters)</Label>
           <Input
             id="length"
             type="number"
@@ -89,7 +89,7 @@ export function MeasurementForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="width">Width (meters)</Label>
+          <Label htmlFor="width" className="text-xs sm:text-sm">Width (meters)</Label>
           <Input
             id="width"
             type="number"
@@ -103,14 +103,14 @@ export function MeasurementForm({
         </div>
       </div>
 
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 min-w-0">
+      <div className="grid gap-2 sm:gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 min-w-0">
         <div className="space-y-2">
-          <Label htmlFor="pitch">Roof Pitch</Label>
+          <Label htmlFor="pitch" className="text-xs sm:text-sm">Roof Pitch</Label>
           <Select
             value={measurements.pitch}
             onValueChange={(value) => handleChange("pitch", value)}
           >
-            <SelectTrigger className="max-w-full truncate">
+            <SelectTrigger className="max-w-full">
               <SelectValue placeholder="Select roof pitch" />
             </SelectTrigger>
             <SelectContent>
@@ -146,7 +146,7 @@ export function MeasurementForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="floors">Number of Floors</Label>
+          <Label htmlFor="floors" className="text-xs sm:text-sm">Number of Floors</Label>
           <Input
             id="floors"
             type="number"
@@ -161,12 +161,12 @@ export function MeasurementForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="roofType">Roof Type</Label>
+          <Label htmlFor="roofType" className="text-xs sm:text-sm">Roof Type</Label>
           <Select
             value={measurements.roofType}
             onValueChange={(value) => handleChange("roofType", value)}
           >
-            <SelectTrigger className="max-w-full truncate">
+            <SelectTrigger className="max-w-full">
               <SelectValue placeholder="Select roof type" />
             </SelectTrigger>
             <SelectContent>

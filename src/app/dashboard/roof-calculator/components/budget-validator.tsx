@@ -46,7 +46,7 @@ export function BudgetValidator({
   const shortfall = Math.max(0, totalCost - budget);
 
   return (
-    <div className="space-y-3 min-w-0">
+    <div className="space-y-2 sm:space-y-3 min-w-0">
       <div className="space-y-2">
         <Label htmlFor="budgetAmount">Budget Amount (₱)</Label>
         <Input
@@ -65,10 +65,10 @@ export function BudgetValidator({
       {roofArea > 0 && budget > 0 && (
         <>
           {budgetStatus === "insufficient" && (
-            <Alert variant="destructive">
+            <Alert variant="destructive" className="text-xs sm:text-sm">
               <XCircleIcon className="h-4 w-4" />
-              <AlertTitle>Budget Insufficient - Cannot Save Project</AlertTitle>
-              <AlertDescription>
+              <AlertTitle className="text-xs sm:text-sm">Budget Insufficient - Cannot Save Project</AlertTitle>
+              <AlertDescription className="text-xs sm:text-sm">
                 <div className="space-y-2">
                   <div>
                     <strong>⛔ Project cannot be saved with current budget</strong>
@@ -90,10 +90,10 @@ export function BudgetValidator({
           )}
 
           {budgetStatus === "sufficient" && budget < totalCost && (
-            <Alert>
+            <Alert className="text-xs sm:text-sm">
               <AlertTriangleIcon className="h-4 w-4" />
-              <AlertTitle>Budget Warning</AlertTitle>
-              <AlertDescription>
+              <AlertTitle className="text-xs sm:text-sm">Budget Warning</AlertTitle>
+              <AlertDescription className="text-xs sm:text-sm">
                 Your budget (₱{formatNumberWithCommas(budget)}) meets minimum
                 requirements but is less than the estimated total cost (₱
                 {formatNumberWithCommas(totalCost)}).
@@ -105,12 +105,12 @@ export function BudgetValidator({
           )}
 
           {budgetStatus === "sufficient" && budget >= totalCost && (
-            <Alert className="border-green-200 bg-green-50 dark:bg-green-950">
+            <Alert className="border-green-200 bg-green-50 dark:bg-green-950 text-xs sm:text-sm">
               <CheckCircle2Icon className="h-4 w-4 text-green-600" />
-              <AlertTitle className="text-green-800 dark:text-green-200">
+              <AlertTitle className="text-green-800 dark:text-green-200 text-xs sm:text-sm">
                 Budget Sufficient
               </AlertTitle>
-              <AlertDescription className="text-green-700 dark:text-green-300">
+              <AlertDescription className="text-green-700 dark:text-green-300 text-xs sm:text-sm">
                 Your budget of ₱{formatNumberWithCommas(budget)} is adequate for
                 this project.
                 {budget > totalCost && (

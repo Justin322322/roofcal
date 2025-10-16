@@ -408,14 +408,14 @@ export function ProjectList() {
     <div className="space-y-6">
       {/* Search and Filters */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
-            <FilterIcon className="h-5 w-5" />
-            <CardTitle className="text-lg">Filters</CardTitle>
+            <FilterIcon className="h-4 w-4" />
+            <CardTitle className="text-base">Filters</CardTitle>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="pt-0 pb-4">
+          <div className="space-y-3">
             {/* Search */}
             <div>
               <label className="text-sm font-medium mb-2 block">Search</label>

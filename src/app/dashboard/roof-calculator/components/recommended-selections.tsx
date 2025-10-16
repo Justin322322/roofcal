@@ -25,11 +25,11 @@ export function RecommendedSelections({ measurements, materialName }: Recommende
         <CardTitle className="text-sm sm:text-base">Recommended Selections</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-2 sm:gap-3">
           {items.map((item) => (
-            <div key={item.label} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div key={item.label} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
               <span className="text-xs sm:text-sm text-muted-foreground">{item.label}</span>
-              <Badge variant="secondary" className="text-xs w-fit">
+              <Badge variant="secondary" className="text-[10px] sm:text-xs w-fit max-w-full break-words">
                 {item.value || "—"}
               </Badge>
             </div>

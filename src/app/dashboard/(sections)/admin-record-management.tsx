@@ -208,14 +208,13 @@ export default function AdminRecordManagementContent() {
       {/* Filters */}
       <div className="px-4 lg:px-6">
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FilterIcon className="h-5 w-5" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <FilterIcon className="h-4 w-4" />
               Filters
             </CardTitle>
-            <CardDescription>Filter by status, cost, date, or search</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="pt-0 pb-4 space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="search">Search</Label>

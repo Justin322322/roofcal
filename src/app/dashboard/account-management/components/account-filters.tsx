@@ -30,13 +30,13 @@ export function AccountFilters({
   };
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border p-4">
+    <div className="flex flex-col gap-3 rounded-lg border p-3">
       <div className="flex items-center gap-2">
         <FilterIcon className="h-4 w-4 text-muted-foreground" />
         <h3 className="text-sm font-medium">Filters</h3>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-3 md:grid-cols-2">
         {/* Search */}
         <div className="space-y-2">
           <Label htmlFor="search">Search accounts</Label>

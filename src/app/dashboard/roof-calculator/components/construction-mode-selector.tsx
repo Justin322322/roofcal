@@ -124,21 +124,21 @@ export function ConstructionModeSelector({
       <RadioGroup
         value={mode}
         onValueChange={(value) => onModeChange(value as "new" | "repair")}
-        className="grid grid-cols-2 gap-4"
+        className="grid grid-cols-2 gap-2 sm:gap-4"
       >
         <div>
           <RadioGroupItem value="new" id="mode-new" className="peer sr-only" />
           <Label
             htmlFor="mode-new"
-            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer h-32"
+            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-3 sm:p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer h-28 sm:h-32"
           >
-            <HammerIcon className="mb-3 h-12 w-12 text-primary" />
+            <HammerIcon className="mb-2 sm:mb-3 h-8 w-8 sm:h-10 sm:w-10 text-primary" />
             <div className="text-center">
-              <div className="font-semibold">New Construction</div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="font-semibold text-sm sm:text-base">New Construction</div>
+              <div className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                 Full installation
               </div>
-              <div className="text-xs font-medium text-primary mt-1">
+              <div className="text-[10px] sm:text-xs font-medium text-primary mt-1">
                 Labor: 40%
               </div>
             </div>
@@ -153,15 +153,15 @@ export function ConstructionModeSelector({
           />
           <Label
             htmlFor="mode-repair"
-            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer h-32"
+            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-3 sm:p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer h-28 sm:h-32"
           >
-            <WrenchIcon className="mb-3 h-12 w-12 text-primary" />
+            <WrenchIcon className="mb-2 sm:mb-3 h-8 w-8 sm:h-10 sm:w-10 text-primary" />
             <div className="text-center">
-              <div className="font-semibold">Repair</div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="font-semibold text-sm sm:text-base">Repair</div>
+              <div className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                 Maintenance work
               </div>
-              <div className="text-xs font-medium text-primary mt-1">
+              <div className="text-[10px] sm:text-xs font-medium text-primary mt-1">
                 Labor: 20%
               </div>
             </div>

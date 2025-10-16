@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import {
   Card,
@@ -69,6 +69,7 @@ import {
   getPricingCategories,
   PRICING_UNITS,
 } from "@/lib/pricing";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function PricingMaintenance() {
   const { data: session } = useSession();
@@ -82,6 +83,11 @@ export default function PricingMaintenance() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newItemData, setNewItemData] = useState<Partial<CreatePricingConfig>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Mobile carousel state
+  const isMobile = useIsMobile();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const categories = getPricingCategories();
 
@@ -294,6 +300,42 @@ export default function PricingMaintenance() {
   const activeItems = pricingData.filter((item) => item.isActive).length;
   const inactiveItems = totalItems - activeItems;
 
+  // Handle scroll events for pagination dots
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container || !isMobile) return;
+
+    const handleScroll = () => {
+      const scrollLeft = container.scrollLeft;
+      const cardWidth = container.clientWidth;
+      const newIndex = Math.round(scrollLeft / cardWidth);
+      setCurrentIndex(newIndex);
+    };
+
+    const handleScrollEnd = () => {
+      // Snap to nearest card
+      const scrollLeft = container.scrollLeft;
+      const cardWidth = container.clientWidth;
+      const newIndex = Math.round(scrollLeft / cardWidth);
+      container.scrollTo({
+        left: newIndex * cardWidth,
+        behavior: 'smooth'
+      });
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    container.addEventListener('scrollend', handleScrollEnd);
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      container.removeEventListener('scrollend', handleScrollEnd);
+    };
+  }, [isMobile]);
+
+  // Handle touch events for better mobile experience
+  const handleTouchStart = () => {};
+  const handleTouchEnd = () => {};
+
 
   return (
     <div className="px-4 lg:px-6">
@@ -319,51 +361,136 @@ export default function PricingMaintenance() {
 
       {/* Stats Cards */}
       <div className="mb-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-            <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalItems}</div>
-            <p className="text-xs text-muted-foreground">All pricing items</p>
-          </CardContent>
-        </Card>
+        {isMobile ? (
+          <div>
+            {/* Mobile Carousel */}
+            <div 
+              ref={scrollContainerRef}
+              className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-4"
+              style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+              }}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
+              <Card className="relative overflow-hidden flex-shrink-0 w-[calc(100vw-2rem)] snap-center bg-gradient-to-br from-background to-muted/20 border-border/50 shadow-sm hover:shadow-md transition-all duration-300 ease-out">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                  <CardTitle className="text-sm font-semibold text-foreground/90">Total Items</CardTitle>
+                  <DollarSignIcon className="h-4 w-4 text-muted-foreground/70" />
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-xl font-bold text-foreground break-words mb-1">{totalItems}</div>
+                  <p className="text-xs text-muted-foreground/80 break-words leading-relaxed">All pricing items</p>
+                </CardContent>
+              </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Items</CardTitle>
-            <SettingsIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeItems}</div>
-            <p className="text-xs text-muted-foreground">Currently active</p>
-          </CardContent>
-        </Card>
+              <Card className="relative overflow-hidden flex-shrink-0 w-[calc(100vw-2rem)] snap-center bg-gradient-to-br from-background to-muted/20 border-border/50 shadow-sm hover:shadow-md transition-all duration-300 ease-out">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                  <CardTitle className="text-sm font-semibold text-foreground/90">Active Items</CardTitle>
+                  <SettingsIcon className="h-4 w-4 text-muted-foreground/70" />
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-xl font-bold text-foreground break-words mb-1">{activeItems}</div>
+                  <p className="text-xs text-muted-foreground/80 break-words leading-relaxed">Currently active</p>
+                </CardContent>
+              </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Inactive Items</CardTitle>
-            <ArchiveIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{inactiveItems}</div>
-            <p className="text-xs text-muted-foreground">Currently inactive</p>
-          </CardContent>
-        </Card>
+              <Card className="relative overflow-hidden flex-shrink-0 w-[calc(100vw-2rem)] snap-center bg-gradient-to-br from-background to-muted/20 border-border/50 shadow-sm hover:shadow-md transition-all duration-300 ease-out">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                  <CardTitle className="text-sm font-semibold text-foreground/90">Inactive Items</CardTitle>
+                  <ArchiveIcon className="h-4 w-4 text-muted-foreground/70" />
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-xl font-bold text-foreground break-words mb-1">{inactiveItems}</div>
+                  <p className="text-xs text-muted-foreground/80 break-words leading-relaxed">Currently inactive</p>
+                </CardContent>
+              </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Categories</CardTitle>
-            <SettingsIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{categories.length}</div>
-            <p className="text-xs text-muted-foreground">Pricing categories</p>
-          </CardContent>
-        </Card>
-        </div>
+              <Card className="relative overflow-hidden flex-shrink-0 w-[calc(100vw-2rem)] snap-center bg-gradient-to-br from-background to-muted/20 border-border/50 shadow-sm hover:shadow-md transition-all duration-300 ease-out">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                  <CardTitle className="text-sm font-semibold text-foreground/90">Categories</CardTitle>
+                  <SettingsIcon className="h-4 w-4 text-muted-foreground/70" />
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-xl font-bold text-foreground break-words mb-1">{categories.length}</div>
+                  <p className="text-xs text-muted-foreground/80 break-words leading-relaxed">Pricing categories</p>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Page Indicators */}
+            <div className="flex justify-center mt-4 space-x-2">
+              {[0, 1, 2, 3].map((index) => (
+                <button
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    index === currentIndex
+                      ? 'bg-primary scale-125'
+                      : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                  }`}
+                  onClick={() => {
+                    const container = scrollContainerRef.current;
+                    if (container) {
+                      const cardWidth = container.clientWidth;
+                      container.scrollTo({
+                        left: index * cardWidth,
+                        behavior: 'smooth'
+                      });
+                    }
+                  }}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-2 sm:gap-3 md:gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <Card className="relative overflow-hidden">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-xs sm:text-sm">Total Items</CardTitle>
+                <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold break-words">{totalItems}</div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground break-words">All pricing items</p>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-xs sm:text-sm">Active Items</CardTitle>
+                <SettingsIcon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold break-words">{activeItems}</div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground break-words">Currently active</p>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-xs sm:text-sm">Inactive Items</CardTitle>
+                <ArchiveIcon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold break-words">{inactiveItems}</div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground break-words">Currently inactive</p>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-xs sm:text-sm">Categories</CardTitle>
+                <SettingsIcon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold break-words">{categories.length}</div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground break-words">Pricing categories</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
 
       {/* Filters and Actions */}

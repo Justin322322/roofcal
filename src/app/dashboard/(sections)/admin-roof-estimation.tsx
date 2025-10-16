@@ -31,10 +31,10 @@ export default function AdminRoofEstimationContent() {
       <div className="flex flex-col gap-2 px-3 sm:px-4 lg:px-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-primary/10">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-primary/10 flex-shrink-0">
               <Calculator className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Project Estimation</h1>
               <p className="text-xs sm:text-sm text-muted-foreground">
                 Create project estimations for your own projects and calculations
