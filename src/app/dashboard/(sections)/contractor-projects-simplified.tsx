@@ -451,8 +451,6 @@ export function ContractorProjectsContent() {
       if (statusFilter === "client-review" && projectStatus !== "FOR_CLIENT_REVIEW") return false;
       if (statusFilter === "accepted" && projectStatus !== "ACCEPTED" && projectStatus !== "ACTIVE" && project.proposalStatus !== "ACCEPTED") return false;
       if (statusFilter === "in-progress" && projectStatus !== "IN_PROGRESS") return false;
-      if (statusFilter === "completed" && projectStatus !== "COMPLETED") return false;
-      if (statusFilter === "rejected" && projectStatus !== "REJECTED") return false;
       if (statusFilter === "archived" && projectStatus !== "ARCHIVED") return false;
     }
 
@@ -593,8 +591,6 @@ export function ContractorProjectsContent() {
                     <SelectItem value="client-review">Awaiting Client</SelectItem>
                     <SelectItem value="accepted">Accepted</SelectItem>
                     <SelectItem value="in-progress">In Progress</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="rejected">Rejected</SelectItem>
                     <SelectItem value="archived">Archived</SelectItem>
                   </SelectContent>
                 </Select>
