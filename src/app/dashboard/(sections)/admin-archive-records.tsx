@@ -50,6 +50,7 @@ import {
   UserIcon,
 } from "lucide-react";
 import { formatCurrency, formatArea } from "@/lib/utils";
+import { getStatusBadge } from "@/lib/badge-utils";
 import { ProjectDetailsViewer } from "../roof-calculator/components/project-details-viewer";
 
 interface Project {
@@ -174,34 +175,6 @@ export default function AdminArchiveRecordsContent() {
     }
   };
 
-  const getStatusBadge = (status: string, proposalStatus: string | null) => {
-    if (proposalStatus === "SENT") {
-      return <Badge variant="outline" className="bg-blue-100 text-blue-700">Proposal Sent</Badge>;
-    }
-    if (proposalStatus === "ACCEPTED") {
-      return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
-    }
-    if (proposalStatus === "REJECTED") {
-      return <Badge variant="outline" className="bg-red-100 text-red-700">Rejected</Badge>;
-    }
-    
-    switch (status) {
-      case "CONTRACTOR_REVIEWING":
-        return <Badge variant="outline" className="bg-yellow-100 text-yellow-700">Action Required</Badge>;
-      case "PROPOSAL_SENT":
-        return <Badge variant="outline" className="bg-blue-100 text-blue-700">Proposal Sent</Badge>;
-      case "ACCEPTED":
-        return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
-      case "COMPLETED":
-        return <Badge variant="outline" className="bg-green-100 text-green-700">Completed</Badge>;
-      case "REJECTED":
-        return <Badge variant="outline" className="bg-red-100 text-red-700">Declined</Badge>;
-      case "ARCHIVED":
-        return <Badge variant="outline" className="bg-gray-100 text-gray-700">Archived</Badge>;
-      default:
-        return <Badge variant="outline" className="bg-slate-100 text-slate-600">{status}</Badge>;
-    }
-  };
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -567,7 +540,7 @@ export default function AdminArchiveRecordsContent() {
                           {formatCurrency(project.totalCost)}
                         </span>
                       </TableCell>
-                      <TableCell>{getStatusBadge(project.status, project.proposalStatus)}</TableCell>
+                      <TableCell>{getStatusBadge(project.status, project.proposalStatus ?? undefined)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <CalendarIcon className="h-3 w-3" />

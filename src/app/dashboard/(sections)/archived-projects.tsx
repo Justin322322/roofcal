@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSession } from "next-auth/react";
+import { UserRole } from "@/types/user-role";
 import {
   Dialog,
   DialogContent,
@@ -49,6 +51,7 @@ import {
   MoreHorizontalIcon,
 } from "lucide-react";
 import { formatCurrency, formatArea } from "@/lib/utils";
+import { getStatusBadge } from "@/lib/badge-utils";
 import { ProjectDetailsViewer } from "../roof-calculator/components/project-details-viewer";
 
 interface Project {
@@ -74,6 +77,7 @@ type SortField = "projectName" | "material" | "area" | "totalCost" | "createdAt"
 type SortDirection = "asc" | "desc";
 
 export default function ArchivedProjectsContent() {
+  const { data: session } = useSession();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -167,32 +171,6 @@ export default function ArchivedProjectsContent() {
     }
   };
 
-  const getStatusBadge = (status: string, proposalStatus: string | null) => {
-    if (proposalStatus === "SENT") {
-      return <Badge variant="outline" className="bg-blue-100 text-blue-700">Proposal Sent</Badge>;
-    }
-    if (proposalStatus === "ACCEPTED") {
-      return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
-    }
-    if (proposalStatus === "REJECTED") {
-      return <Badge variant="outline" className="bg-red-100 text-red-700">Rejected</Badge>;
-    }
-    
-    switch (status) {
-      case "CONTRACTOR_REVIEWING":
-        return <Badge variant="outline" className="bg-yellow-100 text-yellow-700">Action Required</Badge>;
-      case "PROPOSAL_SENT":
-        return <Badge variant="outline" className="bg-blue-100 text-blue-700">Proposal Sent</Badge>;
-      case "ACCEPTED":
-        return <Badge variant="outline" className="bg-green-100 text-green-700">Accepted</Badge>;
-      case "COMPLETED":
-        return <Badge variant="outline" className="bg-green-100 text-green-700">Completed</Badge>;
-      case "REJECTED":
-        return <Badge variant="outline" className="bg-red-100 text-red-700">Declined</Badge>;
-      default:
-        return <Badge variant="outline" className="bg-slate-100 text-slate-600">{status}</Badge>;
-    }
-  };
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -530,7 +508,7 @@ export default function ArchivedProjectsContent() {
                           {formatCurrency(project.totalCost)}
                         </span>
                       </TableCell>
-                      <TableCell>{getStatusBadge(project.status, project.proposalStatus)}</TableCell>
+                      <TableCell>{getStatusBadge(project.status, project.proposalStatus ?? undefined)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <CalendarIcon className="h-3 w-3" />
@@ -549,13 +527,15 @@ export default function ArchivedProjectsContent() {
                               <EyeIcon className="h-4 w-4 mr-2" />
                               View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleUnarchive(project.id)}
-                              className="text-blue-600"
-                            >
-                              <ArchiveIcon className="h-4 w-4 mr-2" />
-                              Unarchive
-                            </DropdownMenuItem>
+                            {session?.user?.role === UserRole.ADMIN && (
+                              <DropdownMenuItem 
+                                onClick={() => handleUnarchive(project.id)}
+                                className="text-blue-600"
+                              >
+                                <ArchiveIcon className="h-4 w-4 mr-2" />
+                                Unarchive
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>

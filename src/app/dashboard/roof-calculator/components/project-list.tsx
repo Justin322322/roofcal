@@ -8,6 +8,8 @@ import { getStatusBadge } from "@/lib/badge-utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSession } from "next-auth/react";
+import { UserRole } from "@/types/user-role";
 import {
   Dialog,
   DialogContent,
@@ -115,6 +117,7 @@ interface Contractor {
 }
 
 export function ProjectList() {
+  const { data: session } = useSession();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -722,22 +725,24 @@ export function ProjectList() {
                             </DropdownMenuItem>
                           </>
                         )}
-                        {project.status === "ARCHIVED" ? (
-                          <DropdownMenuItem
-                            onClick={() => handleUnarchiveProject(project.id)}
-                            disabled={archivingProjectId === project.id}
-                          >
-                            <ArchiveIcon className="mr-2 h-4 w-4" />
-                            {archivingProjectId === project.id ? "Unarchiving..." : "Unarchive"}
-                          </DropdownMenuItem>
-                        ) : (
-                          <DropdownMenuItem
-                            onClick={() => handleArchiveProject(project.id)}
-                            disabled={archivingProjectId === project.id}
-                          >
-                            <ArchiveIcon className="mr-2 h-4 w-4" />
-                            {archivingProjectId === project.id ? "Archiving..." : "Archive"}
-                          </DropdownMenuItem>
+                        {session?.user?.role === UserRole.ADMIN && (
+                          project.status === "ARCHIVED" ? (
+                            <DropdownMenuItem
+                              onClick={() => handleUnarchiveProject(project.id)}
+                              disabled={archivingProjectId === project.id}
+                            >
+                              <ArchiveIcon className="mr-2 h-4 w-4" />
+                              {archivingProjectId === project.id ? "Unarchiving..." : "Unarchive"}
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={() => handleArchiveProject(project.id)}
+                              disabled={archivingProjectId === project.id}
+                            >
+                              <ArchiveIcon className="mr-2 h-4 w-4" />
+                              {archivingProjectId === project.id ? "Archiving..." : "Archive"}
+                            </DropdownMenuItem>
+                          )
                         )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
