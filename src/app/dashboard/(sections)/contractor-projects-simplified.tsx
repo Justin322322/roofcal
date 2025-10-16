@@ -435,6 +435,10 @@ export function ContractorProjectsContent() {
     // Exclude archived projects from contractor view
     if (project.status === "ARCHIVED") return false;
     
+    // Exclude completed and rejected projects from contractor assigned projects view
+    const projectStatus = project.proposalStatus || project.status;
+    if (projectStatus === "COMPLETED" || projectStatus === "REJECTED") return false;
+    
     // Search filter
     const matchesSearch = project.projectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          project.client?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -443,7 +447,6 @@ export function ContractorProjectsContent() {
     if (!matchesSearch) return false;
 
     // Status filter
-    const projectStatus = project.proposalStatus || project.status;
     
     // Apply specific status filter
     if (statusFilter !== "all") {
