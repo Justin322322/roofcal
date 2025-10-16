@@ -108,6 +108,38 @@ export default function PricingMaintenance() {
     }
   }, [session?.user?.id, session?.user?.role, session]);
 
+  // Handle scroll events for pagination dots
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container || !isMobile) return;
+
+    const handleScroll = () => {
+      const scrollLeft = container.scrollLeft;
+      const cardWidth = container.clientWidth;
+      const newIndex = Math.round(scrollLeft / cardWidth);
+      setCurrentIndex(newIndex);
+    };
+
+    const handleScrollEnd = () => {
+      // Snap to nearest card
+      const scrollLeft = container.scrollLeft;
+      const cardWidth = container.clientWidth;
+      const newIndex = Math.round(scrollLeft / cardWidth);
+      container.scrollTo({
+        left: newIndex * cardWidth,
+        behavior: 'smooth'
+      });
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    container.addEventListener('scrollend', handleScrollEnd);
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      container.removeEventListener('scrollend', handleScrollEnd);
+    };
+  }, [isMobile]);
+
   // Check authentication and authorization
   if (session === null) {
     return (
@@ -299,38 +331,6 @@ export default function PricingMaintenance() {
   const totalItems = pricingData.length;
   const activeItems = pricingData.filter((item) => item.isActive).length;
   const inactiveItems = totalItems - activeItems;
-
-  // Handle scroll events for pagination dots
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container || !isMobile) return;
-
-    const handleScroll = () => {
-      const scrollLeft = container.scrollLeft;
-      const cardWidth = container.clientWidth;
-      const newIndex = Math.round(scrollLeft / cardWidth);
-      setCurrentIndex(newIndex);
-    };
-
-    const handleScrollEnd = () => {
-      // Snap to nearest card
-      const scrollLeft = container.scrollLeft;
-      const cardWidth = container.clientWidth;
-      const newIndex = Math.round(scrollLeft / cardWidth);
-      container.scrollTo({
-        left: newIndex * cardWidth,
-        behavior: 'smooth'
-      });
-    };
-
-    container.addEventListener('scroll', handleScroll);
-    container.addEventListener('scrollend', handleScrollEnd);
-
-    return () => {
-      container.removeEventListener('scroll', handleScroll);
-      container.removeEventListener('scrollend', handleScrollEnd);
-    };
-  }, [isMobile]);
 
   // Handle touch events for better mobile experience
   const handleTouchStart = () => {};
