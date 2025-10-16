@@ -445,7 +445,6 @@ export function ProjectList() {
                     <SelectItem value="ACCEPTED">Accepted</SelectItem>
                     <SelectItem value="COMPLETED">Completed</SelectItem>
                     <SelectItem value="REJECTED">Declined</SelectItem>
-                    <SelectItem value="ARCHIVED">Archived</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

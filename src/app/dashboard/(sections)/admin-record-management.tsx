@@ -319,7 +319,7 @@ export default function AdminRecordManagementContent() {
                             <span className="text-muted-foreground">No client info</span>
                           )}
                         </TableCell>
-                        <TableCell>{getStatusBadge(effectiveStatus(project), effectiveStatus(project))}</TableCell>
+                        <TableCell>{getStatusBadge(project.status, project.proposalStatus ?? undefined)}</TableCell>
                         <TableCell className="font-medium">{formatCurrency(project.totalCost)}</TableCell>
                         <TableCell>{formatDate(project.createdAt)}</TableCell>
                         <TableCell>

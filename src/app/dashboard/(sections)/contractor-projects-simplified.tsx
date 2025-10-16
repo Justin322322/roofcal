@@ -427,10 +427,8 @@ export function ContractorProjectsContent() {
   };
 
   const getProjectStatusBadge = (status: string, proposalStatus: string | null) => {
-    // Use the same logic as filtering: prioritize proposalStatus over status
-    const effectiveStatus = proposalStatus || status;
-    // Pass the effective status as both status and proposalStatus so it displays correctly
-    return getStatusBadge(effectiveStatus, effectiveStatus);
+    // Use the centralized getStatusBadge utility
+    return getStatusBadge(status, proposalStatus ?? undefined);
   };
 
   const filteredProjects = projects.filter(project => {
