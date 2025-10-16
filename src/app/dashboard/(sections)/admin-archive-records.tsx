@@ -386,6 +386,7 @@ export default function AdminArchiveRecordsContent() {
             {hasActiveFilters && (
               <div>
                 <Button
+                  type="button"
                   variant="outline"
                   size="sm"
                   onClick={clearFilters}
@@ -550,7 +551,7 @@ export default function AdminArchiveRecordsContent() {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
+                            <Button type="button" variant="ghost" size="sm">
                               <MoreHorizontalIcon className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -606,6 +607,7 @@ export default function AdminArchiveRecordsContent() {
           </DialogHeader>
           <DialogFooter>
             <Button
+              type="button"
               variant="outline"
               onClick={() => {
                 setUnarchiveDialogOpen(false);
@@ -616,6 +618,7 @@ export default function AdminArchiveRecordsContent() {
               Cancel
             </Button>
             <Button
+              type="button"
               onClick={confirmUnarchive}
               disabled={unarchiving}
             >
