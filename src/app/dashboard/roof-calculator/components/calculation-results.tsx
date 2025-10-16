@@ -114,28 +114,30 @@ export function CalculationResults({
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Calculation Results</span>
+          <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <span className="text-base sm:text-lg">Calculation Results</span>
             <div className="flex items-center gap-2">
-              <Badge variant="secondary">{material || "No material"}</Badge>
+              <Badge variant="secondary" className="text-xs">{material || "No material"}</Badge>
               {onAutoOptimize && (
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={handleOptimizeClick}
                   disabled={isOptimizing}
-                  className="h-7 px-3 text-xs"
+                  className="h-7 px-2 sm:px-3 text-xs"
                   title="Optimize settings while maintaining quality"
                 >
                   {isOptimizing ? (
                     <>
                       <Loader2Icon className="h-3 w-3 mr-1 animate-spin" />
-                      Optimizing...
+                      <span className="hidden sm:inline">Optimizing...</span>
+                      <span className="sm:hidden">...</span>
                     </>
                   ) : (
                     <>
                       <SparklesIcon className="h-3 w-3 mr-1" />
-                      Optimize
+                      <span className="hidden sm:inline">Optimize</span>
+                      <span className="sm:hidden">Opt</span>
                     </>
                   )}
                 </Button>
@@ -153,16 +155,16 @@ export function CalculationResults({
             </span>
           </div>
           {planArea && slopeMultiplier ? (
-            <div className="rounded-md border bg-green-50 text-green-900 dark:bg-green-950/40 dark:text-green-200 px-4 py-3 space-y-1">
+            <div className="rounded-md border bg-green-50 text-green-900 dark:bg-green-950/40 dark:text-green-200 px-3 sm:px-4 py-3 space-y-1">
               <div className="text-sm font-semibold">Area from dimensions</div>
-              <div className="text-sm">Base: {length} × {width} = {planArea.toFixed(1)} m²</div>
+              <div className="text-xs sm:text-sm">Base: {length} × {width} = {planArea.toFixed(1)} m²</div>
               {roofTypeLabel && (
-                <div className="text-sm">{roofTypeLabel}</div>
+                <div className="text-xs sm:text-sm">{roofTypeLabel}</div>
               )}
               {typeof pitch === "number" && (
-                <div className="text-sm">{pitch}° pitch (+{((slopeMultiplier - 1) * 100).toFixed(0)}% slope area)</div>
+                <div className="text-xs sm:text-sm">{pitch}° pitch (+{((slopeMultiplier - 1) * 100).toFixed(0)}% slope area)</div>
               )}
-              <div className="text-sm">Total multiplier: {slopeMultiplier.toFixed(2)}x</div>
+              <div className="text-xs sm:text-sm">Total multiplier: {slopeMultiplier.toFixed(2)}x</div>
             </div>
           ) : null}
           <Separator />
@@ -275,11 +277,11 @@ export function CalculationResults({
 
         {/* Total Cost */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between pt-2">
-            <span className="text-base font-semibold">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-2 gap-1">
+            <span className="text-sm sm:text-base font-semibold">
               Total Estimated Cost
             </span>
-            <span className="text-2xl font-bold text-primary">
+            <span className="text-xl sm:text-2xl font-bold text-primary">
               ₱{formatNumberWithCommas(totalCost)}
             </span>
           </div>
@@ -338,19 +340,20 @@ export function CalculationResults({
           </div>
         )}
 
-        <div className="pt-4 text-xs text-muted-foreground flex items-center gap-1">
-          * {constructionMode === "repair" ? (
+        <div className="pt-4 text-xs text-muted-foreground flex flex-col sm:flex-row sm:items-center gap-1">
+          <span>* {constructionMode === "repair" ? (
             <>
-              <WrenchIcon className="h-3 w-3" />
+              <WrenchIcon className="h-3 w-3 inline mr-1" />
               <span>Repair</span>
             </>
           ) : (
             <>
-              <HammerIcon className="h-3 w-3" />
+              <HammerIcon className="h-3 w-3 inline mr-1" />
               <span>New construction</span>
             </>
-          )}{" "}
-          estimate includes all materials and labor. Additional fees may apply for permits and site-specific requirements.
+          )}</span>
+          <span className="hidden sm:inline">{" "}</span>
+          <span>estimate includes all materials and labor. Additional fees may apply for permits and site-specific requirements.</span>
         </div>
       </CardContent>
       </Card>

@@ -70,7 +70,7 @@ export function RoofStatsCards({
 
   if (loading) {
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-6 sm:mb-8">
         {Array.from({ length: 3 }).map((_, index) => (
           <Card key={index} className="relative overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -78,7 +78,7 @@ export function RoofStatsCards({
               <Skeleton className="h-4 w-4" />
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-8 w-16 mb-2" />
+              <Skeleton className="h-6 sm:h-8 w-16 mb-2" />
               <Skeleton className="h-3 w-32" />
             </CardContent>
           </Card>
@@ -88,7 +88,7 @@ export function RoofStatsCards({
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+    <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-6 sm:mb-8">
       {stats.map((stat, index) => (
         <Card key={index} className="relative overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -96,7 +96,7 @@ export function RoofStatsCards({
             <stat.icon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               {typeof stat.value === "string" ? stat.value : stat.value}
             </div>
             <p className="text-xs text-muted-foreground">{stat.description}</p>

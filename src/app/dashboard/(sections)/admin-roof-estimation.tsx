@@ -28,34 +28,35 @@ export default function AdminRoofEstimationContent() {
   return (
     <div className="flex flex-col gap-4 md:gap-6">
       {/* Header */}
-      <div className="flex flex-col gap-2 px-4 lg:px-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-            <Calculator className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Project Estimation</h1>
-            <p className="text-sm text-muted-foreground">
-              Create project estimations for your own projects and calculations
-            </p>
+      <div className="flex flex-col gap-2 px-3 sm:px-4 lg:px-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-primary/10">
+              <Calculator className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Project Estimation</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Create project estimations for your own projects and calculations
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Information Banner */}
-      <div className="px-4 lg:px-6">
+      <div className="px-3 sm:px-4 lg:px-6">
         <Alert>
-          <Info className="h-4 w-4" />
-          <AlertDescription>
+          <Info className="h-4 w-4 flex-shrink-0" />
+          <AlertDescription className="text-xs sm:text-sm">
             This tool allows you to create project estimations for your own use. Projects will be saved as DRAFT status 
-            with no client assignment. You can later change the status to ACTIVE, IN_PROGRESS, or COMPLETED as needed.
-            No material tracking or delivery validation is required for these estimations.
+            with no client assignment.
           </AlertDescription>
         </Alert>
       </div>
 
       {/* Main Content */}
-      <div className="px-4 lg:px-6">
+      <div className="px-3 sm:px-4 lg:px-6">
         <RoofCalculatorContent 
           isAdminSelfMode={true}
           onProjectCreated={handleProjectCreated}

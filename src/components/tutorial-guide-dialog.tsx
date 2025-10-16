@@ -60,93 +60,100 @@ export function TutorialGuideDialog() {
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
           className={cn(
-            "fixed left-[50%] top-[50%] z-50 w-full max-w-[98vw] sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl translate-x-[-50%] translate-y-[-50%]",
-            "border bg-background h-[85vh] flex flex-col p-0 gap-0 shadow-lg duration-200",
+            "fixed left-[50%] top-[50%] z-50 w-full max-w-[95vw] sm:max-w-[90vw] md:max-w-4xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl translate-x-[-50%] translate-y-[-50%]",
+            "border bg-background h-[90vh] sm:h-[85vh] flex flex-col p-0 gap-0 shadow-lg duration-200",
             "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
             "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
             "data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%]",
-            "data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg"
+            "data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-lg"
           )}
         >
           {/* Header */}
-          <div className="p-6 pb-4 border-b">
-            <DialogTitle className="text-xl font-semibold leading-none tracking-tight">
+          <div className="p-4 sm:p-6 pb-3 sm:pb-4 border-b">
+            <DialogTitle className="text-lg sm:text-xl font-semibold leading-none tracking-tight">
               RoofCalc Tutorial Guide
             </DialogTitle>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               Complete guide to using RoofCal for accurate roof cost estimation
             </p>
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-auto p-6">
+          <div className="flex-1 overflow-auto p-3 sm:p-6">
             <Tabs defaultValue="overview" className="w-full">
-              <div className="mb-4 md:mb-6">
-                <TabsList className="flex flex-wrap w-full h-auto p-0 bg-muted/50 rounded-lg gap-0">
+              <div className="mb-3 sm:mb-4 md:mb-6">
+                <TabsList className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 w-full h-auto p-1 bg-muted/50 rounded-lg gap-1">
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1"
+                    className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
                     value="overview"
                   >
-                    <HomeIcon className="h-4 w-4" />
-                    <span className="whitespace-nowrap">Overview</span>
+                    <HomeIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline whitespace-nowrap">Overview</span>
+                    <span className="sm:hidden">Overview</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1"
+                    className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
                     value="roof-types"
                   >
-                    <LayersIcon className="h-4 w-4" />
-                    <span className="whitespace-nowrap">Roof Types</span>
+                    <LayersIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline whitespace-nowrap">Roof Types</span>
+                    <span className="sm:hidden">Types</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1"
+                    className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
                     value="materials"
                   >
-                    <LayersIcon className="h-4 w-4" />
-                    <span className="whitespace-nowrap">Materials</span>
+                    <LayersIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline whitespace-nowrap">Materials</span>
+                    <span className="sm:hidden">Materials</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1"
+                    className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
                     value="calculator"
                   >
-                    <CalculatorIcon className="h-4 w-4" />
-                    <span className="whitespace-nowrap">Calculator</span>
+                    <CalculatorIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline whitespace-nowrap">Calculator</span>
+                    <span className="sm:hidden">Calc</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1"
+                    className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
                     value="how-to-use"
                   >
-                    <ClipboardListIcon className="h-4 w-4" />
-                    <span className="whitespace-nowrap">How to use</span>
+                    <ClipboardListIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline whitespace-nowrap">How to use</span>
+                    <span className="sm:hidden">Guide</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1"
+                    className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
                     value="ai-system"
                   >
-                    <SparklesIcon className="h-4 w-4" />
-                    <span className="whitespace-nowrap">AI System</span>
+                    <SparklesIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline whitespace-nowrap">AI System</span>
+                    <span className="sm:hidden">AI</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    className="inline-flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md flex-1"
+                    className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
                     value="archive"
                   >
-                    <ArchiveIcon className="h-4 w-4" />
-                    <span className="whitespace-nowrap">Archive</span>
+                    <ArchiveIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline whitespace-nowrap">Archive</span>
+                    <span className="sm:hidden">Archive</span>
                   </TabsTrigger>
                 </TabsList>
               </div>
 
               <TabsContent
                 value="overview"
-                className="mt-0 p-4 bg-muted/20 rounded-lg"
+                className="mt-0 p-3 sm:p-4 bg-muted/20 rounded-lg"
               >
-                <h3 className="text-lg font-semibold mb-3">
+                <h3 className="text-base sm:text-lg font-semibold mb-3">
                   {content.tabs.overview.title}
                 </h3>
                 <div className="space-y-4 text-muted-foreground leading-relaxed">
                   <p>{content.tabs.overview.description}</p>
 
                   <div className="space-y-3">
-                    <h4 className="text-base font-medium text-foreground">
+                    <h4 className="text-sm sm:text-base font-medium text-foreground">
                       Key Features:
                     </h4>
                     <ul className="space-y-2 ml-4">
@@ -161,29 +168,29 @@ export function TutorialGuideDialog() {
                     </ul>
                   </div>
 
-                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-                    <h4 className="text-base font-medium text-foreground mb-2">
+                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 sm:p-4">
+                    <h4 className="text-sm sm:text-base font-medium text-foreground mb-2">
                       Getting Started:
                     </h4>
-                    <p className="text-sm">{content.tabs.overview.gettingStarted}</p>
+                    <p className="text-xs sm:text-sm">{content.tabs.overview.gettingStarted}</p>
                   </div>
                 </div>
               </TabsContent>
 
               <TabsContent
                 value="roof-types"
-                className="mt-0 p-4 bg-muted/20 rounded-lg"
+                className="mt-0 p-3 sm:p-4 bg-muted/20 rounded-lg"
               >
-                <h3 className="text-lg font-semibold mb-3">{content.tabs["roof-types"].title}</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-3">{content.tabs["roof-types"].title}</h3>
                 <div className="space-y-4 text-muted-foreground leading-relaxed">
                   <p>{content.tabs["roof-types"].description}</p>
 
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                     <div className="space-y-3">
-                      <h4 className="text-base font-medium text-foreground">
+                      <h4 className="text-sm sm:text-base font-medium text-foreground">
                         Common Residential Roofs:
                       </h4>
-                      <div className="grid gap-3 grid-cols-2">
+                      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
                         {content.tabs["roof-types"].commonRoofs?.map((roof, index) => (
                           <div
                             key={index}
@@ -211,7 +218,7 @@ export function TutorialGuideDialog() {
                     </div>
 
                     <div className="space-y-3">
-                      <div className="grid gap-3 grid-cols-2">
+                      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
                         {content.tabs["roof-types"].complexRoofs?.map((roof, index) => (
                           <div
                             key={index}
@@ -277,9 +284,9 @@ export function TutorialGuideDialog() {
 
               <TabsContent
                 value="materials"
-                className="mt-0 p-4 bg-muted/20 rounded-lg"
+                className="mt-0 p-3 sm:p-4 bg-muted/20 rounded-lg"
               >
-                <h3 className="text-lg font-semibold mb-3">{content.tabs.materials.title}</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-3">{content.tabs.materials.title}</h3>
                 <div className="space-y-4 text-muted-foreground leading-relaxed">
                   <p>{content.tabs.materials.description}</p>
 
@@ -300,7 +307,7 @@ export function TutorialGuideDialog() {
                     });
 
                     return (
-                      <div className="grid gap-4 md:grid-cols-2">
+                      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                         {groups.map((group) => (
                           <div key={group.key} className="border rounded-lg p-4 group">
                             <div className="text-center mb-4">
@@ -371,7 +378,7 @@ export function TutorialGuideDialog() {
                       ((content.tabs.materials as unknown as { [k: string]: { name: string; image: string }[] })[section.key])?.length ? (
                         <div key={section.key}>
                           <h4 className="text-base font-medium text-foreground mb-2">{section.title}</h4>
-                          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                          <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
                             {(() => {
                               const raw = (content.tabs.materials as unknown as { [k: string]: { name: string; image: string; description?: string }[] })[section.key];
                               const items = raw.filter((itm, idx, arr) => arr.findIndex((x) => x.name === itm.name) === idx);
@@ -412,14 +419,14 @@ export function TutorialGuideDialog() {
 
               <TabsContent
                 value="calculator"
-                className="mt-0 p-4 bg-muted/20 rounded-lg"
+                className="mt-0 p-3 sm:p-4 bg-muted/20 rounded-lg"
               >
-                <h3 className="text-lg font-semibold mb-3">{content.tabs.calculator.title}</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-3">{content.tabs.calculator.title}</h3>
                 <div className="space-y-4 text-muted-foreground leading-relaxed">
                   <p>{content.tabs.calculator.description}</p>
 
                   <div className="space-y-4">
-                    <h4 className="text-base font-medium text-foreground">
+                    <h4 className="text-sm sm:text-base font-medium text-foreground">
                       Step-by-Step Workflow:
                     </h4>
 
@@ -474,14 +481,14 @@ export function TutorialGuideDialog() {
 
               <TabsContent
                 value="how-to-use"
-                className="mt-0 p-4 bg-muted/20 rounded-lg"
+                className="mt-0 p-3 sm:p-4 bg-muted/20 rounded-lg"
               >
-                <h3 className="text-lg font-semibold mb-3">{content.tabs["how-to-use"].title}</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-3">{content.tabs["how-to-use"].title}</h3>
                 <div className="space-y-4 text-muted-foreground leading-relaxed">
                   <p>{content.tabs["how-to-use"].description}</p>
 
                   <div className="space-y-3">
-                    <h4 className="text-base font-medium text-foreground">
+                    <h4 className="text-sm sm:text-base font-medium text-foreground">
                       Getting Started:
                     </h4>
                     <ul className="space-y-1 ml-4">
@@ -497,7 +504,7 @@ export function TutorialGuideDialog() {
                   </div>
 
                   <div className="space-y-4">
-                    <h4 className="text-base font-medium text-foreground">
+                    <h4 className="text-sm sm:text-base font-medium text-foreground">
                       {content.tabs["how-to-use"].projectEstimation?.title}:
                     </h4>
                     <div className="space-y-3">
@@ -529,18 +536,18 @@ export function TutorialGuideDialog() {
 
               <TabsContent
                 value="ai-system"
-                className="mt-0 p-4 bg-muted/20 rounded-lg"
+                className="mt-0 p-3 sm:p-4 bg-muted/20 rounded-lg"
               >
-                <h3 className="text-lg font-semibold mb-3">{content.tabs["ai-system"].title}</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-3">{content.tabs["ai-system"].title}</h3>
                 <div className="space-y-4 text-muted-foreground leading-relaxed">
                   <p>{content.tabs["ai-system"].description}</p>
 
                   <div className="space-y-4">
-                    <h4 className="text-base font-medium text-foreground">
+                    <h4 className="text-sm sm:text-base font-medium text-foreground">
                       AI-Powered Features:
                     </h4>
 
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                       <div className="space-y-3">
                         <div className="border rounded-lg p-4">
                           <h5 className="font-medium text-foreground mb-2">
@@ -622,18 +629,18 @@ export function TutorialGuideDialog() {
 
               <TabsContent
                 value="archive"
-                className="mt-0 p-4 bg-muted/20 rounded-lg"
+                className="mt-0 p-3 sm:p-4 bg-muted/20 rounded-lg"
               >
-                <h3 className="text-lg font-semibold mb-3">{content.tabs.archive.title}</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-3">{content.tabs.archive.title}</h3>
                 <div className="space-y-4 text-muted-foreground leading-relaxed">
                   <p>{content.tabs.archive.description}</p>
 
                   <div className="space-y-4">
-                    <h4 className="text-base font-medium text-foreground">
+                    <h4 className="text-sm sm:text-base font-medium text-foreground">
                       Archive Features:
                     </h4>
 
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                       <div className="space-y-3">
                         <div className="border rounded-lg p-4">
                           <h5 className="font-medium text-foreground mb-2">
@@ -688,7 +695,7 @@ export function TutorialGuideDialog() {
                     <h4 className="text-base font-medium text-foreground mb-2">
                       Archive Workflow:
                     </h4>
-                    <div className="grid gap-3 md:grid-cols-3">
+                    <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
                       {content.tabs.archive.workflow?.map((step, index) => (
                         <div key={index} className="text-center">
                           <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center mx-auto mb-2 text-sm font-medium">
@@ -720,7 +727,7 @@ export function TutorialGuideDialog() {
 
             </Tabs>
           </div>
-          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+          <DialogPrimitive.Close className="absolute right-3 top-3 sm:right-4 sm:top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>

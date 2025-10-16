@@ -73,7 +73,7 @@ export function MeasurementForm({
         </Alert>
       )}
       
-      <div className="grid gap-4 md:grid-cols-2 min-w-0">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 min-w-0">
         <div className="space-y-2">
           <Label htmlFor="length">Length (meters)</Label>
           <Input
@@ -103,7 +103,7 @@ export function MeasurementForm({
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-[2fr_1fr_2fr] min-w-0">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 min-w-0">
         <div className="space-y-2">
           <Label htmlFor="pitch">Roof Pitch</Label>
           <Select

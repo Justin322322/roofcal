@@ -251,9 +251,9 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
 
       {/* Main Content Grid */}
       <div>
-        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 xl:grid-cols-2">
           {/* Left Column - Inputs */}
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-4 sm:space-y-6 order-2 xl:order-1">
             {/* Construction Mode */}
             <Card>
               <CardHeader className="min-w-0">
@@ -407,7 +407,7 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
           </div>
 
           {/* Right Column - Results & Analysis (Sticky) */}
-          <div className="space-y-4 sm:space-y-6 lg:sticky lg:top-4 lg:self-start">
+          <div className="space-y-4 sm:space-y-6 xl:sticky xl:top-4 xl:self-start order-1 xl:order-2">
             {isPricingLoaded && material && (
             <CalculationResults
               area={results.area}
