@@ -145,6 +145,9 @@ export default function AdminRecordManagementContent() {
   const effectiveStatus = (project: Project) => project.proposalStatus || project.status;
 
   const filteredProjects = projects.filter(project => {
+    // Exclude archived projects from admin record management view
+    if (project.status === "ARCHIVED") return false;
+    
     // Only include Completed or Rejected items
     const status = effectiveStatus(project);
     if (status !== "COMPLETED" && status !== "REJECTED") return false;
