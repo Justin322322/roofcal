@@ -432,6 +432,9 @@ export function ContractorProjectsContent() {
   };
 
   const filteredProjects = projects.filter(project => {
+    // Exclude archived projects from contractor view
+    if (project.status === "ARCHIVED") return false;
+    
     // Search filter
     const matchesSearch = project.projectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          project.client?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -449,7 +452,6 @@ export function ContractorProjectsContent() {
       if (statusFilter === "client-review" && projectStatus !== "FOR_CLIENT_REVIEW") return false;
       if (statusFilter === "accepted" && projectStatus !== "ACCEPTED" && projectStatus !== "ACTIVE" && project.proposalStatus !== "ACCEPTED") return false;
       if (statusFilter === "in-progress" && projectStatus !== "IN_PROGRESS") return false;
-      if (statusFilter === "archived" && projectStatus !== "ARCHIVED") return false;
     }
 
     // Cost filter
@@ -589,7 +591,6 @@ export function ContractorProjectsContent() {
                     <SelectItem value="client-review">Awaiting Client</SelectItem>
                     <SelectItem value="accepted">Accepted</SelectItem>
                     <SelectItem value="in-progress">In Progress</SelectItem>
-                    <SelectItem value="archived">Archived</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
