@@ -44,13 +44,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
-  ArchiveIcon,
   DollarSignIcon,
   SettingsIcon,
-  TrashIcon,
   DownloadIcon,
   PlusIcon,
   MoreHorizontalIcon,
@@ -208,7 +205,15 @@ export default function PricingMaintenance() {
         throw new Error(error.error || 'Failed to update pricing');
       }
 
-      await loadPricingData();
+      // Update local state without page refresh
+      setPricingData(prevData => 
+        prevData.map(item => 
+          item.id === id 
+            ? { ...item, ...editValues, updated_at: new Date() }
+            : item
+        )
+      );
+      
       setEditingItem(null);
       setEditValues({});
       toast.success('Pricing updated successfully');
@@ -241,7 +246,11 @@ export default function PricingMaintenance() {
         throw new Error(error.error || 'Failed to create pricing');
       }
 
-      await loadPricingData();
+      const result = await response.json();
+      
+      // Update local state without page refresh
+      setPricingData(prevData => [...prevData, result.data]);
+      
       setIsAddDialogOpen(false);
       setNewItemData({});
       toast.success('Pricing item added successfully');
@@ -253,58 +262,7 @@ export default function PricingMaintenance() {
     }
   };
 
-  const handleDeleteItem = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this pricing item? This will make it inactive and remove it from calculations.')) {
-      return;
-    }
 
-    try {
-      const response = await fetch(`/api/pricing/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete pricing');
-      }
-
-      await loadPricingData();
-      toast.success('Pricing item deleted successfully');
-    } catch (error) {
-      console.error('Error deleting pricing:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to delete pricing');
-    }
-  };
-
-  const handleToggleActiveStatus = async (id: string, currentStatus: boolean) => {
-    const action = currentStatus ? 'deactivate' : 'activate';
-    const actionText = currentStatus ? 'make inactive' : 'make active';
-    
-    if (!confirm(`Are you sure you want to ${actionText} this pricing item?`)) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/pricing/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ isActive: !currentStatus }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || `Failed to ${action} pricing`);
-      }
-
-      await loadPricingData();
-      toast.success(`Pricing item ${action}d successfully`);
-    } catch (error) {
-      console.error(`Error ${action}ing pricing:`, error);
-      toast.error(error instanceof Error ? error.message : `Failed to ${action} pricing`);
-    }
-  };
 
   const exportToCSV = async () => {
     try {
@@ -430,7 +388,7 @@ export default function PricingMaintenance() {
               <Card className="relative overflow-hidden flex-shrink-0 w-[calc(100vw-2rem)] snap-center bg-gradient-to-br from-background to-muted/20 border-border/50 shadow-sm hover:shadow-md transition-all duration-300 ease-out">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                   <CardTitle className="text-sm font-semibold text-foreground/90">Inactive Items</CardTitle>
-                  <ArchiveIcon className="h-4 w-4 text-muted-foreground/70" />
+                  <SettingsIcon className="h-4 w-4 text-muted-foreground/70" />
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="text-xl font-bold text-foreground break-words mb-1">{inactiveItems}</div>
@@ -502,7 +460,7 @@ export default function PricingMaintenance() {
             <Card className="relative overflow-hidden">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-xs sm:text-sm">Inactive Items</CardTitle>
-                <ArchiveIcon className="h-4 w-4 text-muted-foreground" />
+                <SettingsIcon className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold break-words">{inactiveItems}</div>
@@ -869,31 +827,6 @@ export default function PricingMaintenance() {
                               <DropdownMenuItem onClick={() => handleEditItem(item)}>
                                 <EditIcon className="h-4 w-4 mr-2" />
                                 Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem 
-                                onClick={() => handleToggleActiveStatus(item.id, item.isActive)}
-                                className={item.isActive ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
-                              >
-                                {item.isActive ? (
-                                  <>
-                                    <ArchiveIcon className="h-4 w-4 mr-2" />
-                                    Make Inactive
-                                  </>
-                                ) : (
-                                  <>
-                                    <SettingsIcon className="h-4 w-4 mr-2" />
-                                    Make Active
-                                  </>
-                                )}
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem 
-                                onClick={() => handleDeleteItem(item.id)}
-                                className="text-red-600 focus:text-red-600"
-                              >
-                                <TrashIcon className="h-4 w-4 mr-2" />
-                                Delete (Soft)
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
