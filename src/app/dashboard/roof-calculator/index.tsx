@@ -433,6 +433,13 @@ export function RoofCalculatorContent(props: RoofCalculatorContentProps = {}) {
               width={parseFloat(measurements.width) || undefined}
               pitch={parseFloat(measurements.pitch) || undefined}
               roofTypeLabel={`${measurements.roofType.charAt(0).toUpperCase()}${measurements.roofType.slice(1)} roof${measurements.roofType === "shed" ? " (single slope)" : ""}`}
+              materialThickness={measurements.materialThickness}
+              ridgeType={measurements.ridgeType}
+              gutterSize={measurements.gutterSize}
+              gutterMaterial={measurements.gutterMaterial}
+              insulationType={measurements.insulationType}
+              insulationThickness={measurements.insulationThickness}
+              ventilationType={measurements.ventilationType}
             />
             )}
 

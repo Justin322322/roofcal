@@ -36,6 +36,14 @@ interface CalculationResultsProps {
   width?: number;
   pitch?: number;
   roofTypeLabel?: string;
+  // Material detail fields
+  materialThickness?: string;
+  ridgeType?: string;
+  gutterSize?: string;
+  gutterMaterial?: string;
+  insulationType?: string;
+  insulationThickness?: string;
+  ventilationType?: string;
 }
 
 export function CalculationResults({
@@ -62,6 +70,13 @@ export function CalculationResults({
   width,
   pitch,
   roofTypeLabel,
+  materialThickness,
+  ridgeType,
+  gutterSize,
+  gutterMaterial,
+  insulationType,
+  insulationThickness,
+  ventilationType,
 }: CalculationResultsProps) {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationDialogOpen, setOptimizationDialogOpen] = useState(false);
@@ -174,7 +189,7 @@ export function CalculationResults({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
-              {material} ({materialQuantity.toFixed(2)} sq.m)
+              {materialThickness ? `${materialThickness} ${material}` : material} ({materialQuantity.toFixed(2)} sq.m)
             </span>
             <span className="text-base font-medium">
               ₱{formatNumberWithCommas(materialCost)}
@@ -187,7 +202,8 @@ export function CalculationResults({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">
-                Gutter ({gutterPieces} pcs)
+                {gutterMaterial ? `${gutterMaterial} Gutter` : "Gutter"}
+                {gutterSize && ` (${gutterSize})`} ({gutterPieces} pcs)
               </span>
               <span className="text-base font-medium">
                 ₱{formatNumberWithCommas(gutterCost)}
@@ -200,7 +216,7 @@ export function CalculationResults({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
-              Ridge ({ridgeLength.toFixed(1)}m)
+              {ridgeType ? `${ridgeType} Ridge` : "Ridge"} ({ridgeLength.toFixed(1)}m)
             </span>
             <span className="text-base font-medium">
               ₱{formatNumberWithCommas(ridgeCost)}
@@ -224,7 +240,10 @@ export function CalculationResults({
         {insulationCost > 0 && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Insulation</span>
+              <span className="text-sm text-muted-foreground">
+                {insulationType ? `${insulationType} Insulation` : "Insulation"}
+                {insulationThickness && ` (${insulationThickness})`}
+              </span>
               <span className="text-base font-medium">
                 ₱{formatNumberWithCommas(insulationCost)}
               </span>
@@ -236,7 +255,9 @@ export function CalculationResults({
         {ventilationCost > 0 && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Ventilation</span>
+              <span className="text-sm text-muted-foreground">
+                {ventilationType ? `${ventilationType} Ventilation` : "Ventilation"}
+              </span>
               <span className="text-base font-medium">
                 ₱{formatNumberWithCommas(ventilationCost)}
               </span>

@@ -214,7 +214,7 @@ export function ProjectDetailsViewer({ project, isOpen, onClose }: ProjectDetail
                   {project.materialCost !== undefined && project.materialCost > 0 && (
                     <div className="flex justify-between text-sm">
                       <span>
-                        Roofing Material
+                        {project.materialThickness ? `${project.materialThickness} ${project.material.replace(/-/g, ' ')}` : `${project.material.replace(/-/g, ' ')} Roofing Material`}
                         {project.area && (
                           <span className="text-xs text-muted-foreground ml-1">
                             ({project.area.toFixed(2)} sq ft)
@@ -227,7 +227,12 @@ export function ProjectDetailsViewer({ project, isOpen, onClose }: ProjectDetail
                   {project.gutterCost !== undefined && project.gutterCost > 0 && (
                     <div className="flex justify-between text-sm">
                       <span>
-                        Gutter System
+                        {project.gutterMaterial ? `${project.gutterMaterial} Gutter` : "Gutter System"}
+                        {project.gutterSize && (
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({project.gutterSize})
+                          </span>
+                        )}
                         {project.gutterPieces && (
                           <span className="text-xs text-muted-foreground ml-1">
                             ({project.gutterPieces} pieces)
@@ -240,7 +245,7 @@ export function ProjectDetailsViewer({ project, isOpen, onClose }: ProjectDetail
                   {project.ridgeCost !== undefined && project.ridgeCost > 0 && (
                     <div className="flex justify-between text-sm">
                       <span>
-                        Ridge Cap
+                        {project.ridgeType ? `${project.ridgeType} Ridge Cap` : "Ridge Cap"}
                         {project.ridgeLength && (
                           <span className="text-xs text-muted-foreground ml-1">
                             ({project.ridgeLength.toFixed(2)} ft)
@@ -252,20 +257,29 @@ export function ProjectDetailsViewer({ project, isOpen, onClose }: ProjectDetail
                   )}
                   {project.screwsCost !== undefined && project.screwsCost > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span>Screws & Fasteners</span>
+                      <span>
+                        {project.screwType ? `${project.screwType} Screws` : "Screws & Fasteners"}
+                      </span>
                       <span className="font-medium">₱{project.screwsCost.toLocaleString()}</span>
                     </div>
                   )}
                   {project.insulationCost !== undefined && project.insulationCost > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span>Insulation</span>
+                      <span>
+                        {project.insulationType ? `${project.insulationType} Insulation` : "Insulation"}
+                        {project.insulationThickness && (
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({project.insulationThickness})
+                          </span>
+                        )}
+                      </span>
                       <span className="font-medium">₱{project.insulationCost.toLocaleString()}</span>
                     </div>
                   )}
                   {project.ventilationCost !== undefined && project.ventilationCost > 0 && (
                     <div className="flex justify-between text-sm">
                       <span>
-                        Ventilation
+                        {project.ventilationType ? `${project.ventilationType} Ventilation` : "Ventilation"}
                         {project.ventilationPieces && (
                           <span className="text-xs text-muted-foreground ml-1">
                             ({project.ventilationPieces} pieces)
