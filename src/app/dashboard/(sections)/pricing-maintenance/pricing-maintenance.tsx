@@ -812,7 +812,8 @@ export default function PricingMaintenance() {
                               onClick={() => handleSaveEdit(item.id)}
                               disabled={isSubmitting}
                             >
-                              <SaveIcon className="h-3 w-3" />
+                              <SaveIcon className="h-3 w-3 mr-1" />
+                              Save
                             </Button>
                             <Button
                               size="sm"

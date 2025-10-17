@@ -68,20 +68,19 @@ export function TutorialGuideDialog() {
             "data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-lg"
           )}
         >
-          {/* Header */}
-          <div className="p-4 sm:p-6 pb-3 sm:pb-4 border-b">
-            <DialogTitle className="text-lg sm:text-xl font-semibold leading-none tracking-tight">
-              RoofCalc Tutorial Guide
-            </DialogTitle>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              Complete guide to using RoofCal for accurate roof cost estimation
-            </p>
-          </div>
+          {/* Tabs wrapper for header tabs + content */}
+          <Tabs defaultValue="overview" className="w-full">
+            {/* Header */}
+            <div className="p-4 sm:p-6 pb-3 sm:pb-4 border-b">
+              <DialogTitle className="text-lg sm:text-xl font-semibold leading-none tracking-tight">
+                RoofCalc Tutorial Guide
+              </DialogTitle>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                Complete guide to using RoofCal for accurate roof cost estimation
+              </p>
 
-          {/* Content */}
-          <div className="flex-1 overflow-auto p-3 sm:p-6">
-            <Tabs defaultValue="overview" className="w-full">
-              <div className="mb-3 sm:mb-4 md:mb-6">
+              {/* Always-visible section tabs */}
+              <div className="mt-3 sm:mt-4">
                 <TabsList className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 w-full h-auto p-1 bg-muted/50 rounded-lg gap-1">
                   <TabsTrigger
                     className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
@@ -141,6 +140,10 @@ export function TutorialGuideDialog() {
                   </TabsTrigger>
                 </TabsList>
               </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-auto p-3 sm:p-6">
 
               <TabsContent
                 value="overview"
@@ -725,8 +728,8 @@ export function TutorialGuideDialog() {
                 </div>
               </TabsContent>
 
-            </Tabs>
-          </div>
+            </div>
+          </Tabs>
           <DialogPrimitive.Close className="absolute right-3 top-3 sm:right-4 sm:top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>
