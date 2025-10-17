@@ -51,7 +51,6 @@ export function NavMain({
                 }}
                 isActive={activeSection === item.url}
               >
-                {item.icon && <item.icon />}
                 <span>{item.title}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>

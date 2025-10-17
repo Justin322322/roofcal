@@ -43,9 +43,9 @@ export function SiteHeader({ currentSection }: SiteHeaderProps) {
   };
 
   return (
-    <header className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 sticky top-0 z-50 flex h-12 shrink-0 items-center gap-2 border-b bg-background transition-[width,height] ease-linear">
+    <header className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 sticky top-0 md:top-2 md:mx-2 z-50 flex h-12 shrink-0 items-center gap-2 border-b md:border md:rounded-xl md:bg-background/95 md:backdrop-blur supports-[backdrop-filter]:md:bg-background/60 transition-[width,height] ease-linear">
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
-        <SidebarTrigger className="-ml-1" />
+        <SidebarTrigger className="-ml-1 h-9 w-9 rounded-full" />
         <Separator
           orientation="vertical"
           className="mx-2 data-[orientation=vertical]:h-4"

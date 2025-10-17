@@ -47,7 +47,6 @@ export function NavDocuments({
               }}
               isActive={activeSection === item.url}
             >
-              <item.icon />
               <span>{item.name}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
