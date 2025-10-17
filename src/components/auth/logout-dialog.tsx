@@ -193,7 +193,7 @@ export default function LogoutDialog({
           <Button
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            className="bg-red-600 hover:bg-red-700 focus:ring-red-600 text-white dark:text-white"
           >
             {isLoggingOut ? (
               <>
