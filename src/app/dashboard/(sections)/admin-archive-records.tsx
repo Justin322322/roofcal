@@ -166,7 +166,11 @@ export default function AdminArchiveRecordsContent() {
       toast.success('Project unarchived successfully');
       setUnarchiveDialogOpen(false);
       setProjectToUnarchive(null);
-      fetchArchivedProjects();
+      
+      // Update local state by removing the unarchived project instead of refetching
+      setProjects(prevProjects => 
+        prevProjects.filter(project => project.id !== projectToUnarchive)
+      );
     } catch (error) {
       console.error('Failed to unarchive project:', error);
       toast.error('Failed to unarchive project');
