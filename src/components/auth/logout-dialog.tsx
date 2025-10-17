@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { LogOut, AlertTriangle, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface LogoutDialogProps {
   trigger?: React.ReactNode;
@@ -168,7 +169,7 @@ export default function LogoutDialog({
           <Button
             variant={variant}
             size={size}
-            className={className}
+            className={cn("dark:text-white", className)}
             disabled={isLoggingOut}
           >
             <LogOut className="h-4 w-4 mr-2" />

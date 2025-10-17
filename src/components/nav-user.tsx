@@ -145,7 +145,7 @@ export function NavUser({
             <DropdownMenuSeparator />
             <LogoutDialog
               trigger={
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-popover-foreground hover:text-popover-foreground focus:text-accent-foreground">
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-popover-foreground hover:text-popover-foreground focus:text-accent-foreground dark:text-white">
                   <LogOutIcon />
                   Log out
                 </DropdownMenuItem>

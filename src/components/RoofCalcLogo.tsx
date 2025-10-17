@@ -1,4 +1,5 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 
 interface RoofCalcLogoProps {
   className?: string;
@@ -21,7 +22,7 @@ export default function RoofCalcLogo({
       viewBox="-51.2 -51.2 614.40 614.40"
       xmlSpace="preserve"
       stroke="currentColor"
-      className={className}
+      className={cn("text-primary dark:text-white", className)}
     >
       <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
       <g
