@@ -140,7 +140,7 @@ export default function AdminRecordManagementContent() {
         <td>${p.client ? `${p.client.firstName} ${p.client.lastName}` : "-"}</td>
         <td>${(p.proposalStatus || p.status)}</td>
         <td class="text-right">${formatCurrency(p.totalCost)}</td>
-        <td>${formatDate(p.createdAt)}</td>
+        <td class="text-right">${formatDate(p.createdAt)}</td>
       </tr>
     `).join("");
 

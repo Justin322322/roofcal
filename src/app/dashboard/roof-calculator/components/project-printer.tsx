@@ -142,14 +142,14 @@ export function ProjectPrinter({ project, isOpen, onClose }: ProjectPrinterProps
               )}
               <tr>
                 <td><strong>Created</strong></td>
-                <td>{project.createdAt instanceof Date && !isNaN(project.createdAt.getTime())
+                <td className="text-right">{project.createdAt instanceof Date && !isNaN(project.createdAt.getTime())
                   ? project.createdAt.toLocaleDateString()
                   : new Date(project.createdAt).toLocaleDateString()
                 }</td>
                 {project.proposalSent ? (
                   <>
                     <td><strong>Proposal Sent</strong></td>
-                    <td>{new Date(project.proposalSent).toLocaleDateString()}</td>
+                    <td className="text-right">{new Date(project.proposalSent).toLocaleDateString()}</td>
                   </>
                 ) : (
                   <>

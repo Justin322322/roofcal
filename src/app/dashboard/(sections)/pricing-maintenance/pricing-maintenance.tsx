@@ -57,6 +57,7 @@ import {
   LoaderIcon,
   SearchIcon,
   RefreshCwIcon,
+  PrinterIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -309,6 +310,59 @@ export default function PricingMaintenance() {
     }
   };
 
+  const handlePrint = async () => {
+    const style = `
+      @page { size: A4 landscape; margin: 12mm; }
+      body { font-family: Arial, Helvetica, sans-serif; color: #000; }
+      h1 { margin: 0 0 8px 0; font-size: 18px; }
+      .muted { color: #555; font-size: 12px; margin-bottom: 12px; }
+      table { width: 100%; border-collapse: collapse; font-size: 12px; }
+      th, td { border: 1px solid #000; padding: 6px 8px; }
+      thead th { background: #f2f2f2; }
+      .text-right { text-align: right; }
+    `;
+
+    const rows = filteredData.map(item => `
+      <tr>
+        <td>${categories.find(c => c.id === item.category)?.label || item.category}</td>
+        <td>${item.name}</td>
+        <td>${item.label}</td>
+        <td>${item.description ?? ''}</td>
+        <td class="text-right">${formatPrice(item.price, item.unit)}</td>
+        <td>${item.unit.replace('_', ' ')}</td>
+        <td>${item.isActive ? 'Active' : 'Inactive'}</td>
+        <td class="text-right">${new Date(item.updated_at).toLocaleDateString()}</td>
+      </tr>
+    `).join("");
+
+    const html = `
+      <div>
+        <h1>Pricing Maintenance Report</h1>
+        <div class="muted">Generated: ${new Date().toLocaleString()}</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Name</th>
+              <th>Label</th>
+              <th>Description</th>
+              <th>Price</th>
+              <th>Unit</th>
+              <th>Status</th>
+              <th>Last Updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    const { default: printJS } = await import("print-js");
+    printJS({ type: "raw-html", printable: html, style });
+  };
+
   // Filter data based on selected filters
   const filteredData = pricingData.filter((item) => {
     const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
@@ -350,6 +404,10 @@ export default function PricingMaintenance() {
           <Button variant="outline" onClick={exportToCSV}>
             <DownloadIcon className="h-4 w-4 mr-2" />
             Export CSV
+          </Button>
+          <Button variant="outline" onClick={handlePrint}>
+            <PrinterIcon className="h-4 w-4 mr-2" />
+            Print
           </Button>
         </div>
       </div>
