@@ -109,7 +109,7 @@ export function ProjectDetailsViewer({ project, isOpen, onClose }: ProjectDetail
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Area</p>
-                <p className="text-sm font-medium">{project.area.toLocaleString()} sq ft</p>
+                <p className="text-sm font-medium">{project.area.toLocaleString(undefined, { maximumFractionDigits: 2 })} sqm</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Created</p>
@@ -316,7 +316,12 @@ export function ProjectDetailsViewer({ project, isOpen, onClose }: ProjectDetail
                   )}
                   {project.deliveryCost !== null && project.deliveryCost !== undefined && project.deliveryCost > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span>Delivery</span>
+                      <span>
+                        Delivery
+                        {project.deliveryDistance !== null && project.deliveryDistance !== undefined && (
+                          <span className="text-xs text-muted-foreground ml-1">({project.deliveryDistance.toLocaleString(undefined, { maximumFractionDigits: 2 })} km)</span>
+                        )}
+                      </span>
                       <span className="font-medium">₱{project.deliveryCost.toLocaleString()}</span>
                     </div>
                   )}

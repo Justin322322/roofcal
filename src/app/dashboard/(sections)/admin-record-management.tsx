@@ -238,6 +238,16 @@ export default function AdminRecordManagementContent() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
+      {/* Print styles scoped to admin records */}
+      <style>{`
+        @media print {
+          @page { size: A4 landscape; margin: 1cm; }
+          /* Scope borders to admin records table */
+          .admin-records-print table { width: 100%; border-collapse: collapse; }
+          .admin-records-print th, .admin-records-print td { border: 1px solid #000 !important; }
+          .admin-records-print thead th { background: #f2f2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+      `}</style>
       {/* Header */}
       <div className="flex flex-col gap-2 px-4 lg:px-6">
         <div className="flex items-center justify-between gap-3">
@@ -311,7 +321,7 @@ export default function AdminRecordManagementContent() {
       </div>
 
       {/* Table */}
-      <div className="px-4 lg:px-6">
+      <div className="px-4 lg:px-6 admin-records-print">
         <Card>
           <CardHeader>
             <CardTitle>Records ({filteredProjects.length})</CardTitle>
