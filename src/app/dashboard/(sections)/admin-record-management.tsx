@@ -43,6 +43,7 @@ import {
   FilterIcon,
   MoreHorizontal,
   Archive,
+  PrinterIcon,
 } from "lucide-react";
 import { getStatusBadge } from "@/lib/badge-utils";
 import { ProjectDetailsViewer } from "../roof-calculator/components/project-details-viewer";
@@ -120,6 +121,10 @@ export default function AdminRecordManagementContent() {
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [projectToArchive, setProjectToArchive] = useState<string | null>(null);
   const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   const fetchProjects = useCallback(async () => {
     setIsLoading(true);
@@ -235,19 +240,27 @@ export default function AdminRecordManagementContent() {
     <div className="flex flex-col gap-4 md:gap-6">
       {/* Header */}
       <div className="flex flex-col gap-2 px-4 lg:px-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-            <FileTextIcon className="h-5 w-5 text-primary" />
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+              <FileTextIcon className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Record Management</h1>
+              <p className="text-sm text-muted-foreground">Manage Completed and Rejected records</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Record Management</h1>
-            <p className="text-sm text-muted-foreground">Manage Completed and Rejected records</p>
+          <div className="print:hidden">
+            <Button variant="outline" size="sm" onClick={handlePrint}>
+              <PrinterIcon className="h-4 w-4" />
+              Print
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="px-4 lg:px-6">
+      <div className="px-4 lg:px-6 print:hidden">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -314,7 +327,7 @@ export default function AdminRecordManagementContent() {
                     <TableHead>Status</TableHead>
                     <TableHead>Cost</TableHead>
                     <TableHead>Date</TableHead>
-                    <TableHead className="w-[50px]">Actions</TableHead>
+                    <TableHead className="w-[50px] print:hidden">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -338,7 +351,7 @@ export default function AdminRecordManagementContent() {
                         <TableCell>
                           <Skeleton className="h-4 w-24" />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="print:hidden">
                           <Skeleton className="h-8 w-8" />
                         </TableCell>
                       </TableRow>
@@ -365,7 +378,7 @@ export default function AdminRecordManagementContent() {
                         <TableCell>{getStatusBadge(project.status, project.proposalStatus ?? undefined)}</TableCell>
                         <TableCell className="font-medium">{formatCurrency(project.totalCost)}</TableCell>
                         <TableCell>{formatDate(project.createdAt)}</TableCell>
-                        <TableCell>
+                        <TableCell className="print:hidden">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="sm">
