@@ -166,7 +166,8 @@ export default function PricingMaintenance() {
   const loadPricingData = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/pricing');
+      // Fetch all pricing data (both active and inactive) for admin maintenance
+      const response = await fetch('/api/pricing?includeInactive=true');
       if (!response.ok) {
         throw new Error('Failed to fetch pricing data');
       }
@@ -253,7 +254,7 @@ export default function PricingMaintenance() {
   };
 
   const handleDeleteItem = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this pricing item?')) {
+    if (!confirm('Are you sure you want to delete this pricing item? This will make it inactive and remove it from calculations.')) {
       return;
     }
 
@@ -272,6 +273,36 @@ export default function PricingMaintenance() {
     } catch (error) {
       console.error('Error deleting pricing:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to delete pricing');
+    }
+  };
+
+  const handleToggleActiveStatus = async (id: string, currentStatus: boolean) => {
+    const action = currentStatus ? 'deactivate' : 'activate';
+    const actionText = currentStatus ? 'make inactive' : 'make active';
+    
+    if (!confirm(`Are you sure you want to ${actionText} this pricing item?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/pricing/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ isActive: !currentStatus }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || `Failed to ${action} pricing`);
+      }
+
+      await loadPricingData();
+      toast.success(`Pricing item ${action}d successfully`);
+    } catch (error) {
+      console.error(`Error ${action}ing pricing:`, error);
+      toast.error(error instanceof Error ? error.message : `Failed to ${action} pricing`);
     }
   };
 
@@ -798,7 +829,10 @@ export default function PricingMaintenance() {
                             </SelectContent>
                           </Select>
                         ) : (
-                          <Badge variant={item.isActive ? "default" : "secondary"}>
+                          <Badge 
+                            variant={item.isActive ? "default" : "secondary"}
+                            className={item.isActive ? "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200 dark:hover:bg-green-800" : ""}
+                          >
                             {item.isActive ? 'Active' : 'Inactive'}
                           </Badge>
                         )}
@@ -838,11 +872,28 @@ export default function PricingMaintenance() {
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
+                                onClick={() => handleToggleActiveStatus(item.id, item.isActive)}
+                                className={item.isActive ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
+                              >
+                                {item.isActive ? (
+                                  <>
+                                    <ArchiveIcon className="h-4 w-4 mr-2" />
+                                    Make Inactive
+                                  </>
+                                ) : (
+                                  <>
+                                    <SettingsIcon className="h-4 w-4 mr-2" />
+                                    Make Active
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
                                 onClick={() => handleDeleteItem(item.id)}
                                 className="text-red-600 focus:text-red-600"
                               >
                                 <TrashIcon className="h-4 w-4 mr-2" />
-                                Delete
+                                Delete (Soft)
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

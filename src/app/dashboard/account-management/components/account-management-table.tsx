@@ -170,7 +170,10 @@ export function AccountManagementTable({
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getStatusBadgeVariant(account.status)}>
+                        <Badge 
+                          variant={getStatusBadgeVariant(account.status)}
+                          className={account.status === "Active" ? "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200 dark:hover:bg-green-800" : ""}
+                        >
                           {account.status}
                         </Badge>
                       </TableCell>

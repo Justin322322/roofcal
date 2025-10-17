@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category") as PricingCategory | null;
     const constants = searchParams.get("constants");
+    const includeInactive = searchParams.get("includeInactive") === "true";
 
     // Handle pricing constants request
     if (constants === "true") {
@@ -36,7 +37,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const pricingconfig = await getPricingConfig(category || undefined);
+    // Check if user is admin for including inactive items
+    if (includeInactive) {
+      const session = await getServerSession(authOptions);
+      if (!session?.user || session.user.role !== UserRole.ADMIN) {
+        return NextResponse.json(
+          { error: "Forbidden - Admin access required to view inactive items" },
+          { status: 403 }
+        );
+      }
+    }
+
+    const pricingconfig = await getPricingConfig(category || undefined, includeInactive);
 
     return NextResponse.json({
       success: true,

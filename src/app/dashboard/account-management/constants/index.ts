@@ -25,7 +25,7 @@ export const STATUS_BADGE_VARIANTS: Record<
   AccountStatus,
   "default" | "secondary" | "destructive" | "outline"
 > = {
-  Active: "default",
+  Active: "default", // This will be styled as green in the component
   Restricted: "destructive",
   Inactive: "secondary",
   Pending: "outline",

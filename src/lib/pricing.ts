@@ -86,8 +86,8 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 /**
  * Fetch pricing configurations from database with caching
  */
-export async function getPricingConfig(category?: PricingCategory): Promise<PricingConfig[]> {
-  const cacheKey = category || 'all' as string;
+export async function getPricingConfig(category?: PricingCategory, includeInactive: boolean = false): Promise<PricingConfig[]> {
+  const cacheKey = `${category || 'all'}_${includeInactive ? 'all' : 'active'}`;
   const cached = pricingCache.get(cacheKey);
   
   // Return cached data if still valid
@@ -96,7 +96,11 @@ export async function getPricingConfig(category?: PricingCategory): Promise<Pric
   }
 
   // Fetch from database
-  const where = category ? { category, isActive: true } : { isActive: true };
+  const where: { category?: string; isActive?: boolean } = category ? { category } : {};
+  if (!includeInactive) {
+    where.isActive = true;
+  }
+  
   const data = await prisma.pricingConfig.findMany({
     where,
     orderBy: [
