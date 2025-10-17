@@ -47,6 +47,7 @@ import {
 } from "lucide-react";
 import { getStatusBadge } from "@/lib/badge-utils";
 import { ProjectDetailsViewer } from "../roof-calculator/components/project-details-viewer";
+import printJS from "print-js";
 
 interface Project {
   id: string;
@@ -123,7 +124,49 @@ export default function AdminRecordManagementContent() {
   const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
 
   const handlePrint = () => {
-    window.print();
+    const style = `
+      @page { size: A4 landscape; margin: 12mm; }
+      body { font-family: Arial, Helvetica, sans-serif; color: #000; }
+      h1 { margin: 0 0 8px 0; font-size: 18px; }
+      .muted { color: #555; font-size: 12px; margin-bottom: 12px; }
+      table { width: 100%; border-collapse: collapse; font-size: 12px; }
+      th, td { border: 1px solid #000; padding: 6px 8px; }
+      thead th { background: #f2f2f2; }
+      .text-right { text-align: right; }
+    `;
+
+    const rows = filteredProjects.map(p => `
+      <tr>
+        <td>${p.projectName}</td>
+        <td>${p.client ? `${p.client.firstName} ${p.client.lastName}` : "-"}</td>
+        <td>${(p.proposalStatus || p.status)}</td>
+        <td class="text-right">${formatCurrency(p.totalCost)}</td>
+        <td>${formatDate(p.createdAt)}</td>
+      </tr>
+    `).join("");
+
+    const html = `
+      <div>
+        <h1>Record Management Report</h1>
+        <div class="muted">Generated: ${new Date().toLocaleString()}</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Project</th>
+              <th>Client</th>
+              <th>Status</th>
+              <th>Cost</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    printJS({ type: "raw-html", printable: html, style });
   };
 
   const fetchProjects = useCallback(async () => {

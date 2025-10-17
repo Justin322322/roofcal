@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { PrinterIcon } from "lucide-react";
 import { formatArea } from "@/lib/utils";
+import printJS from "print-js";
 
 interface Project {
   id: string;
@@ -77,55 +78,27 @@ export function ProjectPrinter({ project, isOpen, onClose }: ProjectPrinterProps
   const handlePrint = () => {
     if (!printRef.current) return;
 
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
+    const style = `
+      @page { size: A4 landscape; margin: 12mm; }
+      body { font-family: Arial, Helvetica, sans-serif; color: #000; background: #fff; line-height: 1.4; font-size: 12pt; }
+      h1 { font-size: 18pt; margin: 0 0 6pt 0; }
+      h2 { font-size: 13pt; margin: 14pt 0 6pt 0; }
+      .muted { font-size: 10pt; color: #555; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border: 1px solid #000; padding: 6pt 8pt; vertical-align: top; }
+      thead th { background: #f2f2f2; }
+      .no-border td { border: 0; padding: 2pt 0; }
+      .text-right { text-align: right; }
+      .text-center { text-align: center; }
+      .w-25 { width: 25%; }
+      .w-15 { width: 15%; }
+      .w-10 { width: 10%; }
+      .mt-6 { margin-top: 12pt; }
+      tfoot td { font-weight: bold; }
+    `;
 
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>${project.projectName} - Project Details</title>
-          <style>
-            @media print {
-              @page { size: A4 landscape; margin: 1cm; }
-              .no-print { display: none; }
-            }
-            body {
-              font-family: Arial, Helvetica, sans-serif;
-              color: #000;
-              background: #fff;
-              line-height: 1.4;
-              font-size: 12pt;
-            }
-            h1 { font-size: 18pt; margin: 0 0 6pt 0; }
-            h2 { font-size: 13pt; margin: 14pt 0 6pt 0; }
-            .muted { font-size: 10pt; color: #555; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #000; padding: 6pt 8pt; vertical-align: top; }
-            th { background: #f2f2f2; }
-            .no-border td { border: 0; padding: 2pt 0; }
-            .text-right { text-align: right; }
-            .text-center { text-align: center; }
-            .w-25 { width: 25%; }
-            .w-15 { width: 15%; }
-            .w-10 { width: 10%; }
-            .mt-6 { margin-top: 12pt; }
-            tfoot td { font-weight: bold; }
-          </style>
-        </head>
-        <body>
-          ${printRef.current.innerHTML}
-        </body>
-      </html>
-    `);
-
-    printWindow.document.close();
-    
-    // Wait for the content to load before printing
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 250);
+    const html = printRef.current.innerHTML;
+    printJS({ type: "raw-html", printable: html, style });
   };
 
   // No colored badges or decorative elements in print output
