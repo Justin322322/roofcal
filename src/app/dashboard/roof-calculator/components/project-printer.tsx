@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { PrinterIcon } from "lucide-react";
 import { formatArea } from "@/lib/utils";
-import printJS from "print-js";
 
 interface Project {
   id: string;
@@ -75,7 +74,7 @@ export function ProjectPrinter({ project, isOpen, onClose }: ProjectPrinterProps
 
   
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     if (!printRef.current) return;
 
     const style = `
@@ -98,6 +97,7 @@ export function ProjectPrinter({ project, isOpen, onClose }: ProjectPrinterProps
     `;
 
     const html = printRef.current.innerHTML;
+    const { default: printJS } = await import("print-js");
     printJS({ type: "raw-html", printable: html, style });
   };
 

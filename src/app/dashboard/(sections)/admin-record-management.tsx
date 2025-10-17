@@ -47,7 +47,6 @@ import {
 } from "lucide-react";
 import { getStatusBadge } from "@/lib/badge-utils";
 import { ProjectDetailsViewer } from "../roof-calculator/components/project-details-viewer";
-import printJS from "print-js";
 
 interface Project {
   id: string;
@@ -123,7 +122,7 @@ export default function AdminRecordManagementContent() {
   const [projectToArchive, setProjectToArchive] = useState<string | null>(null);
   const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     const style = `
       @page { size: A4 landscape; margin: 12mm; }
       body { font-family: Arial, Helvetica, sans-serif; color: #000; }
@@ -166,6 +165,7 @@ export default function AdminRecordManagementContent() {
       </div>
     `;
 
+    const { default: printJS } = await import("print-js");
     printJS({ type: "raw-html", printable: html, style });
   };
 
