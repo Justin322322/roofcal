@@ -318,7 +318,9 @@ export async function deletePricingConfig(id: string): Promise<void> {
  */
 function clearPricingCache(category?: PricingCategory | string) {
   if (category) {
-    pricingCache.delete(category);
+    // Clear both active and inactive cache for this category
+    pricingCache.delete(`${category}_active`);
+    pricingCache.delete(`${category}_all`);
   } else {
     pricingCache.clear();
   }

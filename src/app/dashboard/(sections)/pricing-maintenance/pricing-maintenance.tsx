@@ -85,6 +85,7 @@ export default function PricingMaintenance() {
   const isMobile = useIsMobile();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const hasLoadedData = useRef(false);
 
   const categories = getPricingCategories();
 
@@ -98,7 +99,11 @@ export default function PricingMaintenance() {
 
   // Load pricing data on mount - only if user is authenticated and is an admin
   useEffect(() => {
-    if (session?.user?.id && session.user.role === "ADMIN") {
+    const userId = session?.user?.id;
+    const userRole = session?.user?.role;
+    
+    if (userId && userRole === "ADMIN" && !hasLoadedData.current) {
+      hasLoadedData.current = true;
       loadPricingData();
     } else if (session === null) {
       setIsLoading(false);
@@ -170,6 +175,7 @@ export default function PricingMaintenance() {
       }
       const result = await response.json();
       setPricingData(result.data);
+      hasLoadedData.current = true; // Mark as loaded
     } catch (error) {
       console.error('Error loading pricing data:', error);
       toast.error('Failed to load pricing data');
