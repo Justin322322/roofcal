@@ -47,6 +47,7 @@ interface Project {
   gutterSize?: string;
   gutterMaterial?: string;
   insulationType?: string;
+  insulationThickness?: string;
   ventilationType?: string;
   materialThickness?: string;
   contractor?: {
@@ -178,25 +179,22 @@ export function ProjectPrinter({ project, isOpen, onClose }: ProjectPrinterProps
             {project.gutterCost !== undefined && project.gutterCost > 0 && (
               <div className="kv">
                 <span className="label">
-                  Gutter System
-                  {project.gutterSize && ` (${project.gutterSize})`}
-                  {project.gutterMaterial && ` - ${project.gutterMaterial.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`}:
+                  {project.gutterMaterial ? `${project.gutterMaterial.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Gutter` : "Gutter System"}
+                  {project.gutterSize && ` (${project.gutterSize})`}:
                 </span> ₱{project.gutterCost.toLocaleString()}
               </div>
             )}
             {project.ridgeCost !== undefined && project.ridgeCost > 0 && (
               <div className="kv">
                 <span className="label">
-                  Ridge Cap
-                  {project.ridgeType && ` (${project.ridgeType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())})`}:
+                  {project.ridgeType ? `${project.ridgeType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Ridge Cap` : "Ridge Cap"}:
                 </span> ₱{project.ridgeCost.toLocaleString()}
               </div>
             )}
             {project.screwsCost !== undefined && project.screwsCost > 0 && (
               <div className="kv">
                 <span className="label">
-                  Screws & Fasteners
-                  {project.screwType && ` (${project.screwType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())})`}:
+                  {project.screwType ? `${project.screwType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Screws` : "Screws & Fasteners"}:
                 </span> ₱{project.screwsCost.toLocaleString()}
               </div>
             )}
@@ -204,15 +202,15 @@ export function ProjectPrinter({ project, isOpen, onClose }: ProjectPrinterProps
               <div className="kv">
                 <span className="label">
                   Insulation
-                  {project.insulationType && ` (${project.insulationType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())})`}:
+                  {project.insulationType && ` (${project.insulationType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())})`}
+                  {project.insulationThickness && ` - ${project.insulationThickness}`}:
                 </span> ₱{project.insulationCost.toLocaleString()}
               </div>
             )}
             {project.ventilationCost !== undefined && project.ventilationCost > 0 && (
               <div className="kv">
                 <span className="label">
-                  Ventilation
-                  {project.ventilationType && ` (${project.ventilationType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())})`}:
+                  {project.ventilationType ? `${project.ventilationType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Ventilation` : "Ventilation"}:
                 </span> ₱{project.ventilationCost.toLocaleString()}
               </div>
             )}
