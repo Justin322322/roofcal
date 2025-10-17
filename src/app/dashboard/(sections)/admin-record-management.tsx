@@ -45,6 +45,7 @@ import {
   Archive,
 } from "lucide-react";
 import { getStatusBadge } from "@/lib/badge-utils";
+import { ProjectDetailsViewer } from "../roof-calculator/components/project-details-viewer";
 
 interface Project {
   id: string;
@@ -54,7 +55,47 @@ interface Project {
   totalCost: number;
   area: number;
   material: string;
+  address: string | null;
+  city: string | null;
+  state: string | null;
   createdAt: Date;
+  proposalSent?: Date | null;
+  notes?: string | null;
+  // Additional fields for detailed view
+  length?: number;
+  width?: number;
+  pitch?: number;
+  materialCost?: number;
+  gutterCost?: number;
+  ridgeCost?: number;
+  screwsCost?: number;
+  insulationCost?: number;
+  ventilationCost?: number;
+  totalMaterialsCost?: number;
+  laborCost?: number;
+  removalCost?: number;
+  deliveryCost?: number | null;
+  deliveryDistance?: number | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  gutterPieces?: number;
+  ridgeLength?: number;
+  ventilationPieces?: number;
+  // Material detail fields for print preview
+  materialThickness?: string;
+  ridgeType?: string;
+  gutterSize?: string;
+  insulationThickness?: string;
+  gutterMaterial?: string;
+  screwType?: string;
+  insulationType?: string;
+  ventilationType?: string;
+  contractor?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  } | null;
   client?: {
     id: string;
     firstName: string;
@@ -369,25 +410,14 @@ export default function AdminRecordManagementContent() {
         </Card>
       </div>
 
-      {/* View Dialog (reusing ProjectDetailsViewer would require import from roof-calculator; keeping light) */}
-      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Project Details</DialogTitle>
-            <DialogDescription>{selectedProject?.projectName}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2 text-sm">
-            {selectedProject && (
-              <>
-                <div><span className="text-muted-foreground">Material:</span> {selectedProject.material}</div>
-                <div><span className="text-muted-foreground">Status:</span> {effectiveStatus(selectedProject)}</div>
-                <div><span className="text-muted-foreground">Cost:</span> {formatCurrency(selectedProject.totalCost)}</div>
-                <div><span className="text-muted-foreground">Date:</span> {formatDate(selectedProject.createdAt)}</div>
-              </>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Project Details Viewer */}
+      {selectedProject && (
+        <ProjectDetailsViewer
+          project={selectedProject}
+          isOpen={viewDialogOpen}
+          onClose={() => setViewDialogOpen(false)}
+        />
+      )}
 
       {/* Archive Dialog */}
       <Dialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen}>
