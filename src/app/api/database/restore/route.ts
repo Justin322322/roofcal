@@ -59,7 +59,11 @@ export async function POST(request: NextRequest) {
     }
 
     const dbConfig = parseDatabaseUrl(databaseUrl);
-    const backupsDir = path.join(process.cwd(), "backups");
+    
+    // Use /tmp directory for serverless environments
+    const backupsDir = process.env.VERCEL || process.env.RAILWAY_ENVIRONMENT 
+      ? "/tmp/backups" 
+      : path.join(process.cwd(), "backups");
     const filepath = path.join(backupsDir, filename);
 
     if (!fs.existsSync(filepath)) {

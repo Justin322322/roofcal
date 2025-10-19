@@ -42,7 +42,11 @@ export async function POST() {
     }
 
     const dbConfig = parseDatabaseUrl(databaseUrl);
-    const backupsDir = path.join(process.cwd(), "backups");
+    
+    // Use /tmp directory for serverless environments (Vercel, Railway, etc.)
+    const backupsDir = process.env.VERCEL || process.env.RAILWAY_ENVIRONMENT 
+      ? "/tmp/backups" 
+      : path.join(process.cwd(), "backups");
 
     if (!fs.existsSync(backupsDir)) {
       fs.mkdirSync(backupsDir, { recursive: true });
@@ -74,11 +78,15 @@ export async function POST() {
     const stats = fs.statSync(filepath);
     const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
 
+    // Read the file content to return it directly (for serverless environments)
+    const fileContent = fs.readFileSync(filepath, "utf-8");
+
     return NextResponse.json({
       success: true,
       filename,
       size: fileSizeMB,
       path: filepath,
+      content: fileContent, // Include content for immediate download
     });
   } catch (error) {
     console.error("Backup error:", error);
@@ -97,7 +105,10 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const backupsDir = path.join(process.cwd(), "backups");
+    // Use /tmp directory for serverless environments
+    const backupsDir = process.env.VERCEL || process.env.RAILWAY_ENVIRONMENT 
+      ? "/tmp/backups" 
+      : path.join(process.cwd(), "backups");
 
     if (!fs.existsSync(backupsDir)) {
       return NextResponse.json({ backups: [] });

@@ -255,6 +255,17 @@ Railway databases may have connection limits. Try:
 - Limit access to backup files
 - Use secure transfer methods (SFTP, SCP, encrypted cloud storage)
 
+## Serverless Platforms (Vercel, Railway, etc.)
+
+If you're running on a serverless platform, backups work differently:
+
+- ✅ Backups are **automatically downloaded** when created
+- ⚠️ Server-side storage is **ephemeral** (doesn't persist)
+- 📤 Use **file upload** to restore backups
+- ☁️ Consider **cloud storage** for production
+
+**See:** `docs/serverless-backup-guide.md` for detailed serverless instructions.
+
 ## Support
 
 For issues or questions:
@@ -262,3 +273,4 @@ For issues or questions:
 2. Verify MySQL client version compatibility
 3. Test connection with `mysql` command directly
 4. Review backup script logs for detailed error messages
+5. For serverless issues, see `docs/serverless-backup-guide.md`

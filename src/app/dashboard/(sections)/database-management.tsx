@@ -68,6 +68,7 @@ export default function DatabaseManagementContent() {
   const [restoreDialog, setRestoreDialog] = useState(false);
   const [selectedBackup, setSelectedBackup] = useState<string | null>(null);
   const [backupLoading, setBackupLoading] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
 
   useEffect(() => {
     fetchTables();
@@ -197,7 +198,23 @@ export default function DatabaseManagementContent() {
       if (!response.ok) throw new Error("Failed to create backup");
       
       const data = await response.json();
-      toast.success(`Backup created: ${data.filename} (${data.size} MB)`);
+      
+      // Automatically download the backup file (important for serverless)
+      if (data.content) {
+        const blob = new Blob([data.content], { type: "application/sql" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = data.filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        toast.success(`Backup created and downloaded: ${data.filename} (${data.size} MB)`);
+      } else {
+        toast.success(`Backup created: ${data.filename} (${data.size} MB)`);
+      }
       
       await fetchBackups();
       setBackupDialog(false);
@@ -209,23 +226,41 @@ export default function DatabaseManagementContent() {
   };
 
   const handleRestoreBackup = async () => {
-    if (!selectedBackup) return;
-
     try {
       setBackupLoading(true);
       toast.info("Restoring database...");
       
-      const response = await fetch("/api/database/restore", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ filename: selectedBackup }),
-      });
+      let response;
+      
+      // If user uploaded a file, use upload endpoint
+      if (uploadFile) {
+        const formData = new FormData();
+        formData.append("file", uploadFile);
+        
+        response = await fetch("/api/database/restore/upload", {
+          method: "POST",
+          body: formData,
+        });
+      } 
+      // Otherwise use existing backup file
+      else if (selectedBackup) {
+        response = await fetch("/api/database/restore", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ filename: selectedBackup }),
+        });
+      } else {
+        toast.error("Please select a backup or upload a file");
+        setBackupLoading(false);
+        return;
+      }
 
       if (!response.ok) throw new Error("Failed to restore backup");
       
       toast.success("Database restored successfully!");
       setRestoreDialog(false);
       setSelectedBackup(null);
+      setUploadFile(null);
       
       // Refresh current table data
       if (selectedTable) {
@@ -547,7 +582,11 @@ export default function DatabaseManagementContent() {
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
                 Creating a backup may take a few moments depending on your database size.
-                Please do not close this window during the process.
+                The backup will be automatically downloaded to your computer.
+                <br />
+                <span className="text-xs mt-1 block">
+                  Note: On serverless platforms, backups are not stored permanently on the server.
+                </span>
               </AlertDescription>
             </Alert>
           </div>
@@ -593,34 +632,88 @@ export default function DatabaseManagementContent() {
               </AlertDescription>
             </Alert>
             
-            {backups.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Database className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No backup files available</p>
-                <p className="text-sm mt-2">Create a backup first to enable restoration</p>
-              </div>
-            ) : (
+            <div className="space-y-4">
+              {/* Upload File Option */}
               <div className="space-y-2">
-                <Label>Select Backup File</Label>
-                <Select value={selectedBackup || ""} onValueChange={setSelectedBackup}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose a backup file..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {backups.map((backup) => (
-                      <SelectItem key={backup.name} value={backup.name}>
-                        <div className="flex flex-col">
-                          <span className="font-mono text-sm">{backup.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {backup.size} MB • {formatDate(backup.created)}
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Upload Backup File</Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="file"
+                    accept=".sql"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setUploadFile(file);
+                        setSelectedBackup(null); // Clear server backup selection
+                      }
+                    }}
+                    className="flex-1"
+                  />
+                  {uploadFile && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setUploadFile(null)}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+                {uploadFile && (
+                  <p className="text-sm text-muted-foreground">
+                    Selected: {uploadFile.name} ({(uploadFile.size / (1024 * 1024)).toFixed(2)} MB)
+                  </p>
+                )}
               </div>
-            )}
+
+              {/* Divider */}
+              {backups.length > 0 && (
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Or select from server
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Server Backups */}
+              {backups.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Server Backup Files</Label>
+                  <Select 
+                    value={selectedBackup || ""} 
+                    onValueChange={(value) => {
+                      setSelectedBackup(value);
+                      setUploadFile(null); // Clear upload when selecting server backup
+                    }}
+                    disabled={!!uploadFile}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose a backup file..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {backups.map((backup) => (
+                        <SelectItem key={backup.name} value={backup.name}>
+                          <div className="flex flex-col">
+                            <span className="font-mono text-sm">{backup.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {backup.size} MB • {formatDate(backup.created)}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Note: Server backups may not persist on serverless platforms
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button 
@@ -635,7 +728,7 @@ export default function DatabaseManagementContent() {
             </Button>
             <Button 
               onClick={handleRestoreBackup} 
-              disabled={backupLoading || !selectedBackup}
+              disabled={backupLoading || (!selectedBackup && !uploadFile)}
               variant="destructive"
             >
               {backupLoading ? (
