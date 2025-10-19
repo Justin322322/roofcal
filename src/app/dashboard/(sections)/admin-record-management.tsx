@@ -482,6 +482,7 @@ export default function AdminRecordManagementContent() {
           project={selectedProject}
           isOpen={viewDialogOpen}
           onClose={() => setViewDialogOpen(false)}
+          onProjectUpdate={fetchProjects}
         />
       )}
 

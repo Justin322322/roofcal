@@ -20,6 +20,8 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   Loader2,
+  ArchiveIcon,
+  CheckIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -89,6 +91,8 @@ export function ProjectDetailsViewer({ project, isOpen, onClose, onProjectUpdate
   const { data: session } = useSession();
   const [isApproving, setIsApproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
 
   const renderStatusBadge = (status: string, proposalStatus: string | null) => {
     return getStatusBadge(status, proposalStatus ?? undefined);
@@ -144,9 +148,67 @@ export function ProjectDetailsViewer({ project, isOpen, onClose, onProjectUpdate
     }
   };
 
+  const handleComplete = async () => {
+    setIsCompleting(true);
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'COMPLETED' }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to complete project');
+      }
+
+      toast.success('Project marked as completed');
+      onProjectUpdate?.();
+      onClose();
+    } catch (error) {
+      console.error('Failed to complete project:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to complete project');
+    } finally {
+      setIsCompleting(false);
+    }
+  };
+
+  const handleArchive = async () => {
+    setIsArchiving(true);
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'ARCHIVED' }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to archive project');
+      }
+
+      toast.success('Project archived successfully');
+      onProjectUpdate?.();
+      onClose();
+    } catch (error) {
+      console.error('Failed to archive project:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to archive project');
+    } finally {
+      setIsArchiving(false);
+    }
+  };
+
   const showApprovalButtons = 
-    session?.user?.role === 'CLIENT' && 
+    (session?.user?.role === 'CLIENT' || session?.user?.role === 'ADMIN') && 
     (project.status === 'CLIENT_PENDING' || project.status === 'FOR_CLIENT_REVIEW');
+
+  const showCompleteButton = 
+    session?.user?.role === 'ADMIN' && 
+    project.status === 'ACCEPTED';
+
+  const showArchiveButton = 
+    session?.user?.role === 'ADMIN' && 
+    (project.status === 'COMPLETED' || project.status === 'REJECTED');
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -417,13 +479,13 @@ export function ProjectDetailsViewer({ project, isOpen, onClose, onProjectUpdate
           )}
         </div>
 
-        {/* Approval Buttons for Clients */}
+        {/* Approval Buttons for Clients/Admins */}
         {showApprovalButtons && (
           <SheetFooter className="mt-6 pt-6 border-t">
             <div className="flex gap-3 w-full">
               <Button
                 variant="outline"
-                className="flex-1"
+                className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
                 onClick={handleReject}
                 disabled={isApproving || isRejecting}
               >
@@ -440,7 +502,7 @@ export function ProjectDetailsViewer({ project, isOpen, onClose, onProjectUpdate
                 )}
               </Button>
               <Button
-                className="flex-1"
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                 onClick={handleApprove}
                 disabled={isApproving || isRejecting}
               >
@@ -457,6 +519,53 @@ export function ProjectDetailsViewer({ project, isOpen, onClose, onProjectUpdate
                 )}
               </Button>
             </div>
+          </SheetFooter>
+        )}
+
+        {/* Complete Button for Admins (Accepted Projects) */}
+        {showCompleteButton && (
+          <SheetFooter className="mt-6 pt-6 border-t">
+            <Button
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={handleComplete}
+              disabled={isCompleting}
+            >
+              {isCompleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Completing...
+                </>
+              ) : (
+                <>
+                  <CheckIcon className="mr-2 h-4 w-4" />
+                  Mark as Completed
+                </>
+              )}
+            </Button>
+          </SheetFooter>
+        )}
+
+        {/* Archive Button for Admins (Completed/Rejected Projects) */}
+        {showArchiveButton && (
+          <SheetFooter className="mt-6 pt-6 border-t">
+            <Button
+              variant="outline"
+              className="w-full border-orange-200 text-orange-600 hover:bg-orange-50 hover:text-orange-700 hover:border-orange-300"
+              onClick={handleArchive}
+              disabled={isArchiving}
+            >
+              {isArchiving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Archiving...
+                </>
+              ) : (
+                <>
+                  <ArchiveIcon className="mr-2 h-4 w-4" />
+                  Archive Project
+                </>
+              )}
+            </Button>
           </SheetFooter>
         )}
       </SheetContent>
