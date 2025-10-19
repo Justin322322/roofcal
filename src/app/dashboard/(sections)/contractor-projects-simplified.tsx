@@ -739,25 +739,6 @@ export function ContractorProjectsContent() {
                                 <EyeIcon className="h-4 w-4 mr-2" />
                                 View Details
                               </DropdownMenuItem>
-                              {project.status === "CONTRACTOR_REVIEWING" && (
-                                <>
-                                  <DropdownMenuItem 
-                                    onClick={() => handleAcceptProject(project.id)}
-                                    disabled={loadingProjectId === project.id}
-                                  >
-                                    <CheckIcon className="h-4 w-4 mr-2" />
-                                    Accept Project
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    onClick={() => handleDeclineProject(project.id)}
-                                    disabled={loadingProjectId === project.id}
-                                    className="text-red-600"
-                                  >
-                                    <XIcon className="h-4 w-4 mr-2" />
-                                    Decline Project
-                                  </DropdownMenuItem>
-                                </>
-                              )}
                               {project.status === "ACCEPTED" && (
                                 <>
                                   <DropdownMenuItem 
