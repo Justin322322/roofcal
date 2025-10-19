@@ -204,11 +204,20 @@ export function ProjectDetailsViewer({ project, isOpen, onClose, onProjectUpdate
 
   const showCompleteButton = 
     session?.user?.role === 'ADMIN' && 
-    project.status === 'ACCEPTED';
+    (project.status === 'ACCEPTED' || project.status === 'IN_PROGRESS' || project.status === 'ACTIVE');
 
   const showArchiveButton = 
     session?.user?.role === 'ADMIN' && 
     (project.status === 'COMPLETED' || project.status === 'REJECTED');
+
+  // Debug logging
+  console.log('Project Details Viewer Debug:', {
+    userRole: session?.user?.role,
+    projectStatus: project.status,
+    showApprovalButtons,
+    showCompleteButton,
+    showArchiveButton
+  });
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
