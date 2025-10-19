@@ -142,6 +142,9 @@ export default function LoginForm() {
                   placeholder="Enter your email"
                   {...form.register("email")}
                   disabled={isLoading}
+                  onKeyDown={(e) => {
+                    if (e.key === " ") e.preventDefault();
+                  }}
                 />
                 {form.formState.errors.email && (
                   <p className="text-sm text-red-600">
@@ -164,6 +167,9 @@ export default function LoginForm() {
                   placeholder="Enter your password"
                   {...form.register("password")}
                   disabled={isLoading}
+                  onKeyDown={(e) => {
+                    if (e.key === " ") e.preventDefault();
+                  }}
                 />
                 {form.formState.errors.password && (
                   <p className="text-sm text-red-600">

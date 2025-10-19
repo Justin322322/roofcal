@@ -32,7 +32,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Loader2, Database, AlertTriangle, Search, Edit, Save } from "lucide-react";
+import { Loader2, Database, AlertTriangle, Search, Edit, Save, Download, Upload, HardDrive, Clock, FileDown } from "lucide-react";
+import { toast } from "sonner";
 
 interface TableData {
   data: Record<string, unknown>[];
@@ -43,6 +44,12 @@ interface TableColumn {
   name: string;
   type: string;
   nullable: boolean;
+}
+
+interface BackupFile {
+  name: string;
+  size: string;
+  created: string;
 }
 
 export default function DatabaseManagementContent() {
@@ -56,9 +63,15 @@ export default function DatabaseManagementContent() {
   const [editDialog, setEditDialog] = useState(false);
   const [editRecord, setEditRecord] = useState<Record<string, unknown> | null>(null);
   const [editableFields, setEditableFields] = useState<Record<string, unknown>>({});
+  const [backups, setBackups] = useState<BackupFile[]>([]);
+  const [backupDialog, setBackupDialog] = useState(false);
+  const [restoreDialog, setRestoreDialog] = useState(false);
+  const [selectedBackup, setSelectedBackup] = useState<string | null>(null);
+  const [backupLoading, setBackupLoading] = useState(false);
 
   useEffect(() => {
     fetchTables();
+    fetchBackups();
   }, []);
 
   useEffect(() => {
@@ -161,6 +174,80 @@ export default function DatabaseManagementContent() {
     return String(value);
   };
 
+  const fetchBackups = async () => {
+    try {
+      const response = await fetch("/api/database/backup");
+      if (!response.ok) throw new Error("Failed to fetch backups");
+      const data = await response.json();
+      setBackups(data.backups || []);
+    } catch {
+      console.error("Failed to load backups");
+    }
+  };
+
+  const handleCreateBackup = async () => {
+    try {
+      setBackupLoading(true);
+      toast.info("Creating backup...");
+      
+      const response = await fetch("/api/database/backup", {
+        method: "POST",
+      });
+
+      if (!response.ok) throw new Error("Failed to create backup");
+      
+      const data = await response.json();
+      toast.success(`Backup created: ${data.filename} (${data.size} MB)`);
+      
+      await fetchBackups();
+      setBackupDialog(false);
+    } catch {
+      toast.error("Failed to create backup");
+    } finally {
+      setBackupLoading(false);
+    }
+  };
+
+  const handleRestoreBackup = async () => {
+    if (!selectedBackup) return;
+
+    try {
+      setBackupLoading(true);
+      toast.info("Restoring database...");
+      
+      const response = await fetch("/api/database/restore", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: selectedBackup }),
+      });
+
+      if (!response.ok) throw new Error("Failed to restore backup");
+      
+      toast.success("Database restored successfully!");
+      setRestoreDialog(false);
+      setSelectedBackup(null);
+      
+      // Refresh current table data
+      if (selectedTable) {
+        fetchTableData();
+      }
+    } catch {
+      toast.error("Failed to restore database");
+    } finally {
+      setBackupLoading(false);
+    }
+  };
+
+  const handleDownloadBackup = (filename: string) => {
+    const url = `/api/database/backup/download?file=${encodeURIComponent(filename)}`;
+    window.open(url, "_blank");
+    toast.success("Downloading backup file...");
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString();
+  };
+
   return (
     <div className="flex flex-col gap-4 md:gap-6">
       {/* Header */}
@@ -186,6 +273,108 @@ export default function DatabaseManagementContent() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
+      </div>
+
+      {/* Backup Management */}
+      <div className="px-4 lg:px-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <HardDrive className="h-5 w-5" />
+                  Database Backup & Restore
+                </CardTitle>
+                <CardDescription>
+                  Create backups and restore your database
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setBackupDialog(true)}
+                  variant="default"
+                  className="gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Create Backup
+                </Button>
+                <Button
+                  onClick={() => {
+                    fetchBackups();
+                    setRestoreDialog(true);
+                  }}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <Upload className="h-4 w-4" />
+                  Restore Backup
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Clock className="h-4 w-4" />
+                <span>
+                  {backups.length > 0
+                    ? `${backups.length} backup${backups.length !== 1 ? "s" : ""} available`
+                    : "No backups available"}
+                </span>
+              </div>
+              {backups.length > 0 && (
+                <div className="rounded-lg border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Backup File</TableHead>
+                        <TableHead>Size</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {backups.slice(0, 5).map((backup) => (
+                        <TableRow key={backup.name}>
+                          <TableCell className="font-mono text-sm">
+                            {backup.name}
+                          </TableCell>
+                          <TableCell>{backup.size} MB</TableCell>
+                          <TableCell>{formatDate(backup.created)}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDownloadBackup(backup.name)}
+                                className="gap-1"
+                              >
+                                <FileDown className="h-3 w-3" />
+                                Download
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedBackup(backup.name);
+                                  setRestoreDialog(true);
+                                }}
+                                className="gap-1"
+                              >
+                                <Upload className="h-3 w-3" />
+                                Restore
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Main Content */}
@@ -339,6 +528,131 @@ export default function DatabaseManagementContent() {
           </Card>
         </div>
       )}
+
+      {/* Create Backup Dialog */}
+      <Dialog open={backupDialog} onOpenChange={setBackupDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Download className="h-5 w-5" />
+              Create Database Backup
+            </DialogTitle>
+            <DialogDescription>
+              This will create a complete backup of your database including all tables and data.
+              The backup file will be saved and can be downloaded or used for restoration.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                Creating a backup may take a few moments depending on your database size.
+                Please do not close this window during the process.
+              </AlertDescription>
+            </Alert>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBackupDialog(false)} disabled={backupLoading}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateBackup} disabled={backupLoading}>
+              {backupLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Creating Backup...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  Create Backup
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Restore Backup Dialog */}
+      <Dialog open={restoreDialog} onOpenChange={setRestoreDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5" />
+              Restore Database Backup
+            </DialogTitle>
+            <DialogDescription>
+              Select a backup file to restore. This will replace ALL current data in your database.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Warning:</strong> Restoring a backup will replace all current data in your database.
+                This action cannot be undone. Consider creating a backup of your current database first.
+              </AlertDescription>
+            </Alert>
+            
+            {backups.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Database className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No backup files available</p>
+                <p className="text-sm mt-2">Create a backup first to enable restoration</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label>Select Backup File</Label>
+                <Select value={selectedBackup || ""} onValueChange={setSelectedBackup}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a backup file..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {backups.map((backup) => (
+                      <SelectItem key={backup.name} value={backup.name}>
+                        <div className="flex flex-col">
+                          <span className="font-mono text-sm">{backup.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {backup.size} MB • {formatDate(backup.created)}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setRestoreDialog(false);
+                setSelectedBackup(null);
+              }} 
+              disabled={backupLoading}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleRestoreBackup} 
+              disabled={backupLoading || !selectedBackup}
+              variant="destructive"
+            >
+              {backupLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Restoring...
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Restore Database
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Dialog */}
       <Dialog open={editDialog} onOpenChange={setEditDialog}>

@@ -18,7 +18,12 @@
     "prisma:fix-projectmaterial": "tsx scripts/apply-projectmaterial-migration.ts",
     "seed": "tsx prisma/seed-pricing.ts",
     "seed:prod": "NODE_ENV=production tsx prisma/seed-pricing.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "backup:db": "tsx scripts/backup-database.ts",
+    "backup:db:compress": "tsx scripts/backup-database.ts --compress",
+    "backup:list": "tsx scripts/list-backups.ts",
+    "backup:setup": "tsx scripts/setup-backup-system.ts",
+    "restore:db": "tsx scripts/restore-database.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

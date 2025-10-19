@@ -127,6 +127,9 @@ export default function ForcePasswordChangeForm() {
                   placeholder="Enter current password"
                   {...form.register("currentPassword")}
                   disabled={isLoading}
+                  onKeyDown={(e) => {
+                    if (e.key === " ") e.preventDefault();
+                  }}
                 />
                 {form.formState.errors.currentPassword && (
                   <p className="text-sm text-red-600">
@@ -146,6 +149,9 @@ export default function ForcePasswordChangeForm() {
                     },
                   })}
                   disabled={isLoading}
+                  onKeyDown={(e) => {
+                    if (e.key === " ") e.preventDefault();
+                  }}
                 />
                 {form.formState.errors.newPassword && (
                   <p className="text-sm text-red-600">
@@ -165,6 +171,9 @@ export default function ForcePasswordChangeForm() {
                   placeholder="Confirm new password"
                   {...form.register("confirmPassword")}
                   disabled={isLoading}
+                  onKeyDown={(e) => {
+                    if (e.key === " ") e.preventDefault();
+                  }}
                 />
                 {form.formState.errors.confirmPassword && (
                   <p className="text-sm text-red-600">

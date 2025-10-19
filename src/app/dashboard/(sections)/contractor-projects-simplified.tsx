@@ -1075,6 +1075,38 @@ export function ContractorProjectsContent() {
                   </div>
                 </>
               )}
+
+              {/* Action Buttons */}
+              {selectedProject.status === "CONTRACTOR_REVIEWING" && (
+                <>
+                  <Separator />
+                  <div className="flex gap-3">
+                    <Button 
+                      onClick={() => {
+                        setViewDialogOpen(false);
+                        handleAcceptProject(selectedProject.id);
+                      }}
+                      disabled={loadingProjectId === selectedProject.id}
+                      className="flex-1"
+                    >
+                      <CheckIcon className="h-4 w-4 mr-2" />
+                      Accept Project
+                    </Button>
+                    <Button 
+                      variant="destructive"
+                      onClick={() => {
+                        setViewDialogOpen(false);
+                        handleDeclineProject(selectedProject.id);
+                      }}
+                      disabled={loadingProjectId === selectedProject.id}
+                      className="flex-1"
+                    >
+                      <XIcon className="h-4 w-4 mr-2" />
+                      Decline Project
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </SheetContent>

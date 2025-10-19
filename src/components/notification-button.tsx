@@ -37,16 +37,7 @@ interface Notification {
   actionUrl?: string;
 }
 
-interface NotificationCenterProps {
-  onNotificationRead?: () => void;
-  onNotificationUpdate?: () => void;
-}
-
-
-export function NotificationCenter({ 
-  onNotificationRead, 
-  onNotificationUpdate 
-}: NotificationCenterProps) {
+export function NotificationButton() {
   const { data: session } = useSession();
   const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -61,7 +52,6 @@ export function NotificationCenter({
         const data = await response.json();
         const fetchedNotifications = data.notifications || [];
         
-        // Transform the data to match our interface
         const transformedNotifications = fetchedNotifications.map((n: {
           id: string;
           type: string;
@@ -85,8 +75,6 @@ export function NotificationCenter({
         }));
         
         setNotifications(transformedNotifications);
-      } else {
-        console.error("Failed to fetch notifications:", response.statusText);
       }
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
@@ -114,17 +102,10 @@ export function NotificationCenter({
       });
 
       if (response.ok) {
-        // Update local state
         const updated = notifications.map(n => 
           n.id === notificationId ? { ...n, read: true } : n
         );
         setNotifications(updated);
-        
-        // Call callback to update parent component
-        onNotificationRead?.();
-        onNotificationUpdate?.();
-      } else {
-        console.error("Failed to mark notification as read");
       }
     } catch (error) {
       console.error("Error marking notification as read:", error);
@@ -144,15 +125,8 @@ export function NotificationCenter({
       });
 
       if (response.ok) {
-        // Update local state
         const updated = notifications.map(n => ({ ...n, read: true }));
         setNotifications(updated);
-        
-        // Call callback to update parent component
-        onNotificationRead?.();
-        onNotificationUpdate?.();
-      } else {
-        console.error("Failed to mark all notifications as read");
       }
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
@@ -166,14 +140,8 @@ export function NotificationCenter({
       });
 
       if (response.ok) {
-        // Update local state
         const updated = notifications.filter(n => n.id !== notificationId);
         setNotifications(updated);
-        
-        // Call callback to update parent component
-        onNotificationUpdate?.();
-      } else {
-        console.error("Failed to delete notification");
       }
     } catch (error) {
       console.error("Error deleting notification:", error);
@@ -181,12 +149,10 @@ export function NotificationCenter({
   };
 
   const handleNotificationClick = async (notification: Notification) => {
-    // Mark as read if not already read
     if (!notification.read) {
       await markAsRead(notification.id);
     }
     
-    // Navigate to the appropriate page
     const url = getNotificationUrl(notification);
     router.push(url);
   };
@@ -215,18 +181,18 @@ export function NotificationCenter({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="flex w-full items-center justify-start gap-2 px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer">
-          <BellIcon className="h-4 w-4" />
-          <span>Notifications</span>
+        <Button variant="outline" size="icon" className="h-9 w-9 relative">
+          <BellIcon className="h-[1.2rem] w-[1.2rem]" />
           {unreadCount > 0 && (
             <Badge 
               variant="destructive" 
-              className="ml-auto h-5 w-5 flex items-center justify-center p-0 text-xs"
+              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
             >
               {unreadCount > 9 ? "9+" : unreadCount}
             </Badge>
           )}
-        </div>
+          <span className="sr-only">Notifications</span>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
         <div className="flex items-center justify-between p-2">
@@ -259,7 +225,7 @@ export function NotificationCenter({
                 <div
                   key={notification.id}
                   className={`p-3 border-b hover:bg-muted/50 transition-colors cursor-pointer ${
-                    !notification.read ? "bg-blue-50/50" : ""
+                    !notification.read ? "bg-blue-50/50 dark:bg-blue-950/20" : ""
                   }`}
                   onClick={() => handleNotificationClick(notification)}
                 >
@@ -333,4 +299,3 @@ export function NotificationCenter({
     </DropdownMenu>
   );
 }
-

@@ -98,6 +98,9 @@ export default function ForgotPasswordForm() {
                     placeholder="Enter your email address"
                     {...form.register("email")}
                     disabled={isLoading}
+                    onKeyDown={(e) => {
+                      if (e.key === " ") e.preventDefault();
+                    }}
                   />
                   {form.formState.errors.email && (
                     <p className="text-sm text-red-600">

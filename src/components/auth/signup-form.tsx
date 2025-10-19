@@ -180,6 +180,9 @@ export default function SignupForm() {
                     placeholder="First Name"
                     {...form.register("firstName")}
                     disabled={isLoading}
+                    onKeyDown={(e) => {
+                      if (e.key === " ") e.preventDefault();
+                    }}
                   />
                   {form.formState.errors.firstName && (
                     <p className="text-sm text-red-600">
@@ -194,6 +197,9 @@ export default function SignupForm() {
                     placeholder="Last Name"
                     {...form.register("lastName")}
                     disabled={isLoading}
+                    onKeyDown={(e) => {
+                      if (e.key === " ") e.preventDefault();
+                    }}
                   />
                   {form.formState.errors.lastName && (
                     <p className="text-sm text-red-600">
@@ -211,6 +217,9 @@ export default function SignupForm() {
                   autoComplete="email"
                   {...form.register("email")}
                   disabled={isLoading}
+                  onKeyDown={(e) => {
+                    if (e.key === " ") e.preventDefault();
+                  }}
                 />
                 {form.formState.errors.email && (
                   <p className="text-sm text-red-600">
@@ -230,6 +239,9 @@ export default function SignupForm() {
                     },
                   })}
                   disabled={isLoading}
+                  onKeyDown={(e) => {
+                    if (e.key === " ") e.preventDefault();
+                  }}
                 />
                 {form.formState.errors.password && (
                   <p className="text-sm text-red-600">
@@ -249,6 +261,9 @@ export default function SignupForm() {
                   autoComplete="new-password"
                   {...form.register("confirmPassword")}
                   disabled={isLoading}
+                  onKeyDown={(e) => {
+                    if (e.key === " ") e.preventDefault();
+                  }}
                 />
                 {form.formState.errors.confirmPassword && (
                   <p className="text-sm text-red-600">
