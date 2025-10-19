@@ -796,6 +796,7 @@ export function ProjectList() {
             setViewDialogOpen(false);
             setSelectedProject(null);
           }}
+          onProjectUpdate={fetchProjects}
         />
       )}
 

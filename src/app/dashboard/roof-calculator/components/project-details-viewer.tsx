@@ -6,7 +6,9 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
+  SheetFooter,
 } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 import { getStatusBadge } from "@/lib/badge-utils";
 import { Separator } from "@/components/ui/separator";
 import { 
@@ -15,7 +17,13 @@ import {
   DollarSignIcon,
   RulerIcon,
   PackageIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  Loader2,
 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 
 
 interface Project {
@@ -73,13 +81,72 @@ interface ProjectDetailsViewerProps {
   project: Project;
   isOpen: boolean;
   onClose: () => void;
+  onProjectUpdate?: () => void;
 }
 
 
-export function ProjectDetailsViewer({ project, isOpen, onClose }: ProjectDetailsViewerProps) {
+export function ProjectDetailsViewer({ project, isOpen, onClose, onProjectUpdate }: ProjectDetailsViewerProps) {
+  const { data: session } = useSession();
+  const [isApproving, setIsApproving] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
+
   const renderStatusBadge = (status: string, proposalStatus: string | null) => {
     return getStatusBadge(status, proposalStatus ?? undefined);
   };
+
+  const handleApprove = async () => {
+    setIsApproving(true);
+    try {
+      const response = await fetch(`/api/projects/${project.id}/approve`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'approve' }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to approve project');
+      }
+
+      toast.success('Project approved successfully');
+      onProjectUpdate?.();
+      onClose();
+    } catch (error) {
+      console.error('Failed to approve project:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to approve project');
+    } finally {
+      setIsApproving(false);
+    }
+  };
+
+  const handleReject = async () => {
+    setIsRejecting(true);
+    try {
+      const response = await fetch(`/api/projects/${project.id}/approve`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reject' }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to reject project');
+      }
+
+      toast.success('Project rejected successfully');
+      onProjectUpdate?.();
+      onClose();
+    } catch (error) {
+      console.error('Failed to reject project:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to reject project');
+    } finally {
+      setIsRejecting(false);
+    }
+  };
+
+  const showApprovalButtons = 
+    session?.user?.role === 'CLIENT' && 
+    (project.status === 'CLIENT_PENDING' || project.status === 'FOR_CLIENT_REVIEW');
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -349,6 +416,49 @@ export function ProjectDetailsViewer({ project, isOpen, onClose }: ProjectDetail
             </>
           )}
         </div>
+
+        {/* Approval Buttons for Clients */}
+        {showApprovalButtons && (
+          <SheetFooter className="mt-6 pt-6 border-t">
+            <div className="flex gap-3 w-full">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={handleReject}
+                disabled={isApproving || isRejecting}
+              >
+                {isRejecting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Rejecting...
+                  </>
+                ) : (
+                  <>
+                    <XCircleIcon className="mr-2 h-4 w-4" />
+                    Reject Project
+                  </>
+                )}
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={handleApprove}
+                disabled={isApproving || isRejecting}
+              >
+                {isApproving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Approving...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircleIcon className="mr-2 h-4 w-4" />
+                    Approve Project
+                  </>
+                )}
+              </Button>
+            </div>
+          </SheetFooter>
+        )}
       </SheetContent>
     </Sheet>
   );
