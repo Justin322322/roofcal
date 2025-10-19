@@ -31,10 +31,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install MySQL client
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y mysql-client
+      - name: Generate Prisma Client
+        run: npx prisma generate
 
       - name: Create backup directory
         run: mkdir -p backups
@@ -42,23 +40,15 @@ jobs:
       - name: Create database backup
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: |
-          if [ "${{ inputs.compress }}" = "true" ] || [ "${{ github.event_name }}" = "schedule" ]; then
-            npm run backup:db:compress
-          else
-            npm run backup:db
-          fi
+        run: npm run backup:db
 
       - name: Upload backup to artifacts
         uses: actions/upload-artifact@v4
         with:
           name: database-backup-${{ github.run_number }}
-          path: backups/
+          path: backups/*.sql
           retention-days: 30
-          compression-level: 0 # Already compressed
-
-      - name: List backups
-        run: npm run backup:list
+          if-no-files-found: error
 
       # Optional: Upload to cloud storage (uncomment and configure as needed)
       # - name: Upload to AWS S3

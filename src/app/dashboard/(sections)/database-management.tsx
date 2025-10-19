@@ -66,7 +66,6 @@ export default function DatabaseManagementContent() {
   const [backups, setBackups] = useState<BackupFile[]>([]);
   const [backupDialog, setBackupDialog] = useState(false);
   const [restoreDialog, setRestoreDialog] = useState(false);
-  const [selectedBackup, setSelectedBackup] = useState<string | null>(null);
   const [backupLoading, setBackupLoading] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
 
@@ -228,46 +227,39 @@ export default function DatabaseManagementContent() {
   const handleRestoreBackup = async () => {
     try {
       setBackupLoading(true);
-      toast.info("Restoring database...");
       
-      let response;
-      
-      // If user uploaded a file, use upload endpoint
-      if (uploadFile) {
-        const formData = new FormData();
-        formData.append("file", uploadFile);
-        
-        response = await fetch("/api/database/restore/upload", {
-          method: "POST",
-          body: formData,
-        });
-      } 
-      // Otherwise use existing backup file
-      else if (selectedBackup) {
-        response = await fetch("/api/database/restore", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ filename: selectedBackup }),
-        });
-      } else {
-        toast.error("Please select a backup or upload a file");
+      if (!uploadFile) {
+        toast.error("Please upload a backup file");
         setBackupLoading(false);
         return;
       }
 
-      if (!response.ok) throw new Error("Failed to restore backup");
+      toast.info("Restoring database...");
+      
+      const formData = new FormData();
+      formData.append("file", uploadFile);
+      
+      const response = await fetch("/api/database/restore/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to restore backup");
+      }
       
       toast.success("Database restored successfully!");
       setRestoreDialog(false);
-      setSelectedBackup(null);
       setUploadFile(null);
       
       // Refresh current table data
       if (selectedTable) {
         fetchTableData();
       }
-    } catch {
-      toast.error("Failed to restore database");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to restore database";
+      toast.error(message);
     } finally {
       setBackupLoading(false);
     }
@@ -391,13 +383,13 @@ export default function DatabaseManagementContent() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => {
-                                  setSelectedBackup(backup.name);
-                                  setRestoreDialog(true);
+                                  handleDownloadBackup(backup.name);
+                                  toast.info("Download the file, then use 'Restore Backup' to upload it");
                                 }}
                                 className="gap-1"
                               >
                                 <Upload className="h-3 w-3" />
-                                Restore
+                                Use for Restore
                               </Button>
                             </div>
                           </TableCell>
@@ -635,7 +627,7 @@ export default function DatabaseManagementContent() {
             <div className="space-y-4">
               {/* Upload File Option */}
               <div className="space-y-2">
-                <Label>Upload Backup File</Label>
+                <Label>Upload Backup File (.sql)</Label>
                 <div className="flex gap-2">
                   <Input
                     type="file"
@@ -644,7 +636,6 @@ export default function DatabaseManagementContent() {
                       const file = e.target.files?.[0];
                       if (file) {
                         setUploadFile(file);
-                        setSelectedBackup(null); // Clear server backup selection
                       }
                     }}
                     className="flex-1"
@@ -659,60 +650,16 @@ export default function DatabaseManagementContent() {
                     </Button>
                   )}
                 </div>
-                {uploadFile && (
+                {uploadFile ? (
                   <p className="text-sm text-muted-foreground">
                     Selected: {uploadFile.name} ({(uploadFile.size / (1024 * 1024)).toFixed(2)} MB)
                   </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Upload a .sql backup file that was previously downloaded
+                  </p>
                 )}
               </div>
-
-              {/* Divider */}
-              {backups.length > 0 && (
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                      Or select from server
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Server Backups */}
-              {backups.length > 0 && (
-                <div className="space-y-2">
-                  <Label>Server Backup Files</Label>
-                  <Select 
-                    value={selectedBackup || ""} 
-                    onValueChange={(value) => {
-                      setSelectedBackup(value);
-                      setUploadFile(null); // Clear upload when selecting server backup
-                    }}
-                    disabled={!!uploadFile}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose a backup file..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {backups.map((backup) => (
-                        <SelectItem key={backup.name} value={backup.name}>
-                          <div className="flex flex-col">
-                            <span className="font-mono text-sm">{backup.name}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {backup.size} MB • {formatDate(backup.created)}
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    Note: Server backups may not persist on serverless platforms
-                  </p>
-                </div>
-              )}
             </div>
           </div>
           <DialogFooter>
@@ -720,7 +667,7 @@ export default function DatabaseManagementContent() {
               variant="outline" 
               onClick={() => {
                 setRestoreDialog(false);
-                setSelectedBackup(null);
+                setUploadFile(null);
               }} 
               disabled={backupLoading}
             >
@@ -728,7 +675,7 @@ export default function DatabaseManagementContent() {
             </Button>
             <Button 
               onClick={handleRestoreBackup} 
-              disabled={backupLoading || (!selectedBackup && !uploadFile)}
+              disabled={backupLoading || !uploadFile}
               variant="destructive"
             >
               {backupLoading ? (

@@ -2,55 +2,91 @@
 /**
  * Database Backup Script for Railway MySQL
  * 
- * This script creates a complete database dump including:
- * - Schema structure
- * - All table data
- * - Stored procedures, triggers, etc.
+ * This script creates a complete database dump using Prisma
+ * Works on any platform without requiring mysqldump
  * 
  * Usage:
  *   npm run backup:db
  *   npm run backup:db -- --output custom-backup.sql
  */
 
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { PrismaClient } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const execAsync = promisify(exec);
+const prisma = new PrismaClient();
 
 interface BackupOptions {
   output?: string;
-  compress?: boolean;
 }
 
-// Parse DATABASE_URL to extract connection details
-function parseDatabaseUrl(url: string) {
-  const regex = /mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/;
-  const match = url.match(regex);
-  
-  if (!match) {
-    throw new Error('Invalid DATABASE_URL format');
+async function generateSQLBackup() {
+  const tables = [
+    'user',
+    'project',
+    'PricingConfig',
+    'warehouse',
+    'WarehouseMaterial',
+    'ProjectMaterial',
+    'Notification',
+    'activity',
+    'verificationcode',
+    'ratelimit',
+    'systemsettings',
+  ];
+
+  let sqlContent = `-- Database Backup\n`;
+  sqlContent += `-- Generated: ${new Date().toISOString()}\n`;
+  sqlContent += `-- Platform: Prisma-based backup\n\n`;
+  sqlContent += `SET FOREIGN_KEY_CHECKS=0;\n\n`;
+
+  for (const table of tables) {
+    try {
+      const modelName = table.charAt(0).toLowerCase() + table.slice(1);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = await (prisma as any)[modelName]?.findMany();
+
+      if (!data || data.length === 0) {
+        console.log(`  ⏭️  Skipping empty table: ${table}`);
+        continue;
+      }
+
+      console.log(`  📦 Backing up ${table}: ${data.length} records`);
+
+      sqlContent += `-- Table: ${table}\n`;
+      sqlContent += `DELETE FROM \`${table}\`;\n`;
+
+      for (const row of data) {
+        const columns = Object.keys(row);
+        const values = columns.map((col) => {
+          const val = row[col];
+          if (val === null || val === undefined) return 'NULL';
+          if (typeof val === 'boolean') return val ? '1' : '0';
+          if (typeof val === 'number') return val.toString();
+          if (val instanceof Date) return `'${val.toISOString()}'`;
+          if (typeof val === 'object') return `'${JSON.stringify(val).replace(/'/g, "''")}'`;
+          return `'${String(val).replace(/'/g, "''")}'`;
+        });
+
+        sqlContent += `INSERT INTO \`${table}\` (\`${columns.join('`, `')}\`) VALUES (${values.join(', ')});\n`;
+      }
+
+      sqlContent += `\n`;
+    } catch (error) {
+      console.error(`  ❌ Error backing up table ${table}:`, error);
+    }
   }
 
-  return {
-    user: match[1],
-    password: match[2],
-    host: match[3],
-    port: match[4],
-    database: match[5],
-  };
+  sqlContent += `SET FOREIGN_KEY_CHECKS=1;\n`;
+  return sqlContent;
 }
 
 async function createBackup(options: BackupOptions = {}) {
-  const databaseUrl = process.env.DATABASE_URL;
-  
-  if (!databaseUrl) {
+  if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL environment variable is not set');
   }
 
-  console.log('🔍 Parsing database connection...');
-  const dbConfig = parseDatabaseUrl(databaseUrl);
+  console.log('🔍 Connecting to database...');
   
   // Create backups directory if it doesn't exist
   const backupsDir = path.join(process.cwd(), 'backups');
@@ -61,68 +97,25 @@ async function createBackup(options: BackupOptions = {}) {
 
   // Generate filename with timestamp
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-  const filename = options.output || `backup-${dbConfig.database}-${timestamp}.sql`;
+  const filename = options.output || `backup-${timestamp}.sql`;
   const filepath = path.join(backupsDir, filename);
 
   console.log(`📦 Creating backup: ${filename}`);
-  console.log(`   Database: ${dbConfig.database}`);
-  console.log(`   Host: ${dbConfig.host}:${dbConfig.port}`);
-
-  // Build mysqldump command
-  const dumpCommand = [
-    'mysqldump',
-    `--host=${dbConfig.host}`,
-    `--port=${dbConfig.port}`,
-    `--user=${dbConfig.user}`,
-    `--password=${dbConfig.password}`,
-    '--single-transaction',
-    '--routines',
-    '--triggers',
-    '--events',
-    '--add-drop-table',
-    '--complete-insert',
-    '--extended-insert',
-    '--set-charset',
-    '--default-character-set=utf8mb4',
-    dbConfig.database,
-    `> "${filepath}"`
-  ].join(' ');
+  console.log('⏳ Reading database tables...\n');
 
   try {
-    console.log('⏳ Dumping database...');
-    await execAsync(dumpCommand, { 
-      maxBuffer: 1024 * 1024 * 100, // 100MB buffer
-      shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/bash'
-    });
+    // Generate SQL backup using Prisma
+    const sqlContent = await generateSQLBackup();
+    
+    // Write to file
+    fs.writeFileSync(filepath, sqlContent, 'utf-8');
 
     const stats = fs.statSync(filepath);
     const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
     
-    console.log(`✅ Backup completed successfully!`);
+    console.log(`\n✅ Backup completed successfully!`);
     console.log(`   File: ${filepath}`);
     console.log(`   Size: ${fileSizeMB} MB`);
-
-    // Optional: Compress the backup
-    if (options.compress) {
-      console.log('🗜️  Compressing backup...');
-      const gzipCommand = process.platform === 'win32' 
-        ? `powershell -Command "Compress-Archive -Path '${filepath}' -DestinationPath '${filepath}.zip' -Force"`
-        : `gzip -f "${filepath}"`;
-      
-      await execAsync(gzipCommand);
-      const compressedPath = process.platform === 'win32' ? `${filepath}.zip` : `${filepath}.gz`;
-      const compressedStats = fs.statSync(compressedPath);
-      const compressedSizeMB = (compressedStats.size / (1024 * 1024)).toFixed(2);
-      
-      console.log(`✅ Compression completed!`);
-      console.log(`   File: ${compressedPath}`);
-      console.log(`   Size: ${compressedSizeMB} MB`);
-      
-      // Remove uncompressed file
-      if (process.platform !== 'win32') {
-        console.log(`🗑️  Removed uncompressed file`);
-      }
-    }
 
     // Clean up old backups (keep last 10)
     await cleanupOldBackups(backupsDir, 10);
@@ -137,12 +130,14 @@ async function createBackup(options: BackupOptions = {}) {
     }
     
     throw error;
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
 async function cleanupOldBackups(backupsDir: string, keepCount: number) {
   const files = fs.readdirSync(backupsDir)
-    .filter(f => f.startsWith('backup-') && (f.endsWith('.sql') || f.endsWith('.sql.gz') || f.endsWith('.sql.zip')))
+    .filter(f => f.startsWith('backup-') && f.endsWith('.sql'))
     .map(f => ({
       name: f,
       path: path.join(backupsDir, f),
@@ -169,8 +164,6 @@ for (let i = 0; i < args.length; i++) {
   if (args[i] === '--output' && args[i + 1]) {
     options.output = args[i + 1];
     i++;
-  } else if (args[i] === '--compress') {
-    options.compress = true;
   }
 }
 

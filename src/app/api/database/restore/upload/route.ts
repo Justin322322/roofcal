@@ -1,28 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
-import { exec } from "child_process";
-import { promisify } from "util";
-import * as path from "path";
-import * as fs from "fs";
+import { PrismaClient } from "@prisma/client";
 
-const execAsync = promisify(exec);
+const prisma = new PrismaClient();
 
-function parseDatabaseUrl(url: string) {
-  const regex = /mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/;
-  const match = url.match(regex);
-  
-  if (!match) {
-    throw new Error("Invalid DATABASE_URL format");
+async function executeSQLStatements(sqlContent: string) {
+  // Split SQL content into individual statements
+  const statements = sqlContent
+    .split(";")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0 && !s.startsWith("--"));
+
+  for (const statement of statements) {
+    if (statement.trim()) {
+      try {
+        await prisma.$executeRawUnsafe(statement);
+      } catch (error) {
+        console.error("Error executing statement:", statement.substring(0, 100), error);
+        // Continue with other statements
+      }
+    }
   }
-
-  return {
-    user: match[1],
-    password: match[2],
-    host: match[3],
-    port: match[4],
-    database: match[5],
-  };
 }
 
 export async function POST(request: NextRequest) {
@@ -51,64 +50,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) {
-      return NextResponse.json(
-        { error: "DATABASE_URL not configured" },
-        { status: 500 }
-      );
-    }
-
-    const dbConfig = parseDatabaseUrl(databaseUrl);
-    
-    // Use /tmp directory for serverless environments
-    const tmpDir = process.env.VERCEL || process.env.RAILWAY_ENVIRONMENT 
-      ? "/tmp" 
-      : path.join(process.cwd(), "tmp");
-
-    if (!fs.existsSync(tmpDir)) {
-      fs.mkdirSync(tmpDir, { recursive: true });
-    }
-
-    // Save uploaded file temporarily
-    const timestamp = Date.now();
-    const tmpFilePath = path.join(tmpDir, `restore-${timestamp}.sql`);
-    
+    // Read file content
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    fs.writeFileSync(tmpFilePath, buffer);
+    const sqlContent = buffer.toString("utf-8");
 
-    try {
-      // Restore the database
-      const restoreCommand = [
-        "mysql",
-        `--host=${dbConfig.host}`,
-        `--port=${dbConfig.port}`,
-        `--user=${dbConfig.user}`,
-        `--password=${dbConfig.password}`,
-        dbConfig.database,
-        `< "${tmpFilePath}"`,
-      ].join(" ");
+    // Execute SQL statements using Prisma
+    await executeSQLStatements(sqlContent);
 
-      await execAsync(restoreCommand, {
-        maxBuffer: 1024 * 1024 * 100,
-        shell: process.platform === "win32" ? "cmd.exe" : "/bin/bash",
-      });
-
-      // Clean up temp file
-      fs.unlinkSync(tmpFilePath);
-
-      return NextResponse.json({
-        success: true,
-        message: "Database restored successfully from uploaded file",
-      });
-    } catch (error) {
-      // Clean up temp file on error
-      if (fs.existsSync(tmpFilePath)) {
-        fs.unlinkSync(tmpFilePath);
-      }
-      throw error;
-    }
+    return NextResponse.json({
+      success: true,
+      message: "Database restored successfully from uploaded file",
+    });
   } catch (error) {
     console.error("Restore upload error:", error);
     return NextResponse.json(

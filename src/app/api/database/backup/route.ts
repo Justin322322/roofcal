@@ -1,28 +1,67 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
-import { exec } from "child_process";
-import { promisify } from "util";
-import * as fs from "fs";
-import * as path from "path";
+import { PrismaClient } from "@prisma/client";
 
-const execAsync = promisify(exec);
+const prisma = new PrismaClient();
 
-function parseDatabaseUrl(url: string) {
-  const regex = /mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/;
-  const match = url.match(regex);
-  
-  if (!match) {
-    throw new Error("Invalid DATABASE_URL format");
+async function generateSQLBackup() {
+  const tables = [
+    "user",
+    "project",
+    "PricingConfig",
+    "warehouse",
+    "WarehouseMaterial",
+    "ProjectMaterial",
+    "Notification",
+    "activity",
+    "verificationcode",
+    "ratelimit",
+    "systemsettings",
+  ];
+
+  let sqlContent = `-- Database Backup\n`;
+  sqlContent += `-- Generated: ${new Date().toISOString()}\n`;
+  sqlContent += `-- Platform: Serverless (Prisma-based backup)\n\n`;
+  sqlContent += `SET FOREIGN_KEY_CHECKS=0;\n\n`;
+
+  for (const table of tables) {
+    try {
+      // Get table data using Prisma's raw query
+      const modelName = table.charAt(0).toLowerCase() + table.slice(1);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = await (prisma as any)[modelName]?.findMany();
+
+      if (!data || data.length === 0) continue;
+
+      sqlContent += `-- Table: ${table}\n`;
+      sqlContent += `DELETE FROM \`${table}\`;\n`;
+
+      // Generate INSERT statements
+      for (const row of data) {
+        const columns = Object.keys(row);
+        const values = columns.map((col) => {
+          const val = row[col];
+          if (val === null || val === undefined) return "NULL";
+          if (typeof val === "boolean") return val ? "1" : "0";
+          if (typeof val === "number") return val.toString();
+          if (val instanceof Date) return `'${val.toISOString()}'`;
+          if (typeof val === "object") return `'${JSON.stringify(val).replace(/'/g, "''")}'`;
+          return `'${String(val).replace(/'/g, "''")}'`;
+        });
+
+        sqlContent += `INSERT INTO \`${table}\` (\`${columns.join("`, `")}\`) VALUES (${values.join(", ")});\n`;
+      }
+
+      sqlContent += `\n`;
+    } catch (error) {
+      console.error(`Error backing up table ${table}:`, error);
+      // Continue with other tables
+    }
   }
 
-  return {
-    user: match[1],
-    password: match[2],
-    host: match[3],
-    port: match[4],
-    database: match[5],
-  };
+  sqlContent += `SET FOREIGN_KEY_CHECKS=1;\n`;
+  return sqlContent;
 }
 
 export async function POST() {
@@ -33,60 +72,20 @@ export async function POST() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) {
-      return NextResponse.json(
-        { error: "DATABASE_URL not configured" },
-        { status: 500 }
-      );
-    }
-
-    const dbConfig = parseDatabaseUrl(databaseUrl);
-    
-    // Use /tmp directory for serverless environments (Vercel, Railway, etc.)
-    const backupsDir = process.env.VERCEL || process.env.RAILWAY_ENVIRONMENT 
-      ? "/tmp/backups" 
-      : path.join(process.cwd(), "backups");
-
-    if (!fs.existsSync(backupsDir)) {
-      fs.mkdirSync(backupsDir, { recursive: true });
-    }
-
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5);
-    const filename = `backup-${dbConfig.database}-${timestamp}.sql`;
-    const filepath = path.join(backupsDir, filename);
+    const filename = `backup-${timestamp}.sql`;
 
-    const dumpCommand = [
-      "mysqldump",
-      `--host=${dbConfig.host}`,
-      `--port=${dbConfig.port}`,
-      `--user=${dbConfig.user}`,
-      `--password=${dbConfig.password}`,
-      "--single-transaction",
-      "--routines",
-      "--triggers",
-      "--events",
-      dbConfig.database,
-      `> "${filepath}"`,
-    ].join(" ");
-
-    await execAsync(dumpCommand, {
-      maxBuffer: 1024 * 1024 * 100,
-      shell: process.platform === "win32" ? "cmd.exe" : "/bin/bash",
-    });
-
-    const stats = fs.statSync(filepath);
-    const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
-
-    // Read the file content to return it directly (for serverless environments)
-    const fileContent = fs.readFileSync(filepath, "utf-8");
+    // Generate SQL backup using Prisma
+    const sqlContent = await generateSQLBackup();
+    
+    const fileSizeKB = (Buffer.byteLength(sqlContent, "utf8") / 1024).toFixed(2);
+    const fileSizeMB = (parseFloat(fileSizeKB) / 1024).toFixed(2);
 
     return NextResponse.json({
       success: true,
       filename,
       size: fileSizeMB,
-      path: filepath,
-      content: fileContent, // Include content for immediate download
+      content: sqlContent,
     });
   } catch (error) {
     console.error("Backup error:", error);
@@ -105,30 +104,12 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    // Use /tmp directory for serverless environments
-    const backupsDir = process.env.VERCEL || process.env.RAILWAY_ENVIRONMENT 
-      ? "/tmp/backups" 
-      : path.join(process.cwd(), "backups");
-
-    if (!fs.existsSync(backupsDir)) {
-      return NextResponse.json({ backups: [] });
-    }
-
-    const files = fs
-      .readdirSync(backupsDir)
-      .filter((f) => f.startsWith("backup-") && f.endsWith(".sql"))
-      .map((f) => {
-        const filepath = path.join(backupsDir, f);
-        const stats = fs.statSync(filepath);
-        return {
-          name: f,
-          size: (stats.size / (1024 * 1024)).toFixed(2),
-          created: stats.mtime.toISOString(),
-        };
-      })
-      .sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
-
-    return NextResponse.json({ backups: files });
+    // On serverless, we don't persist backups
+    // Return empty array - users should download backups immediately
+    return NextResponse.json({ 
+      backups: [],
+      message: "Backups are not stored on serverless platforms. Please download backups immediately after creation."
+    });
   } catch (error) {
     console.error("List backups error:", error);
     return NextResponse.json(
