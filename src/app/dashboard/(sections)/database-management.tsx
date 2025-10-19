@@ -32,7 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Loader2, Database, AlertTriangle, Search, Edit, Save, Download, Upload, HardDrive, Clock, FileDown } from "lucide-react";
+import { Loader2, Database, AlertTriangle, Search, Edit, Save, Download, Upload, HardDrive } from "lucide-react";
 import { toast } from "sonner";
 
 interface TableData {
@@ -46,11 +46,7 @@ interface TableColumn {
   nullable: boolean;
 }
 
-interface BackupFile {
-  name: string;
-  size: string;
-  created: string;
-}
+
 
 export default function DatabaseManagementContent() {
   const [tables, setTables] = useState<string[]>([]);
@@ -63,7 +59,6 @@ export default function DatabaseManagementContent() {
   const [editDialog, setEditDialog] = useState(false);
   const [editRecord, setEditRecord] = useState<Record<string, unknown> | null>(null);
   const [editableFields, setEditableFields] = useState<Record<string, unknown>>({});
-  const [backups, setBackups] = useState<BackupFile[]>([]);
   const [backupDialog, setBackupDialog] = useState(false);
   const [restoreDialog, setRestoreDialog] = useState(false);
   const [backupLoading, setBackupLoading] = useState(false);
@@ -71,7 +66,6 @@ export default function DatabaseManagementContent() {
 
   useEffect(() => {
     fetchTables();
-    fetchBackups();
   }, []);
 
   useEffect(() => {
@@ -174,17 +168,6 @@ export default function DatabaseManagementContent() {
     return String(value);
   };
 
-  const fetchBackups = async () => {
-    try {
-      const response = await fetch("/api/database/backup");
-      if (!response.ok) throw new Error("Failed to fetch backups");
-      const data = await response.json();
-      setBackups(data.backups || []);
-    } catch {
-      console.error("Failed to load backups");
-    }
-  };
-
   const handleCreateBackup = async () => {
     try {
       setBackupLoading(true);
@@ -215,7 +198,6 @@ export default function DatabaseManagementContent() {
         toast.success(`Backup created: ${data.filename} (${data.size} MB)`);
       }
       
-      await fetchBackups();
       setBackupDialog(false);
     } catch {
       toast.error("Failed to create backup");
@@ -265,15 +247,7 @@ export default function DatabaseManagementContent() {
     }
   };
 
-  const handleDownloadBackup = (filename: string) => {
-    const url = `/api/database/backup/download?file=${encodeURIComponent(filename)}`;
-    window.open(url, "_blank");
-    toast.success("Downloading backup file...");
-  };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
-  };
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
@@ -326,10 +300,7 @@ export default function DatabaseManagementContent() {
                   Create Backup
                 </Button>
                 <Button
-                  onClick={() => {
-                    fetchBackups();
-                    setRestoreDialog(true);
-                  }}
+                  onClick={() => setRestoreDialog(true)}
                   variant="outline"
                   className="gap-2"
                 >
@@ -340,65 +311,9 @@ export default function DatabaseManagementContent() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span>
-                  {backups.length > 0
-                    ? `${backups.length} backup${backups.length !== 1 ? "s" : ""} available`
-                    : "No backups available"}
-                </span>
-              </div>
-              {backups.length > 0 && (
-                <div className="rounded-lg border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Backup File</TableHead>
-                        <TableHead>Size</TableHead>
-                        <TableHead>Created</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {backups.slice(0, 5).map((backup) => (
-                        <TableRow key={backup.name}>
-                          <TableCell className="font-mono text-sm">
-                            {backup.name}
-                          </TableCell>
-                          <TableCell>{backup.size} MB</TableCell>
-                          <TableCell>{formatDate(backup.created)}</TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDownloadBackup(backup.name)}
-                                className="gap-1"
-                              >
-                                <FileDown className="h-3 w-3" />
-                                Download
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  handleDownloadBackup(backup.name);
-                                  toast.info("Download the file, then use 'Restore Backup' to upload it");
-                                }}
-                                className="gap-1"
-                              >
-                                <Upload className="h-3 w-3" />
-                                Use for Restore
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
+            <div className="text-sm text-muted-foreground">
+              <p>Create backups to download your database data as SQL files.</p>
+              <p className="mt-1">Backups are automatically downloaded and can be restored by uploading them.</p>
             </div>
           </CardContent>
         </Card>
