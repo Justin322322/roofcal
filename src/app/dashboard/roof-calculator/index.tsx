@@ -9,7 +9,19 @@ import {
 import { useRoofCalculator } from "./hooks";
 import { WizardCalculator } from "./components/wizard-calculator";
 
-export function RoofCalculatorContent() {
+interface RoofCalculatorContentProps {
+  isAdminMode?: boolean;
+  selectedClientId?: string;
+  selectedClientName?: string;
+  onProjectCreated?: () => void;
+}
+
+export function RoofCalculatorContent({
+  isAdminMode = false,
+  selectedClientId,
+  selectedClientName,
+  onProjectCreated,
+}: RoofCalculatorContentProps = {}) {
   const {
     measurements,
     setMeasurements,
@@ -46,6 +58,10 @@ export function RoofCalculatorContent() {
           onReset={handleReset}
           onAutoOptimize={handleAutoOptimize}
           isPricingLoaded={isPricingLoaded}
+          isAdminMode={isAdminMode}
+          selectedClientId={selectedClientId}
+          selectedClientName={selectedClientName}
+          onProjectCreated={onProjectCreated}
         />
       </div>
     </div>

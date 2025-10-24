@@ -28,6 +28,10 @@ interface WizardCalculatorProps {
   onReset: () => void;
   onAutoOptimize?: () => OptimizationResult;
   isPricingLoaded: boolean;
+  isAdminMode?: boolean;
+  selectedClientId?: string;
+  selectedClientName?: string;
+  onProjectCreated?: () => void;
 }
 
 const STEPS = [
@@ -49,6 +53,9 @@ export function WizardCalculator({
   onReset,
   onAutoOptimize,
   isPricingLoaded,
+  isAdminMode = false,
+  selectedClientId,
+  onProjectCreated,
 }: WizardCalculatorProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [includeLabor, setIncludeLabor] = useState(true);
@@ -121,8 +128,8 @@ export function WizardCalculator({
 
   // Calculate labor cost based on user choice
   const displayLaborCost = includeLabor ? results.laborCost : 0;
-  const displayTotalCost = includeLabor 
-    ? results.totalCost 
+  const displayTotalCost = includeLabor
+    ? results.totalCost
     : results.totalCost - results.laborCost;
 
   return (
@@ -174,7 +181,7 @@ export function WizardCalculator({
                 }}
                 onProjectLoaded={handleProjectLoaded}
               />
-              
+
               {/* Labor Cost Option */}
               <div className="mt-6 p-4 border rounded-lg bg-muted/50">
                 <h3 className="font-semibold mb-3">Include Labor Cost?</h3>
@@ -241,14 +248,14 @@ export function WizardCalculator({
                 material={material}
                 onMaterialChange={(newMaterial) => {
                   setMaterial(newMaterial);
-                  
+
                   // Auto-correct roof type when switching to Long Span (corrugated)
-                  if (newMaterial === "corrugated" && 
-                      measurements.roofType !== "gable" && 
-                      measurements.roofType !== "shed") {
-                    setMeasurements({ 
-                      ...measurements, 
-                      roofType: "gable" 
+                  if (newMaterial === "corrugated" &&
+                    measurements.roofType !== "gable" &&
+                    measurements.roofType !== "shed") {
+                    setMeasurements({
+                      ...measurements,
+                      roofType: "gable"
                     });
                   }
                 }}
@@ -471,8 +478,10 @@ export function WizardCalculator({
               onWarehouseChange={setSelectedWarehouseId}
               projectAddress={projectAddress}
               onAddressChange={setProjectAddress}
-              onProjectCreated={handleProjectSaved}
+              onProjectCreated={onProjectCreated || handleProjectSaved}
               isBudgetSufficient={getBudgetValidationResult(measurements.budgetAmount, displayTotalCost).isBudgetSufficient}
+              isAdminMode={isAdminMode}
+              selectedClientId={selectedClientId}
             />
           </div>
         )}
