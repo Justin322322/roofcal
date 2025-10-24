@@ -11,6 +11,7 @@ import { WizardCalculator } from "./components/wizard-calculator";
 
 interface RoofCalculatorContentProps {
   isAdminMode?: boolean;
+  isAdminSelfMode?: boolean;
   selectedClientId?: string;
   selectedClientName?: string;
   onProjectCreated?: () => void;
@@ -18,6 +19,7 @@ interface RoofCalculatorContentProps {
 
 export function RoofCalculatorContent({
   isAdminMode = false,
+  isAdminSelfMode = false,
   selectedClientId,
   selectedClientName,
   onProjectCreated,
@@ -59,6 +61,7 @@ export function RoofCalculatorContent({
           onAutoOptimize={handleAutoOptimize}
           isPricingLoaded={isPricingLoaded}
           isAdminMode={isAdminMode}
+          isAdminSelfMode={isAdminSelfMode}
           selectedClientId={selectedClientId}
           selectedClientName={selectedClientName}
           onProjectCreated={onProjectCreated}

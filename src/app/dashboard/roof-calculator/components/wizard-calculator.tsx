@@ -29,6 +29,7 @@ interface WizardCalculatorProps {
   onAutoOptimize?: () => OptimizationResult;
   isPricingLoaded: boolean;
   isAdminMode?: boolean;
+  isAdminSelfMode?: boolean;
   selectedClientId?: string;
   selectedClientName?: string;
   onProjectCreated?: () => void;
@@ -54,6 +55,7 @@ export function WizardCalculator({
   onAutoOptimize,
   isPricingLoaded,
   isAdminMode = false,
+  isAdminSelfMode = false,
   selectedClientId,
   onProjectCreated,
 }: WizardCalculatorProps) {
@@ -481,6 +483,7 @@ export function WizardCalculator({
               onProjectCreated={onProjectCreated || handleProjectSaved}
               isBudgetSufficient={getBudgetValidationResult(measurements.budgetAmount, displayTotalCost).isBudgetSufficient}
               isAdminMode={isAdminMode}
+              isAdminSelfMode={isAdminSelfMode}
               selectedClientId={selectedClientId}
             />
           </div>
