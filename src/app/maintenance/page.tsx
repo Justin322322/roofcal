@@ -2,6 +2,9 @@ import { getMaintenanceStatus } from "@/lib/maintenance-utils";
 import RoofCalcLogo from "@/components/RoofCalcLogo";
 import { ThemeToggle } from "@/components/theme-toggle";
 
+// Force dynamic rendering to avoid database connection during build
+export const dynamic = 'force-dynamic';
+
 export default async function MaintenancePage() {
   const settings = await getMaintenanceStatus();
 
