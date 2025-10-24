@@ -66,6 +66,16 @@ export async function sendEmail(emailData: EmailData): Promise<void> {
           user: process.env.SMTP_USER!,
           pass: process.env.SMTP_PASSWORD!,
         },
+        // Performance optimizations
+        pool: true, // Use connection pooling
+        maxConnections: 5, // Max concurrent connections
+        maxMessages: 100, // Max messages per connection
+        rateDelta: 1000, // Time window for rate limiting (1 second)
+        rateLimit: 10, // Max messages per rateDelta
+        // Timeout settings
+        connectionTimeout: 10000, // 10 seconds
+        greetingTimeout: 5000, // 5 seconds
+        socketTimeout: 30000, // 30 seconds
       });
       
       await transporter.sendMail({
