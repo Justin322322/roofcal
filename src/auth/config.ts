@@ -117,7 +117,7 @@ export const authOptions: AuthOptions = {
         token.id = user.id;
         token.role = user.role;
         token.emailVerified = user.emailVerified;
-        token.passwordChangeRequired = (user as any).passwordChangeRequired;
+        token.passwordChangeRequired = (user as User & { passwordChangeRequired?: boolean }).passwordChangeRequired;
         safeLog("JWT callback - user data processed:", {
           userExists: true,
           role: user.role,
