@@ -73,11 +73,20 @@ export function getStatusBadge(status: string, proposalStatus?: string) {
   const statusKey = normalizeStatus(status) as BadgeVariant;
   const proposalKey = proposalStatus ? normalizeStatus(proposalStatus) as BadgeVariant : null;
 
-  // Always prioritize archived status regardless of proposal state
+  // Always prioritize certain statuses regardless of proposal state
   if (statusKey === 'archived') {
     return (
       <StandardBadge variant={'archived'}>
         {"Archived"}
+      </StandardBadge>
+    );
+  }
+
+  // Always show CANCELLED status, don't let proposal status override it
+  if (statusKey === 'cancelled') {
+    return (
+      <StandardBadge variant={'cancelled'}>
+        {"Cancelled"}
       </StandardBadge>
     );
   }

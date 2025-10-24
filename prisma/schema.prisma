@@ -305,6 +305,7 @@ enum project_status {
   ARCHIVED
   REJECTED
   FOR_CLIENT_REVIEW
+  CANCELLED
 }
 
 enum user_role {

@@ -44,6 +44,7 @@ interface CalculationResultsProps {
   insulationType?: string;
   insulationThickness?: string;
   ventilationType?: string;
+  onBudgetRedirect?: () => void;
 }
 
 export function CalculationResults({
@@ -77,6 +78,7 @@ export function CalculationResults({
   insulationType,
   insulationThickness,
   ventilationType,
+  onBudgetRedirect,
 }: CalculationResultsProps) {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationDialogOpen, setOptimizationDialogOpen] = useState(false);
@@ -338,9 +340,9 @@ export function CalculationResults({
             {budgetAmount < totalCost && (
               <Alert variant="destructive" className="mt-3">
                 <XCircleIcon className="h-4 w-4" />
-                <AlertTitle>⛔ Project Cannot Be Saved</AlertTitle>
+                <AlertTitle>Project Cannot Be Saved</AlertTitle>
                 <AlertDescription>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div>
                       <strong>Budget falls short of estimated cost</strong>
                     </div>
@@ -354,6 +356,16 @@ export function CalculationResults({
                       <br />• Increase your budget by at least ₱{formatNumberWithCommas(totalCost - budgetAmount)}
                       <br />• Or reduce project specifications to lower costs
                     </div>
+                    {onBudgetRedirect && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onBudgetRedirect}
+                        className="w-full sm:w-auto mt-2"
+                      >
+                        Adjust Budget
+                      </Button>
+                    )}
                   </div>
                 </AlertDescription>
               </Alert>

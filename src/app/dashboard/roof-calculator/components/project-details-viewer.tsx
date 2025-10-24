@@ -93,6 +93,9 @@ export function ProjectDetailsViewer({ project, isOpen, onClose, onProjectUpdate
   const [isRejecting, setIsRejecting] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   const renderStatusBadge = (status: string, proposalStatus: string | null) => {
     return getStatusBadge(status, proposalStatus ?? undefined);
@@ -198,6 +201,40 @@ export function ProjectDetailsViewer({ project, isOpen, onClose, onProjectUpdate
     }
   };
 
+  const handleCancel = async () => {
+    if (!cancelReason.trim()) {
+      toast.error('Please provide a reason for cancellation');
+      return;
+    }
+
+    setIsCancelling(true);
+    try {
+      const response = await fetch(`/api/projects/${project.id}/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: cancelReason }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to cancel project');
+      }
+
+      toast.success('Project cancelled successfully', {
+        description: 'The contractor has been notified',
+      });
+      setShowCancelDialog(false);
+      setCancelReason("");
+      onProjectUpdate?.();
+      onClose();
+    } catch (error) {
+      console.error('Failed to cancel project:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to cancel project');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
   const showApprovalButtons = 
     (session?.user?.role === 'CLIENT' || session?.user?.role === 'ADMIN') && 
     (project.status === 'CLIENT_PENDING' || project.status === 'FOR_CLIENT_REVIEW');
@@ -209,6 +246,11 @@ export function ProjectDetailsViewer({ project, isOpen, onClose, onProjectUpdate
   const showArchiveButton = 
     session?.user?.role === 'ADMIN' && 
     (project.status === 'COMPLETED' || project.status === 'REJECTED');
+
+  const showCancelButton = 
+    (project.status === 'CONTRACTOR_REVIEWING' || 
+     project.status === 'ACCEPTED' || 
+     project.status === 'IN_PROGRESS');
 
   // Debug logging
   console.log('Project Details Viewer Debug:', {
@@ -239,7 +281,7 @@ export function ProjectDetailsViewer({ project, isOpen, onClose, onProjectUpdate
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Status</p>
-                <p className="text-sm font-medium">{renderStatusBadge(project.status, project.proposalStatus)}</p>
+                <div className="text-sm font-medium">{renderStatusBadge(project.status, project.proposalStatus)}</div>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Material</p>
@@ -575,6 +617,71 @@ export function ProjectDetailsViewer({ project, isOpen, onClose, onProjectUpdate
                 </>
               )}
             </Button>
+          </SheetFooter>
+        )}
+
+        {/* Cancel Button for Clients */}
+        {showCancelButton && !showCancelDialog && (
+          <SheetFooter className="mt-6 pt-6 border-t">
+            <Button
+              variant="destructive"
+              className="w-full"
+              onClick={() => setShowCancelDialog(true)}
+            >
+              <XCircleIcon className="mr-2 h-4 w-4" />
+              Cancel Project
+            </Button>
+          </SheetFooter>
+        )}
+
+        {/* Cancel Reason Input */}
+        {showCancelButton && showCancelDialog && (
+          <SheetFooter className="mt-6 pt-6 border-t">
+            <div className="w-full space-y-4">
+              <div>
+                <label htmlFor="cancelReason" className="text-sm font-medium">
+                  Reason for Cancellation
+                </label>
+                <textarea
+                  id="cancelReason"
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 mt-2"
+                  placeholder="Please provide a reason for cancelling this project..."
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setShowCancelDialog(false);
+                    setCancelReason("");
+                  }}
+                  disabled={isCancelling}
+                >
+                  Back
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex-1"
+                  onClick={handleCancel}
+                  disabled={!cancelReason.trim() || isCancelling}
+                >
+                  {isCancelling ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Cancelling...
+                    </>
+                  ) : (
+                    <>
+                      <XCircleIcon className="h-4 w-4 mr-2" />
+                      Confirm Cancel
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
           </SheetFooter>
         )}
       </SheetContent>

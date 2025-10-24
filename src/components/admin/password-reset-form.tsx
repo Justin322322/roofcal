@@ -219,6 +219,11 @@ export default function PasswordResetForm() {
                 },
               })}
               disabled={isLoading}
+              onKeyDown={(e) => {
+                if (e.key === " ") {
+                  e.preventDefault();
+                }
+              }}
             />
             {form.formState.errors.newPassword && (
               <p className="text-sm text-red-600">

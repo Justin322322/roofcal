@@ -139,6 +139,10 @@ export function ProjectList() {
   const [sendingToContractor, setSendingToContractor] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const [archivingProjectId, setArchivingProjectId] = useState<string | null>(null);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [projectToCancel, setProjectToCancel] = useState<string | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancellingProjectId, setCancellingProjectId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProjects();
@@ -287,6 +291,41 @@ export function ProjectList() {
     } catch (error) {
       console.error('Failed to reject project:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to reject project');
+    }
+  };
+
+  const handleCancelProject = async () => {
+    if (!projectToCancel) return;
+
+    setCancellingProjectId(projectToCancel);
+    try {
+      const response = await fetch(`/api/projects/${projectToCancel}/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: cancelReason }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to cancel project');
+      }
+
+      toast.success('Project cancelled successfully', {
+        description: 'The contractor has been notified',
+      });
+      
+      // Close dialog and reset state
+      setCancelDialogOpen(false);
+      setProjectToCancel(null);
+      setCancelReason("");
+      
+      // Refresh projects
+      fetchProjects();
+    } catch (error) {
+      console.error('Failed to cancel project:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to cancel project');
+    } finally {
+      setCancellingProjectId(null);
     }
   };
 
@@ -724,6 +763,20 @@ export function ProjectList() {
                             </DropdownMenuItem>
                           </>
                         )}
+                        {(project.status === "CONTRACTOR_REVIEWING" || 
+                          project.status === "ACCEPTED" || 
+                          project.status === "IN_PROGRESS") && (
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setProjectToCancel(project.id);
+                              setCancelDialogOpen(true);
+                            }}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <XCircleIcon className="mr-2 h-4 w-4" />
+                            Cancel Project
+                          </DropdownMenuItem>
+                        )}
                         {session?.user?.role === UserRole.ADMIN && (
                           project.status === "ARCHIVED" ? (
                             <DropdownMenuItem
@@ -963,6 +1016,60 @@ export function ProjectList() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Cancel Project Dialog */}
+      <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cancel Project</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for cancelling this project. The contractor will be notified.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="cancelReason">Reason for cancellation</Label>
+              <textarea
+                id="cancelReason"
+                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Enter your reason for cancelling this project..."
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCancelDialogOpen(false);
+                setProjectToCancel(null);
+                setCancelReason("");
+              }}
+            >
+              Close
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleCancelProject}
+              disabled={!cancelReason.trim() || cancellingProjectId === projectToCancel}
+            >
+              {cancellingProjectId === projectToCancel ? (
+                <>
+                  <Loader2Icon className="h-4 w-4 animate-spin mr-2" />
+                  Cancelling...
+                </>
+              ) : (
+                <>
+                  <XCircleIcon className="h-4 w-4 mr-2" />
+                  Cancel Project
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

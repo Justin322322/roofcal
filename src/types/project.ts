@@ -8,7 +8,7 @@ import type {
   DecisionTreeResult,
 } from "@/app/dashboard/roof-calculator/types";
 
-export type ProjectStatus = "DRAFT" | "ACTIVE" | "CLIENT_PENDING" | "CONTRACTOR_REVIEWING" | "PROPOSAL_SENT" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "ARCHIVED" | "REJECTED" | "FOR_CLIENT_REVIEW";
+export type ProjectStatus = "DRAFT" | "ACTIVE" | "CLIENT_PENDING" | "CONTRACTOR_REVIEWING" | "PROPOSAL_SENT" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "ARCHIVED" | "REJECTED" | "FOR_CLIENT_REVIEW" | "CANCELLED";
 export type ConstructionMode = "NEW" | "REPAIR";
 export type ProjectStage = "INSPECTION" | "ESTIMATE" | "MATERIALS" | "INSTALL" | "FINALIZE";
 export type ProposalStatus = "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "REVISED" | "COMPLETED";

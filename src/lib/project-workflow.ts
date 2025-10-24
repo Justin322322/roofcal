@@ -311,6 +311,12 @@ export function getStatusDisplayInfo(status: ProjectStatus) {
       color: "bg-gray-100 text-gray-800",
       icon: ArchiveIcon,
     },
+    CANCELLED: {
+      label: "Cancelled",
+      description: "Project has been cancelled",
+      color: "bg-red-100 text-red-800",
+      icon: XCircleIcon,
+    },
   };
 
   return statusInfo[status];

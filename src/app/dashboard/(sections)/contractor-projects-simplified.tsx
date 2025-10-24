@@ -162,6 +162,9 @@ export function ContractorProjectsContent() {
   const [isHelpRequest, setIsHelpRequest] = useState(false);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [projectToArchive, setProjectToArchive] = useState<string | null>(null);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [projectToCancel, setProjectToCancel] = useState<string | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
 
   // Initialize filters from URL parameters
   useEffect(() => {
@@ -419,6 +422,50 @@ export function ContractorProjectsContent() {
     } catch (error) {
       console.error("Failed to archive project:", error);
       toast.error("Failed to archive project", {
+        description: error instanceof Error ? error.message : "Please try again",
+      });
+    } finally {
+      setLoadingProjectId(null);
+    }
+  };
+
+  const handleCancelProject = async () => {
+    if (!projectToCancel) return;
+
+    setLoadingProjectId(projectToCancel);
+    try {
+      const response = await fetch(`/api/projects/${projectToCancel}/cancel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: cancelReason }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to cancel project");
+      }
+
+      const result = await response.json();
+      toast.success(result.message || "Project cancelled", {
+        description: "The project has been cancelled and the client has been notified",
+      });
+      
+      // Update local state
+      setProjects(prevProjects => 
+        prevProjects.map(project => 
+          project.id === projectToCancel 
+            ? { ...project, status: "CANCELLED", proposalStatus: "REJECTED" }
+            : project
+        )
+      );
+      
+      // Close dialog
+      setCancelDialogOpen(false);
+      setProjectToCancel(null);
+      setCancelReason("");
+    } catch (error) {
+      console.error("Failed to cancel project:", error);
+      toast.error("Failed to cancel project", {
         description: error instanceof Error ? error.message : "Please try again",
       });
     } finally {
@@ -765,6 +812,18 @@ export function ContractorProjectsContent() {
                                 >
                                   <CheckCircleIcon className="h-4 w-4 mr-2" />
                                   Complete Project
+                                </DropdownMenuItem>
+                              )}
+                              {(project.status === "ACCEPTED" || project.status === "IN_PROGRESS") && (
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setProjectToCancel(project.id);
+                                    setCancelDialogOpen(true);
+                                  }}
+                                  className="text-red-600"
+                                >
+                                  <XIcon className="h-4 w-4 mr-2" />
+                                  Cancel Project
                                 </DropdownMenuItem>
                               )}
                               {project.status === "COMPLETED" && (
@@ -1139,6 +1198,59 @@ export function ContractorProjectsContent() {
                 <>
                   <XIcon className="h-4 w-4 mr-2" />
                   Decline Project
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel Project Dialog */}
+      <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cancel Project</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for cancelling this project. The client will be notified.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="cancelReason">Reason for cancellation</Label>
+              <Textarea
+                id="cancelReason"
+                placeholder="Enter your reason for cancelling this project..."
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCancelDialogOpen(false);
+                setProjectToCancel(null);
+                setCancelReason("");
+              }}
+            >
+              Close
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleCancelProject}
+              disabled={!cancelReason.trim() || loadingProjectId === projectToCancel}
+            >
+              {loadingProjectId === projectToCancel ? (
+                <>
+                  <Loader2Icon className="h-4 w-4 animate-spin mr-2" />
+                  Cancelling...
+                </>
+              ) : (
+                <>
+                  <XIcon className="h-4 w-4 mr-2" />
+                  Cancel Project
                 </>
               )}
             </Button>

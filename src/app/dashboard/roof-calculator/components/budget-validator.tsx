@@ -71,7 +71,7 @@ export function BudgetValidator({
               <AlertDescription className="text-xs sm:text-sm">
                 <div className="space-y-2">
                   <div>
-                    <strong>⛔ Project cannot be saved with current budget</strong>
+                    <strong>Project cannot be saved with current budget</strong>
                   </div>
                   <div>
                     Your budget of ₱{formatNumberWithCommas(budget)} is less than the total cost of ₱{formatNumberWithCommas(totalCost)}.

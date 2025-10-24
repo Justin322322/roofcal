@@ -280,7 +280,7 @@ export default function PricingMaintenance() {
           item.name,
           item.label,
           item.description || '',
-          formatPrice(item.price, item.unit),
+          item.unit === 'percentage' ? (item.price * 100).toFixed(2) : Number(item.price).toFixed(2),
           item.unit,
           item.isActive ? 'Active' : 'Inactive',
           new Date(item.updated_at).toLocaleDateString(),

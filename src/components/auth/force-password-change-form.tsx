@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -52,6 +53,7 @@ export default function ForcePasswordChangeForm() {
     validatePassword("")
   );
   const router = useRouter();
+  const { update } = useSession();
 
   const form = useForm<ForcePasswordChangeFormData>({
     resolver: zodResolver(forcePasswordChangeSchema),
@@ -86,10 +88,14 @@ export default function ForcePasswordChangeForm() {
 
       setSuccessMessage("Password changed successfully! Redirecting to dashboard...");
       
+      // Update the session to reflect the password change
+      await update();
+      
       // Redirect to dashboard after successful password change
       setTimeout(() => {
         router.push("/dashboard");
-      }, 2000);
+        router.refresh();
+      }, 1500);
     } catch {
       setErrorMessage("Something went wrong. Please try again.");
     } finally {

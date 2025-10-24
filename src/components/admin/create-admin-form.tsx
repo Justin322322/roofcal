@@ -143,6 +143,11 @@ export default function CreateAdminForm({ onSuccess }: CreateAdminFormProps) {
               placeholder="Enter email address"
               {...form.register("email")}
               disabled={isLoading}
+              onKeyDown={(e) => {
+                if (e.key === " ") {
+                  e.preventDefault();
+                }
+              }}
             />
             {form.formState.errors.email && (
               <p className="text-sm text-red-600">
@@ -162,6 +167,11 @@ export default function CreateAdminForm({ onSuccess }: CreateAdminFormProps) {
                 },
               })}
               disabled={isLoading}
+              onKeyDown={(e) => {
+                if (e.key === " ") {
+                  e.preventDefault();
+                }
+              }}
             />
             {form.formState.errors.password && (
               <p className="text-sm text-red-600">

@@ -71,7 +71,7 @@ export default function LoginForm() {
             toastMsg = "Invalid password";
             break;
           case "ACCOUNT_DISABLED":
-            errorMsg = "Your account has been restricted. Please contact support.";
+            errorMsg = "Your account has been restricted. Please contact support at emsbautista@bpsu.edu.ph";
             toastMsg = "Account restricted";
             break;
           case "CredentialsSignin":
