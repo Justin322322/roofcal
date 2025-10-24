@@ -36,12 +36,11 @@ interface WizardCalculatorProps {
 }
 
 const STEPS = [
-  { id: 1, title: "Labor Cost", description: "Select project type for accurate labor calculations" },
-  { id: 2, title: "Budget Planning", description: "Enter your budget for validation and recommendations" },
-  { id: 3, title: "Measurements", description: "Enter your roof dimensions and specifications" },
-  { id: 4, title: "Material & Hardware", description: "Choose your budget level, roofing material, and screw type" },
-  { id: 5, title: "Additional Specs", description: "Thickness, ridge, gutter, insulation & ventilation" },
-  { id: 6, title: "Calculation", description: "Review your complete cost breakdown" },
+  { id: 1, title: "Project Setup", description: "Select project type and enter your budget" },
+  { id: 2, title: "Measurements", description: "Enter your roof dimensions and specifications" },
+  { id: 3, title: "Material & Hardware", description: "Choose your budget level, roofing material, and screw type" },
+  { id: 4, title: "Additional Specs", description: "Thickness, ridge, gutter, insulation & ventilation" },
+  { id: 5, title: "Calculation", description: "Review your complete cost breakdown" },
 ];
 
 export function WizardCalculator({
@@ -60,7 +59,6 @@ export function WizardCalculator({
   onProjectCreated,
 }: WizardCalculatorProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  const [includeLabor, setIncludeLabor] = useState(true);
   const [includeAdditionalSpecs, setIncludeAdditionalSpecs] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | undefined>();
@@ -72,21 +70,19 @@ export function WizardCalculator({
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        return true; // Labor selection always valid
-      case 2:
         return parseFloat(measurements.budgetAmount) > 0;
-      case 3:
+      case 2:
         return (
           parseFloat(measurements.length) > 0 &&
           parseFloat(measurements.width) > 0 &&
           measurements.pitch &&
           measurements.roofType
         );
-      case 4:
+      case 3:
         return material && measurements.screwType && measurements.budgetLevel;
-      case 5:
+      case 4:
         return true; // Additional specs are optional
-      case 6:
+      case 5:
         return true;
       default:
         return false;
@@ -128,11 +124,9 @@ export function WizardCalculator({
     return materialValue || "";
   };
 
-  // Calculate labor cost based on user choice
-  const displayLaborCost = includeLabor ? results.laborCost : 0;
-  const displayTotalCost = includeLabor
-    ? results.totalCost
-    : results.totalCost - results.laborCost;
+  // Labor cost is always included
+  const displayLaborCost = results.laborCost;
+  const displayTotalCost = results.totalCost;
 
   return (
     <div className="max-w-4xl mx-auto px-2 sm:px-4">
@@ -170,9 +164,9 @@ export function WizardCalculator({
           </div>
         </CardHeader>
         <CardContent>
-          {/* Step 1: Labor Cost */}
+          {/* Step 1: Project Setup */}
           {currentStep === 1 && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <ConstructionModeSelector
                 mode={measurements.constructionMode}
                 onModeChange={(mode) => {
@@ -184,57 +178,30 @@ export function WizardCalculator({
                 onProjectLoaded={handleProjectLoaded}
               />
 
-              {/* Labor Cost Option */}
-              <div className="mt-6 p-4 border rounded-lg bg-muted/50">
-                <h3 className="font-semibold mb-3">Include Labor Cost?</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Labor cost is additional and optional. Choose whether to include it in your calculations.
+              {/* Labor Cost Info */}
+              <div className="p-4 border rounded-lg bg-primary/5 border-primary/20">
+                <h3 className="font-semibold mb-2">Labor Cost Included</h3>
+                <p className="text-sm text-muted-foreground">
+                  Labor cost is always included in your calculations. The rate is {measurements.constructionMode === "repair" ? "20%" : "40%"} of material costs for {measurements.constructionMode === "repair" ? "repair" : "new construction"} projects.
                 </p>
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    variant={includeLabor ? "default" : "outline"}
-                    onClick={() => setIncludeLabor(true)}
-                    className="h-auto py-3"
-                  >
-                    <div className="text-center w-full">
-                      <div className="font-medium">Yes</div>
-                      <div className="text-xs opacity-70 mt-1">
-                        Include {measurements.constructionMode === "repair" ? "20%" : "40%"} labor
-                      </div>
-                    </div>
-                  </Button>
-                  <Button
-                    variant={!includeLabor ? "default" : "outline"}
-                    onClick={() => setIncludeLabor(false)}
-                    className="h-auto py-3"
-                  >
-                    <div className="text-center w-full">
-                      <div className="font-medium">No</div>
-                      <div className="text-xs opacity-70 mt-1">
-                        Materials only
-                      </div>
-                    </div>
-                  </Button>
-                </div>
+              </div>
+
+              <div className="border-t pt-6">
+                <BudgetValidator
+                  budgetAmount={measurements.budgetAmount}
+                  onChange={(value) =>
+                    setMeasurements({ ...measurements, budgetAmount: value })
+                  }
+                  roofArea={results.area}
+                  selectedMaterial={material}
+                  totalCost={displayTotalCost}
+                />
               </div>
             </div>
           )}
 
-          {/* Step 2: Budget Planning */}
+          {/* Step 2: Measurements */}
           {currentStep === 2 && (
-            <BudgetValidator
-              budgetAmount={measurements.budgetAmount}
-              onChange={(value) =>
-                setMeasurements({ ...measurements, budgetAmount: value })
-              }
-              roofArea={results.area}
-              selectedMaterial={material}
-              totalCost={displayTotalCost}
-            />
-          )}
-
-          {/* Step 3: Measurements */}
-          {currentStep === 3 && (
             <MeasurementForm
               measurements={measurements}
               onMeasurementsChange={(newMeasurements) =>
@@ -243,8 +210,8 @@ export function WizardCalculator({
             />
           )}
 
-          {/* Step 4: Material & Hardware Selection */}
-          {currentStep === 4 && (
+          {/* Step 3: Material & Hardware Selection */}
+          {currentStep === 3 && (
             <div className="space-y-6">
               <ConsolidatedMaterialSelection
                 material={material}
@@ -284,8 +251,8 @@ export function WizardCalculator({
             </div>
           )}
 
-          {/* Step 5: Additional Specifications */}
-          {currentStep === 5 && (
+          {/* Step 4: Additional Specifications */}
+          {currentStep === 4 && (
             <div className="space-y-6">
               {/* Yes/No Option */}
               <div className="p-4 border rounded-lg bg-muted/50">
@@ -337,8 +304,8 @@ export function WizardCalculator({
             </div>
           )}
 
-          {/* Step 6: Calculation Results */}
-          {currentStep === 6 && isPricingLoaded && material && (
+          {/* Step 5: Calculation Results */}
+          {currentStep === 5 && isPricingLoaded && material && (
             <div className="space-y-4">
               {/* Completion Status Indicator */}
               <div className="p-4 border-2 border-green-500 rounded-lg bg-green-50 dark:bg-green-950/20">
@@ -375,7 +342,7 @@ export function WizardCalculator({
                 constructionMode={measurements.constructionMode}
                 budgetAmount={parseFloat(measurements.budgetAmount) || 0}
                 onAutoOptimize={onAutoOptimize}
-                onBudgetRedirect={() => setCurrentStep(2)}
+                onBudgetRedirect={() => setCurrentStep(1)}
                 length={parseFloat(measurements.length) || undefined}
                 width={parseFloat(measurements.width) || undefined}
                 pitch={parseFloat(measurements.pitch) || undefined}
@@ -414,25 +381,14 @@ export function WizardCalculator({
               )}
 
               {/* Info Messages */}
-              <div className="space-y-3">
-                {!includeLabor && (
-                  <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20 text-sm">
-                    <p className="font-medium mb-1">Labor Cost Not Included</p>
-                    <p className="text-muted-foreground">
-                      The calculation above shows materials only. Labor cost (₱{results.laborCost.toLocaleString()}) was excluded per your selection.
-                    </p>
-                  </div>
-                )}
-
-                {!includeAdditionalSpecs && (
-                  <div className="p-4 border rounded-lg bg-amber-50 dark:bg-amber-950/20 text-sm">
-                    <p className="font-medium mb-1">Using Default Specifications</p>
-                    <p className="text-muted-foreground">
-                      Additional specifications (ridge type, gutter details, insulation, ventilation) are using default values. You can go back to Step 5 to customize them.
-                    </p>
-                  </div>
-                )}
-              </div>
+              {!includeAdditionalSpecs && (
+                <div className="p-4 border rounded-lg bg-amber-50 dark:bg-amber-950/20 text-sm">
+                  <p className="font-medium mb-1">Using Default Specifications</p>
+                  <p className="text-muted-foreground">
+                    Additional specifications (ridge type, gutter details, insulation, ventilation) are using default values. You can go back to Step 4 to customize them.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
