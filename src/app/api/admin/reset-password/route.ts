@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 import { z } from "zod";
 import { validatePassword } from "@/lib/password-validator";
+import { sendPasswordResetNotificationEmail } from "@/lib/email";
 
 const resetPasswordSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
@@ -63,6 +64,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Log the plain text password before hashing (for developer reference)
+    console.log("=".repeat(80));
+    console.log("PASSWORD RESET - DEVELOPER REFERENCE");
+    console.log("=".repeat(80));
+    console.log(`User: ${targetUser.firstName} ${targetUser.lastName}`);
+    console.log(`Email: ${targetUser.email}`);
+    console.log(`Role: ${targetUser.role}`);
+    console.log(`New Password: ${newPassword}`);
+    console.log(`Require Password Change: ${requirePasswordChange}`);
+    console.log(`Reset By: ${session.user.email}`);
+    console.log(`Reset At: ${new Date().toISOString()}`);
+    console.log("=".repeat(80));
+
     // Hash the new password
     const passwordHash = await bcrypt.hash(newPassword, 12);
 
@@ -75,6 +89,21 @@ export async function POST(req: NextRequest) {
         updated_at: new Date(),
       },
     });
+
+    // Send email notification to user with new password
+    try {
+      await sendPasswordResetNotificationEmail(
+        targetUser.email,
+        targetUser.firstName,
+        targetUser.lastName,
+        newPassword,
+        requirePasswordChange
+      );
+      console.log(`✓ Password reset email sent to: ${targetUser.email}`);
+    } catch (emailError) {
+      console.error("Failed to send password reset email:", emailError);
+      // Continue even if email fails - password was already reset
+    }
 
     // Log the activity
     await prisma.activity.create({

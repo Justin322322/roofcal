@@ -279,6 +279,72 @@ export async function sendCustomEmail(
 }
 
 /**
+ * Send password reset notification email with new temporary password
+ */
+export async function sendPasswordResetNotificationEmail(
+  email: string,
+  firstName: string,
+  lastName: string,
+  newPassword: string,
+  requirePasswordChange: boolean
+): Promise<{ success: boolean; error?: string }> {
+  const templateData: EmailTemplateData = {
+    title: "Password Reset",
+    heading: "Your Password Has Been Reset",
+    content: `Hello ${firstName} ${lastName},<br><br>Your password has been reset by an administrator. Below is your new temporary password:`,
+    actionContent: `
+      <!-- Password Box -->
+      <div style="background: #f7fafc; padding: 24px; border-radius: 6px; text-align: center; margin: 24px 0; border: 1px solid #e2e8f0;">
+        <p style="margin: 0 0 12px 0; color: #718096; font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Your New Password</p>
+        <div style="font-size: 20px; font-weight: 600; color: #4a7c7e; font-family: 'Courier New', monospace; margin: 12px 0; background: #ffffff; padding: 16px 24px; border-radius: 6px; border: 2px solid #4a7c7e; display: inline-block; word-break: break-all;">
+          ${newPassword}
+        </div>
+      </div>
+      
+      ${requirePasswordChange ? `
+        <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 16px; border-radius: 6px; margin: 24px 0;">
+          <p style="margin: 0; color: #856404; font-size: 14px; line-height: 1.625;">
+            <strong style="font-weight: 600; display: block; margin-bottom: 4px;">⚠️ Password Change Required</strong>
+            You will be required to change this password when you log in. Please choose a strong, unique password that you haven't used before.
+          </p>
+        </div>
+      ` : ''}
+      
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/login" style="display: inline-block; background: linear-gradient(135deg, #4a7c7e, #2d5a5c); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(74, 124, 126, 0.3);">
+          Login to Your Account
+        </a>
+      </div>
+    `,
+    securityNotice: "If you didn't request this password reset, please contact your administrator immediately. For security reasons, please change your password after logging in."
+  };
+
+  const emailData: EmailData = {
+    to: email,
+    subject: "Your Password Has Been Reset - RoofCal",
+    html: generateEmailTemplate(templateData),
+    text: `Hello ${firstName} ${lastName},
+
+Your password has been reset by an administrator.
+
+Your New Password: ${newPassword}
+
+${requirePasswordChange ? 'PASSWORD CHANGE REQUIRED: You will be required to change this password when you log in.\n\n' : ''}Login URL: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/login
+
+SECURITY NOTICE: If you didn't request this password reset, please contact your administrator immediately.
+
+This is an automated message from RoofCal. Please do not reply to this email.`
+  };
+  
+  try {
+    await sendEmail(emailData);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
+  }
+}
+
+/**
  * Send admin credentials email to newly created admin
  */
 export async function sendAdminCredentialsEmail(data: AdminCredentialsData): Promise<{ success: boolean; error?: string }> {
