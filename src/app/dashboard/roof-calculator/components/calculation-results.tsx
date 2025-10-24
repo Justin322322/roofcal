@@ -5,7 +5,8 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { SparklesIcon, Loader2Icon, HammerIcon, WrenchIcon, XCircleIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { SparklesIcon, Loader2Icon, HammerIcon, WrenchIcon, XCircleIcon, PencilIcon, CheckIcon } from "lucide-react";
 import { useState } from "react";
 import { formatNumberWithCommas } from "../utils/format";
 import { getSlopeMultiplier, SCREW_TYPES } from "../constants";
@@ -31,6 +32,7 @@ interface CalculationResultsProps {
   constructionMode: "new" | "repair";
   budgetAmount?: number;
   onAutoOptimize?: () => OptimizationResult;
+  onBudgetChange?: (newBudget: string) => void;
   // For area breakdown
   length?: number;
   width?: number;
@@ -44,7 +46,6 @@ interface CalculationResultsProps {
   insulationType?: string;
   insulationThickness?: string;
   ventilationType?: string;
-  onBudgetRedirect?: () => void;
 }
 
 export function CalculationResults({
@@ -78,11 +79,13 @@ export function CalculationResults({
   insulationType,
   insulationThickness,
   ventilationType,
-  onBudgetRedirect,
+  onBudgetChange,
 }: CalculationResultsProps) {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationDialogOpen, setOptimizationDialogOpen] = useState(false);
   const [optimizationResult, setOptimizationResult] = useState<OptimizationResult | null>(null);
+  const [isEditingBudget, setIsEditingBudget] = useState(false);
+  const [editedBudget, setEditedBudget] = useState(budgetAmount?.toString() || "");
 
   // Compute area breakdown based on provided inputs
   const planArea =
@@ -316,9 +319,50 @@ export function CalculationResults({
             <Separator />
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Your Budget</span>
-              <span className="text-base font-medium">
-                ₱{formatNumberWithCommas(budgetAmount)}
-              </span>
+              {!isEditingBudget ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-medium">
+                    ₱{formatNumberWithCommas(budgetAmount)}
+                  </span>
+                  {onBudgetChange && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setIsEditingBudget(true);
+                        setEditedBudget(budgetAmount.toString());
+                      }}
+                      className="h-7 w-7 p-0"
+                    >
+                      <PencilIcon className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    value={editedBudget}
+                    onChange={(e) => setEditedBudget(e.target.value)}
+                    className="h-8 w-32 text-right"
+                    placeholder="Enter budget"
+                    autoFocus
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      if (onBudgetChange && editedBudget) {
+                        onBudgetChange(editedBudget);
+                      }
+                      setIsEditingBudget(false);
+                    }}
+                    className="h-7 w-7 p-0"
+                  >
+                    <CheckIcon className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">
@@ -353,19 +397,9 @@ export function CalculationResults({
                     </div>
                     <div>
                       <strong>Required actions:</strong>
-                      <br />• Increase your budget by at least ₱{formatNumberWithCommas(totalCost - budgetAmount)}
+                      <br />• Increase your budget using the edit button above
                       <br />• Or reduce project specifications to lower costs
                     </div>
-                    {onBudgetRedirect && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onBudgetRedirect}
-                        className="w-full sm:w-auto mt-2"
-                      >
-                        Adjust Budget
-                      </Button>
-                    )}
                   </div>
                 </AlertDescription>
               </Alert>

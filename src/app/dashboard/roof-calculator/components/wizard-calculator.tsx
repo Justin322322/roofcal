@@ -342,7 +342,9 @@ export function WizardCalculator({
                 constructionMode={measurements.constructionMode}
                 budgetAmount={parseFloat(measurements.budgetAmount) || 0}
                 onAutoOptimize={onAutoOptimize}
-                onBudgetRedirect={() => setCurrentStep(1)}
+                onBudgetChange={(newBudget) =>
+                  setMeasurements({ ...measurements, budgetAmount: newBudget })
+                }
                 length={parseFloat(measurements.length) || undefined}
                 width={parseFloat(measurements.width) || undefined}
                 pitch={parseFloat(measurements.pitch) || undefined}
