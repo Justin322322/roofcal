@@ -12,6 +12,7 @@ import {
   HelpCircleIcon,
   ActivityIcon,
   ArchiveIcon,
+  KeyRoundIcon,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { UserRole } from "@/types/user-role";
@@ -71,6 +72,11 @@ const developerTools = {
       name: "Add Admin User",
       url: "admin-management",
       icon: UserPlusIcon,
+    },
+    {
+      name: "Reset Password",
+      url: "password-reset",
+      icon: KeyRoundIcon,
     },
   ],
 };

@@ -82,12 +82,14 @@ export const authOptions: AuthOptions = {
           name: safeFullName,
           role: user.role as UserRole,
           emailVerified: user.email_verified ? new Date() : null,
+          passwordChangeRequired: user.passwordChangeRequired,
         };
 
         safeLog("Auth - user authentication successful:", {
           userExists: true,
           role: userData.role,
           emailVerified: userData.emailVerified,
+          passwordChangeRequired: userData.passwordChangeRequired,
         });
 
         return userData;
@@ -115,10 +117,12 @@ export const authOptions: AuthOptions = {
         token.id = user.id;
         token.role = user.role;
         token.emailVerified = user.emailVerified;
+        token.passwordChangeRequired = (user as any).passwordChangeRequired;
         safeLog("JWT callback - user data processed:", {
           userExists: true,
           role: user.role,
           emailVerified: user.emailVerified,
+          passwordChangeRequired: token.passwordChangeRequired,
         });
       }
 
@@ -130,7 +134,7 @@ export const authOptions: AuthOptions = {
         });
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { email_verified: true, role: true, isDisabled: true },
+          select: { email_verified: true, role: true, isDisabled: true, passwordChangeRequired: true },
         });
         if (dbUser) {
           // Check if user is disabled
@@ -142,9 +146,11 @@ export const authOptions: AuthOptions = {
           }
           token.emailVerified = dbUser.email_verified ? new Date() : null;
           token.role = dbUser.role as UserRole;
+          token.passwordChangeRequired = dbUser.passwordChangeRequired;
           safeLog("JWT callback - token updated:", {
             emailVerified: dbUser.email_verified,
             role: dbUser.role,
+            passwordChangeRequired: dbUser.passwordChangeRequired,
           });
         }
       }

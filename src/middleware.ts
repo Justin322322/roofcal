@@ -1,10 +1,11 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 import { UserRole } from "@/types/user-role";
+import type { JWT } from "next-auth/jwt";
 
 export default withAuth(
   async function middleware(req) {
-    const token = req.nextauth.token;
+    const token = req.nextauth.token as JWT & { passwordChangeRequired?: boolean };
     const { pathname } = req.nextUrl;
 
     // Check if user is disabled - this will be handled by JWT callback returning null
@@ -14,12 +15,17 @@ export default withAuth(
       try {
         const user = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { isDisabled: true },
+          select: { isDisabled: true, passwordChangeRequired: true },
         });
         
         if (user?.isDisabled) {
           // Clear the session and redirect to login
           return NextResponse.redirect(new URL("/login?error=AccountDisabled", req.url));
+        }
+
+        // Update token with latest passwordChangeRequired status
+        if (user && user.passwordChangeRequired !== token.passwordChangeRequired) {
+          token.passwordChangeRequired = user.passwordChangeRequired;
         }
       } catch (error) {
         // If we can't check the user status, allow the request to continue
@@ -43,6 +49,16 @@ export default withAuth(
       if (token?.role !== UserRole.ADMIN && token?.role !== UserRole.DEVELOPER) {
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
+    }
+
+    // Redirect to change password page if password change is required
+    if (
+      pathname.startsWith("/dashboard") &&
+      !pathname.startsWith("/dashboard/change-password") &&
+      token &&
+      token.passwordChangeRequired
+    ) {
+      return NextResponse.redirect(new URL("/dashboard/change-password", req.url));
     }
 
     // Redirect to verification page if email not verified
@@ -89,5 +105,6 @@ export const config = {
     "/forgot-password",
     "/reset-password",
     "/maintenance",
+    "/dashboard/change-password",
   ],
 };

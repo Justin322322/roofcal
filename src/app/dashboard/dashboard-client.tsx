@@ -141,7 +141,8 @@ export default function DashboardClient() {
       case "activity-logs":
         return userRole === UserRole.DEVELOPER; // Only developers can access dev tools
       case "admin-management":
-        // Allow developers to access Admin Management in all environments
+      case "password-reset":
+        // Allow developers to access Admin Management and Password Reset in all environments
         return userRole === UserRole.DEVELOPER;
       default:
         return false;
@@ -263,6 +264,34 @@ export default function DashboardClient() {
             <div className="px-4 lg:px-6">
               <div className="flex justify-center">
                 <CreateAdminForm />
+              </div>
+            </div>
+          </div>
+        );
+      case "password-reset":
+        // Inline render of Password Reset UI routed inside dashboard (dev only)
+        const PasswordResetForm = dynamic(
+          () => import("@/components/admin/password-reset-form"),
+          { ssr: false }
+        );
+        return (
+          <div className="flex flex-col gap-4 md:gap-6">
+            <div className="flex flex-col gap-2 px-4 lg:px-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                  <span className="text-primary text-sm font-semibold">DEV</span>
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold tracking-tight">Password Reset</h1>
+                  <p className="text-sm text-muted-foreground">
+                    Reset passwords for contractors (admins) and clients
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="px-4 lg:px-6">
+              <div className="flex justify-center">
+                <PasswordResetForm />
               </div>
             </div>
           </div>
